@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  File: item_medicine.xml
+  Mô tả: Layout cho một loại thuốc trong danh sách kê đơn.
+-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="16dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="8dp">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvMedicineName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textPrimary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            tools:text="Paracetamol 500mg" />
+
+        <TextView
+            android:id="@+id/tvMedicineDosage"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/textSecondary"
+            android:textSize="14sp"
+            tools:text="Uống 1 viên/lần, 2 lần/ngày sau ăn" />
+
+    </LinearLayout>
+
+    <!-- SỬA LỖI: Dùng icon của ứng dụng thay vì của hệ thống -->
+    <ImageView
+        android:id="@+id/btnRemoveMedicine"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginStart="16dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="Xóa thuốc"
+        android:focusable="true"
+        android:src="@drawable/ic_delete"
+        app:tint="@color/textSecondary" />
+
+</LinearLayout>

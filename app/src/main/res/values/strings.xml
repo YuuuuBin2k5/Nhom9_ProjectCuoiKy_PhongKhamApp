@@ -1,0 +1,141 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">PhongKham_App</string>
+<string name="doctor_name">BS. Đặng Hoàng Nam</string>
+    <string name="search_hint">Tìm kiếm...</string>
+    <string name="upcoming_appointments">Lịch hẹn sắp tới</string>
+    <string name="view_all">Xem tất cả</string>
+    <string name="waiting_patients">Bệnh nhân đang chờ</string>
+    <string name="doctor_avatar">Ảnh đại diện của bác sĩ</string>
+    <string name="notifications">Thông báo</string>
+    <string name="search_icon">Biểu tượng tìm kiếm</string>
+    <string name="filter">Lọc</string>
+<string name="admin_home">Trang Chủ Admin</string>
+    <string name="revenue_statistics">Thống Kê Doanh Thu</string>
+    <string name="today_revenue">Doanh Thu Hôm Nay</string>
+    <string name="month_revenue">Doanh Thu Tháng Này</string>
+    <string name="year_revenue">Doanh Thu Năm Nay</string>
+    <string name="total_patients">Số Bệnh Nhân</string>
+    <string name="manage_services">Dịch Vụ</string>
+    <string name="manage_doctors">Bác Sĩ</string>
+    <string name="manage_shifts">Ca Làm Việc</string>
+    <string name="manage_invoices">Hóa Đơn</string>
+    <string name="currency_format">%,d VNĐ</string>
+    <string name="total_revenue">Tổng doanh thu</string>
+    <string name="total_visits">Số lược khám</string>
+    <string name="revenue_title">Doanh Thu</string>
+    
+    
+    <string name="cd_manage_services">Mở quản lý dịch vụ</string>
+    <string name="cd_manage_doctors">Mở quản lý bác sĩ</string>
+    <string name="cd_manage_shifts">Mở ca làm việc</string>
+    <string name="cd_manage_invoices">Mở quản lý hóa đơn</string>
+    <string name="cd_revenue_filter">Lọc doanh thu</string>
+    <string name="cd_back">Quay lại</string>
+    <string name="cd_search">Tìm kiếm</string>
+    <string name="cd_add_service">Thêm dịch vụ</string>
+    <string name="add_service_title">Thêm Dịch Vụ Khám</string>
+    <string name="service_name_label">Tên dịch vụ</string>
+    <string name="service_name_hint">dịch vụ khám abc</string>
+    <string name="price_label">Giá</string>
+    <string name="price_hint">100.000.000</string>
+    <string name="description_label">Mô tả chi tiết</string>
+    <string name="description_hint">khám như thế nào</string>
+    <string name="cancel">Hủy</string>
+    <string name="save">Lưu</string>
+    <string name="cd_menu">Menu tùy chọn</string>
+    <string name="cd_add_doctor">Thêm bác sĩ</string>
+    <string name="cd_edit">Chỉnh sửa</string>
+    <string name="edit">Chỉnh sửa</string>
+    <string name="delete">Xóa</string>
+    <string name="service_detail_title">Chi Tiết Dịch Vụ</string>
+    <string name="service_status">Trạng thái hoạt động</string>
+    <string name="add_doctor_title">Thêm Bác Sĩ</string>
+    <string name="doctor_name_label">Họ và tên</string>
+    <string name="doctor_name_hint">Nguyễn Văn A</string>
+    <string name="specialty_label">Chuyên khoa</string>
+    <string name="specialty_hint">Tim mạch</string>
+    <string name="phone_label">Số điện thoại</string>
+    <string name="phone_hint">0901234567</string>
+    <string name="email_label">Email</string>
+    <string name="email_hint">doctor@example.com</string>
+    <string name="username_label">Tên đăng nhập</string>
+    <string name="username_hint">doctor123</string>
+    <string name="password_label">Mật khẩu</string>
+    <string name="password_hint">Tối thiểu 6 ký tự</string>
+    <string name="search_invoice_hint">Tìm mã hóa đơn</string>
+    <string name="filter_by_date">Lọc theo ngày</string>
+    <string name="filter_by_doctor">Lọc theo bác sĩ</string>
+    <string name="filter_by_service">Lọc theo dịch vụ</string>
+    <string name="toggle_filter">Bật/tắt bộ lọc</string>
+    <string name="invoice_detail_title">Chi Tiết Hóa Đơn</string>
+    <string name="cd_previous_week">Tuần trước</string>
+    <string name="cd_next_week">Tuần sau</string>
+    
+    
+    <string-array name="revenue_filter_options">
+        <item>Theo Ngày</item>
+        <item>Theo Tháng</item>
+        <item>Theo Năm</item>
+    </string-array>
+<string name="title_medical_record">Hồ Sơ Khám Bệnh</string>
+    <string name="title_booking">Lịch khám bệnh</string>
+
+    
+    <string name="label_patient_id">ID: %s</string>
+    <string name="label_blood_type">🩸 Nhóm máu %s</string>
+    <string name="label_age">🎂 Tuổi %d</string>
+    <string name="label_view_detail">Xem chi tiết bệnh án</string>
+    <string name="status_active">Đang điều trị</string>
+    <string name="status_completed">Hoàn thành</string>
+
+    
+    <string name="section_doctor_list">Danh sách bác sĩ</string>
+    <string name="label_view_all">Xem tất cả</string>
+    <string name="btn_rebook">Đặt lại lịch</string>
+    <string name="btn_add_review">Thêm đánh giá</string>
+
+    
+    <string name="section_select_date">Chọn ngày khám</string>
+    <string name="section_available_time">Giờ khám còn trống</string>
+    <string name="section_patient_info">Thông tin bệnh nhân</string>
+    <string name="radio_self">Bản thân</string>
+    <string name="radio_other">Người khác</string>
+    <string name="hint_full_name">Nhập họ và tên</string>
+    <string name="label_full_name">Họ và Tên</string>
+    <string name="hint_age">Tuổi</string>
+    <string name="label_age_input">Tuổi</string>
+    <string name="label_gender">Giới tính</string>
+    <string name="gender_male">Nam</string>
+    <string name="gender_female">Nữ</string>
+    <string name="gender_other">Khác</string>
+    <string name="hint_description">Mô tả tình trạng sức khỏe</string>
+    <string name="btn_confirm_booking">Xác nhận đặt lịch</string>
+
+    
+    <string name="nav_home">Trang chủ</string>
+    <string name="nav_calendar">Lịch khám</string>
+    <string name="nav_records">Hồ sơ</string>
+    <string name="nav_chat">Cá nhân</string>
+
+    
+    <string name="day_mon">Th 2</string>
+    <string name="day_tue">Th 3</string>
+    <string name="day_wed">Th 4</string>
+    <string name="day_thu">Th 5</string>
+    <string name="day_fri">Th 6</string>
+    <string name="day_sat">Th 7</string>
+    <string name="day_sun">CN</string>
+
+    
+    <string name="msg_booking_success">Đặt lịch thành công!</string>
+    <string name="msg_name_required">Vui lòng nhập họ và tên</string>
+    <string name="msg_invalid_age">Tuổi không hợp lệ (1-150)</string>
+    <string name="msg_select_date">Vui lòng chọn ngày khám</string>
+    <string name="msg_select_time">Vui lòng chọn giờ khám</string>
+
+    
+    <string name="cd_patient_avatar">Ảnh bệnh nhân</string>
+    <string name="cd_doctor_avatar">Ảnh bác sĩ</string>
+    <string name="cd_favorite">Yêu thích</string>
+</resources>

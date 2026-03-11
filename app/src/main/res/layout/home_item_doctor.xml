@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="16dp"
+    android:layout_marginBottom="12dp">
+
+    <!-- DOCTOR IMAGE -->
+    <ImageView
+        android:id="@+id/imgDoctor"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:src="@drawable/doctor"
+        android:scaleType="centerCrop"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <!-- NAME -->
+    <TextView
+        android:id="@+id/tvName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Bác sĩ: Nguyễn Thị A"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        app:layout_constraintEnd_toStartOf="@id/imgDoctor"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"/>
+
+    <!-- SPECIALTY -->
+    <TextView
+        android:id="@+id/tvMajor"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Khoa nội tim mạch"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tvName"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/imgDoctor"/>
+
+    <!-- EXPERIENCE -->
+    <TextView
+        android:id="@+id/tvExp"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Kinh nghiệm: 10 năm"
+        android:textSize="14sp"
+        app:layout_constraintTop_toBottomOf="@id/tvMajor"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toStartOf="@id/imgDoctor"/>
+
+    <!-- BOOK BUTTON -->
+    <Button
+        android:id="@+id/btnBook"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:text="Đặt lịch"
+        android:backgroundTint="#6D8EDB"
+        android:textColor="#000"
+        app:layout_constraintTop_toBottomOf="@id/tvExp"
+        app:layout_constraintStart_toStartOf="parent"
+        android:layout_marginTop="8dp"/>
+
+    <!-- PERSON ICON -->
+    <ImageView
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:background="@drawable/bg_icon"
+        android:padding="8dp"
+        android:src="@drawable/ic_person"
+        android:layout_marginStart="12dp"
+        app:layout_constraintStart_toEndOf="@id/btnBook"
+        app:layout_constraintTop_toTopOf="@id/btnBook"
+        app:layout_constraintBottom_toBottomOf="@id/btnBook"/>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

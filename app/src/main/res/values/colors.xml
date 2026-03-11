@@ -1,0 +1,92 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <color name="purple_200">#FFBB86FC</color>
+    <color name="purple_500">#FF6200EE</color>
+    <color name="purple_700">#FF3700B3</color>
+    <color name="teal_200">#FF03DAC5</color>
+    <color name="teal_700">#FF018786</color>
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+<color name="primaryBlue">#2962FF</color>
+    <color name="primaryDarkBlue">#0039CB</color>
+    <color name="accentBlue">#82B1FF</color>
+    <color name="teal_blue">#2962FF</color>
+
+    
+    <color name="textPrimary">#212121</color>
+    <color name="textSecondary">#757575</color>
+    <color name="textOnPrimary">#000000</color>
+
+    
+    <color name="windowBackground">#F8F9FA</color>
+    <color name="primary">#2196F3</color>
+    <color name="primary_dark">#1976D2</color>
+    <color name="accent">#FF5722</color>
+    
+    
+    <color name="card_background">#FFFFFF</color>
+    <color name="revenue_text">#1565C0</color>
+    <color name="revenue_label">#757575</color>
+    
+    
+    <color name="button_services">#00BCD4</color>
+    <color name="button_doctors">#3F51B5</color>
+    <color name="button_shifts">#FF9800</color>
+    <color name="button_invoices">#4CAF50</color>
+    
+    
+    <color name="shift_morning">#4CAF50</color>
+    <color name="shift_afternoon">#FF9800</color>
+<color name="primary_light">#6B9AFF</color>
+    <color name="primary_surface">#EBF0FF</color>
+
+    
+    <color name="background">#F5F7FF</color>
+    <color name="text_primary">#1A1A2E</color>
+    <color name="text_secondary">#7B8794</color>
+    <color name="text_hint">#A0AEC0</color>
+    <color name="text_on_primary">#FFFFFF</color>
+
+    
+    <color name="status_active_bg">#E8F0FE</color>
+    <color name="status_active_text">#3B71FE</color>
+    <color name="status_completed_bg">#E6F9EE</color>
+    <color name="status_completed_text">#22C55E</color>
+
+    
+    <color name="red_heart">#FF4757</color>
+    <color name="star_filled">#FFC107</color>
+    <color name="star_empty">#D1D5DB</color>
+
+    
+    <color name="success">#22C55E</color>
+    <color name="warning">#F59E0B</color>
+    <color name="error">#EF4444</color>
+
+    
+    <color name="divider">#E2E8F0</color>
+    <color name="input_bg">#F1F3F8</color>
+
+    
+    <color name="gradient_start">#3B71FE</color>
+    <color name="gradient_end">#6B9AFF</color>
+
+    
+    <color name="ripple_primary">#1A3B71FE</color>
+
+    
+    <color name="time_slot_selected_bg">#3B71FE</color>
+    <color name="time_slot_selected_text">#FFFFFF</color>
+    <color name="time_slot_default_bg">#FFFFFF</color>
+    <color name="time_slot_default_text">#1A1A2E</color>
+    <color name="time_slot_unavailable_bg">#F1F3F8</color>
+    <color name="time_slot_unavailable_text">#A0AEC0</color>
+
+    
+    <color name="date_selected_bg">#3B71FE</color>
+    <color name="date_selected_text">#FFFFFF</color>
+
+    
+    <color name="bottom_nav_active">#3B71FE</color>
+    <color name="bottom_nav_inactive">#7B8794</color>
+</resources>

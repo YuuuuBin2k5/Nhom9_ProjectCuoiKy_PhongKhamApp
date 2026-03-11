@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="doctolib_primary">#2b73ee</color>
+    <color name="doctolib_bg_light">#f7fbfe</color>
+    <color name="doctolib_text_main">#0e1c36</color>
+    <color name="doctolib_text_muted">#828fa3</color>
+    <color name="doctolib_input_bg">#fcfcfc</color>
+    <color name="doctolib_input_border">#e2e8f0</color>
+    <color name="doctolib_orange">#f2994a</color>
+</resources>

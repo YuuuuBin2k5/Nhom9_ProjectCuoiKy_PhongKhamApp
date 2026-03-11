@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  File: activity_medical_record.xml
+  Mô tả: Layout cho màn hình xem chi tiết hồ sơ bệnh án.
+-->
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/background"
+    tools:context="com.example.phongkham_app.doctor.MedicalRecordActivity">
+
+    <!-- Thanh App Bar -->
+    <com.google.android.material.appbar.AppBarLayout
+        android:id="@+id/appBarLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@color/white"
+        app:liftOnScroll="true">
+
+        <com.google.android.material.appbar.MaterialToolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            app:navigationIcon="@drawable/ic_arrow_back"
+            app:navigationIconTint="@color/textPrimary">
+
+            <TextView
+                android:id="@+id/tvPatientNameToolbar"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:textColor="@color/textPrimary"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="Lý Thị B" />
+
+        </com.google.android.material.appbar.MaterialToolbar>
+
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <!-- Khối nội dung chính có thể cuộn -->
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:paddingBottom="88dp"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <!-- Phần Thông tin cá nhân -->
+            <TextView
+                style="@style/TextAppearance.Material3.TitleMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:text="Thông tin cá nhân"
+                android:textColor="@color/textPrimary" />
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="16dp"
+                app:cardBackgroundColor="@color/white"
+                app:cardCornerRadius="12dp"
+                app:strokeWidth="0dp">
+
+                <GridLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:columnCount="2"
+                    android:padding="16dp"
+                    android:rowCount="3">
+
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Tuổi: 28" android:textColor="@color/textSecondary"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Giới tính: Nữ" android:layout_marginStart="16dp" android:textColor="@color/textSecondary"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Chiều cao: 1.6m" android:layout_marginTop="8dp" android:textColor="@color/textSecondary"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Cân nặng: 55kg" android:layout_marginTop="8dp" android:layout_marginStart="16dp" android:textColor="@color/textSecondary"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Nhóm máu: O+" android:layout_marginTop="8dp" android:textColor="@color/textSecondary"/>
+                    <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Dị ứng: Không" android:layout_marginTop="8dp" android:layout_marginStart="16dp" android:textColor="@color/textSecondary"/>
+                </GridLayout>
+
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Phần Chỉ số sức khỏe -->
+            <TextView
+                style="@style/TextAppearance.Material3.TitleMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="24dp"
+                android:text="Chỉ số sức khỏe"
+                android:textColor="@color/textPrimary"/>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="@color/white">
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Huyết áp\n120/80 mmHg" android:gravity="center" android:padding="16dp" android:textColor="@color/textPrimary"/>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    android:layout_weight="1"
+                    app:cardBackgroundColor="@color/white">
+                    <TextView android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Nhịp tim\n75 bpm" android:gravity="center" android:padding="16dp" android:textColor="@color/textPrimary"/>
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+            <!-- Phần Lịch sử khám -->
+            <TextView
+                style="@style/TextAppearance.Material3.TitleMedium"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginTop="16dp"
+                android:text="Lịch sử khám"
+                android:textColor="@color/textPrimary"/>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvHistory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:nestedScrollingEnabled="false"
+                tools:itemCount="3"
+                tools:listitem="@layout/doctor_item_waiting_patient"/>
+
+        </LinearLayout>
+
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- Nút CTA (Call To Action) dính dưới đáy -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnStartExamination"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:layout_margin="16dp"
+        android:padding="12dp"
+        android:text="Bắt đầu khám"
+        android:textSize="16sp"
+        app:cornerRadius="24dp" />
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

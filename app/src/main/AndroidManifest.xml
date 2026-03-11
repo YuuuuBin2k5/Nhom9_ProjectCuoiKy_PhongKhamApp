@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="com.example.phongkham_app">
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.PhongKham_App">
+        <activity android:name=".auth.SplashActivity" android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity android:name=".auth.LoginActivity" android:exported="false" />
+        <activity android:name=".auth.RegisterActivity" android:exported="false" />
+
+        <activity android:name=".admin.AddDoctorActivity" android:exported="false" />
+        <activity android:name=".admin.AddServiceActivity" android:exported="false" />
+        <activity android:name=".admin.InvoiceDetailActivity" android:exported="false" />
+        <activity android:name=".admin.MainActivity" android:exported="false" />
+        <activity android:name=".admin.ManageDoctorsActivity" android:exported="false" />
+        <activity android:name=".admin.ManageInvoicesActivity" android:exported="false" />
+        <activity android:name=".admin.ManageServicesActivity" android:exported="false" />
+        <activity android:name=".admin.ManageShiftsActivity" android:exported="false" />
+        <activity android:name=".admin.ServiceDetailActivity" android:exported="false" />
+        <activity android:name=".doctor.MainDoctor" android:exported="false" />
+        <activity android:name=".doctor.MedicalRecordActivity" android:exported="false" />
+        <activity android:name=".doctor.PrescriptionActivity" android:exported="false" />
+        <activity android:name=".doctor.ProfilePatient" android:exported="false" />
+        <activity android:name=".doctor.UpdatePrescriptionActivity" android:exported="false" />
+        <activity android:name=".doctor.UpdateRecordActivity" android:exported="false" />
+        <activity android:name=".patient.BookingActivity" android:exported="false" />
+        <activity android:name=".patient.DoctorDetailActivity" android:exported="false" />
+        <activity android:name=".patient.DoctorReviewActivity" android:exported="false" />
+        <activity android:name=".patient.Home_Activity_Home" android:exported="false" />
+        <activity android:name=".patient.MedicalDetailActivity" android:exported="false" />
+        <activity android:name=".patient.MedicalRecordActivity" android:exported="false" />
+        <activity android:name=".patient.HomeServiceActivity" android:exported="false" />
+        <activity android:name=".patient.HomeDoctorActivity" android:exported="false" />
+        <activity android:name=".patient.SettingsPatientActivity" />
+        <activity android:name=".doctor.SettingsDoctorActivity" />
+        <activity android:name=".admin.SettingsAdminActivity" />
+    </application>
+</manifest>
