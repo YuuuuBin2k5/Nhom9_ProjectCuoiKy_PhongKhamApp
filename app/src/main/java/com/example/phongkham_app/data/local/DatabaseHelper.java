@@ -555,6 +555,17 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.update(TABLE_CHECK_IN_QUEUE, values, "appointment_id = ?", new String[]{String.valueOf(appointmentId)}) > 0;
     }
 
+    public Cursor getAppointmentsByCustomer(int customerId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        String query = "SELECT a.*, s.name as service_name, u.first_name || ' ' || u.last_name as doctor_name " +
+                "FROM " + TABLE_APPOINTMENTS + " a " +
+                "JOIN " + TABLE_SERVICES + " s ON a.service_id = s.id " +
+                "JOIN " + TABLE_USERS + " u ON a.doctor_id = u.id " +
+                "WHERE a.customer_id = ? " +
+                "ORDER BY a.appointment_datetime DESC";
+        return db.rawQuery(query, new String[]{String.valueOf(customerId)});
+    }
+
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
         Log.d(TAG, "Upgrading database from version " + oldVersion + " to " + newVersion);

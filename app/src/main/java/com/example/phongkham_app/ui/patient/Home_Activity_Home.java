@@ -102,6 +102,10 @@ public class Home_Activity_Home extends AppCompatActivity {
         findViewById(R.id.btn_qr_code).setOnClickListener(v -> 
             startActivity(new Intent(this, com.example.phongkham_app.ui.common.QRGenerateActivity.class)));
 
+        // Nút Hồ sơ khám bệnh mới thêm
+        findViewById(R.id.btn_medical_record).setOnClickListener(v -> 
+            startActivity(new Intent(this, MedicalRecordActivity.class)));
+
 
         // 2. Xem chi tiết cuộc hẹn -> MedicalDetailActivity
         findViewById(R.id.btn_view_appointment_detail).setOnClickListener(v -> 
@@ -112,7 +116,7 @@ public class Home_Activity_Home extends AppCompatActivity {
 
         // 4. Các nút "Tất cả"
         findViewById(R.id.all_appointment).setOnClickListener(v -> 
-            Toast.makeText(this, "Xem tất cả cuộc hẹn (Đang phát triển)", Toast.LENGTH_SHORT).show());
+            startActivity(new Intent(this, AppointmentListActivity.class)));
         
         findViewById(R.id.all_dv).setOnClickListener(v -> 
             startActivity(new Intent(this, HomeServiceActivity.class)));
@@ -128,7 +132,7 @@ public class Home_Activity_Home extends AppCompatActivity {
                 int id = item.getItemId();
                 if (id == R.id.nav_home) return true;
                 if (id == R.id.nav_records) {
-                    startActivity(new Intent(this, MedicalRecordActivity.class));
+                    startActivity(new Intent(this, AppointmentListActivity.class));
                     return true;
                 }
                 if (id == R.id.nav_setting) {

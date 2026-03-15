@@ -2,6 +2,7 @@ package com.example.phongkham_app.ui.patient;
 
 import com.example.phongkham_app.R;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -115,13 +116,17 @@ public class BookingActivity extends AppCompatActivity implements
 
         viewModel.getBookingSuccess().observe(this, success -> {
             if (success) {
-                Snackbar.make(rootLayout, getString(R.string.msg_booking_success), Snackbar.LENGTH_LONG)
+                Snackbar.make(rootLayout, "Đặt lịch thành công!", Snackbar.LENGTH_LONG)
                         .setBackgroundTint(getResources().getColor(R.color.success, getTheme()))
                         .setTextColor(getResources().getColor(R.color.white, getTheme()))
                         .show();
                 
-                // Finish activity after a short delay
-                btnConfirm.postDelayed(this::finish, 1500);
+                // Finish activity and open Appointment List after a short delay
+                btnConfirm.postDelayed(() -> {
+                    Intent intent = new Intent(this, AppointmentListActivity.class);
+                    startActivity(intent);
+                    finish();
+                }, 1500);
             }
         });
 
@@ -142,7 +147,7 @@ public class BookingActivity extends AppCompatActivity implements
             } else {
                 btnConfirm.setEnabled(true);
                 btnConfirm.setAlpha(1.0f);
-                btnConfirm.setText(getString(R.string.btn_confirm_booking));
+                btnConfirm.setText("Xác nhận đặt lịch");
             }
         });
     }
@@ -153,12 +158,12 @@ public class BookingActivity extends AppCompatActivity implements
             String age = etAge.getText().toString();
             
             // Get selected gender
-            String gender = getString(R.string.gender_male); // Default
+            String gender = "Nam"; // Default
             int checkedId = rgGender.getCheckedRadioButtonId();
             if (checkedId == R.id.rbFemale) {
-                gender = getString(R.string.gender_female);
+                gender = "Nữ";
             } else if (checkedId == R.id.rbOtherGender) {
-                gender = getString(R.string.gender_other);
+                gender = "Khác";
             }
 
             String description = etDescription.getText().toString();

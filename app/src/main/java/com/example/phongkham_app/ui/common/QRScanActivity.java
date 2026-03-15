@@ -74,6 +74,7 @@ public class QRScanActivity extends AppCompatActivity {
 
         btnScan = findViewById(R.id.btnScan);
         tvResult = findViewById(R.id.tvResult);
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         btnScan.setOnClickListener(v -> {
             ScanOptions options = new ScanOptions();

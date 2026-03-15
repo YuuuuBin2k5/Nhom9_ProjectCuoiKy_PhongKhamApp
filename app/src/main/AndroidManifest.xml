@@ -40,6 +40,7 @@
         <activity android:name=".ui.doctor.UpdatePrescriptionActivity" android:exported="false" />
         <activity android:name=".ui.doctor.UpdateRecordActivity" android:exported="false" />
         <activity android:name=".ui.patient.BookingActivity" android:exported="false" />
+        <activity android:name=".ui.patient.AppointmentListActivity" android:exported="false" />
         <activity android:name=".ui.patient.DoctorDetailActivity" android:exported="false" />
         <activity android:name=".ui.patient.DoctorReviewActivity" android:exported="false" />
         <activity android:name=".ui.patient.Home_Activity_Home" android:exported="false" />
@@ -48,6 +49,8 @@
         <activity android:name=".ui.patient.HomeServiceActivity" android:exported="false" />
         <activity android:name=".ui.patient.HomeDoctorActivity" android:exported="false" />
         <activity android:name=".ui.patient.SettingsPatientActivity" />
+        <activity android:name=".ui.patient.ProfileDetailActivity" android:exported="false" />
+        <activity android:name=".ui.patient.ChangePasswordActivity" android:exported="false" />
         <activity android:name=".ui.doctor.SettingsDoctorActivity" />
         <activity android:name=".ui.admin.SettingsAdminActivity" />
         <activity android:name=".ui.admin.AdminHomeActivity" android:exported="false" />

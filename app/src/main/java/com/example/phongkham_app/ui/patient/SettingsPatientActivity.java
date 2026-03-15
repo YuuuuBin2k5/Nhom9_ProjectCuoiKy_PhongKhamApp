@@ -34,15 +34,27 @@ public class SettingsPatientActivity extends AppCompatActivity {
 
     private void setupClickListeners() {
         findViewById(R.id.btnPersonalInfo).setOnClickListener(v -> 
-            Toast.makeText(this, "Thông tin cá nhân (Đang phát triển)", Toast.LENGTH_SHORT).show());
+            startActivity(new Intent(this, ProfileDetailActivity.class)));
             
         findViewById(R.id.btnMedicalHistory).setOnClickListener(v -> 
-            Toast.makeText(this, "Lịch sử khám bệnh (Đang phát triển)", Toast.LENGTH_SHORT).show());
+            startActivity(new Intent(this, MedicalRecordActivity.class)));
 
         findViewById(R.id.btnChangePassword).setOnClickListener(v -> 
-            Toast.makeText(this, "Đổi mật khẩu (Đang phát triển)", Toast.LENGTH_SHORT).show());
+            startActivity(new Intent(this, ChangePasswordActivity.class)));
+
+        findViewById(R.id.btnLanguage).setOnClickListener(v -> showLanguageDialog());
 
         findViewById(R.id.btnLogout).setOnClickListener(v -> logout());
+    }
+
+    private void showLanguageDialog() {
+        String[] languages = {"Tiếng Việt", "English"};
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Chọn ngôn ngữ")
+            .setItems(languages, (dialog, which) -> {
+                Toast.makeText(this, "Đã chọn: " + languages[which], Toast.LENGTH_SHORT).show();
+            })
+            .show();
     }
 
     private void logout() {

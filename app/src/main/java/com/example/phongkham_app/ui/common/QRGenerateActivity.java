@@ -24,6 +24,7 @@ public class QRGenerateActivity extends AppCompatActivity {
 
         ivQRCode = findViewById(R.id.ivQRCode);
         tvInfo = findViewById(R.id.tvInfo);
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         SharedPreferences pref = getSharedPreferences("UserSession", MODE_PRIVATE);
         long userId = pref.getLong("USER_ID", -1);

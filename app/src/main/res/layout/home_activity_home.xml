@@ -108,6 +108,17 @@
                 android:backgroundTint="#3A7CA5"
                 android:background="@drawable/rounded_button"/>
 
+            <Button
+                android:id="@+id/btn_medical_record"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="Hồ sơ khám bệnh"
+                android:textSize="18sp"
+                android:textColor="#FFFFFF"
+                android:layout_marginTop="10dp"
+                android:backgroundTint="#FF9800"
+                android:background="@drawable/rounded_button"/>
+
 
             <!-- Cuoc hen -->
             <LinearLayout
@@ -497,5 +508,3 @@
         app:layout_constraintEnd_toEndOf="parent"/>
 
 </androidx.constraintlayout.widget.ConstraintLayout>
-
-
