@@ -61,6 +61,7 @@
                 android:hint="Liều dùng">
 
             <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etDosage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Uống 1 viên / lần" />
@@ -105,6 +106,7 @@
             android:orientation="horizontal">
 
             <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilQuantity"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
@@ -112,6 +114,7 @@
                 android:hint="Số lượng">
 
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etQuantity"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"
@@ -127,6 +130,7 @@
                 android:hint="Số ngày dùng">
 
                 <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etDays"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="number"

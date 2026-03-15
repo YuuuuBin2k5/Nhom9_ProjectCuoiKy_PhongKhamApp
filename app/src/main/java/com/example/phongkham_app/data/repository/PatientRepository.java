@@ -10,14 +10,21 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.List;
 
+import com.example.phongkham_app.data.local.DatabaseHelper;
+import android.content.Context;
+import android.database.Cursor;
+
 public class PatientRepository {
     private static PatientRepository instance;
+    private DatabaseHelper dbHelper;
 
-    private PatientRepository() {}
+    private PatientRepository(Context context) {
+        dbHelper = new DatabaseHelper(context);
+    }
 
-    public static synchronized PatientRepository getInstance() {
+    public static synchronized PatientRepository getInstance(Context context) {
         if (instance == null) {
-            instance = new PatientRepository();
+            instance = new PatientRepository(context.getApplicationContext());
         }
         return instance;
     }
@@ -44,15 +51,28 @@ public class PatientRepository {
         return appointments;
     }
 
-    public List<WaitingPatient> getWaitingPatients() {
+    public List<WaitingPatient> getWaitingPatients(int clinicRoomId) {
         List<WaitingPatient> waitingPatients = new ArrayList<>();
-        waitingPatients.add(new WaitingPatient("Nguyen Van A", "11:30 AM"));
-        waitingPatients.add(new WaitingPatient("Lý Thị B", "11:45 AM"));
-        waitingPatients.add(new WaitingPatient("Pham Van F", "12:00 PM"));
-        waitingPatients.add(new WaitingPatient("Vo Thi G", "12:15 PM"));
-        waitingPatients.add(new WaitingPatient("Bui Van H", "12:30 PM"));
+        Cursor cursor = dbHelper.getQueueList(clinicRoomId);
+        if (cursor != null) {
+            int nameIndex = cursor.getColumnIndex("patient_name");
+            int timeIndex = cursor.getColumnIndex("check_in_time");
+            
+            while (cursor.moveToNext()) {
+                String name = (nameIndex >= 0) ? cursor.getString(nameIndex) : "Unknown";
+                String time = (timeIndex >= 0) ? cursor.getString(timeIndex) : "--:--";
+                waitingPatients.add(new WaitingPatient(name, time));
+            }
+            cursor.close();
+        }
         return waitingPatients;
     }
+
+    // Overload for compatibility with default room 1
+    public List<WaitingPatient> getWaitingPatients() {
+        return getWaitingPatients(1);
+    }
+
 
     public List<DateItem> getAvailableDates() {
         List<DateItem> dateItems = new ArrayList<>();
@@ -80,5 +100,9 @@ public class PatientRepository {
             slots.add(new TimeSlot(times[i], isAvailable, isSelected));
         }
         return slots;
+    }
+
+    public long addAppointment(int customerId, int doctorId, int serviceId, String datetime, String notes) {
+        return dbHelper.addAppointment(customerId, doctorId, serviceId, datetime, notes);
     }
 }

@@ -1,6 +1,7 @@
 package com.example.phongkham_app.data.model;
 
 public class Service {
+    private int id;
     private String name;
     private boolean enabled;
     private String price;
@@ -9,10 +10,11 @@ public class Service {
     public Service() {
     }
 
-    public Service(String name, boolean enabled) {
+    public Service(int id, String name, boolean enabled, String price) {
+        this.id = id;
         this.name = name;
         this.enabled = enabled;
-        this.price = "500,000 VNĐ";
+        this.price = price;
     }
 
     public Service(String name, boolean enabled, String price) {
@@ -59,4 +61,7 @@ public class Service {
     public void setIconResId(int iconResId) {
         this.iconResId = iconResId;
     }
+
+    public int getId() { return id; }
+    public void setId(int id) { this.id = id; }
 }

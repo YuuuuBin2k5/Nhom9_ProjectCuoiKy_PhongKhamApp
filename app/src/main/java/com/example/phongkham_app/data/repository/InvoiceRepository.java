@@ -5,14 +5,20 @@ import com.example.phongkham_app.data.model.Invoice;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.phongkham_app.data.local.DatabaseHelper;
+import android.content.Context;
+
 public class InvoiceRepository {
     private static InvoiceRepository instance;
+    private DatabaseHelper dbHelper;
 
-    private InvoiceRepository() {}
+    private InvoiceRepository(Context context) {
+        dbHelper = new DatabaseHelper(context);
+    }
 
-    public static synchronized InvoiceRepository getInstance() {
+    public static synchronized InvoiceRepository getInstance(Context context) {
         if (instance == null) {
-            instance = new InvoiceRepository();
+            instance = new InvoiceRepository(context.getApplicationContext());
         }
         return instance;
     }

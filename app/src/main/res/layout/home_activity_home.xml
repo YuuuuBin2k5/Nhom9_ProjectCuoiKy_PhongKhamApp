@@ -86,6 +86,28 @@
                 android:backgroundTint="#3A7CA5"
                 android:background="@drawable/rounded_button"/>
 
+            <Button
+                android:id="@+id/btn_qr_scan"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="Quét QR Check-in"
+                android:textSize="18sp"
+                android:textColor="#FFFFFF"
+                android:layout_marginTop="10dp"
+                android:backgroundTint="#2E8B57"
+                android:background="@drawable/rounded_button"/>
+
+            <Button
+                android:id="@+id/btn_qr_code"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:text="Mã QR Check-in Của Tôi"
+                android:textSize="18sp"
+                android:textColor="#FFFFFF"
+                android:layout_marginTop="10dp"
+                android:backgroundTint="#3A7CA5"
+                android:background="@drawable/rounded_button"/>
+
 
             <!-- Cuoc hen -->
             <LinearLayout

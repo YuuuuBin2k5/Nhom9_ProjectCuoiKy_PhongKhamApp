@@ -3,6 +3,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="com.example.phongkham_app">
 
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -12,40 +15,53 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.PhongKham_App">
-        <activity android:name=".auth.SplashActivity" android:exported="true">
+        <activity android:name=".ui.auth.SplashActivity" android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".auth.LoginActivity" android:exported="false" />
-        <activity android:name=".auth.RegisterActivity" android:exported="false" />
+        <activity android:name=".ui.auth.LoginActivity" android:exported="false" />
+        <activity android:name=".ui.auth.RegisterActivity" android:exported="false" />
 
-        <activity android:name=".admin.AddDoctorActivity" android:exported="false" />
-        <activity android:name=".admin.AddServiceActivity" android:exported="false" />
-        <activity android:name=".admin.InvoiceDetailActivity" android:exported="false" />
-        <activity android:name=".admin.MainActivity" android:exported="false" />
-        <activity android:name=".admin.ManageDoctorsActivity" android:exported="false" />
-        <activity android:name=".admin.ManageInvoicesActivity" android:exported="false" />
-        <activity android:name=".admin.ManageServicesActivity" android:exported="false" />
-        <activity android:name=".admin.ManageShiftsActivity" android:exported="false" />
-        <activity android:name=".admin.ServiceDetailActivity" android:exported="false" />
-        <activity android:name=".doctor.MainDoctor" android:exported="false" />
-        <activity android:name=".doctor.MedicalRecordActivity" android:exported="false" />
-        <activity android:name=".doctor.PrescriptionActivity" android:exported="false" />
-        <activity android:name=".doctor.ProfilePatient" android:exported="false" />
-        <activity android:name=".doctor.UpdatePrescriptionActivity" android:exported="false" />
-        <activity android:name=".doctor.UpdateRecordActivity" android:exported="false" />
-        <activity android:name=".patient.BookingActivity" android:exported="false" />
-        <activity android:name=".patient.DoctorDetailActivity" android:exported="false" />
-        <activity android:name=".patient.DoctorReviewActivity" android:exported="false" />
-        <activity android:name=".patient.Home_Activity_Home" android:exported="false" />
-        <activity android:name=".patient.MedicalDetailActivity" android:exported="false" />
-        <activity android:name=".patient.MedicalRecordActivity" android:exported="false" />
-        <activity android:name=".patient.HomeServiceActivity" android:exported="false" />
-        <activity android:name=".patient.HomeDoctorActivity" android:exported="false" />
-        <activity android:name=".patient.SettingsPatientActivity" />
-        <activity android:name=".doctor.SettingsDoctorActivity" />
-        <activity android:name=".admin.SettingsAdminActivity" />
+        <activity android:name=".ui.admin.AddDoctorActivity" android:exported="false" />
+        <activity android:name=".ui.admin.AddServiceActivity" android:exported="false" />
+        <activity android:name=".ui.admin.InvoiceDetailActivity" android:exported="false" />
+
+        <activity android:name=".ui.admin.ManageDoctorsActivity" android:exported="false" />
+        <activity android:name=".ui.admin.ManageInvoicesActivity" android:exported="false" />
+        <activity android:name=".ui.admin.ManageServicesActivity" android:exported="false" />
+        <activity android:name=".ui.admin.ManageShiftsActivity" android:exported="false" />
+        <activity android:name=".ui.admin.ServiceDetailActivity" android:exported="false" />
+        <activity android:name=".ui.doctor.MainDoctor" android:exported="false" />
+        <activity android:name=".ui.doctor.MedicalRecordActivity" android:exported="false" />
+        <activity android:name=".ui.doctor.PrescriptionActivity" android:exported="false" />
+        <activity android:name=".ui.doctor.ProfilePatient" android:exported="false" />
+        <activity android:name=".ui.doctor.UpdatePrescriptionActivity" android:exported="false" />
+        <activity android:name=".ui.doctor.UpdateRecordActivity" android:exported="false" />
+        <activity android:name=".ui.patient.BookingActivity" android:exported="false" />
+        <activity android:name=".ui.patient.DoctorDetailActivity" android:exported="false" />
+        <activity android:name=".ui.patient.DoctorReviewActivity" android:exported="false" />
+        <activity android:name=".ui.patient.Home_Activity_Home" android:exported="false" />
+        <activity android:name=".ui.patient.MedicalDetailActivity" android:exported="false" />
+        <activity android:name=".ui.patient.MedicalRecordActivity" android:exported="false" />
+        <activity android:name=".ui.patient.HomeServiceActivity" android:exported="false" />
+        <activity android:name=".ui.patient.HomeDoctorActivity" android:exported="false" />
+        <activity android:name=".ui.patient.SettingsPatientActivity" />
+        <activity android:name=".ui.doctor.SettingsDoctorActivity" />
+        <activity android:name=".ui.admin.SettingsAdminActivity" />
+        <activity android:name=".ui.admin.AdminHomeActivity" android:exported="false" />
+        <activity android:name=".ui.admin.AdminRoomActivity" android:exported="false" />
+        <activity android:name=".ui.admin.AdminServiceActivity" android:exported="false" />
+
+        <!-- QR Activities -->
+        <activity android:name=".ui.common.QRScanActivity" android:exported="false" />
+        <activity android:name=".ui.common.QRGenerateActivity" android:exported="false" />
+        <activity android:name=".ui.common.CaptureActivityPortrait" android:screenOrientation="portrait" android:stateNotNeeded="true" />
+
+        <!-- Queue Management -->
+        <activity android:name=".ui.patient.WaitingStatusActivity" android:exported="false" />
+        <service android:name=".service.QueueBackgroundService" android:foregroundServiceType="dataSync" android:exported="false" />
+
     </application>
 </manifest>

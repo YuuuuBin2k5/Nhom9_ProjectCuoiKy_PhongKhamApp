@@ -94,7 +94,7 @@
             android:layout_height="64dp"
             android:gravity="center_vertical|start"
             android:paddingStart="24dp"
-            android:text="Hồ sơ bệnh án"
+            android:text="Khám bệnh &amp; Cập nhật"
             android:textColor="#193469"
             android:textSize="16sp"
             android:textStyle="bold"

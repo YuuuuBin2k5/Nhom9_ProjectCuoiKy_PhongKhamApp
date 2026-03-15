@@ -5,25 +5,42 @@ import com.example.phongkham_app.data.model.Doctor;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.phongkham_app.data.local.DatabaseHelper;
+import android.content.Context;
+import android.database.Cursor;
+
 public class DoctorRepository {
     private static DoctorRepository instance;
+    private DatabaseHelper dbHelper;
 
-    private DoctorRepository() {}
+    private DoctorRepository(Context context) {
+        dbHelper = new DatabaseHelper(context);
+    }
 
-    public static synchronized DoctorRepository getInstance() {
+    public static synchronized DoctorRepository getInstance(Context context) {
         if (instance == null) {
-            instance = new DoctorRepository();
+            instance = new DoctorRepository(context.getApplicationContext());
         }
         return instance;
     }
 
     public List<Doctor> getDoctors() {
         List<Doctor> doctors = new ArrayList<>();
-        doctors.add(new Doctor("DOC_1", "BS. Trần Hoàng Nam", "Nội tổng quát", "0912345678", 4.5, 120, 0, false));
-        doctors.add(new Doctor("DOC_2", "BS. Lê Thị Mai Anh", "Tim mạch", "0923456789", 4.8, 250, 0, true));
-        doctors.add(new Doctor("DOC_3", "BS. Phạm Minh Tuấn", "Thần kinh", "0934567890", 4.2, 85, 0, false));
-        doctors.add(new Doctor("DOC_4", "BS. Nguyễn Thùy Linh", "Da liễu", "0945678901", 4.9, 310, 0, true));
-        doctors.add(new Doctor("DOC_5", "BS. Võ Đức Hải", "Ngoại khoa", "0956789012", 4.6, 175, 0, false));
+        Cursor cursor = dbHelper.getAllDoctors();
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                int idIndex = cursor.getColumnIndex("id");
+                int nameIndex = cursor.getColumnIndex("name");
+                int specialtyIndex = cursor.getColumnIndex("specialty");
+                
+                String id = idIndex != -1 ? String.valueOf(cursor.getInt(idIndex)) : "0";
+                String name = nameIndex != -1 ? cursor.getString(nameIndex) : "Unknown";
+                String specialty = specialtyIndex != -1 ? cursor.getString(specialtyIndex) : "General";
+                
+                doctors.add(new Doctor(id, "BS. " + name, specialty, "", 4.5, 100, 0, false));
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
         return doctors;
     }
 

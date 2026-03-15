@@ -5,25 +5,43 @@ import com.example.phongkham_app.data.model.Service;
 import java.util.ArrayList;
 import java.util.List;
 
+import com.example.phongkham_app.data.local.DatabaseHelper;
+import android.content.Context;
+import android.database.Cursor;
+
 public class ServiceRepository {
     private static ServiceRepository instance;
+    private DatabaseHelper dbHelper;
 
-    private ServiceRepository() {}
+    private ServiceRepository(Context context) {
+        dbHelper = new DatabaseHelper(context);
+    }
 
-    public static synchronized ServiceRepository getInstance() {
+    public static synchronized ServiceRepository getInstance(Context context) {
         if (instance == null) {
-            instance = new ServiceRepository();
+            instance = new ServiceRepository(context.getApplicationContext());
         }
         return instance;
     }
 
     public List<Service> getServices() {
         List<Service> services = new ArrayList<>();
-        services.add(new Service("Khám tổng quát", true, "200,000 VNĐ"));
-        services.add(new Service("Khám chuyên khoa", true, "500,000 VNĐ"));
-        services.add(new Service("Xét nghiệm máu", true, "300,000 VNĐ"));
-        services.add(new Service("Siêu âm", true, "400,000 VNĐ"));
-        services.add(new Service("Chụp X-Quang", true, "350,000 VNĐ"));
+        Cursor cursor = dbHelper.getAllServices();
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                int idIndex = cursor.getColumnIndex("id");
+                int nameIndex = cursor.getColumnIndex("name");
+                int priceIndex = cursor.getColumnIndex("price");
+                
+                int id = idIndex != -1 ? cursor.getInt(idIndex) : 0;
+                String name = nameIndex != -1 ? cursor.getString(nameIndex) : "Unknown";
+                double priceVal = priceIndex != -1 ? cursor.getDouble(priceIndex) : 0.0;
+                String priceStr = String.format("%,.0f VNĐ", priceVal);
+                
+                services.add(new Service(id, name, true, priceStr));
+            } while (cursor.moveToNext());
+            cursor.close();
+        }
         return services;
     }
 }
