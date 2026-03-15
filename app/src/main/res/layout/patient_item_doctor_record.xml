@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_md"
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="@dimen/radius_lg"
+    app:cardElevation="2dp"
+    app:rippleColor="@color/ripple_primary">
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="@dimen/spacing_lg">
+
+        <!-- Doctor Avatar -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/ivDoctorAvatar"
+            android:layout_width="@dimen/avatar_md"
+            android:layout_height="@dimen/avatar_md"
+            android:background="@color/primary_surface"
+            android:padding="@dimen/spacing_sm"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_profile"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.MedicalApp.Circle"
+            tools:ignore="ContentDescription" />
+
+        <!-- Heart / Favorite Icon -->
+        <ImageView
+            android:id="@+id/ivFavorite"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:contentDescription="@string/cd_favorite"
+            android:padding="@dimen/spacing_xs"
+            android:src="@drawable/ic_heart"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Doctor Name -->
+        <TextView
+            android:id="@+id/tvDoctorName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:layout_marginEnd="@dimen/spacing_xxxl"
+            android:textColor="@color/primary"
+            android:textSize="@dimen/text_subtitle"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ivDoctorAvatar"
+            app:layout_constraintTop_toTopOf="@id/ivDoctorAvatar"
+            tools:text="BS. Trần Hoàng Nam" />
+
+        <!-- Specialty -->
+        <TextView
+            android:id="@+id/tvSpecialty"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:layout_marginTop="2dp"
+            android:textColor="@color/text_secondary"
+            android:textSize="@dimen/text_body"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ivDoctorAvatar"
+            app:layout_constraintTop_toBottomOf="@id/tvDoctorName"
+            tools:text="Nội tổng quát" />
+
+        <!-- Rating Row -->
+        <LinearLayout
+            android:id="@+id/layoutRating"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/spacing_md"
+            android:layout_marginTop="@dimen/spacing_sm"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/ivDoctorAvatar"
+            app:layout_constraintTop_toBottomOf="@id/tvSpecialty">
+
+            <ImageView
+                android:id="@+id/ivStar1"
+                android:layout_width="@dimen/star_size"
+                android:layout_height="@dimen/star_size"
+                android:src="@drawable/ic_star_filled"
+                tools:ignore="ContentDescription" />
+
+            <ImageView
+                android:id="@+id/ivStar2"
+                android:layout_width="@dimen/star_size"
+                android:layout_height="@dimen/star_size"
+                android:layout_marginStart="2dp"
+                android:src="@drawable/ic_star_filled"
+                tools:ignore="ContentDescription" />
+
+            <ImageView
+                android:id="@+id/ivStar3"
+                android:layout_width="@dimen/star_size"
+                android:layout_height="@dimen/star_size"
+                android:layout_marginStart="2dp"
+                android:src="@drawable/ic_star_filled"
+                tools:ignore="ContentDescription" />
+
+            <ImageView
+                android:id="@+id/ivStar4"
+                android:layout_width="@dimen/star_size"
+                android:layout_height="@dimen/star_size"
+                android:layout_marginStart="2dp"
+                android:src="@drawable/ic_star_filled"
+                tools:ignore="ContentDescription" />
+
+            <ImageView
+                android:id="@+id/ivStar5"
+                android:layout_width="@dimen/star_size"
+                android:layout_height="@dimen/star_size"
+                android:layout_marginStart="2dp"
+                android:src="@drawable/ic_star_empty"
+                tools:ignore="ContentDescription" />
+
+            <TextView
+                android:id="@+id/tvRating"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="@dimen/spacing_sm"
+                android:textColor="@color/text_secondary"
+                android:textSize="@dimen/text_body"
+                tools:text="4.5" />
+        </LinearLayout>
+
+        <!-- Divider -->
+        <View
+            android:id="@+id/divider"
+            android:layout_width="0dp"
+            android:layout_height="1dp"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:background="@color/divider"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layoutRating" />
+
+        <!-- Action Buttons Row -->
+        <LinearLayout
+            android:id="@+id/layoutButtons"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/spacing_md"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/divider">
+
+            <!-- Button Xem chi tiết: Đã thêm text và sửa màu chữ cho nổi bật trên nền xanh -->
+            <Button
+                android:id="@+id/btnViewDetail"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginEnd="@dimen/spacing_sm"
+                android:layout_weight="1"
+                android:background="@drawable/bg_rounded_button"
+                android:text="Xem chi tiết"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_body_lg"
+                android:textStyle="bold" />
+
+            <Button
+                android:id="@+id/btnAddReview"
+                android:layout_width="0dp"
+                android:layout_height="@dimen/button_height"
+                android:layout_marginStart="@dimen/spacing_sm"
+                android:layout_weight="1"
+                android:background="@drawable/bg_rounded_button"
+                android:text="@string/btn_add_review"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="@dimen/text_body_lg"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+</com.google.android.material.card.MaterialCardView>

@@ -1,0 +1,109 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  File: item_upcoming_schedule.xml
+  Mô tả: Layout cho một item trong danh sách Lịch hẹn sắp tới (cuộn ngang).
+-->
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="280dp"
+    android:layout_height="wrap_content"
+    android:layout_marginStart="16dp"
+    android:layout_marginTop="8dp"
+    android:layout_marginEnd="4dp"
+    android:layout_marginBottom="8dp"
+    app:cardBackgroundColor="@color/primaryBlue"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp">
+
+    <!-- Khối layout chính bên trong thẻ -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="16dp">
+
+        <!-- Avatar của bệnh nhân -->
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/imgPatientAvatar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_placeholder_avatar"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:shapeAppearanceOverlay="@style/RoundedFull" />
+
+        <!-- Khối thông tin bệnh nhân -->
+        <TextView
+            android:id="@+id/tvPatientName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android.ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/textOnPrimary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toEndOf="@id/imgPatientAvatar"
+            app:layout_constraintTop_toTopOf="@id/imgPatientAvatar"
+            tools:text="Lê Thị C" />
+
+        <TextView
+            android:id="@+id/tvServiceType"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:alpha="0.8"
+            android:textColor="@color/textOnPrimary"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="@id/tvPatientName"
+            app:layout_constraintStart_toStartOf="@id/tvPatientName"
+            app:layout_constraintTop_toBottomOf="@id/tvPatientName"
+            tools:text="Khám chuyên khoa" />
+
+        <!-- Khối thông tin ngày giờ khám -->
+        <TextView
+            android:id="@+id/tvAppointmentDate"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:drawablePadding="8dp"
+            android:gravity="center_vertical"
+            android:textColor="@color/textOnPrimary"
+            android:textSize="14sp"
+            app:drawableStartCompat="@drawable/ic_schedule"
+            app:drawableTint="@color/white"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/imgPatientAvatar"
+            tools:text="25/05/2024" />
+
+        <TextView
+            android:id="@+id/tvAppointmentTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/textOnPrimary"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvAppointmentDate"
+            tools:text="10:30 AM - 10:45 AM" />
+
+        <!-- Icon tin nhắn -->
+        <ImageView
+            android:id="@+id/iconMessage"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:padding="4dp"
+            android:src="@drawable/ic_chat"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:tint="@color/white" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</com.google.android.material.card.MaterialCardView>

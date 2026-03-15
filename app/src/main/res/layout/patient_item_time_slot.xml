@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="@dimen/spacing_xs">
+
+    <TextView
+        android:id="@+id/tvTimeSlot"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/time_slot_height"
+        android:background="@drawable/bg_time_slot_default"
+        android:gravity="center"
+        android:textColor="@color/text_primary"
+        android:textSize="@dimen/text_body_lg"
+        tools:text="09:00 AM" />
+
+</FrameLayout>
