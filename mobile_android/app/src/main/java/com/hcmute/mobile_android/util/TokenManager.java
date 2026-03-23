@@ -12,6 +12,7 @@ import java.security.GeneralSecurityException;
 public class TokenManager {
     private static final String PREF_NAME = "secure_prefs";
     private static final String KEY_TOKEN = "jwt_token";
+    private static final String KEY_PATIENT_ID = "patient_id";
     private SharedPreferences sharedPreferences;
 
     public TokenManager(Context context) {
@@ -43,9 +44,20 @@ public class TokenManager {
         return sharedPreferences == null ? null : sharedPreferences.getString(KEY_TOKEN, null);
     }
 
+    public void savePatientId(Long id) {
+        if (sharedPreferences == null || id == null) return;
+        sharedPreferences.edit().putLong(KEY_PATIENT_ID, id).apply();
+    }
+
+    public Long getPatientId() {
+        if (sharedPreferences == null) return -1L;
+        long id = sharedPreferences.getLong(KEY_PATIENT_ID, -1L);
+        return id == -1L ? null : id;
+    }
+
     public void clearToken() {
         if (sharedPreferences != null) {
-            sharedPreferences.edit().remove(KEY_TOKEN).apply();
+            sharedPreferences.edit().remove(KEY_TOKEN).remove(KEY_PATIENT_ID).apply();
         }
     }
 }

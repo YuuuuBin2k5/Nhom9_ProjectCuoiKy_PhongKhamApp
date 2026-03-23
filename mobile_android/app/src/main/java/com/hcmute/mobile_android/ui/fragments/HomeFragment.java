@@ -26,6 +26,7 @@ import com.hcmute.mobile_android.network.models.PatientMeResponse;
 import com.hcmute.mobile_android.network.models.ServiceItem;
 import com.hcmute.mobile_android.network.models.UpcomingAppointment;
 import com.hcmute.mobile_android.ui.activities.AppointmentDetailActivity;
+import com.hcmute.mobile_android.ui.activities.BookAppointmentActivity;
 import com.hcmute.mobile_android.ui.activities.GenericListActivity;
 import com.hcmute.mobile_android.ui.activities.LoginActivity;
 import com.hcmute.mobile_android.ui.activities.MainActivity;
@@ -447,7 +448,12 @@ public class HomeFragment extends Fragment {
                 selectedPosition = position;
                 notifyItemChanged(oldPos);
                 notifyItemChanged(selectedPosition);
-                filterServices(cat);
+
+                // Navigate to BookAppointmentActivity
+                Intent intent = new Intent(v.getContext(), BookAppointmentActivity.class);
+                String catArg = cat.equals("All") ? "" : cat;
+                intent.putExtra(BookAppointmentActivity.EXTRA_CATEGORY, catArg);
+                v.getContext().startActivity(intent);
             });
         }
 

@@ -109,6 +109,10 @@
         <activity
             android:name=".ui.activities.EmrActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.activities.BookAppointmentActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden|adjustResize"/>
     </application>
 
 </manifest>

@@ -17,6 +17,8 @@ public class DoctorItem {
     private String roomName;
     @SerializedName("experienceYears")
     private Integer experienceYears;
+    @SerializedName("appointmentCount")
+    private int appointmentCount;
 
     public Long getId() { return id; }
     public String getFirstName() { return firstName; }
@@ -25,6 +27,7 @@ public class DoctorItem {
     public String getSpecialization() { return specialization; }
     public String getRoomName() { return roomName; }
     public Integer getExperienceYears() { return experienceYears; }
+    public int getAppointmentCount() { return appointmentCount; }
 
     public String getSpecialty() { return specialization; }
 

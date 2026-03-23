@@ -1,5 +1,8 @@
 package com.hcmute.mobile_android.ui.fragments;
 
+import com.hcmute.mobile_android.ui.activities.AppointmentDetailActivity;
+import com.hcmute.mobile_android.util.TokenManager;
+
 import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -87,7 +90,6 @@ public class PatientDashboardFragment extends Fragment {
         
         initViews(view);
         setupAdapters();
-        loadPatientData();
     }
 
     private void initViews(View view) {
@@ -146,6 +148,15 @@ public class PatientDashboardFragment extends Fragment {
         rvUpcomingAppointments.setAdapter(appointmentAdapter);
     }
 
+    @Override
+    public void onResume() {
+        super.onResume();
+        // Load data on resume to ensure it's fresh after returning from other activities
+        if (apiService != null) {
+            loadPatientData();
+        }
+    }
+
     private void loadPatientData() {
         if (!isAdded()) return;
         swipeRefresh.setRefreshing(true);
@@ -163,6 +174,9 @@ public class PatientDashboardFragment extends Fragment {
                 if (!isAdded()) return;
                 if (response.isSuccessful() && response.body() != null) {
                     currentPatient = response.body();
+                    if (currentPatient.getId() != null) {
+                        new TokenManager(requireContext()).savePatientId(currentPatient.getId());
+                    }
                     String fullName = (currentPatient.getLastName() + " " + currentPatient.getFirstName()).trim();
                     tvPatientName.setText("Hi " + fullName + " \uD83D\uDC4B");
                     
@@ -292,7 +306,13 @@ public class PatientDashboardFragment extends Fragment {
 
     private void onAppointmentClick(UpcomingAppointment appointment) {
         if (isAdded()) {
-            // TODO: Open appointment detail
+            Intent intent = new Intent(requireContext(), AppointmentDetailActivity.class);
+            intent.putExtra("appointmentId", appointment.getId());
+            intent.putExtra("datetime", appointment.getAppointmentTime());
+            intent.putExtra("serviceName", appointment.getServiceName());
+            intent.putExtra("doctorName", appointment.getDoctorName());
+            intent.putExtra("status", appointment.getStatus());
+            startActivity(intent);
         }
     }
 
@@ -465,11 +485,14 @@ public class PatientDashboardFragment extends Fragment {
             }
 
             holder.itemView.setOnClickListener(v -> {
+                int currentPos = holder.getAdapterPosition();
+                if (currentPos == RecyclerView.NO_POSITION) return;
+                
                 int oldPos = selectedPosition;
-                selectedPosition = position;
+                selectedPosition = currentPos;
                 notifyItemChanged(oldPos);
                 notifyItemChanged(selectedPosition);
-                filterServices(cat);
+                filterServices(items.get(currentPos));
             });
         }
 

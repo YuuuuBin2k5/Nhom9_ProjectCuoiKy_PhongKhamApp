@@ -1,6 +1,7 @@
 package com.hcmute.mobile_android.network;
 
 import com.hcmute.mobile_android.network.models.CheckInMyStatusResponse;
+import com.hcmute.mobile_android.network.models.CreateAppointmentRequest;
 import com.hcmute.mobile_android.network.models.CreateDoctorRequest;
 import com.hcmute.mobile_android.network.models.LoginRequest;
 import com.hcmute.mobile_android.network.models.PatientMeResponse;
@@ -57,6 +58,12 @@ public interface ApiService {
 
     @GET("api/doctors")
     Call<List<com.hcmute.mobile_android.network.models.DoctorItem>> getDoctors();
+
+    @GET("api/doctors")
+    Call<List<com.hcmute.mobile_android.network.models.DoctorItem>> getDoctorsByService(@Query("serviceId") Long serviceId);
+
+    @POST("api/appointments")
+    Call<com.hcmute.mobile_android.network.models.UpcomingAppointment> createAppointment(@Body CreateAppointmentRequest request);
 
     @POST("api/auth/otp/request")
     Call<MessageResponse> requestOtp(@Body OtpRequest request);

@@ -121,15 +121,58 @@
                 android:layout_height="56dp"
                 android:background="@drawable/bg_spinner_modern"
                 android:paddingHorizontal="16dp"
-                android:layout_marginBottom="120dp">
-                
+                android:layout_marginBottom="24dp">
+
                 <Spinner
                     android:id="@+id/spinnerDoctors"
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:background="@null" />
-                    
             </RelativeLayout>
+
+            <!-- Date & Time Picker Row -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Chọn ngày &amp; giờ khám"
+                android:textSize="14sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="8dp" />
+
+            <LinearLayout
+                android:id="@+id/ll_datetime_picker"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:background="@drawable/bg_spinner_modern"
+                android:paddingHorizontal="16dp"
+                android:layout_marginBottom="120dp"
+                android:clickable="true"
+                android:focusable="true">
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_calendar"
+                    app:tint="@color/primary_trust_blue"
+                    android:layout_marginEnd="12dp"/>
+
+                <TextView
+                    android:id="@+id/tv_datetime_selected"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Nhấn để chọn ngày &amp; giờ"
+                    android:textSize="15sp"
+                    android:textColor="@color/text_secondary"/>
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:src="@android:drawable/ic_menu_agenda"
+                    app:tint="#BDBDBD"/>
+            </LinearLayout>
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
