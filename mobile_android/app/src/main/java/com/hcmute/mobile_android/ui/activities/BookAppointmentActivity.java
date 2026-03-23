@@ -255,28 +255,45 @@ public class BookAppointmentActivity extends AppCompatActivity {
         Calendar now = Calendar.getInstance();
         DatePickerDialog datePicker = new DatePickerDialog(this,
                 (view, year, month, dayOfMonth) -> {
-                    TimePickerDialog timePicker = new TimePickerDialog(this,
-                            (timeView, hourOfDay, minute) -> {
-                                // Định dạng có dấu cách để khớp với DB
-                                selectedDatetime = String.format(Locale.getDefault(),
-                                        "%04d-%02d-%02d %02d:%02d:00",
-                                        year, month + 1, dayOfMonth, hourOfDay, minute);
-                                String display = String.format(Locale.getDefault(),
-                                        "%02d/%02d/%04d  %02d:%02d",
-                                        dayOfMonth, month + 1, year, hourOfDay, minute);
-                                tvDatetime.setText(display);
-                                tvDatetime.setTextColor(0xFF1A1A1A);
-                            },
-                            now.get(Calendar.HOUR_OF_DAY),
-                            now.get(Calendar.MINUTE),
-                            true);
-                    timePicker.show();
+                    showTimePicker(year, month, dayOfMonth);
                 },
                 now.get(Calendar.YEAR),
                 now.get(Calendar.MONTH),
                 now.get(Calendar.DAY_OF_MONTH));
         datePicker.getDatePicker().setMinDate(now.getTimeInMillis());
         datePicker.show();
+    }
+
+    private void showTimePicker(int year, int month, int dayOfMonth) {
+        Calendar now = Calendar.getInstance();
+        TimePickerDialog timePicker = new TimePickerDialog(this,
+                (timeView, hourOfDay, minute) -> {
+                    int totalMinutes = hourOfDay * 60 + minute;
+                    int startMinutes = 8 * 60; // 08:00
+                    int endMinutes = 16 * 60 + 40; // 16:40
+
+                    if (totalMinutes < startMinutes || totalMinutes > endMinutes) {
+                        Toast.makeText(this, "Vui lòng chọn từ 08:00 đến 16:40", Toast.LENGTH_LONG).show();
+                        // Re-open the time picker
+                        showTimePicker(year, month, dayOfMonth);
+                        return;
+                    }
+
+                    // Format for DB
+                    selectedDatetime = String.format(Locale.getDefault(),
+                            "%04d-%02d-%02d %02d:%02d:00",
+                            year, month + 1, dayOfMonth, hourOfDay, minute);
+                    // Format for display
+                    String display = String.format(Locale.getDefault(),
+                            "%02d/%02d/%04d  %02d:%02d",
+                            dayOfMonth, month + 1, year, hourOfDay, minute);
+                    tvDatetime.setText(display);
+                    tvDatetime.setTextColor(0xFF1A1A1A);
+                },
+                now.get(Calendar.HOUR_OF_DAY),
+                now.get(Calendar.MINUTE),
+                true);
+        timePicker.show();
     }
 
     private void submitBooking() {
@@ -291,6 +308,26 @@ public class BookAppointmentActivity extends AppCompatActivity {
         if (selectedDatetime == null) {
             Toast.makeText(this, "Vui lòng chọn ngày và giờ khám", Toast.LENGTH_SHORT).show();
             return;
+        }
+
+        // Validate time range (08:00 - 16:40)
+        try {
+            // Extract time from YYYY-MM-DD HH:mm:ss
+            String timePart = selectedDatetime.substring(11, 16); // "HH:mm"
+            String[] parts = timePart.split(":");
+            int hour = Integer.parseInt(parts[0]);
+            int minute = Integer.parseInt(parts[1]);
+            int totalMinutes = hour * 60 + minute;
+            
+            int startMinutes = 8 * 60; // 08:00
+            int endMinutes = 16 * 60 + 40; // 16:40
+            
+            if (totalMinutes < startMinutes || totalMinutes > endMinutes) {
+                Toast.makeText(this, "Thời gian đặt lịch phải từ 08:00 đến 16:40", Toast.LENGTH_LONG).show();
+                return;
+            }
+        } catch (Exception e) {
+            // Fallback to backend validation if parsing fails locally
         }
 
         btnBook.setEnabled(false);

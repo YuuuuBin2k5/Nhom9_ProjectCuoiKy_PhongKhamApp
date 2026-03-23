@@ -186,20 +186,37 @@ public class ServiceDetailActivity extends AppCompatActivity {
     private void pickDatetime() {
         Calendar now = Calendar.getInstance();
         new DatePickerDialog(this, (view, year, month, day) ->
-                new TimePickerDialog(this, (tv, hour, minute) -> {
-                    // Cập nhật định dạng chuẩn ISO (có chữ T) để Backend Spring Boot parse được
-                    selectedDatetime = String.format(Locale.getDefault(),
-                            "%04d-%02d-%02d %02d:%02d:00",
-                            year, month + 1, day, hour, minute);
-                    String display = String.format(Locale.getDefault(),
-                            "%02d/%02d/%04d  •  %02d:%02d",
-                            day, month + 1, year, hour, minute);
-                    tvDatetimeSelected.setText(display);
-                    tvDatetimeSelected.setTextColor(0xFF1A1A1A);
-                }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true).show(),
+                showTimePicker(year, month, day),
                 now.get(Calendar.YEAR), now.get(Calendar.MONTH), now.get(Calendar.DAY_OF_MONTH))
             {{ getDatePicker().setMinDate(now.getTimeInMillis()); }}
             .show();
+    }
+
+    private void showTimePicker(int year, int month, int day) {
+        Calendar now = Calendar.getInstance();
+        new TimePickerDialog(this, (tv, hour, minute) -> {
+            int totalMin = hour * 60 + minute;
+            int startMin = 8 * 60; // 08:00
+            int endMin = 16 * 60 + 40; // 16:40
+
+            if (totalMin < startMin || totalMin > endMin) {
+                Toast.makeText(this, "Vui lòng chọn từ 08:00 đến 16:40", Toast.LENGTH_LONG).show();
+                // Re-open the time picker
+                showTimePicker(year, month, day);
+                return;
+            }
+
+            // Update ISO format for Backend
+            selectedDatetime = String.format(Locale.getDefault(),
+                    "%04d-%02d-%02d %02d:%02d:00",
+                    year, month + 1, day, hour, minute);
+            // Format for display
+            String display = String.format(Locale.getDefault(),
+                    "%02d/%02d/%04d  •  %02d:%02d",
+                    day, month + 1, year, hour, minute);
+            tvDatetimeSelected.setText(display);
+            tvDatetimeSelected.setTextColor(0xFF1A1A1A);
+        }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true).show();
     }
 
     // ─── Submit → POST api/appointments ──────────────────────────────────────

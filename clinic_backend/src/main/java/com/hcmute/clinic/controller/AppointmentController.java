@@ -81,7 +81,16 @@ public class AppointmentController {
                 return ResponseEntity.badRequest().body(Map.of("message", "Định dạng ngày giờ không hợp lệ: " + request.getAppointmentDatetime()));
             }
 
-            // 5. Create Appointment
+            // 5. Validate Time Range (08:00 - 16:40)
+            java.time.LocalTime time = appointmentTime.toLocalTime();
+            java.time.LocalTime start = java.time.LocalTime.of(8, 0);
+            java.time.LocalTime end = java.time.LocalTime.of(16, 40);
+            
+            if (time.isBefore(start) || time.isAfter(end)) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Thời gian đặt lịch phải từ 08:00 đến 16:40"));
+            }
+
+            // 6. Create Appointment
             BookingType bookingType = BookingType.ONLINE;
             if (request.getBookingType() != null) {
                 try {
