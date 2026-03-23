@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    
+    <!-- Semi-transparent overlay -->
+    <item>
+        <shape android:shape="rectangle">
+            <solid android:color="#80000000" />
+        </shape>
+    </item>
+    
+    <!-- Clear center square -->
+    <item android:gravity="center">
+        <shape android:shape="rectangle">
+            <size android:width="280dp" android:height="280dp" />
+            <solid android:color="@android:color/transparent" />
+            <stroke 
+                android:width="3dp" 
+                android:color="@color/primary_trust_blue"
+                android:dashWidth="20dp"
+                android:dashGap="10dp" />
+            <corners android:radius="16dp" />
+        </shape>
+    </item>
+    
+    <!-- Corner indicators -->
+    <item android:gravity="center">
+        <layer-list>
+            <!-- Top-left corner -->
+            <item android:gravity="top|left">
+                <shape android:shape="rectangle">
+                    <size android:width="40dp" android:height="40dp" />
+                    <solid android:color="@color/primary_trust_blue" />
+                    <corners 
+                        android:topLeftRadius="16dp"
+                        android:topRightRadius="0dp"
+                        android:bottomLeftRadius="0dp"
+                        android:bottomRightRadius="0dp" />
+                </shape>
+            </item>
+            
+            <!-- Top-right corner -->
+            <item android:gravity="top|right">
+                <shape android:shape="rectangle">
+                    <size android:width="40dp" android:height="40dp" />
+                    <solid android:color="@color/primary_trust_blue" />
+                    <corners 
+                        android:topLeftRadius="0dp"
+                        android:topRightRadius="16dp"
+                        android:bottomLeftRadius="0dp"
+                        android:bottomRightRadius="0dp" />
+                </shape>
+            </item>
+            
+            <!-- Bottom-left corner -->
+            <item android:gravity="bottom|left">
+                <shape android:shape="rectangle">
+                    <size android:width="40dp" android:height="40dp" />
+                    <solid android:color="@color/primary_trust_blue" />
+                    <corners 
+                        android:topLeftRadius="0dp"
+                        android:topRightRadius="0dp"
+                        android:bottomLeftRadius="16dp"
+                        android:bottomRightRadius="0dp" />
+                </shape>
+            </item>
+            
+            <!-- Bottom-right corner -->
+            <item android:gravity="bottom|right">
+                <shape android:shape="rectangle">
+                    <size android:width="40dp" android:height="40dp" />
+                    <solid android:color="@color/primary_trust_blue" />
+                    <corners 
+                        android:topLeftRadius="0dp"
+                        android:topRightRadius="0dp"
+                        android:bottomLeftRadius="0dp"
+                        android:bottomRightRadius="16dp" />
+                </shape>
+            </item>
+        </layer-list>
+    </item>
+    
+</layer-list>

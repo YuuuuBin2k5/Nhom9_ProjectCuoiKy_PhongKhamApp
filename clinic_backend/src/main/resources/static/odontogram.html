@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odontogram FDI — Sơ đồ răng</title>
+    <link rel="stylesheet" href="/css/design-tokens.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, sans-serif; padding: 24px; max-width: 560px; margin: 0 auto; background: var(--bg, #f9fafb); }
+        h2 { font-size: 1rem; color: var(--text-muted, #64748b); margin-bottom: 16px; }
+        .odontogram { display: flex; flex-direction: column; gap: 8px; }
+        .jaw { display: flex; justify-content: center; gap: 4px; flex-wrap: wrap; }
+        .tooth { width: 36px; height: 44px; border: 2px solid #cbd5e1; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s; background: white; }
+        .tooth:hover { border-color: var(--secondary); background: #f0fdf4; }
+        .tooth.selected { border-color: var(--secondary); background: #d1fae5; color: #065f46; }
+        .tooth[data-condition] { border-width: 3px; }
+        .tooth[data-condition="decay"] { border-color: #dc2626; background: #fee2e2; }
+        .tooth[data-condition="missing"] { border-color: #94a3b8; background: #f1f5f9; opacity: 0.7; }
+        .tooth[data-condition="filled"] { border-color: #0ea5e9; background: #e0f2fe; }
+        .tooth[data-condition="extract"] { border-color: #f59e0b; background: #fef3c7; }
+        .conditions { margin-top: 16px; display: flex; flex-wrap: wrap; gap: 8px; }
+        .cond-btn { padding: 8px 14px; font-size: 14px; border-radius: 8px; border: 2px solid #e2e8f0; background: white; cursor: pointer; }
+        .cond-btn:hover, .cond-btn.active { border-color: var(--secondary); background: #f0fdf4; }
+        .selected-list { margin-top: 16px; padding: 12px; background: #f8fafc; border-radius: 10px; font-size: 14px; }
+        .selected-list span { display: inline-block; margin: 4px; padding: 4px 10px; background: #e2e8f0; border-radius: 6px; }
+    </style>
+</head>
+<body>
+    <h2>Sơ đồ răng FDI — Chọn răng cần điều trị</h2>
+    <div class="odontogram">
+        <div class="jaw" id="upperLeft"><!-- 18-11 --></div>
+        <div class="jaw" id="upperRight"><!-- 21-28 --></div>
+        <div class="jaw" id="lowerLeft"><!-- 38-31 --></div>
+        <div class="jaw" id="lowerRight"><!-- 41-48 --></div>
+    </div>
+    <div class="conditions" id="conditions">
+        <button class="cond-btn" data-cond="decay">Sâu</button>
+        <button class="cond-btn" data-cond="filled">Trám</button>
+        <button class="cond-btn" data-cond="extract">Nhổ</button>
+        <button class="cond-btn" data-cond="missing">Mất</button>
+        <button class="cond-btn" data-cond="other">Khác</button>
+    </div>
+    <div class="selected-list" id="selectedList">Đã chọn: <span id="selectedItems">—</span></div>
+
+    <script>
+        const UPPER_LEFT = [18,17,16,15,14,13,12,11];
+        const UPPER_RIGHT = [21,22,23,24,25,26,27,28];
+        const LOWER_LEFT = [38,37,36,35,34,33,32,31];
+        const LOWER_RIGHT = [41,42,43,44,45,46,47,48];
+
+        let currentCondition = 'decay';
+        let selections = {}; // { "38": "decay", "37": "extract" }
+
+        function render() {
+            [['upperLeft',UPPER_LEFT], ['upperRight',UPPER_RIGHT], ['lowerLeft',LOWER_LEFT], ['lowerRight',LOWER_RIGHT]].forEach(([id, nums]) => {
+                const el = document.getElementById(id);
+                el.innerHTML = nums.map(n => {
+                    const cond = selections[String(n)] || '';
+                    return `<div class="tooth ${cond ? 'selected' : ''}" data-num="${n}" data-condition="${cond}">${n}</div>`;
+                }).join('');
+            });
+            document.querySelectorAll('.tooth').forEach(t => {
+                t.onclick = () => {
+                    const num = t.dataset.num;
+                    if (selections[num]) delete selections[num];
+                    else selections[num] = currentCondition;
+                    render();
+                    updateSelected();
+                };
+            });
+            document.querySelectorAll('.cond-btn').forEach(b => {
+                b.classList.toggle('active', b.dataset.cond === currentCondition);
+                b.onclick = () => { currentCondition = b.dataset.cond; render(); };
+            });
+        }
+
+        function updateSelected() {
+            const arr = Object.entries(selections).map(([n,c]) => `#${n} (${condLabel(c)})`);
+            document.getElementById('selectedItems').textContent = arr.length ? arr.join(', ') : '—';
+        }
+
+        function condLabel(c) {
+            return { decay: 'Sâu', filled: 'Trám', extract: 'Nhổ', missing: 'Mất', other: 'Khác' }[c] || c;
+        }
+
+        function getSelections() {
+            return Object.entries(selections).map(([toothNumber, condition]) => ({ toothNumber, condition }));
+        }
+
+        render();
+    </script>
+</body>
+</html>

@@ -1,0 +1,253 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:background="@color/background_gray">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:background="@color/primary_trust_blue"
+        android:gravity="center_vertical">
+
+        <ImageButton
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_back"
+            android:contentDescription="Quay lại"
+            app:tint="@android:color/white" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Trạng thái hàng đợi"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginStart="16dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnRefresh"
+            style="@style/Widget.Material3.Button.IconButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            app:icon="@drawable/ic_refresh"
+            app:iconTint="@android:color/white"
+            app:backgroundTint="@android:color/transparent"
+            android:contentDescription="Làm mới" />
+
+    </LinearLayout>
+
+    <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
+        android:id="@+id/swipeRefresh"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Queue Status Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardQueueStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="8dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="@color/border_gray">
+
+                    <LinearLayout
+                        android:id="@+id/layoutQueueInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="32dp"
+                        android:gravity="center"
+                        android:visibility="gone">
+
+                        <!-- Queue Number (Large) -->
+                        <TextView
+                            android:id="@+id/tvQueueNumber"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="15"
+                            android:textSize="72sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/primary_trust_blue"
+                            android:layout_marginBottom="8dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Số thứ tự của bạn"
+                            android:textSize="16sp"
+                            android:textColor="@color/text_secondary"
+                            android:layout_marginBottom="24dp" />
+
+                        <!-- Status -->
+                        <TextView
+                            android:id="@+id/tvStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Đang chờ khám"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary"
+                            android:layout_marginBottom="16dp" />
+
+                        <!-- Queue Info -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:background="@color/background_gray"
+                            android:padding="16dp"
+                            android:layout_marginTop="16dp">
+
+                            <TextView
+                                android:id="@+id/tvQueuePosition"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Vị trí: 5"
+                                android:textSize="16sp"
+                                android:textColor="@color/text_primary"
+                                android:layout_marginBottom="8dp"
+                                android:drawableStart="@drawable/ic_queue"
+                                android:drawablePadding="8dp"
+                                app:drawableTint="@color/text_secondary" />
+
+                            <TextView
+                                android:id="@+id/tvEstimatedTime"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Ước tính: 30 phút"
+                                android:textSize="16sp"
+                                android:textColor="@color/text_primary"
+                                android:layout_marginBottom="8dp"
+                                android:drawableStart="@drawable/ic_schedule"
+                                android:drawablePadding="8dp"
+                                app:drawableTint="@color/text_secondary" />
+
+                            <TextView
+                                android:id="@+id/tvRoomName"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Phòng khám 1"
+                                android:textSize="16sp"
+                                android:textColor="@color/text_primary"
+                                android:drawableStart="@drawable/ic_clinic"
+                                android:drawablePadding="8dp"
+                                app:drawableTint="@color/text_secondary" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <!-- Not Checked In Layout -->
+                    <LinearLayout
+                        android:id="@+id/layoutNotCheckedIn"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="32dp"
+                        android:gravity="center"
+                        android:visibility="visible">
+
+                        <ImageView
+                            android:layout_width="80dp"
+                            android:layout_height="80dp"
+                            android:src="@drawable/ic_qr_code"
+                            app:tint="@color/text_secondary"
+                            android:layout_marginBottom="16dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Chưa check-in"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary"
+                            android:layout_marginBottom="8dp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Vui lòng check-in để xem trạng thái hàng đợi"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary"
+                            android:textAlignment="center"
+                            android:layout_marginBottom="24dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Đi check-in"
+                            app:backgroundTint="@color/secondary_calm_teal"
+                            app:icon="@drawable/ic_qr_code"
+                            app:iconSize="18dp"
+                            android:onClick="finish" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Instructions Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="4dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Hướng dẫn"
+                            android:textSize="18sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_primary"
+                            android:layout_marginBottom="12dp" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="• Màn hình sẽ tự động cập nhật mỗi 30 giây\n• Kéo xuống để làm mới thủ công\n• Khi đến lượt, bạn sẽ nhận được thông báo\n• Vui lòng có mặt tại phòng khám đúng giờ"
+                            android:textSize="14sp"
+                            android:textColor="@color/text_secondary"
+                            android:lineSpacingExtra="4dp" />
+
+                    </LinearLayout>
+
+                </com.google.android.material.card.MaterialCardView>
+
+            </LinearLayout>
+
+        </ScrollView>
+
+    </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
+
+</LinearLayout>

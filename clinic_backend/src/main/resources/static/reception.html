@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lễ tân — Phòng khám</title>
+    <link rel="stylesheet" href="/css/design-tokens.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, sans-serif; padding: 24px; max-width: 900px; margin: 0 auto; background: var(--bg, #f9fafb); }
+        h1 { font-size: 1.5rem; margin-bottom: 20px; color: #0f172a; }
+        .card { background: white; border-radius: 16px; padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .card h2 { font-size: 1rem; color: #64748b; margin-bottom: 12px; }
+        .links { display: flex; flex-wrap: wrap; gap: 12px; }
+        .links a { display: inline-block; padding: 14px 20px; background: var(--secondary, #0d9488); color: white; text-decoration: none; border-radius: 12px; font-weight: 600; }
+        .links a:hover { background: var(--secondary-hover, #0f766e); }
+        .links a.secondary { background: #e2e8f0; color: #334155; }
+        .links a.secondary:hover { background: #cbd5e1; }
+    </style>
+</head>
+<body>
+    <h1>Lễ tân — Trung tâm điều khiển</h1>
+
+    <div class="card">
+        <h2>Điểm chạm</h2>
+        <div class="links">
+            <a href="/scanner.html" target="_blank">Quét QR Check-in</a>
+            <a href="/queue.html" target="_blank">Hàng đợi phòng khám</a>
+            <a href="/doctor.html" target="_blank">Lập phác đồ (Bác sĩ)</a>
+            <a href="/scan-logs.html" class="secondary" target="_blank">Nhật ký quét lỗi</a>
+            <a href="/odontogram.html" class="secondary" target="_blank">Sơ đồ răng FDI</a>
+        </div>
+    </div>
+
+    <div class="card">
+        <h2>Hướng dẫn</h2>
+        <ul style="color: #64748b; line-height: 1.8;">
+            <li><strong>Quét QR:</strong> Mở trang, nhập/dán mã QR từ app bệnh nhân hoặc thiết bị đọc.</li>
+            <li><strong>Hàng đợi:</strong> Đăng nhập Staff → chọn phòng → gọi bệnh nhân, chuyển X-Quang.</li>
+            <li><strong>Lập phác đồ:</strong> Đăng nhập Bác sĩ → tra cứu bệnh nhân (patient:1) → chọn mẫu.</li>
+            <li><strong>Nhật ký quét lỗi:</strong> Xem các lần quét QR thất bại (mã không hợp lệ, không lịch hẹn...) để xử lý thủ công.</li>
+        </ul>
+    </div>
+</body>
+</html>

@@ -1,0 +1,29 @@
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <style name="Base.Theme.Toothly" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:statusBarColor">@color/toothly_pearl</item>
+        <item name="android:navigationBarColor">@color/toothly_pearl</item>
+        <item name="android:windowLightStatusBar">true</item>
+        <item name="colorPrimary">@color/toothly_teal</item>
+        <item name="colorSurface">@color/toothly_pearl</item>
+    </style>
+
+    <style name="Theme.Mobile_android" parent="Base.Theme.Toothly" />
+
+    <style name="ToothlyHeading">
+        <item name="android:fontFamily">serif</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:textColor">@color/toothly_teal_dark</item>
+        <item name="android:textSize">28sp</item>
+    </style>
+
+    <style name="ToothlyBody">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:textColor">@color/toothly_text_body</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="ToothlyLink">
+        <item name="android:textColor">@color/toothly_link</item>
+        <item name="android:textSize">15sp</item>
+    </style>
+</resources>

@@ -1,0 +1,91 @@
+package com.hcmute.mobile_android.ui.activities;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.widget.EditText;
+import android.widget.Toast;
+
+import androidx.activity.EdgeToEdge;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+
+import com.hcmute.mobile_android.R;
+import com.hcmute.mobile_android.network.ApiService;
+import com.hcmute.mobile_android.network.RetrofitClient;
+import com.hcmute.mobile_android.network.models.LoginRequest;
+import com.hcmute.mobile_android.network.models.LoginResponse;
+import com.hcmute.mobile_android.util.TokenManager;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
+
+public class LoginActivity extends AppCompatActivity {
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        EdgeToEdge.enable(this);
+        setContentView(R.layout.activity_login);
+
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+
+        findViewById(R.id.tvSignUp).setOnClickListener(v -> {
+            startActivity(new Intent(this, RegisterActivity.class));
+        });
+
+        findViewById(R.id.btnSignIn).setOnClickListener(v -> performLogin());
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+            return insets;
+        });
+    }
+
+    private void performLogin() {
+        String email = ((EditText) findViewById(R.id.etEmail)).getText().toString().trim();
+        String password = ((EditText) findViewById(R.id.etPassword)).getText().toString();
+        if (email.isEmpty() || password.isEmpty()) {
+            Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        ApiService api = RetrofitClient.getApiService(this);
+        api.login(new LoginRequest(email, password)).enqueue(new Callback<LoginResponse>() {
+            @Override
+            public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    LoginResponse body = response.body();
+                    if (body.getToken() != null) {
+                        new TokenManager(LoginActivity.this).saveToken(body.getToken());
+                    }
+                    
+                    // Navigate based on user role
+                    Intent intent;
+                    if ("ADMIN".equals(body.getRole())) {
+                        intent = new Intent(LoginActivity.this, AdminMainActivity.class);
+                    } else {
+                        intent = new Intent(LoginActivity.this, MainActivity.class);
+                    }
+                    
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Toast.makeText(LoginActivity.this, "Invalid email or password", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<LoginResponse> call, Throwable t) {
+                String msg = t.getMessage() != null ? t.getMessage() : "";
+                Toast.makeText(LoginActivity.this,
+                        getString(R.string.login_network_error) + "\n" + msg,
+                        Toast.LENGTH_LONG).show();
+            }
+        });
+    }
+}

@@ -1,0 +1,6 @@
+@echo off
+echo Cleaning project...
+call gradlew clean
+echo Building project...
+call gradlew assembleDebug
+echo Build complete!

@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.CAMERA" />
+    
+    <uses-feature
+        android:name="android.hardware.camera"
+        android:required="true" />
+    <uses-feature
+        android:name="android.hardware.camera.autofocus"
+        android:required="false" />
+
+    <application
+        android:allowBackup="true"
+        android:dataExtractionRules="@xml/data_extraction_rules"
+        android:fullBackupContent="@xml/backup_rules"
+        android:icon="@mipmap/ic_launcher"
+        android:label="@string/app_name"
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:supportsRtl="true"
+        android:theme="@style/Theme.Mobile_android"
+        android:usesCleartextTraffic="true">
+        <activity
+            android:name=".ui.activities.AppointmentDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.GenericListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.SettingsActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.ProfileActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.MainActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.LoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.RegisterActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.OtpActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateAlwaysHidden" />
+        <activity
+            android:name=".ui.activities.PhoneLoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.WelcomeActivity"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity>
+        <activity
+            android:name=".ui.activities.AdminMainActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.AdminDoctorActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.AdminServiceActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.AdminRoomActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.QRCheckInActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.PatientQueueActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.staff.QRScannerActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.staff.QueueManagementActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.staff.DoctorWorkflowActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.QRTestActivity"
+            android:exported="false" />
+    </application>
+
+</manifest>

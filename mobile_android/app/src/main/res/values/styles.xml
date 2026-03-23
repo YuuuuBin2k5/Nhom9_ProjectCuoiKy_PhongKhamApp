@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="KeypadRow">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:orientation">horizontal</item>
+        <item name="android:weightSum">3</item>
+    </style>
+
+    <style name="OtpDigitCell">
+        <item name="android:layout_width">44dp</item>
+        <item name="android:layout_height">52dp</item>
+        <item name="android:layout_marginStart">4dp</item>
+        <item name="android:layout_marginEnd">4dp</item>
+        <item name="android:background">@drawable/bg_otp_cell</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/toothly_teal_dark</item>
+        <item name="android:textSize">20sp</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="KeypadKeyBase">
+        <item name="android:layout_width">0dp</item>
+        <item name="android:layout_height">72dp</item>
+        <item name="android:layout_margin">4dp</item>
+        <item name="android:layout_weight">1</item>
+        <item name="android:background">@drawable/bg_keypad_key</item>
+        <item name="android:gravity">center</item>
+        <item name="android:textColor">@color/toothly_teal_dark</item>
+        <item name="android:lineSpacingExtra">-2dp</item>
+    </style>
+
+    <style name="KeypadKey" parent="KeypadKeyBase">
+        <item name="android:textSize">16sp</item>
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="KeypadKeyDental" parent="KeypadKeyBase">
+        <item name="android:textSize">11sp</item>
+    </style>
+
+    <style name="CircleAppearance" parent="">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+</resources>
+
+

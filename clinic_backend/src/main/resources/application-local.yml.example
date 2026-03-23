@@ -1,0 +1,9 @@
+# Sao chép thành application-local.yml (file đó đã được .gitignore).
+# Profile mặc định trong application.yml là `local` — file này chỉ được nạp khi profile local bật.
+
+spring:
+  datasource:
+    password: YOUR_POSTGRES_PASSWORD_HERE
+
+# Hoặc: giữ mật khẩu trong biến môi trường và đặt SPRING_PROFILES_ACTIVE khác local
+# để chỉ dùng application.yml + DB_PASSWORD.

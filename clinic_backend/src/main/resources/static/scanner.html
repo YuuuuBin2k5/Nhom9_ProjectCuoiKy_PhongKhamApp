@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quét QR Check-in — Kiosk</title>
+    <link rel="stylesheet" href="/css/design-tokens.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg, #f9fafb);
+            padding: 24px;
+        }
+        .kiosk-card {
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 4px 24px rgba(0,0,0,0.08);
+            max-width: 480px;
+            width: 100%;
+            overflow: hidden;
+            transition: background 0.4s ease;
+        }
+        .kiosk-card.idle { background: #fff; }
+        .kiosk-card.success { background: #d1fae5; }
+        .kiosk-card.warning { background: #fef3c7; }
+        .kiosk-card.error { background: #fef2f2; }
+
+        .status-panel {
+            min-height: 280px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 32px;
+            text-align: center;
+        }
+        .status-panel .icon-wrap {
+            width: 96px;
+            height: 96px;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .status-panel .icon-wrap svg {
+            width: 100%;
+            height: 100%;
+        }
+        .status-panel.idle .icon-wrap { color: var(--secondary, #0d9488); }
+        .status-panel.success .icon-wrap { color: var(--secondary, #059669); }
+        .status-panel.warning .icon-wrap { color: #d97706; }
+        .status-panel.error .icon-wrap { color: #dc2626; }
+
+        .idle-animation {
+            animation: pulse 2s ease-in-out infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.05); }
+        }
+
+        .queue-num {
+            font-size: 4rem;
+            font-weight: 800;
+            line-height: 1;
+            margin: 12px 0;
+            color: #0f172a;
+        }
+        .status-panel.success .queue-num,
+        .status-panel.warning .queue-num { color: #1e293b; }
+        .status-text {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #334155;
+        }
+        .room-text {
+            font-size: 1rem;
+            color: #64748b;
+            margin-top: 8px;
+        }
+        .error-text {
+            font-size: 1.1rem;
+            color: #7f1d1d;
+            max-width: 320px;
+        }
+
+        .input-section {
+            padding: 24px;
+            border-top: 1px solid #e5e7eb;
+        }
+        .input-section h3 {
+            font-size: 0.95rem;
+            color: #6b7280;
+            margin-bottom: 12px;
+            font-weight: 500;
+        }
+        .input-row {
+            display: flex;
+            gap: 12px;
+        }
+        input {
+            flex: 1;
+            padding: 14px 18px;
+            font-size: 16px;
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+        }
+        input:focus {
+            outline: none;
+            border-color: #0d9488;
+        }
+        button {
+            padding: 14px 24px;
+            font-size: 16px;
+            font-weight: 600;
+            background: #0d9488;
+            color: white;
+            border: none;
+            border-radius: 12px;
+            cursor: pointer;
+        }
+        button:hover { background: #0f766e; }
+        button:active { transform: scale(0.98); }
+
+        .hidden { display: none !important; }
+    </style>
+</head>
+<body>
+    <div class="kiosk-card" id="card">
+        <div class="status-panel idle" id="statusPanel">
+            <div class="icon-wrap idle-animation" id="iconWrap">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="5" y="2" width="14" height="20" rx="2"/>
+                    <path d="M12 18h.01"/>
+                </svg>
+            </div>
+            <p class="status-text" id="statusText">Đưa mã QR qua máy quét<br>hoặc dán mã bên dưới</p>
+            <p class="queue-num hidden" id="queueNum"></p>
+            <p class="room-text hidden" id="roomText"></p>
+            <p class="error-text hidden" id="errorText"></p>
+        </div>
+        <div class="input-section">
+            <h3>Nhập / dán dữ liệu QR (ví dụ: patient:1)</h3>
+            <div class="input-row">
+                <input type="text" id="qrInput" placeholder="patient:1" autocomplete="off" />
+                <button onclick="scan()">Kiểm tra</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = window.location.origin;
+        const card = document.getElementById('card');
+        const statusPanel = document.getElementById('statusPanel');
+        const iconWrap = document.getElementById('iconWrap');
+        const statusText = document.getElementById('statusText');
+        const queueNum = document.getElementById('queueNum');
+        const roomText = document.getElementById('roomText');
+        const errorText = document.getElementById('errorText');
+
+        function setState(state, data) {
+            data = data || {};
+            card.className = 'kiosk-card ' + state;
+            statusPanel.className = 'status-panel ' + state;
+            queueNum.classList.add('hidden');
+            roomText.classList.add('hidden');
+            errorText.classList.add('hidden');
+            iconWrap.classList.remove('idle-animation');
+
+            if (state === 'idle') {
+                iconWrap.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="5" y="2" width="14" height="20" rx="2"/><path d="M12 18h.01"/></svg>';
+                iconWrap.classList.add('idle-animation');
+                statusText.innerHTML = 'Đưa mã QR qua máy quét<br>hoặc dán mã bên dưới';
+                statusText.classList.remove('hidden');
+            } else if (state === 'success' || state === 'warning') {
+                iconWrap.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M20 6L9 17l-5-5"/></svg>';
+                statusText.textContent = state === 'success' ? 'Check-in thành công!' : 'Bạn đã check-in trước đó';
+                statusText.classList.remove('hidden');
+                queueNum.textContent = data.queueNumber;
+                queueNum.classList.remove('hidden');
+                if (data.roomName) {
+                    roomText.textContent = data.roomName;
+                    roomText.classList.remove('hidden');
+                }
+                try {
+                    const msg = new SpeechSynthesisUtterance('Check-in thành công. Số thứ tự của bạn là ' + data.queueNumber);
+                    msg.lang = 'vi-VN';
+                    speechSynthesis.speak(msg);
+                } catch (e) {}
+            } else if (state === 'error') {
+                iconWrap.innerHTML = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+                statusText.textContent = data.message || 'Vui lòng liên hệ quầy Lễ tân';
+                statusText.classList.remove('hidden');
+                try {
+                    const msg = new SpeechSynthesisUtterance('Vui lòng liên hệ quầy Lễ tân');
+                    msg.lang = 'vi-VN';
+                    speechSynthesis.speak(msg);
+                } catch (e) {}
+            }
+        }
+
+        async function scan() {
+            const qrData = document.getElementById('qrInput').value.trim();
+            if (!qrData) {
+                setState('error', { message: 'Vui lòng nhập hoặc quét mã QR' });
+                setTimeout(() => setState('idle'), 2500);
+                return;
+            }
+            setState('idle');
+
+            try {
+                const res = await fetch(API_BASE + '/api/checkin/scan', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ qrData })
+                });
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    setState(data.alreadyCheckedIn ? 'warning' : 'success', {
+                        queueNumber: data.queueNumber,
+                        roomName: data.roomName || ''
+                    });
+                    document.getElementById('qrInput').value = '';
+                    setTimeout(() => setState('idle'), 4000);
+                } else {
+                    setState('error', { message: data.message || 'Vui lòng liên hệ quầy Lễ tân' });
+                    setTimeout(() => setState('idle'), 4000);
+                }
+            } catch (e) {
+                setState('error', { message: e.message || 'Lỗi kết nối. Thử lại.' });
+                setTimeout(() => setState('idle'), 4000);
+            }
+        }
+
+        document.getElementById('qrInput').addEventListener('keypress', e => {
+            if (e.key === 'Enter') scan();
+        });
+    </script>
+</body>
+</html>

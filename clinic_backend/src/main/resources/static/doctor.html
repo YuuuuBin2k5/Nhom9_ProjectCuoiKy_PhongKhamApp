@@ -1,0 +1,290 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bác sĩ — Lập phác đồ</title>
+    <link rel="stylesheet" href="/css/design-tokens.css">
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
+        body { font-family: system-ui, sans-serif; padding: 24px; max-width: 640px; margin: 0 auto; background: var(--bg, #f9fafb); }
+        h1 { font-size: 1.5rem; margin-bottom: 20px; color: #0f172a; }
+        .card { background: white; border-radius: 16px; padding: 24px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+        .card h2 { font-size: 1rem; color: #64748b; margin-bottom: 12px; }
+        input, button, select { padding: 12px 16px; font-size: 16px; border-radius: 10px; border: 1px solid #e2e8f0; width: 100%; margin-bottom: 8px; }
+        button { background: var(--secondary, #0d9488); color: white; border: none; cursor: pointer; font-weight: 600; }
+        button:hover { background: var(--secondary-hover, #0f766e); }
+        button:disabled { background: #94a3b8; cursor: not-allowed; }
+        .row { display: flex; gap: 12px; }
+        .row input, .row button { flex: 1; margin-bottom: 0; }
+        .patient-info { background: #f0fdf4; padding: 16px; border-radius: 10px; margin: 12px 0; }
+        .patient-info p { margin: 4px 0; }
+        .template-list { display: flex; flex-direction: column; gap: 8px; }
+        .template-btn { text-align: left; padding: 14px; background: #f8fafc; border: 1px solid #e2e8f0; }
+        .template-btn:hover { background: #f1f5f9; border-color: #0d9488; }
+        .msg { padding: 12px; border-radius: 8px; margin: 8px 0; }
+        .msg.success { background: #d1fae5; color: #065f46; }
+        .msg.error { background: #fee2e2; color: #991b1b; }
+        .hidden { display: none !important; }
+        .step-row { display: flex; justify-content: space-between; align-items: center; padding: 10px; background: #f8fafc; border-radius: 8px; margin-bottom: 8px; flex-wrap: wrap; gap: 8px; }
+        .step-row .tooth-inp { width: 50px; padding: 4px 8px; font-size: 14px; margin: 0; }
+        .step-form { margin-top: 10px; padding: 12px; background: #f8fafc; border-radius: 8px; border-left: 4px solid var(--secondary); }
+        .step-form label { display: block; margin: 6px 0 2px; font-size: 13px; color: #64748b; }
+        .step-form input[type="text"], .step-form input[type="number"] { width: 120px; padding: 6px 10px; margin-right: 12px; }
+        .step-form input[type="checkbox"] { margin-right: 8px; }
+        .btn-sm { padding: 6px 12px; font-size: 14px; width: auto; }
+    </style>
+</head>
+<body>
+    <h1>Bác sĩ — Lập phác đồ điều trị</h1>
+
+    <div class="card" id="loginCard">
+        <h2>Đăng nhập (Staff)</h2>
+        <input type="email" id="email" placeholder="Email" value="doctor@clinic.local" />
+        <input type="password" id="password" placeholder="Mật khẩu" value="doctor123" />
+        <button onclick="login()">Đăng nhập</button>
+    </div>
+
+    <div class="card hidden" id="mainCard">
+        <h2>1. Tra cứu bệnh nhân (nhập QR: patient:1)</h2>
+        <div class="row">
+            <input type="text" id="qrInput" placeholder="patient:1" />
+            <button onclick="lookupPatient()">Tra cứu</button>
+        </div>
+        <div id="patientInfo" class="hidden"></div>
+
+        <h2 style="margin-top: 20px;">2. Chọn mẫu phác đồ</h2>
+        <div id="templateList" class="template-list"></div>
+
+        <div class="card hidden" id="editCard">
+            <h2>3. Chỉnh sửa phác đồ</h2>
+            <input type="hidden" id="editPlanId" />
+            <div id="editSteps" class="template-list"></div>
+            <button onclick="savePlanSteps()" style="margin-top: 12px;">Lưu phác đồ</button>
+        </div>
+
+        <div id="msg" class="msg hidden"></div>
+    </div>
+
+    <script>
+        const API = window.location.origin;
+        let token = localStorage.getItem('doctor_token');
+        let currentPatientId = null;
+
+        if (token) {
+            document.getElementById('loginCard').classList.add('hidden');
+            document.getElementById('mainCard').classList.remove('hidden');
+            loadTemplates();
+        }
+
+        async function login() {
+            const email = document.getElementById('email').value.trim();
+            const pass = document.getElementById('password').value;
+            try {
+                const res = await fetch(API + '/api/auth/staff/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password: pass })
+                });
+                const data = await res.json();
+                if (res.ok && data.token) {
+                    token = data.token;
+                    localStorage.setItem('doctor_token', token);
+                    document.getElementById('loginCard').classList.add('hidden');
+                    document.getElementById('mainCard').classList.remove('hidden');
+                    loadTemplates();
+                } else {
+                    showMsg('Đăng nhập thất bại', true);
+                }
+            } catch (e) {
+                showMsg('Lỗi: ' + e.message, true);
+            }
+        }
+
+        async function lookupPatient() {
+            const qr = document.getElementById('qrInput').value.trim();
+            if (!qr) return;
+            const pi = document.getElementById('patientInfo');
+            pi.innerHTML = '<div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div><div class="skeleton skeleton-text"></div>';
+            pi.classList.remove('hidden');
+            try {
+                const res = await fetch(API + '/api/doctor/patient?qr=' + encodeURIComponent(qr), {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    currentPatientId = data.id;
+                    document.getElementById('patientInfo').innerHTML = `
+                        <div class="patient-info">
+                            <p><strong>${data.lastName || ''} ${data.firstName || ''}</strong></p>
+                            <p>ID: ${data.id} | SĐT: ${data.phone || '—'} | Email: ${data.email || '—'}</p>
+                        </div>
+                    `;
+                    document.getElementById('patientInfo').classList.remove('hidden');
+                } else {
+                    showMsg('Không tìm thấy bệnh nhân', true);
+                }
+            } catch (e) {
+                showMsg('Lỗi: ' + e.message, true);
+            }
+        }
+
+        async function loadTemplates() {
+            const list = document.getElementById('templateList');
+            list.innerHTML = '<div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div><div class="skeleton skeleton-card"></div>';
+            try {
+                const res = await fetch(API + '/api/treatment-templates');
+                const data = await res.json();
+                list.innerHTML = '';
+                (Array.isArray(data) ? data : (data.content || [])).forEach(t => {
+                    const btn = document.createElement('button');
+                    btn.className = 'template-btn';
+                    btn.textContent = t.name + (t.description ? ' — ' + t.description : '');
+                    btn.onclick = () => createPlan(t.id);
+                    list.appendChild(btn);
+                });
+            } catch (e) {
+                document.getElementById('templateList').innerHTML = '<p>Không tải được mẫu phác đồ</p>';
+            }
+        }
+
+        async function createPlan(templateId) {
+            if (!currentPatientId) {
+                showMsg('Vui lòng tra cứu bệnh nhân trước', true);
+                return;
+            }
+            try {
+                const res = await fetch(API + '/api/treatment-plans/from-template', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ templateId, patientId: currentPatientId })
+                });
+                const data = await res.json();
+                if (res.ok && data.id) {
+                    showMsg('Đã lập phác đồ thành công. ID: ' + data.id, false);
+                    setTimeout(() => loadPlanForEdit(data.id), 500);
+                } else {
+                    showMsg(data.message || 'Lỗi tạo phác đồ', true);
+                }
+            } catch (e) {
+                showMsg('Lỗi: ' + e.message, true);
+            }
+        }
+
+        async function loadPlanForEdit(planId) {
+            try {
+                const res = await fetch(API + '/api/treatment-plans/' + planId, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                const plan = await res.json();
+                if (res.ok) {
+                    const stepsHtml = (plan.steps || []).map((s, i) => {
+                        const tpl = (s.uiTemplateType || 'GENERAL').toUpperCase();
+                        const formData = parseFormData(s.doctorConclusion);
+                        const surgeryForm = tpl === 'SURGERY' ? `
+                            <div class="step-form" data-step-form>
+                                <label>Huyết áp</label><input type="text" class="form-bp" placeholder="120/80" value="${formData.bloodPressure || ''}">
+                                <label>Nhịp tim</label><input type="number" class="form-hr" placeholder="72" value="${formData.heartRate || ''}">
+                                <label><input type="checkbox" class="form-consent" ${formData.signedConsent ? 'checked' : ''}> Đã ký cam kết</label>
+                            </div>` : '';
+                        const orthoForm = tpl === 'ORTHO' ? `
+                            <div class="step-form" data-step-form>
+                                <label>Khay hiện tại</label><input type="text" class="form-tray" placeholder="Khay 1/40" value="${formData.trayProgress || ''}">
+                            </div>` : '';
+                        const implantForm = tpl === 'IMPLANT' ? `
+                            <div class="step-form" data-step-form>
+                                <label>Trụ / Labo</label><input type="text" class="form-implant" placeholder="Osstem, màu A2..." value="${formData.implantNote || ''}">
+                            </div>` : '';
+                        const perioForm = tpl === 'PERIO' ? `
+                            <div class="step-form" data-step-form>
+                                <label>Chỉ số túi nha chu</label><input type="text" class="form-perio" placeholder="3-4mm..." value="${formData.perioIndex || ''}">
+                            </div>` : '';
+                        const extraForm = surgeryForm || orthoForm || implantForm || perioForm;
+                        return `<div class="step-row" data-id="${s.id}" data-service-id="${s.serviceId || ''}" data-room-id="${s.clinicRoomId || ''}">
+                            <span>${i + 1}. ${s.serviceName} — ${s.roomName || '—'}</span>
+                            <span>Răng FDI: <input type="text" class="tooth-inp" placeholder="38" value="${s.toothNumber || ''}" maxlength="3"></span>
+                            <a href="/odontogram.html" target="_blank" style="font-size:12px;color:var(--secondary);">Sơ đồ</a>
+                            <button class="btn-sm" onclick="deleteStepRow(this)">Xóa</button>
+                            ${extraForm}
+                        </div>`;
+                    }).join('');
+                    document.getElementById('editSteps').innerHTML = stepsHtml || '<p class="hint">Chưa có bước</p>';
+                    document.getElementById('editPlanId').value = planId;
+                    const editCard = document.getElementById('editCard');
+                    if (editCard) editCard.classList.remove('hidden');
+                }
+            } catch (e) {
+                showMsg('Không tải được phác đồ', true);
+            }
+        }
+
+        function parseFormData(json) {
+            try { return json ? JSON.parse(json) : {}; } catch (_) { return {}; }
+        }
+
+        function collectFormData(row) {
+            const form = row.querySelector('[data-step-form]');
+            if (!form) return null;
+            const bp = form.querySelector('.form-bp');
+            const hr = form.querySelector('.form-hr');
+            const consent = form.querySelector('.form-consent');
+            const tray = form.querySelector('.form-tray');
+            const implant = form.querySelector('.form-implant');
+            const perio = form.querySelector('.form-perio');
+            if (bp) return JSON.stringify({ bloodPressure: bp.value, heartRate: hr?.value || '', signedConsent: consent?.checked });
+            if (tray) return JSON.stringify({ trayProgress: tray.value });
+            if (implant) return JSON.stringify({ implantNote: implant.value });
+            if (perio) return JSON.stringify({ perioIndex: perio.value });
+            return null;
+        }
+
+        function deleteStepRow(btn) {
+            btn.closest('.step-row').remove();
+        }
+
+        async function savePlanSteps() {
+            const planId = document.getElementById('editPlanId').value;
+            if (!planId) return;
+            const rows = document.querySelectorAll('.step-row[data-service-id]');
+            const steps = Array.from(rows).map((r, i) => {
+                const toothInp = r.querySelector('.tooth-inp');
+                const toothNumber = toothInp ? toothInp.value.trim() : '';
+                const doctorConclusion = collectFormData(r);
+                return {
+                    serviceId: parseInt(r.dataset.serviceId) || null,
+                    clinicRoomId: (r.dataset.roomId && r.dataset.roomId !== '') ? parseInt(r.dataset.roomId) : null,
+                    sequenceOrder: i,
+                    toothNumber: toothNumber || null,
+                    doctorConclusion: doctorConclusion
+                };
+            }).filter(s => s.serviceId);
+            if (steps.length === 0) {
+                showMsg('Cần ít nhất 1 bước', true);
+                return;
+            }
+            try {
+                const res = await fetch(API + '/api/treatment-plans/' + planId, {
+                    method: 'PUT',
+                    headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+                    body: JSON.stringify({ steps: steps.filter(s => s.serviceId) })
+                });
+                const data = await res.json();
+                if (res.ok) {
+                    showMsg('Đã lưu phác đồ', false);
+                } else {
+                    showMsg(data.message || 'Lỗi', true);
+                }
+            } catch (e) {
+                showMsg('Lỗi: ' + e.message, true);
+            }
+        }
+
+        function showMsg(text, isError) {
+            const el = document.getElementById('msg');
+            el.textContent = text;
+            el.className = 'msg ' + (isError ? 'error' : 'success');
+            el.classList.remove('hidden');
+        }
+    </script>
+</body>
+</html>

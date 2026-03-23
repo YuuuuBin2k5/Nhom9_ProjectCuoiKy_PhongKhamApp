@@ -1,0 +1,40 @@
+<resources>
+    <string name="app_name">Toothly</string>
+    <string name="welcome_legal">By signing up for Toothly, you agree to our Terms of Service. Learn how we process your data in our Privacy Policy and Cookies Policy.</string>
+    <string name="create_account">Create an Account</string>
+    <string name="sign_in">Sign In</string>
+    <string name="log_in">Log in</string>
+    <string name="mobile_number">Mobile Number</string>
+    <string name="continue_btn">Continue</string>
+    <string name="no_account_sign_up">Don\'t have an account yet? Sign Up</string>
+    <string name="otp_title">Enter your verification code</string>
+    <string name="otp_sent_to">Code sent to %1$s</string>
+    <string name="otp_resend">Didn\'t get a code?</string>
+    <string name="register_title">Create your profile</string>
+    <string name="login_network_error">Không kết nối được server (cổng 8081). Cùng WiFi với PC; build lại app sau khi đổi mạng. Ghi đè: local.properties → backend.base.url=...</string>
+    <string name="cd_avatar">Ảnh đại diện</string>
+    <string name="cd_notifications">Thông báo</string>
+    <string name="cd_logout">Đăng xuất</string>
+    <string name="profile_title">Hồ sơ cá nhân</string>
+    <string name="settings_title">Cài đặt</string>
+    <string name="open_settings">Mở cài đặt</string>
+    <string name="logout">Đăng xuất</string>
+    <string name="notifications_title">Thông báo</string>
+    <string name="language_vi">Ngôn ngữ: Tiếng Việt</string>
+    <string name="greeting_user">Xin chào,</string>
+    <string name="qr_checkin_btn">Quét QR check-in</string>
+    <string name="my_qr_checkin_btn">Mã QR của tôi</string>
+    <string name="today_appointments_title">Lịch hẹn sắp tới</string>
+    <string name="label_all">Xem tất cả</string>
+    <string name="no_appointments_home">Chưa có lịch hẹn sắp tới</string>
+    <string name="view_detail_btn">Xem chi tiết</string>
+    <string name="services_title">Dịch vụ</string>
+    <string name="doctors_title">Bác sĩ</string>
+    <string name="book_appointment_fab_cd">Đặt lịch hẹn</string>
+    <string name="my_qr_code">Mã QR của tôi</string>
+    <string name="qr_subtitle">Đưa mã QR này cho quầy tiếp nhận để check-in nhanh</string>
+    <string name="download_qr">Tải QR</string>
+    <string name="account">Tài khoản</string>
+    <string name="personal_info">Thông tin cá nhân</string>
+    <string name="notification">Thông báo</string>
+</resources>

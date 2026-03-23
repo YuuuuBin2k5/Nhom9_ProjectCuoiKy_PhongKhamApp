@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="120dp"
+    android:height="120dp"
+    android:viewportWidth="120"
+    android:viewportHeight="120">
+    <!-- Smile arc -->
+    <path
+        android:fillColor="#14B8A6"
+        android:pathData="M20,55 Q60,95 100,55 Q60,75 20,55 Z" />
+    <!-- Tooth -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M48,28 L52,22 L56,28 L58,48 L56,68 L52,72 L48,68 L46,48 Z"
+        android:strokeWidth="1"
+        android:strokeColor="#0D9488" />
+    <!-- Gold star -->
+    <path
+        android:fillColor="#D4AF37"
+        android:pathData="M52,18 L54,22 L58,22 L55,25 L56,29 L52,27 L48,29 L49,25 L46,22 L50,22 Z" />
+</vector>

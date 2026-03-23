@@ -1,0 +1,35 @@
+/* Design System - PLAN_UI_UX_VA_DESIGN_SYSTEM */
+:root {
+  --primary: #1A56DB;
+  --primary-hover: #1648b8;
+  --secondary: #0E9F6E;
+  --secondary-hover: #0c8760;
+  --alert: #F05252;
+  --warning: #FF5A1F;
+  --bg: #F9FAFB;
+  --bg-card: #FFFFFF;
+  --text-heading: #1A3C40;
+  --text-body: #334155;
+  --text-muted: #64748B;
+  --border: #E2E8F0;
+  --radius: 16px;
+  --radius-lg: 24px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.06);
+}
+
+/* Skeleton loading */
+.skeleton {
+  background: linear-gradient(90deg, #f0f0f0 25%, #e8e8e8 50%, #f0f0f0 75%);
+  background-size: 200% 100%;
+  animation: skeleton-shimmer 1.5s infinite;
+  border-radius: 8px;
+}
+
+@keyframes skeleton-shimmer {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}
+
+.skeleton-text { height: 1em; margin: 4px 0; }
+.skeleton-card { height: 80px; margin-bottom: 12px; }
+.skeleton-btn { height: 48px; width: 120px; }
