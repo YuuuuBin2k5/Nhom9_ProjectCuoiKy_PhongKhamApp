@@ -5,11 +5,13 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
@@ -19,19 +21,20 @@ import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.adapters.UpcomingAppointmentAdapter;
-import com.hcmute.mobile_android.adapters.TreatmentProgressAdapter;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
-import com.hcmute.mobile_android.network.models.PatientMeResponse;
 import com.hcmute.mobile_android.network.models.CheckInMyStatusResponse;
+import com.hcmute.mobile_android.network.models.DoctorItem;
+import com.hcmute.mobile_android.network.models.PatientMeResponse;
+import com.hcmute.mobile_android.network.models.ServiceItem;
 import com.hcmute.mobile_android.network.models.UpcomingAppointment;
-import com.hcmute.mobile_android.network.models.TreatmentPlanSummary;
+import com.hcmute.mobile_android.ui.activities.GenericListActivity;
 import com.hcmute.mobile_android.ui.activities.PatientQueueActivity;
 import com.hcmute.mobile_android.ui.activities.QRCheckInActivity;
+import com.hcmute.mobile_android.ui.activities.ServiceDetailActivity;
 
-import java.text.SimpleDateFormat;
+import java.text.NumberFormat;
 import java.util.ArrayList;
-import java.util.Calendar;
 import java.util.List;
 import java.util.Locale;
 
@@ -43,21 +46,30 @@ public class PatientDashboardFragment extends Fragment {
 
     // Views
     private SwipeRefreshLayout swipeRefresh;
-    private TextView tvGreeting, tvPatientName;
-    private MaterialCardView cardCheckInStatus, cardNextAppointment, cardTreatmentProgress;
-    private TextView tvCheckInStatus, tvQueuePosition, tvEstimatedTime;
-    private TextView tvNextAppointmentDate, tvNextAppointmentDoctor, tvNextAppointmentService;
-    private MaterialButton btnCheckIn, btnViewQueue, btnViewAppointment;
-    private RecyclerView rvUpcomingAppointments, rvTreatmentProgress;
-    
-    // Adapters
+    private TextView tvPatientName;
+    private ImageView ivAvatar;
+
+    // Header Actions
+    private MaterialButton btnEmergency;
+
+    // Grid / Slide lists
+    private RecyclerView rvCategories, rvServices, rvDoctors;
+    private CategoryAdapter categoryAdapterPremium;
+    private ServiceAdapter serviceAdapter;
+    private DoctorAdapter doctorAdapter;
+    private List<ServiceItem> allServices = new ArrayList<>();
+
+    // Check-in
+    private MaterialCardView cardCheckInStatus;
+    private TextView tvCheckInStatus, tvQueuePosition;
+    private MaterialButton btnViewQueue;
+
+    // Appointments
+    private RecyclerView rvUpcomingAppointments;
     private UpcomingAppointmentAdapter appointmentAdapter;
-    private TreatmentProgressAdapter treatmentAdapter;
-    
-    // Data
     private List<UpcomingAppointment> upcomingAppointments = new ArrayList<>();
-    private List<TreatmentPlanSummary> treatmentPlans = new ArrayList<>();
-    
+
+    // Data
     private ApiService apiService;
     private PatientMeResponse currentPatient;
 
@@ -80,82 +92,105 @@ public class PatientDashboardFragment extends Fragment {
 
     private void initViews(View view) {
         swipeRefresh = view.findViewById(R.id.swipeRefresh);
-        tvGreeting = view.findViewById(R.id.tvGreeting);
         tvPatientName = view.findViewById(R.id.tvPatientName);
+        ivAvatar = view.findViewById(R.id.ivAvatar);
         
-        // Check-in status card
+        btnEmergency = view.findViewById(R.id.btnEmergency); 
+        
+        View btnQrScan = view.findViewById(R.id.btn_qr_scan); 
+        if (btnQrScan != null) btnQrScan.setOnClickListener(v -> openCheckIn());
+        
+        rvCategories = view.findViewById(R.id.rvCategories);
+        rvServices = view.findViewById(R.id.rv_services);
+        rvDoctors = view.findViewById(R.id.rv_doctors);
+        
         cardCheckInStatus = view.findViewById(R.id.cardCheckInStatus);
         tvCheckInStatus = view.findViewById(R.id.tvCheckInStatus);
         tvQueuePosition = view.findViewById(R.id.tvQueuePosition);
-        tvEstimatedTime = view.findViewById(R.id.tvEstimatedTime);
-        btnCheckIn = view.findViewById(R.id.btnCheckIn);
         btnViewQueue = view.findViewById(R.id.btnViewQueue);
         
-        // Next appointment card
-        cardNextAppointment = view.findViewById(R.id.cardNextAppointment);
-        tvNextAppointmentDate = view.findViewById(R.id.tvNextAppointmentDate);
-        tvNextAppointmentDoctor = view.findViewById(R.id.tvNextAppointmentDoctor);
-        tvNextAppointmentService = view.findViewById(R.id.tvNextAppointmentService);
-        btnViewAppointment = view.findViewById(R.id.btnViewAppointment);
-        
-        // Treatment progress card
-        cardTreatmentProgress = view.findViewById(R.id.cardTreatmentProgress);
-        
-        // RecyclerViews
         rvUpcomingAppointments = view.findViewById(R.id.rvUpcomingAppointments);
-        rvTreatmentProgress = view.findViewById(R.id.rvTreatmentProgress);
         
-        // Set greeting
-        tvGreeting.setText(getGreeting());
-        
-        // Setup click listeners
         swipeRefresh.setOnRefreshListener(this::loadPatientData);
-        btnCheckIn.setOnClickListener(v -> openCheckIn());
         btnViewQueue.setOnClickListener(v -> openQueueStatus());
-        btnViewAppointment.setOnClickListener(v -> openAppointmentDetail());
+        btnEmergency.setOnClickListener(v -> Toast.makeText(requireContext(), "Call Emergency", Toast.LENGTH_SHORT).show());
+        
+        View btnAllDv = view.findViewById(R.id.all_dv);
+        if (btnAllDv != null) btnAllDv.setOnClickListener(v -> openList(GenericListActivity.MODE_SERVICES));
+
+        View btnAllBs = view.findViewById(R.id.all_bs);
+        if (btnAllBs != null) btnAllBs.setOnClickListener(v -> openList(GenericListActivity.MODE_DOCTORS));
     }
 
     private void setupAdapters() {
+        if (!isAdded()) return;
+
+        // Categories
+        rvCategories.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        categoryAdapterPremium = new CategoryAdapter();
+        rvCategories.setAdapter(categoryAdapterPremium);
+        
+        // Services
+        rvServices.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        serviceAdapter = new ServiceAdapter();
+        rvServices.setAdapter(serviceAdapter);
+        
+        // Doctors
+        rvDoctors.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        doctorAdapter = new DoctorAdapter();
+        rvDoctors.setAdapter(doctorAdapter);
+
         // Upcoming appointments
         rvUpcomingAppointments.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         appointmentAdapter = new UpcomingAppointmentAdapter(upcomingAppointments, this::onAppointmentClick);
         rvUpcomingAppointments.setAdapter(appointmentAdapter);
-        
-        // Treatment progress
-        rvTreatmentProgress.setLayoutManager(new LinearLayoutManager(requireContext()));
-        treatmentAdapter = new TreatmentProgressAdapter(treatmentPlans, this::onTreatmentPlanClick);
-        rvTreatmentProgress.setAdapter(treatmentAdapter);
     }
 
     private void loadPatientData() {
+        if (!isAdded()) return;
         swipeRefresh.setRefreshing(true);
-        
-        // Load patient info
         loadPatientInfo();
-        
-        // Load check-in status
         loadCheckInStatus();
-        
-        // Load upcoming appointments
         loadUpcomingAppointments();
-        
-        // Load treatment plans
-        loadTreatmentPlans();
+        loadServices();
+        loadDoctors();
     }
 
     private void loadPatientInfo() {
         apiService.getPatientMe().enqueue(new Callback<PatientMeResponse>() {
             @Override
             public void onResponse(Call<PatientMeResponse> call, Response<PatientMeResponse> response) {
+                if (!isAdded()) return;
                 if (response.isSuccessful() && response.body() != null) {
                     currentPatient = response.body();
-                    updatePatientInfo(currentPatient);
+                    String fullName = (currentPatient.getLastName() + " " + currentPatient.getFirstName()).trim();
+                    tvPatientName.setText("Hi " + fullName + " \uD83D\uDC4B");
+                    
+                    // Check missing profile info
+                    boolean isMissingInfo = currentPatient.getPhone() == null || currentPatient.getPhone().isEmpty() ||
+                            currentPatient.getEmail() == null || currentPatient.getEmail().isEmpty() ||
+                            currentPatient.getAddress() == null || currentPatient.getAddress().isEmpty();
+                    
+                    View warningIcon = getView() != null ? getView().findViewById(R.id.ivWarningProfile) : null;
+                    if (warningIcon != null) {
+                        warningIcon.setVisibility(isMissingInfo ? View.VISIBLE : View.GONE);
+                    }
+                    
+                    View avatarContainer = getView() != null ? getView().findViewById(R.id.rlAvatarContainer) : null;
+                    if (avatarContainer != null) {
+                        avatarContainer.setOnClickListener(v -> {
+                            startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.MedicalRecordActivity.class));
+                        });
+                    }
                 }
+                swipeRefresh.setRefreshing(false);
             }
 
             @Override
             public void onFailure(Call<PatientMeResponse> call, Throwable t) {
-                showError("Lỗi tải thông tin bệnh nhân: " + t.getMessage());
+                if (!isAdded()) return;
+                Toast.makeText(requireContext(), "Lỗi tải thông tin bệnh nhân", Toast.LENGTH_SHORT).show();
+                swipeRefresh.setRefreshing(false);
             }
         });
     }
@@ -164,17 +199,25 @@ public class PatientDashboardFragment extends Fragment {
         apiService.getMyCheckInStatus().enqueue(new Callback<CheckInMyStatusResponse>() {
             @Override
             public void onResponse(Call<CheckInMyStatusResponse> call, Response<CheckInMyStatusResponse> response) {
+                if (!isAdded() || getContext() == null) return;
                 if (response.isSuccessful() && response.body() != null) {
-                    updateCheckInStatus(response.body());
+                    CheckInMyStatusResponse status = response.body();
+                    if (status.isCheckedIn()) {
+                        cardCheckInStatus.setVisibility(View.VISIBLE);
+                        tvCheckInStatus.setText("Đã nhận Check-in");
+                        tvQueuePosition.setText("Số thứ tự chờ: " + status.getQueueNumber() + " (Khoảng " + status.getEstimatedWaitTime() + " phút)");
+                    } else {
+                        cardCheckInStatus.setVisibility(View.GONE);
+                    }
                 } else {
-                    // No active check-in
-                    updateCheckInStatus(null);
+                    cardCheckInStatus.setVisibility(View.GONE);
                 }
             }
 
             @Override
             public void onFailure(Call<CheckInMyStatusResponse> call, Throwable t) {
-                updateCheckInStatus(null);
+                if (!isAdded()) return;
+                cardCheckInStatus.setVisibility(View.GONE);
             }
         });
     }
@@ -183,136 +226,267 @@ public class PatientDashboardFragment extends Fragment {
         apiService.getUpcomingAppointments().enqueue(new Callback<List<UpcomingAppointment>>() {
             @Override
             public void onResponse(Call<List<UpcomingAppointment>> call, Response<List<UpcomingAppointment>> response) {
-                swipeRefresh.setRefreshing(false);
-                
+                if (!isAdded()) return;
                 if (response.isSuccessful() && response.body() != null) {
                     upcomingAppointments.clear();
                     upcomingAppointments.addAll(response.body());
                     appointmentAdapter.notifyDataSetChanged();
-                    
-                    updateNextAppointmentCard();
                 }
             }
 
             @Override
-            public void onFailure(Call<List<UpcomingAppointment>> call, Throwable t) {
-                swipeRefresh.setRefreshing(false);
-                showError("Lỗi tải lịch hẹn: " + t.getMessage());
-            }
+            public void onFailure(Call<List<UpcomingAppointment>> call, Throwable t) {}
         });
     }
 
-    private void loadTreatmentPlans() {
-        apiService.getMyTreatmentPlans().enqueue(new Callback<List<TreatmentPlanSummary>>() {
+    private void loadServices() {
+        apiService.getServices().enqueue(new Callback<List<ServiceItem>>() {
             @Override
-            public void onResponse(Call<List<TreatmentPlanSummary>> call, Response<List<TreatmentPlanSummary>> response) {
+            public void onResponse(Call<List<ServiceItem>> call, Response<List<ServiceItem>> response) {
+                if (!isAdded()) return;
                 if (response.isSuccessful() && response.body() != null) {
-                    treatmentPlans.clear();
-                    treatmentPlans.addAll(response.body());
-                    treatmentAdapter.notifyDataSetChanged();
+                    allServices = response.body();
+                    serviceAdapter.updateItems(allServices);
+                    extractCategories(allServices);
                 }
             }
 
             @Override
-            public void onFailure(Call<List<TreatmentPlanSummary>> call, Throwable t) {
-                showError("Lỗi tải phác đồ điều trị: " + t.getMessage());
+            public void onFailure(Call<List<ServiceItem>> call, Throwable t) {
+                if (!isAdded()) return;
+                allServices = new ArrayList<>();
+                serviceAdapter.updateItems(allServices);
             }
         });
     }
 
-    private void updatePatientInfo(PatientMeResponse patient) {
-        if (patient != null) {
-            String fullName = (patient.getLastName() + " " + patient.getFirstName()).trim();
-            tvPatientName.setText(fullName);
-        }
-    }
+    private void loadDoctors() {
+        apiService.getDoctors().enqueue(new Callback<List<DoctorItem>>() {
+            @Override
+            public void onResponse(Call<List<DoctorItem>> call, Response<List<DoctorItem>> response) {
+                if (!isAdded()) return;
+                if (response.isSuccessful() && response.body() != null) {
+                    doctorAdapter.updateItems(response.body());
+                }
+            }
 
-    private void updateCheckInStatus(CheckInMyStatusResponse status) {
-        if (status != null && status.isCheckedIn()) {
-            // Patient is checked in
-            cardCheckInStatus.setVisibility(View.VISIBLE);
-            cardCheckInStatus.setCardBackgroundColor(requireContext().getColor(R.color.success_background));
-            
-            tvCheckInStatus.setText("Đã check-in");
-            tvQueuePosition.setText("Số thứ tự: " + status.getQueueNumber());
-            tvEstimatedTime.setText("Ước tính: " + status.getEstimatedWaitTime() + " phút");
-            
-            btnCheckIn.setVisibility(View.GONE);
-            btnViewQueue.setVisibility(View.VISIBLE);
-        } else {
-            // Patient not checked in
-            cardCheckInStatus.setVisibility(View.VISIBLE);
-            cardCheckInStatus.setCardBackgroundColor(requireContext().getColor(android.R.color.white));
-            
-            tvCheckInStatus.setText("Chưa check-in");
-            tvQueuePosition.setVisibility(View.GONE);
-            tvEstimatedTime.setVisibility(View.GONE);
-            
-            btnCheckIn.setVisibility(View.VISIBLE);
-            btnViewQueue.setVisibility(View.GONE);
-        }
-    }
-
-    private void updateNextAppointmentCard() {
-        if (!upcomingAppointments.isEmpty()) {
-            UpcomingAppointment next = upcomingAppointments.get(0);
-            
-            cardNextAppointment.setVisibility(View.VISIBLE);
-            tvNextAppointmentDate.setText(formatAppointmentDate(next.getAppointmentTime()));
-            tvNextAppointmentDoctor.setText("BS. " + next.getDoctorName());
-            tvNextAppointmentService.setText(next.getServiceName());
-        } else {
-            cardNextAppointment.setVisibility(View.GONE);
-        }
-    }
-
-    private String getGreeting() {
-        Calendar calendar = Calendar.getInstance();
-        int hour = calendar.get(Calendar.HOUR_OF_DAY);
-        
-        if (hour < 12) {
-            return "Chào buổi sáng";
-        } else if (hour < 18) {
-            return "Chào buổi chiều";
-        } else {
-            return "Chào buổi tối";
-        }
-    }
-
-    private String formatAppointmentDate(String dateTime) {
-        try {
-            SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
-            SimpleDateFormat outputFormat = new SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault());
-            return outputFormat.format(inputFormat.parse(dateTime));
-        } catch (Exception e) {
-            return dateTime;
-        }
+            @Override
+            public void onFailure(Call<List<DoctorItem>> call, Throwable t) {
+                if (!isAdded()) return;
+                doctorAdapter.updateItems(new ArrayList<>());
+            }
+        });
     }
 
     private void openCheckIn() {
-        startActivity(new Intent(requireContext(), QRCheckInActivity.class));
+        if (isAdded()) {
+            startActivity(new Intent(requireContext(), QRCheckInActivity.class));
+        }
     }
 
     private void openQueueStatus() {
-        startActivity(new Intent(requireContext(), PatientQueueActivity.class));
-    }
-
-    private void openAppointmentDetail() {
-        // TODO: Open appointment detail activity
-        Toast.makeText(requireContext(), "Chi tiết lịch hẹn", Toast.LENGTH_SHORT).show();
+        if (isAdded()) {
+            startActivity(new Intent(requireContext(), PatientQueueActivity.class));
+        }
     }
 
     private void onAppointmentClick(UpcomingAppointment appointment) {
-        // TODO: Open appointment detail
-        Toast.makeText(requireContext(), "Lịch hẹn: " + appointment.getServiceName(), Toast.LENGTH_SHORT).show();
+        if (isAdded()) {
+            // TODO: Open appointment detail
+        }
     }
 
-    private void onTreatmentPlanClick(TreatmentPlanSummary plan) {
-        // TODO: Open treatment plan detail
-        Toast.makeText(requireContext(), "Phác đồ: " + plan.getTitle(), Toast.LENGTH_SHORT).show();
+    private void openList(String mode) {
+        Intent i = new Intent(requireContext(), GenericListActivity.class);
+        i.putExtra(GenericListActivity.EXTRA_MODE, mode);
+        startActivity(i);
+    }
+    
+    private void filterServices(String category) {
+        if (category == null || category.equals("All")) {
+            serviceAdapter.updateItems(allServices);
+            return;
+        }
+        List<ServiceItem> filtered = new ArrayList<>();
+        for (ServiceItem s : allServices) {
+            if (category.equals(s.getCategoryName())) {
+                filtered.add(s);
+            }
+        }
+        serviceAdapter.updateItems(filtered);
     }
 
-    private void showError(String message) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show();
+    private void extractCategories(List<ServiceItem> list) {
+        List<String> cats = new ArrayList<>();
+        for (ServiceItem s : list) {
+            String c = s.getCategoryName();
+            if (c != null && !c.isEmpty() && !cats.contains(c)) {
+                cats.add(c);
+            }
+        }
+        if (categoryAdapterPremium != null) {
+            categoryAdapterPremium.updateItems(cats);
+        }
+    }
+
+    private static class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.Holder> {
+        private List<ServiceItem> items = new ArrayList<>();
+
+        ServiceAdapter() {}
+
+        void updateItems(List<ServiceItem> list) {
+            items = list != null ? list : new ArrayList<>();
+            notifyDataSetChanged();
+        }
+
+        @NonNull
+        @Override
+        public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_service_premium, parent, false);
+            return new Holder(v);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull Holder holder, int position) {
+            ServiceItem s = items.get(position);
+            holder.tvName.setText(s.getName() != null ? s.getName() : "Dịch vụ");
+            holder.tvPrice.setText(formatPrice(s.getPrice()));
+            int dur = s.getDurationMinutes() != null ? s.getDurationMinutes() : 0;
+            holder.tvDuration.setText(dur + " phút •");
+            
+            holder.itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), ServiceDetailActivity.class);
+                intent.putExtra("id", s.getId());
+                intent.putExtra("name", s.getName());
+                intent.putExtra("price", s.getPrice());
+                intent.putExtra("duration", s.getDurationMinutes() != null ? s.getDurationMinutes() : 0);
+                intent.putExtra("description", s.getDescription());
+                intent.putExtra("category", s.getCategoryName());
+                v.getContext().startActivity(intent);
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return items.size();
+        }
+
+        private String formatPrice(double p) {
+            return NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((long) p) + "đ";
+        }
+
+        static class Holder extends RecyclerView.ViewHolder {
+            TextView tvName, tvPrice, tvDuration;
+
+            Holder(View v) {
+                super(v);
+                tvName = v.findViewById(R.id.tvServiceName);
+                tvPrice = v.findViewById(R.id.tvServicePrice);
+                tvDuration = v.findViewById(R.id.tvDuration);
+            }
+        }
+    }
+
+    private static class DoctorAdapter extends RecyclerView.Adapter<DoctorAdapter.Holder> {
+        private List<DoctorItem> items = new ArrayList<>();
+
+        DoctorAdapter() {}
+
+        void updateItems(List<DoctorItem> list) {
+            items = list != null ? list : new ArrayList<>();
+            notifyDataSetChanged();
+        }
+
+        @NonNull
+        @Override
+        public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_doctor_suggested_premium, parent, false);
+            return new Holder(v);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull Holder holder, int position) {
+            DoctorItem d = items.get(position);
+            holder.tvName.setText("BS. " + d.getFullName());
+            holder.tvSpecialization.setText(d.getSpecialization() != null && !d.getSpecialization().isEmpty()
+                    ? d.getSpecialization() : "Bác sĩ Gia đình");
+            holder.tvRating.setText("4." + (8 - (position % 4))); // Mock rating
+        }
+
+        @Override
+        public int getItemCount() {
+            return items.size();
+        }
+
+        static class Holder extends RecyclerView.ViewHolder {
+            TextView tvName, tvSpecialization, tvRating;
+
+            Holder(View v) {
+                super(v);
+                tvName = v.findViewById(R.id.tvDoctorName);
+                tvSpecialization = v.findViewById(R.id.tvSpecialization);
+                tvRating = v.findViewById(R.id.tvRating);
+            }
+        }
+    }
+    
+    private class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Holder> {
+        private List<String> items = new ArrayList<>();
+        private int selectedPosition = 0;
+
+        CategoryAdapter() {}
+
+        void updateItems(List<String> list) {
+            items = new ArrayList<>(list != null ? list : new ArrayList<>());
+            if (!items.contains("All")) {
+                items.add(0, "All");
+            }
+            notifyDataSetChanged();
+        }
+
+        @NonNull
+        @Override
+        public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_category_premium, parent, false);
+            return new Holder(v);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull Holder holder, int position) {
+            String cat = items.get(position);
+            holder.tvName.setText(cat.equals("All") ? "Tất cả" : cat);
+
+            if (position == selectedPosition) {
+                holder.flBg.setBackgroundResource(R.drawable.bg_category_icon_premium);
+                holder.tvName.setTextColor(android.graphics.Color.parseColor("#1CB1A6"));
+            } else {
+                holder.flBg.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+                holder.tvName.setTextColor(android.graphics.Color.parseColor("#757575"));
+            }
+
+            holder.itemView.setOnClickListener(v -> {
+                int oldPos = selectedPosition;
+                selectedPosition = position;
+                notifyItemChanged(oldPos);
+                notifyItemChanged(selectedPosition);
+                filterServices(cat);
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return items.size();
+        }
+
+        class Holder extends RecyclerView.ViewHolder {
+            TextView tvName;
+            View flBg;
+
+            Holder(View v) {
+                super(v);
+                tvName = v.findViewById(R.id.tvCategoryName);
+                flBg = v.findViewById(R.id.flCategoryBg);
+            }
+        }
     }
 }

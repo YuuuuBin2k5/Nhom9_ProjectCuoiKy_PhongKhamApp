@@ -26,6 +26,8 @@ public class DoctorItem {
     public String getRoomName() { return roomName; }
     public Integer getExperienceYears() { return experienceYears; }
 
+    public String getSpecialty() { return specialization; }
+
     public String getFullName() {
         String fn = firstName != null ? firstName : "";
         String ln = lastName != null ? lastName : "";
