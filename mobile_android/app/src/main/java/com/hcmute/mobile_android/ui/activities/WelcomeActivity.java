@@ -38,12 +38,20 @@ public class WelcomeActivity extends AppCompatActivity {
     private void checkSession() {
         com.hcmute.mobile_android.util.TokenManager tm = new com.hcmute.mobile_android.util.TokenManager(this);
         String token = tm.getToken();
+        String role = tm.getUserRole();
+        
         if (token != null && !token.isEmpty()) {
-            // Token exists, navigate to appropriate main screen
-            // For now, let's assume PATIENT role if token exists, 
-            // but ideally you'd store the role too.
-            // Let's just go to MainActivity for now.
-            startActivity(new Intent(this, MainActivity.class));
+            // Token exists, navigate based on role
+            Intent intent;
+            if ("ADMIN".equals(role)) {
+                intent = new Intent(this, AdminMainActivity.class);
+            } else {
+                // Default to patient/user main screen
+                intent = new Intent(this, MainActivity.class);
+            }
+            
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
             finish();
         }
     }

@@ -1,0 +1,128 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet_rounded"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Handle drag indicator -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:background="#E2E8F0" />
+
+    <TextView
+        android:id="@+id/tvToothTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ghi chú Răng R.."
+        android:textColor="#0F172A"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginBottom="16dp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Tình trạng răng"
+        android:textColor="#475569"
+        android:textSize="14sp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Status Selection (RadioGroup) -->
+    <RadioGroup
+        android:id="@+id/rgToothStatus"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="16dp">
+
+        <RadioButton
+            android:id="@+id/rbHealthy"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Bình thường (Trắng)"
+            android:padding="8dp" />
+
+        <RadioButton
+            android:id="@+id/rbCaries"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sâu răng (Đỏ)"
+            android:padding="8dp" />
+
+        <RadioButton
+            android:id="@+id/rbFilled"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Đã trám (Xanh dương)"
+            android:padding="8dp" />
+
+        <RadioButton
+            android:id="@+id/rbRequested"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="BN yêu cầu (Xanh lá)"
+            android:padding="8dp" />
+            
+        <RadioButton
+            android:id="@+id/rbRct"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cần chữa tủy (Cam)"
+            android:padding="8dp" />
+
+    </RadioGroup>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ghi chú thêm"
+        android:textColor="#475569"
+        android:textSize="14sp"
+        android:layout_marginBottom="8dp" />
+
+    <EditText
+        android:id="@+id/etToothNote"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:minLines="3"
+        android:gravity="top|start"
+        android:hint="VD: Trám composite, nhạy cảm..."
+        android:background="@drawable/bg_edittext"
+        android:padding="12dp"
+        android:textSize="14sp"
+        android:layout_marginBottom="24dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancel"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:text="Hủy"
+            android:textColor="#64748B"
+            app:strokeColor="#CBD5E1"
+            android:layout_marginEnd="8dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSave"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:text="Lưu ghi chú"
+            app:backgroundTint="#1565C0"
+            android:layout_marginStart="8dp" />
+
+    </LinearLayout>
+
+</LinearLayout>

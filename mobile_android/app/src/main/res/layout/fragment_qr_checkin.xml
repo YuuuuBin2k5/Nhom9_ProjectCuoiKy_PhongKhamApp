@@ -40,7 +40,7 @@
                 android:id="@+id/tvQRTitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/my_qr_code"
+                android:text="Check-in"
                 android:textSize="24sp"
                 android:textStyle="bold"
                 android:textColor="#212121"
@@ -50,47 +50,77 @@
                 android:id="@+id/tvQRSubtitle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/qr_subtitle"
+                android:text="Quét mã QR hoặc nhập mã số từ lễ tân"
                 android:textSize="14sp"
                 android:textColor="#757575"
                 android:layout_marginBottom="20dp"
                 android:gravity="center"/>
 
-            <ImageView
-                android:id="@+id/ivQrCode"
-                android:layout_width="320dp"
-                android:layout_height="320dp"
-                android:scaleType="fitCenter"
-                android:background="@android:drawable/dialog_holo_light_frame"
-                android:padding="16dp"/>
+            <!-- Scan QR Button Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="20dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="4dp"
+                app:strokeWidth="2dp"
+                app:strokeColor="@color/secondary_calm_teal">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="32dp"
+                    android:gravity="center">
+
+                    <ImageView
+                        android:layout_width="120dp"
+                        android:layout_height="120dp"
+                        android:src="@drawable/ic_camera"
+                        app:tint="@color/secondary_calm_teal"
+                        android:layout_marginBottom="16dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnScanQR"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Quét mã QR"
+                        android:textSize="16sp"
+                        android:paddingVertical="16dp"
+                        app:backgroundTint="@color/primary_trust_blue"
+                        app:icon="@drawable/ic_camera"
+                        app:iconSize="24dp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Hoặc nhập mã số trực tiếp"
+                        android:textSize="12sp"
+                        android:textColor="@color/text_secondary" />
+
+                </LinearLayout>
+
+            </com.google.android.material.card.MaterialCardView>
 
             <TextView
                 android:id="@+id/tvUserInfo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
+                android:layout_marginTop="10dp"
                 android:text=""
-                android:textSize="18sp"
-                android:textColor="#2196F3"
+                android:textSize="16sp"
+                android:textColor="@color/text_primary"
                 android:textStyle="bold"/>
 
             <TextView
                 android:id="@+id/tvStatus"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
+                android:layout_marginTop="8dp"
                 android:textColor="@color/medical_primary"
                 android:textSize="16sp"
                 android:textStyle="bold" />
-
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDownload"
-                style="@style/Widget.Material3.Button.TonalButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="16dp"
-                android:text="@string/download_qr"
-                app:icon="@android:drawable/stat_sys_download" />
 
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardQueueStatus"
@@ -152,13 +182,4 @@
         </LinearLayout>
     </ScrollView>
 
-    <TextView
-        android:id="@+id/tvInstruction"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:gravity="center"
-        android:text="Đưa mã QR qua máy quét tại quầy tiếp nhận"
-        android:textColor="@color/text_secondary"
-        android:textSize="14sp" />
 </LinearLayout>

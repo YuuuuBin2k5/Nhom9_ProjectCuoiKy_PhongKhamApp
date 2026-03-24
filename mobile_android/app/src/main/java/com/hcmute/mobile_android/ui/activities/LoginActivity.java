@@ -62,6 +62,22 @@ public class LoginActivity extends AppCompatActivity {
                     if (body.getToken() != null) {
                         TokenManager tm = new TokenManager(LoginActivity.this);
                         tm.saveToken(body.getToken());
+                        
+                        // Save user role
+                        if (body.getRole() != null) {
+                            tm.saveUserRole(body.getRole());
+                        }
+
+                        // Save email as display name (shown in doctor greeting)
+                        if (body.getEmail() != null) {
+                            String email = body.getEmail();
+                            // Use part before @ as name
+                            String displayName = email.contains("@")
+                                    ? email.substring(0, email.indexOf('@')) : email;
+                            tm.saveUserName(displayName);
+                        }
+                        
+                        // Save patient ID if not admin
                         if (body.getUserId() != null && !"ADMIN".equals(body.getRole())) {
                             tm.savePatientId(body.getUserId());
                         }

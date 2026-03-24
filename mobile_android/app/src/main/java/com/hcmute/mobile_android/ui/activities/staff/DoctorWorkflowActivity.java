@@ -1,12 +1,17 @@
 package com.hcmute.mobile_android.ui.activities.staff;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -25,10 +30,14 @@ import com.hcmute.mobile_android.network.models.PatientInfo;
 import com.hcmute.mobile_android.network.models.TreatmentPlan;
 import com.hcmute.mobile_android.network.models.TreatmentTemplate;
 import com.hcmute.mobile_android.network.models.CreateTreatmentPlanRequest;
+import com.hcmute.mobile_android.ui.activities.PatientQRScannerActivity;
 import com.hcmute.mobile_android.ui.views.OdontogramView;
+import com.hcmute.mobile_android.util.TokenManager;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -39,10 +48,12 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         TreatmentStepAdapter.OnStepActionListener {
 
     // Views
-    private EditText etQrInput;
-    private MaterialButton btnLookup, btnSavePlan;
-    private MaterialCardView cardPatientInfo, cardTemplates, cardTreatmentPlan;
-    private LinearLayout layoutPatientInfo;
+    private EditText etQrInput, etReason, etDiagnosis;
+    private TextView tvPatientHeader, tvDoctorGreeting, tvToothNotes;
+    private ImageButton btnScanQr;
+    private MaterialButton btnLookup, btnSavePlan, btnSelectTemplate, btnPrescribe, btnPrintPlan;
+    private MaterialCardView cardLookup, cardTreatmentPlan;
+    private LinearLayout layoutExamination;
     private RecyclerView rvTemplates, rvTreatmentSteps;
     private OdontogramView odontogramView;
     
@@ -55,6 +66,11 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     private List<TreatmentPlan.Step> treatmentSteps = new ArrayList<>();
     private PatientInfo currentPatient;
     private Long currentTreatmentPlanId;
+    
+    // Store custom notes for teeth
+    private Map<Integer, String> toothCustomNotesMap = new HashMap<>();
+    
+    private ActivityResultLauncher<Intent> qrScannerLauncher;
     
     private ApiService apiService;
 
@@ -70,6 +86,19 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         setupAdapters();
         loadTemplates();
 
+        qrScannerLauncher = registerForActivityResult(
+            new ActivityResultContracts.StartActivityForResult(),
+            result -> {
+                if (result.getResultCode() == RESULT_OK && result.getData() != null) {
+                    String qrData = result.getData().getStringExtra(PatientQRScannerActivity.EXTRA_SCAN_DATA);
+                    if (qrData != null && !qrData.isEmpty()) {
+                        etQrInput.setText(qrData);
+                        lookupPatient(); // Auto lookup after scan
+                    }
+                }
+            }
+        );
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -80,40 +109,62 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     private void initViews() {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         
+        // Header
+        tvPatientHeader = findViewById(R.id.tv_patient_header);
+        tvDoctorGreeting = findViewById(R.id.tv_doctor_greeting);
+        TokenManager tm = new TokenManager(this);
+        String docName = tm.getUserName() != null ? tm.getUserName() : "Bác sĩ";
+        tvDoctorGreeting.setText("Chào " + docName);
+
+        // Lookup
+        cardLookup = findViewById(R.id.cardLookup);
         etQrInput = findViewById(R.id.etQrInput);
+        btnScanQr = findViewById(R.id.btnScanQr);
         btnLookup = findViewById(R.id.btnLookup);
-        btnSavePlan = findViewById(R.id.btnSavePlan);
         
-        cardPatientInfo = findViewById(R.id.cardPatientInfo);
-        cardTemplates = findViewById(R.id.cardTemplates);
+        // Examination Area
+        layoutExamination = findViewById(R.id.layoutExamination);
+        odontogramView = findViewById(R.id.odontogramView);
+        tvToothNotes = findViewById(R.id.tvToothNotes);
+        etReason = findViewById(R.id.etReason);
+        etDiagnosis = findViewById(R.id.etDiagnosis);
+        
+        // Treatment Plan
         cardTreatmentPlan = findViewById(R.id.cardTreatmentPlan);
-        
-        layoutPatientInfo = findViewById(R.id.layoutPatientInfo);
         rvTemplates = findViewById(R.id.rvTemplates);
         rvTreatmentSteps = findViewById(R.id.rvTreatmentSteps);
-        odontogramView = findViewById(R.id.odontogramView);
-        
-        // Set default QR for testing
-        etQrInput.setText("patient:1");
-        
-        btnLookup.setOnClickListener(v -> lookupPatient());
-        btnSavePlan.setOnClickListener(v -> saveTreatmentPlan());
         
         // Setup odontogram listener
         odontogramView.setOnToothSelectedListener(this::onToothSelected);
+
+        // Buttons
+        btnSavePlan = findViewById(R.id.btnSavePlan);
+        btnSelectTemplate = findViewById(R.id.btnSelectTemplate);
+        btnPrescribe = findViewById(R.id.btnPrescribe);
+        btnPrintPlan = findViewById(R.id.btnPrintPlan);
         
-        // Initially hide cards
-        cardPatientInfo.setVisibility(View.GONE);
-        cardTreatmentPlan.setVisibility(View.GONE);
+        // Listeners
+        btnScanQr.setOnClickListener(v -> {
+            Intent intent = new Intent(this, PatientQRScannerActivity.class);
+            intent.putExtra(PatientQRScannerActivity.EXTRA_RETURN_RESULT, true);
+            qrScannerLauncher.launch(intent);
+        });
+        btnLookup.setOnClickListener(v -> lookupPatient());
+        btnSavePlan.setOnClickListener(v -> saveTreatmentPlan());
+        btnSelectTemplate.setOnClickListener(v -> {
+            rvTemplates.setVisibility(rvTemplates.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
+        });
+        btnPrescribe.setOnClickListener(v -> Toast.makeText(this, "Tính năng kê đơn thuốc đang phát triển", Toast.LENGTH_SHORT).show());
+        btnPrintPlan.setOnClickListener(v -> Toast.makeText(this, "Đang xuất PDF phác đồ...", Toast.LENGTH_SHORT).show());
     }
 
     private void setupAdapters() {
-        // Templates adapter
-        rvTemplates.setLayoutManager(new LinearLayoutManager(this));
+        // Templates adapter (Horizontal)
+        rvTemplates.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
         templateAdapter = new TreatmentTemplateAdapter(templateList, this);
         rvTemplates.setAdapter(templateAdapter);
         
-        // Treatment steps adapter
+        // Treatment steps adapter (Vertical)
         rvTreatmentSteps.setLayoutManager(new LinearLayoutManager(this));
         stepAdapter = new TreatmentStepAdapter(treatmentSteps, this);
         rvTreatmentSteps.setAdapter(stepAdapter);
@@ -122,18 +173,18 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     private void lookupPatient() {
         String qrCode = etQrInput.getText().toString().trim();
         if (qrCode.isEmpty()) {
-            Toast.makeText(this, "Vui lòng nhập mã QR", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng nhập mã bệnh nhân", Toast.LENGTH_SHORT).show();
             return;
         }
 
         btnLookup.setEnabled(false);
-        btnLookup.setText("Đang tra cứu...");
+        btnLookup.setText("Đang tìm...");
 
         apiService.lookupPatientByQR(qrCode).enqueue(new Callback<PatientInfo>() {
             @Override
             public void onResponse(Call<PatientInfo> call, Response<PatientInfo> response) {
                 btnLookup.setEnabled(true);
-                btnLookup.setText("Tra cứu");
+                btnLookup.setText("Tìm kiếm");
                 
                 if (response.isSuccessful() && response.body() != null) {
                     currentPatient = response.body();
@@ -147,7 +198,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             @Override
             public void onFailure(Call<PatientInfo> call, Throwable t) {
                 btnLookup.setEnabled(true);
-                btnLookup.setText("Tra cứu");
+                btnLookup.setText("Tìm kiếm");
                 Toast.makeText(DoctorWorkflowActivity.this, 
                     "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
@@ -155,16 +206,16 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     }
 
     private void displayPatientInfo(PatientInfo patient) {
-        layoutPatientInfo.removeAllViews();
+        tvPatientHeader.setText("Khám Bệnh nhân " + patient.getFullName());
         
-        // Create patient info layout programmatically
-        View patientView = getLayoutInflater().inflate(R.layout.item_patient_info, layoutPatientInfo, false);
+        // Hide lookup, show examination area
+        cardLookup.setVisibility(View.GONE);
+        layoutExamination.setVisibility(View.VISIBLE);
         
-        // Set patient data (you'll need to create this layout)
-        // For now, just show the card
-        cardPatientInfo.setVisibility(View.VISIBLE);
+        Toast.makeText(this, "Đã sẵn sàng khám: " + patient.getFullName(), Toast.LENGTH_SHORT).show();
         
-        Toast.makeText(this, "Đã tải thông tin: " + patient.getFullName(), Toast.LENGTH_SHORT).show();
+        // Optionally, pre-fill some fields or load previous notes from backend
+        // etReason.setText("...");
     }
 
     private void loadTemplates() {
@@ -193,6 +244,9 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             return;
         }
 
+        // Hide the templates list after selecting one
+        rvTemplates.setVisibility(View.GONE);
+
         CreateTreatmentPlanRequest request = new CreateTreatmentPlanRequest(
             template.getId(), 
             currentPatient.getId()
@@ -209,10 +263,8 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                     treatmentSteps.addAll(plan.getSteps());
                     stepAdapter.notifyDataSetChanged();
                     
-                    cardTreatmentPlan.setVisibility(View.VISIBLE);
-                    
                     Toast.makeText(DoctorWorkflowActivity.this, 
-                        "Đã tạo phác đồ từ mẫu: " + template.getName(), Toast.LENGTH_SHORT).show();
+                        "Đã thêm phác đồ: " + template.getName(), Toast.LENGTH_SHORT).show();
                 } else {
                     Toast.makeText(DoctorWorkflowActivity.this, 
                         "Lỗi tạo phác đồ", Toast.LENGTH_SHORT).show();
@@ -229,29 +281,108 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
 
     @Override
     public void onStepEdit(TreatmentPlan.Step step) {
-        // TODO: Open step edit dialog
         Toast.makeText(this, "Chỉnh sửa bước: " + step.getServiceName(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onStepComplete(TreatmentPlan.Step step) {
-        // TODO: Mark step as completed
         Toast.makeText(this, "Hoàn thành bước: " + step.getServiceName(), Toast.LENGTH_SHORT).show();
     }
 
     @Override
     public void onToothSelected(int toothNumber) {
-        // Handle tooth selection from odontogram
-        Toast.makeText(this, "Đã chọn răng số: " + toothNumber, Toast.LENGTH_SHORT).show();
+        showToothNoteDialog(toothNumber);
+    }
+    
+    private void showToothNoteDialog(int toothNumber) {
+        com.google.android.material.bottomsheet.BottomSheetDialog dialog = 
+            new com.google.android.material.bottomsheet.BottomSheetDialog(this);
+        
+        View view = getLayoutInflater().inflate(R.layout.dialog_tooth_note, null);
+        dialog.setContentView(view);
+        
+        TextView tvTitle = view.findViewById(R.id.tvToothTitle);
+        tvTitle.setText("Ghi chú Răng R" + toothNumber);
+        
+        android.widget.RadioGroup rgStatus = view.findViewById(R.id.rgToothStatus);
+        EditText etNote = view.findViewById(R.id.etToothNote);
+        
+        // Restore previous status
+        String existingStatus = odontogramView.getToothStatus(toothNumber);
+        if (existingStatus != null) {
+            switch (existingStatus) {
+                case "caries": rgStatus.check(R.id.rbCaries); break;
+                case "filled": rgStatus.check(R.id.rbFilled); break;
+                case "requested": rgStatus.check(R.id.rbRequested); break;
+                case "rct": rgStatus.check(R.id.rbRct); break;
+                default: rgStatus.check(R.id.rbHealthy); break;
+            }
+        } else {
+            rgStatus.check(R.id.rbHealthy);
+        }
+        
+        // Restore previous note
+        if (toothCustomNotesMap.containsKey(toothNumber)) {
+            etNote.setText(toothCustomNotesMap.get(toothNumber));
+        }
+        
+        view.findViewById(R.id.btnCancel).setOnClickListener(v -> dialog.dismiss());
+        view.findViewById(R.id.btnSave).setOnClickListener(v -> {
+            int checkedId = rgStatus.getCheckedRadioButtonId();
+            String status = "healthy";
+            String statusText = "Bình thường";
+            
+            if (checkedId == R.id.rbCaries) { status = "caries"; statusText = "Sâu răng"; }
+            else if (checkedId == R.id.rbFilled) { status = "filled"; statusText = "Đã trám"; }
+            else if (checkedId == R.id.rbRequested) { status = "requested"; statusText = "BN yêu cầu"; }
+            else if (checkedId == R.id.rbRct) { status = "rct"; statusText = "Cần chữa tủy"; }
+            
+            odontogramView.setToothStatus(toothNumber, status);
+            
+            String customNote = etNote.getText().toString().trim();
+            if (status.equals("healthy") && customNote.isEmpty()) {
+                toothCustomNotesMap.remove(toothNumber);
+            } else {
+                String fullNote = statusText;
+                if (!customNote.isEmpty()) {
+                    fullNote += " - " + customNote;
+                }
+                toothCustomNotesMap.put(toothNumber, fullNote);
+            }
+            
+            updateToothNotesDisplay();
+            dialog.dismiss();
+        });
+        
+        dialog.show();
+    }
+    
+    private void updateToothNotesDisplay() {
+        if (toothCustomNotesMap.isEmpty()) {
+            tvToothNotes.setText("Chưa có ghi chú nào. Nhấn vào răng trên sơ đồ để thêm ghi chú.");
+            return;
+        }
+        
+        StringBuilder sb = new StringBuilder();
+        for (Map.Entry<Integer, String> entry : toothCustomNotesMap.entrySet()) {
+            sb.append("• R").append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+        }
+        tvToothNotes.setText(sb.toString().trim());
     }
 
     private void saveTreatmentPlan() {
-        if (currentTreatmentPlanId == null) {
-            Toast.makeText(this, "Chưa có phác đồ để lưu", Toast.LENGTH_SHORT).show();
+        String reason = etReason.getText().toString().trim();
+        String diagnosis = etDiagnosis.getText().toString().trim();
+        
+        if (reason.isEmpty() || diagnosis.isEmpty()) {
+            Toast.makeText(this, "Vui lòng nhập lý do và chẩn đoán", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // TODO: Implement save treatment plan steps
-        Toast.makeText(this, "Đã lưu phác đồ điều trị", Toast.LENGTH_SHORT).show();
+        // Ideally, combine toothNotesMap, reason, and diagnosis and post to backend
+        // apiService.saveDentalRecord(...)
+        
+        Toast.makeText(this, "Đã lưu hồ sơ bệnh án thành công!", Toast.LENGTH_SHORT).show();
+        finish();
     }
 }

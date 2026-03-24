@@ -89,6 +89,9 @@
             android:name=".ui.activities.staff.QRScannerActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activities.PatientQRScannerActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activities.staff.QueueManagementActivity"
             android:exported="false" />
         <activity

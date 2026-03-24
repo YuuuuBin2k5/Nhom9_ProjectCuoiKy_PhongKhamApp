@@ -300,4 +300,151 @@ public class CheckInQueueService {
     }
 
     public record QueueItemDto(Long id, Integer queueNumber, String status, Integer priorityLevel, String patientName, Long patientId) {}
+
+    @Transactional
+    public CheckInResult processSelfScan(long authenticatedPatientId, String qrData) {
+        if (qrData == null || qrData.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã QR hoặc mã số không được để trống");
+        }
+        qrData = qrData.trim();
+
+        // Parse QR data: format "CHECKIN:appointmentId:timestamp" or "CHECKIN:patientId"
+        Long appointmentId = null;
+        Long targetPatientId = null;
+
+        if (qrData.startsWith("CHECKIN:")) {
+            String[] parts = qrData.split(":");
+            if (parts.length >= 2) {
+                try {
+                    // Try to parse as appointmentId first
+                    appointmentId = Long.parseLong(parts[1]);
+                } catch (NumberFormatException e) {
+                    throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã không hợp lệ");
+                }
+            } else {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã không hợp lệ");
+            }
+        } else {
+            // Try direct code input (just numbers)
+            try {
+                appointmentId = Long.parseLong(qrData);
+            } catch (NumberFormatException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã số không hợp lệ");
+            }
+        }
+
+        // Find appointment
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy lịch hẹn"));
+
+        // Verify this appointment belongs to the authenticated patient
+        if (appointment.getPatient() == null || appointment.getPatient().getId() != authenticatedPatientId) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Mã này không thuộc về bạn");
+        }
+
+        // Check if appointment is today
+        LocalDate today = LocalDate.now();
+        LocalDate appointmentDate = appointment.getAppointmentDatetime().toLocalDate();
+        if (!appointmentDate.equals(today)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Lịch hẹn không phải hôm nay");
+        }
+
+        Patient patient = appointment.getPatient();
+        if (!patient.isActive()) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản không hoạt động");
+        }
+
+        // Check if already checked in
+        var existing = checkInQueueRepository.findByAppointmentId(appointment.getId());
+        if (existing.isPresent()) {
+            CheckInQueue q = existing.get();
+            return CheckInResult.alreadyCheckedIn(q.getQueueNumber(), getRoomName(q));
+        }
+
+        // Create queue entry
+        ClinicRoom room = appointment.getDoctor() != null ? appointment.getDoctor().getClinicRoom() : null;
+        if (room == null) {
+            room = clinicRoomRepository.findAll().stream().findFirst()
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Chưa cấu hình phòng khám"));
+        }
+
+        int nextNumber = getNextQueueNumber(room.getId());
+        CheckInQueue queue = CheckInQueue.builder()
+                .appointment(appointment)
+                .clinicRoom(room)
+                .queueNumber(nextNumber)
+                .checkInTime(LocalDateTime.now())
+                .status(QueueStatus.WAITING)
+                .priorityLevel(0)
+                .build();
+        checkInQueueRepository.save(queue);
+
+        // Send notification
+        Notification notif = Notification.builder()
+                .patient(patient)
+                .title("Check-in thành công")
+                .message("Bạn đã check-in thành công. Số thứ tự: " + nextNumber + ". Phòng: " + room.getName())
+                .type("CHECK_IN")
+                .build();
+        notificationRepository.save(notif);
+
+        try {
+            queueEventService.broadcastQueueUpdated(room.getId());
+        } catch (Exception e) {
+            log.warn("Broadcast failed: {}", e.getMessage());
+        }
+
+        return CheckInResult.success(nextNumber, room.getName(), room.getDescription() != null ? room.getDescription() : "");
+    }
+
+    @Transactional
+    public com.hcmute.clinic.dto.GenerateCheckInQRResponse generateCheckInQR(com.hcmute.clinic.dto.GenerateCheckInQRRequest request) {
+        Appointment appointment = null;
+        Patient patient = null;
+
+        // Find appointment by ID
+        if (request.getAppointmentId() != null) {
+            appointment = appointmentRepository.findById(request.getAppointmentId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy lịch hẹn"));
+            patient = appointment.getPatient();
+        } 
+        // Find patient by ID
+        else if (request.getPatientId() != null) {
+            patient = patientRepository.findById(request.getPatientId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bệnh nhân"));
+            
+            // Find today's appointment for this patient
+            List<Appointment> todayAppointments = appointmentRepository.findTodayByPatientId(patient.getId());
+            if (todayAppointments.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bệnh nhân không có lịch hẹn hôm nay");
+            }
+            appointment = todayAppointments.get(0);
+        }
+        // Find patient by phone
+        else if (request.getPatientPhone() != null && !request.getPatientPhone().isBlank()) {
+            patient = patientRepository.findByPhone(request.getPatientPhone())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bệnh nhân với số điện thoại này"));
+            
+            List<Appointment> todayAppointments = appointmentRepository.findTodayByPatientId(patient.getId());
+            if (todayAppointments.isEmpty()) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bệnh nhân không có lịch hẹn hôm nay");
+            }
+            appointment = todayAppointments.get(0);
+        } else {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cần cung cấp appointmentId, patientId hoặc patientPhone");
+        }
+
+        // Generate QR data
+        String qrData = "CHECKIN:" + appointment.getId();
+        String displayCode = String.valueOf(appointment.getId());
+        String patientName = (patient.getLastName() + " " + patient.getFirstName()).trim();
+
+        return com.hcmute.clinic.dto.GenerateCheckInQRResponse.builder()
+                .qrData(qrData)
+                .displayCode(displayCode)
+                .patientName(patientName)
+                .appointmentId(appointment.getId())
+                .expiresAt(appointment.getAppointmentDatetime().toLocalDate().plusDays(1).toString())
+                .build();
+    }
 }

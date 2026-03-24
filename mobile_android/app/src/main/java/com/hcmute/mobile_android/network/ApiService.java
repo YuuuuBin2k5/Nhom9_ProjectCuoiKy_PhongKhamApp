@@ -54,6 +54,9 @@ public interface ApiService {
     @POST("api/checkin/scan")
     Call<MessageResponse> scanCheckIn(@Body com.hcmute.mobile_android.network.models.CheckInScanRequest request);
 
+    @POST("api/checkin/self-scan")
+    Call<MessageResponse> selfCheckIn(@Body com.hcmute.mobile_android.network.models.CheckInScanRequest request);
+
     @GET("api/treatment-plans/my")
     Call<List<TreatmentPlanSummary>> getMyTreatmentPlans();
 
