@@ -55,9 +55,11 @@ public class SecurityConfig {
                 .requestMatchers(
                         "/api/auth/**",
                         "/api/checkin/scan",
+                        "/api/upload",
                         "/api/treatment-templates",
                         "/api/services",
                         "/api/doctors",
+                        "/uploads/**",
                         "/doctor.html",
                         "/scanner.html",
                         "/queue.html",
