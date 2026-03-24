@@ -46,9 +46,6 @@ public class MainActivity extends AppCompatActivity {
         });
 
         if (savedInstanceState == null) {
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragmentContainer, new PatientDashboardFragment())
-                    .commit();
             bottomNav.setSelectedItemId(R.id.nav_home);
         }
 

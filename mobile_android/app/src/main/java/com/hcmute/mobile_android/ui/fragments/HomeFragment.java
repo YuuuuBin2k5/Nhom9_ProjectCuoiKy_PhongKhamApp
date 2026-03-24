@@ -6,7 +6,6 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -19,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
@@ -27,10 +27,12 @@ import com.hcmute.mobile_android.network.models.PatientMeResponse;
 import com.hcmute.mobile_android.network.models.ServiceItem;
 import com.hcmute.mobile_android.network.models.UpcomingAppointment;
 import com.hcmute.mobile_android.ui.activities.AppointmentDetailActivity;
+import com.hcmute.mobile_android.ui.activities.BookAppointmentActivity;
 import com.hcmute.mobile_android.ui.activities.GenericListActivity;
 import com.hcmute.mobile_android.ui.activities.LoginActivity;
 import com.hcmute.mobile_android.ui.activities.MainActivity;
 import com.hcmute.mobile_android.ui.activities.ProfileActivity;
+import com.hcmute.mobile_android.ui.activities.ServiceDetailActivity;
 import com.hcmute.mobile_android.util.TokenManager;
 
 import java.text.NumberFormat;
@@ -55,10 +57,12 @@ public class HomeFragment extends Fragment {
     private CardView cardAppointment;
     private LinearLayout layoutNoAppointment;
     private LinearLayout layoutAppointmentDetail;
-    private RecyclerView rvServices, rvDoctors;
+    private RecyclerView rvServices, rvDoctors, rvCategories;
     private ServiceAdapter serviceAdapter;
     private DoctorAdapter doctorAdapter;
+    private CategoryAdapter categoryAdapter;
     private UpcomingAppointment latestUpcoming;
+    private List<ServiceItem> allServices = new ArrayList<>();
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -87,12 +91,14 @@ public class HomeFragment extends Fragment {
         tvApptTime = view.findViewById(R.id.tv_appointment_time);
         rvServices = view.findViewById(R.id.rv_services);
         rvDoctors = view.findViewById(R.id.rv_doctors);
+        rvCategories = view.findViewById(R.id.rv_categories);
 
         MaterialButton btnViewDetail = view.findViewById(R.id.btn_view_appointment_detail);
 
-        view.findViewById(R.id.btn_book_appointment).setOnClickListener(v -> navigateToQr());
-        view.findViewById(R.id.btn_qr_scan).setOnClickListener(v -> navigateToQr());
-        view.findViewById(R.id.btn_qr_code).setOnClickListener(v -> navigateToQr());
+        View btnQrScan = view.findViewById(R.id.btn_qr_scan);
+        if (btnQrScan != null) {
+            btnQrScan.setOnClickListener(v -> navigateToQr());
+        }
         view.findViewById(R.id.iv_avatar).setOnClickListener(v ->
                 startActivity(new Intent(requireContext(), ProfileActivity.class)));
         view.findViewById(R.id.iv_notification).setOnClickListener(v -> {
@@ -102,14 +108,26 @@ public class HomeFragment extends Fragment {
         view.findViewById(R.id.all_appointment).setOnClickListener(v -> openList(GenericListActivity.MODE_APPOINTMENTS));
         view.findViewById(R.id.all_dv).setOnClickListener(v -> openList(GenericListActivity.MODE_SERVICES));
         view.findViewById(R.id.all_bs).setOnClickListener(v -> openList(GenericListActivity.MODE_DOCTORS));
+        view.findViewById(R.id.all_dv_cat).setOnClickListener(v -> openList(GenericListActivity.MODE_SERVICES));
         btnViewDetail.setOnClickListener(v -> openAppointmentDetail());
+
+        ExtendedFloatingActionButton fabEmergency = view.findViewById(R.id.fabEmergency);
+        if (fabEmergency != null) {
+            fabEmergency.setOnClickListener(v ->
+                Toast.makeText(requireContext(), "Đang kết nối đường dây khẩn cấp...", Toast.LENGTH_SHORT).show());
+        }
 
         rvServices.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         rvDoctors.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        rvCategories.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        
         serviceAdapter = new ServiceAdapter();
         doctorAdapter = new DoctorAdapter();
+        categoryAdapter = new CategoryAdapter();
+        
         rvServices.setAdapter(serviceAdapter);
         rvDoctors.setAdapter(doctorAdapter);
+        rvCategories.setAdapter(categoryAdapter);
 
         loadData();
     }
@@ -229,13 +247,16 @@ public class HomeFragment extends Fragment {
             @Override
             public void onResponse(Call<List<ServiceItem>> call, Response<List<ServiceItem>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    serviceAdapter.updateItems(response.body());
+                    allServices = response.body();
+                    serviceAdapter.updateItems(allServices);
+                    extractCategories(allServices);
                 }
             }
 
             @Override
             public void onFailure(Call<List<ServiceItem>> call, Throwable t) {
-                serviceAdapter.updateItems(new ArrayList<>());
+                allServices = new ArrayList<>();
+                serviceAdapter.updateItems(allServices);
             }
         });
     }
@@ -268,6 +289,33 @@ public class HomeFragment extends Fragment {
         }
     }
 
+    private void filterServices(String category) {
+        if (category == null || category.equals("All")) {
+            serviceAdapter.updateItems(allServices);
+            return;
+        }
+        List<ServiceItem> filtered = new ArrayList<>();
+        for (ServiceItem s : allServices) {
+            if (category.equals(s.getCategoryName())) {
+                filtered.add(s);
+            }
+        }
+        serviceAdapter.updateItems(filtered);
+    }
+
+    private void extractCategories(List<ServiceItem> list) {
+        List<String> cats = new ArrayList<>();
+        for (ServiceItem s : list) {
+            String c = s.getCategoryName();
+            if (c != null && !c.isEmpty() && !cats.contains(c)) {
+                cats.add(c);
+            }
+        }
+        if (categoryAdapter != null) {
+            categoryAdapter.updateItems(cats);
+        }
+    }
+
     private static class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.Holder> {
         private List<ServiceItem> items = new ArrayList<>();
 
@@ -281,7 +329,7 @@ public class HomeFragment extends Fragment {
         @NonNull
         @Override
         public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_service, parent, false);
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_service_premium, parent, false);
             return new Holder(v);
         }
 
@@ -291,7 +339,18 @@ public class HomeFragment extends Fragment {
             holder.tvName.setText(s.getName() != null ? s.getName() : "Dịch vụ");
             holder.tvPrice.setText(formatPrice(s.getPrice()));
             int dur = s.getDurationMinutes() != null ? s.getDurationMinutes() : 0;
-            holder.tvDuration.setText(dur + " phút");
+            holder.tvDuration.setText(dur + " phút •");
+            
+            holder.itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), ServiceDetailActivity.class);
+                intent.putExtra("id", s.getId());
+                intent.putExtra("name", s.getName());
+                intent.putExtra("price", s.getPrice());
+                intent.putExtra("duration", s.getDurationMinutes() != null ? s.getDurationMinutes() : 0);
+                intent.putExtra("description", s.getDescription());
+                intent.putExtra("category", s.getCategoryName());
+                v.getContext().startActivity(intent);
+            });
         }
 
         @Override
@@ -310,7 +369,7 @@ public class HomeFragment extends Fragment {
                 super(v);
                 tvName = v.findViewById(R.id.tvServiceName);
                 tvPrice = v.findViewById(R.id.tvServicePrice);
-                tvDuration = v.findViewById(R.id.tvServiceDuration);
+                tvDuration = v.findViewById(R.id.tvDuration);
             }
         }
     }
@@ -328,7 +387,7 @@ public class HomeFragment extends Fragment {
         @NonNull
         @Override
         public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_doctor, parent, false);
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_doctor_suggested_premium, parent, false);
             return new Holder(v);
         }
 
@@ -337,7 +396,8 @@ public class HomeFragment extends Fragment {
             DoctorItem d = items.get(position);
             holder.tvName.setText("BS. " + d.getFullName());
             holder.tvSpecialization.setText(d.getSpecialization() != null && !d.getSpecialization().isEmpty()
-                    ? d.getSpecialization() : "Bác sĩ đa khoa");
+                    ? d.getSpecialization() : "Bác sĩ Gia đình");
+            holder.tvRating.setText("4." + (8 - (position % 4))); // Mock rating
         }
 
         @Override
@@ -346,12 +406,78 @@ public class HomeFragment extends Fragment {
         }
 
         static class Holder extends RecyclerView.ViewHolder {
-            TextView tvName, tvSpecialization;
+            TextView tvName, tvSpecialization, tvRating;
 
             Holder(View v) {
                 super(v);
                 tvName = v.findViewById(R.id.tvDoctorName);
                 tvSpecialization = v.findViewById(R.id.tvSpecialization);
+                tvRating = v.findViewById(R.id.tvRating);
+            }
+        }
+    }
+    
+    private class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Holder> {
+        private List<String> items = new ArrayList<>();
+        private int selectedPosition = 0;
+
+        CategoryAdapter() {}
+
+        void updateItems(List<String> list) {
+            items = new ArrayList<>(list != null ? list : new ArrayList<>());
+            if (!items.contains("All")) {
+                items.add(0, "All");
+            }
+            notifyDataSetChanged();
+        }
+
+        @NonNull
+        @Override
+        public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_category_premium, parent, false);
+            return new Holder(v);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull Holder holder, int position) {
+            String cat = items.get(position);
+            holder.tvName.setText(cat.equals("All") ? "Tất cả" : cat);
+
+            if (position == selectedPosition) {
+                holder.flBg.setBackgroundResource(R.drawable.bg_category_icon_premium);
+                holder.tvName.setTextColor(android.graphics.Color.parseColor("#3B82F6"));
+            } else {
+                holder.flBg.setBackgroundColor(android.graphics.Color.TRANSPARENT);
+                holder.tvName.setTextColor(android.graphics.Color.parseColor("#757575"));
+            }
+
+            holder.itemView.setOnClickListener(v -> {
+                int oldPos = selectedPosition;
+                selectedPosition = position;
+                notifyItemChanged(oldPos);
+                notifyItemChanged(selectedPosition);
+
+                // Navigate to BookAppointmentActivity
+                Intent intent = new Intent(v.getContext(), BookAppointmentActivity.class);
+                String catArg = cat.equals("All") ? "" : cat;
+                intent.putExtra(BookAppointmentActivity.EXTRA_CATEGORY, catArg);
+                v.getContext().startActivity(intent);
+            });
+        }
+
+        @Override
+        public int getItemCount() {
+            return items.size();
+        }
+
+        class Holder extends RecyclerView.ViewHolder {
+            TextView tvName;
+            View flBg;
+
+            Holder(View v) {
+                super(v);
+                tvName = v.findViewById(R.id.tvCategoryName);
+                flBg = v.findViewById(R.id.flCategoryBg);
             }
         }
     }

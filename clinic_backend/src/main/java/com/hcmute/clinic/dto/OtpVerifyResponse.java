@@ -16,4 +16,5 @@ public class OtpVerifyResponse {
     private String role;
     /** true khi purpose LOGIN nhưng chưa có Patient với SĐT này */
     private boolean needsRegistration;
+    private Long userId;
 }

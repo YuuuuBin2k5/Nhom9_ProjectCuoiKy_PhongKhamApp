@@ -123,4 +123,16 @@ public class TreatmentPlanService {
     public List<TreatmentPlan> findByPatientId(Long patientId) {
         return planRepository.findByPatientIdOrderByCreatedAtDesc(patientId);
     }
+
+    @Transactional
+    public void updateStepStatus(Long stepId, String status) {
+        TreatmentPlanStep step = stepRepository.findById(stepId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bước điều trị không tồn tại"));
+        try {
+            step.setStatus(StepStatus.valueOf(status.toUpperCase()));
+            stepRepository.save(step);
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Trạng thái không hợp lệ: " + status);
+        }
+    }
 }

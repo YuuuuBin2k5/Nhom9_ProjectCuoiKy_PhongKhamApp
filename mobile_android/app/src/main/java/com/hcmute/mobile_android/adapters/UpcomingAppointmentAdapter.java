@@ -84,13 +84,34 @@ public class UpcomingAppointmentAdapter extends RecyclerView.Adapter<UpcomingApp
         }
 
         private String[] formatDateTime(String dateTime) {
+            if (dateTime == null || dateTime.isEmpty()) return new String[]{"--/--", "--:--"};
             try {
-                SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
-                SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM", Locale.getDefault());
-                SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+                String dt = dateTime.replace(" ", "T");
+                // Remove fractional seconds or offset if present
+                if (dt.contains(".")) {
+                    dt = dt.substring(0, dt.indexOf("."));
+                }
+                if (dt.contains("+")) {
+                    dt = dt.substring(0, dt.indexOf("+"));
+                }
                 
-                java.util.Date date = inputFormat.parse(dateTime);
-                return new String[]{dateFormat.format(date), timeFormat.format(date)};
+                // If missing seconds, append :00
+                if (dt.length() == 16) {
+                    dt += ":00";
+                }
+
+                if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
+                    java.time.LocalDateTime ldt = java.time.LocalDateTime.parse(dt);
+                    java.time.format.DateTimeFormatter dateFmt = java.time.format.DateTimeFormatter.ofPattern("dd/MM");
+                    java.time.format.DateTimeFormatter timeFmt = java.time.format.DateTimeFormatter.ofPattern("HH:mm");
+                    return new String[]{ldt.format(dateFmt), ldt.format(timeFmt)};
+                } else {
+                    SimpleDateFormat inputFormat = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault());
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("dd/MM", Locale.getDefault());
+                    SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm", Locale.getDefault());
+                    java.util.Date date = inputFormat.parse(dt);
+                    return new String[]{dateFormat.format(date), timeFormat.format(date)};
+                }
             } catch (Exception e) {
                 return new String[]{"--/--", "--:--"};
             }

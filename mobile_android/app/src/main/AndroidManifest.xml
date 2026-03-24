@@ -59,6 +59,15 @@
             </intent-filter>
         </activity>
         <activity
+            android:name=".ui.activities.CategoryServicesActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.ServiceDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.ReviewActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activities.AdminMainActivity"
             android:exported="false" />
         <activity
@@ -88,6 +97,22 @@
         <activity
             android:name=".ui.activities.QRTestActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.activities.MedicalRecordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.PrescriptionDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.MedicalRecordDetailActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.EmrActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.BookAppointmentActivity"
+            android:exported="false"
+            android:windowSoftInputMode="stateHidden|adjustResize"/>
     </application>
 
 </manifest>

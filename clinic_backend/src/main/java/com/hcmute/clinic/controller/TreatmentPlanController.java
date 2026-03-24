@@ -50,24 +50,38 @@ public class TreatmentPlanController {
         List<TreatmentPlan> plans = treatmentPlanService.findByPatientId(patientId);
         if (plans == null) plans = List.of();
         List<PlanSummary> summaries = plans.stream()
-                .map(p -> new PlanSummary(
-                        p.getId(),
-                        p.getStatus().name(),
-                        p.getCreatedAt() != null ? p.getCreatedAt().toString() : null,
-                        p.getSteps() != null ? p.getSteps().stream()
-                                .sorted((a, b) -> Integer.compare(
-                                        a.getSequenceOrder() != null ? a.getSequenceOrder() : 0,
-                                        b.getSequenceOrder() != null ? b.getSequenceOrder() : 0))
-                                .map(s -> new StepSummary(
-                                        s.getId(),
-                                        s.getSequenceOrder(),
-                                        s.getService() != null ? s.getService().getName() : "",
-                                        s.getClinicRoom() != null ? s.getClinicRoom().getName() : null,
-                                        s.getStatus().name()
-                                ))
-                                .collect(Collectors.toList())
-                                : List.of()
-                ))
+                .map(p -> {
+                    List<TreatmentPlanStep> steps = p.getSteps() != null ? p.getSteps().stream()
+                            .sorted((a, b) -> Integer.compare(
+                                    a.getSequenceOrder() != null ? a.getSequenceOrder() : 0,
+                                    b.getSequenceOrder() != null ? b.getSequenceOrder() : 0))
+                            .collect(Collectors.toList()) : List.of();
+
+                    int total = steps.size();
+                    int completed = (int) steps.stream().filter(s -> "COMPLETED".equals(s.getStatus().name())).count();
+                    String nextStep = steps.stream()
+                            .filter(s -> !"COMPLETED".equals(s.getStatus().name()) && !"CANCELLED".equals(s.getStatus().name()))
+                            .findFirst()
+                            .map(s -> s.getService() != null ? s.getService().getName() : "")
+                            .orElse("");
+
+                    return new PlanSummary(
+                            p.getId(),
+                            total > 0 ? steps.get(0).getService().getName() : "Phác đồ điều trị",
+                            p.getStatus().name(),
+                            p.getCreatedAt() != null ? p.getCreatedAt().toString() : null,
+                            steps.stream().map(s -> new StepSummary(
+                                    s.getId(),
+                                    s.getSequenceOrder(),
+                                    s.getService() != null ? s.getService().getName() : "",
+                                    s.getClinicRoom() != null ? s.getClinicRoom().getName() : null,
+                                    s.getStatus().name()
+                            )).collect(Collectors.toList()),
+                            total,
+                            completed,
+                            nextStep
+                    );
+                })
                 .collect(Collectors.toList());
         return ResponseEntity.ok(summaries);
     }
@@ -114,7 +128,20 @@ public class TreatmentPlanController {
         }
     }
 
-    public record PlanSummary(Long id, String status, String createdAt, List<StepSummary> steps) {
+    @PatchMapping("/steps/{stepId}/start")
+    public ResponseEntity<?> startStep(@PathVariable Long stepId, Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        try {
+            treatmentPlanService.updateStepStatus(stepId, "IN_PROGRESS");
+            return ResponseEntity.ok(Map.of("message", "Đã bắt đầu bước điều trị"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    public record PlanSummary(Long id, String title, String status, String createdAt, List<StepSummary> steps, int totalSteps, int completedSteps, String nextStepName) {
     }
 
     public record StepSummary(Long id, Integer order, String serviceName, String roomName, String status) {

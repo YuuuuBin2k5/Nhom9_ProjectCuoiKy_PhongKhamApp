@@ -60,7 +60,11 @@ public class LoginActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     LoginResponse body = response.body();
                     if (body.getToken() != null) {
-                        new TokenManager(LoginActivity.this).saveToken(body.getToken());
+                        TokenManager tm = new TokenManager(LoginActivity.this);
+                        tm.saveToken(body.getToken());
+                        if (body.getUserId() != null && !"ADMIN".equals(body.getRole())) {
+                            tm.savePatientId(body.getUserId());
+                        }
                     }
                     
                     // Navigate based on user role

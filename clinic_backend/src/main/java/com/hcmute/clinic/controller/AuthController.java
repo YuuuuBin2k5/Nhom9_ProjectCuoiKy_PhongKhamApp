@@ -49,6 +49,7 @@ public class AuthController {
                         .token(jwtService.generateToken(String.valueOf(a.getId()), "ADMIN"))
                         .email(a.getEmail())
                         .role("ADMIN")
+                        .userId(a.getId())
                         .build());
             }
         }
@@ -62,6 +63,7 @@ public class AuthController {
                         .token(jwtService.generateToken(String.valueOf(d.getId()), "DOCTOR"))
                         .email(d.getEmail())
                         .role("DOCTOR")
+                        .userId(d.getId())
                         .build());
             }
         }
@@ -84,6 +86,7 @@ public class AuthController {
                         .token(jwtService.generateToken(String.valueOf(p.getId()), "PATIENT"))
                         .email(p.getEmail())
                         .role("PATIENT")
+                        .userId(p.getId())
                         .build()))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid email or password")));
     }
@@ -124,6 +127,7 @@ public class AuthController {
                         .token(jwtService.generateToken(String.valueOf(p.getId()), "PATIENT"))
                         .email(p.getEmail())
                         .role("PATIENT")
+                        .userId(p.getId())
                         .needsRegistration(false)
                         .build())
                 .map(ResponseEntity::ok)
@@ -191,6 +195,7 @@ public class AuthController {
                         .token(jwtService.generateToken(String.valueOf(a.getId()), "ADMIN"))
                         .email(a.getEmail())
                         .role("ADMIN")
+                        .userId(a.getId())
                         .build());
             }
         }
@@ -206,6 +211,7 @@ public class AuthController {
                         .token(jwtService.generateToken(String.valueOf(d.getId()), "DOCTOR"))
                         .email(d.getEmail())
                         .role("DOCTOR")
+                        .userId(d.getId())
                         .build());
             }
         }

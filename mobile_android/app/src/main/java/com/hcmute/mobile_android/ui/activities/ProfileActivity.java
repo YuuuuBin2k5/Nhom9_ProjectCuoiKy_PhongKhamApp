@@ -2,6 +2,7 @@ package com.hcmute.mobile_android.ui.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.Toast;
 
@@ -55,8 +56,17 @@ public class ProfileActivity extends AppCompatActivity {
                             (p.getLastName() != null ? p.getLastName() : "")).trim();
                     etName.setText(fullName.isEmpty() ? "Bạn" : fullName);
                     etEmail.setText(p.getEmail() != null ? p.getEmail() : "-");
-                    etPhone.setText("Chưa cập nhật");
-                    etAddress.setText("Chưa cập nhật");
+                    etPhone.setText(p.getPhone() != null ? p.getPhone() : "");
+                    etAddress.setText(p.getAddress() != null ? p.getAddress() : "");
+                    
+                    boolean isMissingInfo = p.getPhone() == null || p.getPhone().isEmpty() ||
+                            p.getEmail() == null || p.getEmail().isEmpty() ||
+                            p.getAddress() == null || p.getAddress().isEmpty();
+                    
+                    View warningIcon = findViewById(R.id.ivWarningProfile);
+                    if (warningIcon != null) {
+                        warningIcon.setVisibility(isMissingInfo ? View.VISIBLE : View.GONE);
+                    }
                 }
             }
 

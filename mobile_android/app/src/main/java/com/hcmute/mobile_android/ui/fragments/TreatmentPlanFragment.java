@@ -7,6 +7,7 @@ import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -14,6 +15,7 @@ import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.google.android.material.button.MaterialButton;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
@@ -150,6 +152,24 @@ public class TreatmentPlanFragment extends Fragment {
             h.tvStatus.setText(formatStatus(plan.getStatus()));
             h.tvDate.setText(formatDate(plan.getCreatedAt()));
 
+            // Show progress and next step if available
+            String progressText = "Tiến độ: " + plan.getCompletedSteps() + "/" + plan.getTotalSteps() + " bước";
+            TextView tvProgress = h.itemView.findViewById(R.id.tvPlanProgress);
+            if (tvProgress != null) {
+                tvProgress.setText(progressText);
+                tvProgress.setVisibility(View.VISIBLE);
+            }
+
+            TextView tvNextStep = h.itemView.findViewById(R.id.tvNextStep);
+            if (tvNextStep != null) {
+                if (plan.getNextStepName() != null && !plan.getNextStepName().isEmpty()) {
+                    tvNextStep.setText("Tiếp theo: " + plan.getNextStepName());
+                    tvNextStep.setVisibility(View.VISIBLE);
+                } else {
+                    tvNextStep.setVisibility(View.GONE);
+                }
+            }
+
             LinearLayout stepsContainer = h.itemView.findViewById(R.id.stepsContainer);
             stepsContainer.removeAllViews();
             List<TreatmentStepSummary> steps = plan.getSteps();
@@ -160,12 +180,48 @@ public class TreatmentPlanFragment extends Fragment {
                     TextView tvServiceName = row.findViewById(R.id.tvServiceName);
                     TextView tvStepDescription = row.findViewById(R.id.tvStepDescription);
                     TextView tvStatus = row.findViewById(R.id.tvStatus);
+                    MaterialButton btnStart = row.findViewById(R.id.btnEdit); // Labelled as "Bắt đầu"
 
                     Integer order = step.getOrder();
                     tvStepNumber.setText(order != null ? String.valueOf(order) : "?");
                     tvServiceName.setText(step.getServiceName() != null ? step.getServiceName() : "");
                     tvStepDescription.setText(step.getRoomName() != null ? "Phòng: " + step.getRoomName() : "");
                     tvStatus.setText(formatStepStatus(step.getStatus()));
+
+                    // Handle button visibility and action
+                    if ("PENDING".equals(step.getStatus())) {
+                        btnStart.setVisibility(View.VISIBLE);
+                        btnStart.setText("Bắt đầu");
+                        btnStart.setOnClickListener(v -> {
+                            ApiService api = RetrofitClient.getApiService(v.getContext());
+                            api.startTreatmentStep(step.getId()).enqueue(new Callback<com.hcmute.mobile_android.network.models.MessageResponse>() {
+                                @Override
+                                public void onResponse(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Response<com.hcmute.mobile_android.network.models.MessageResponse> response) {
+                                    if (response.isSuccessful()) {
+                                        Toast.makeText(v.getContext(), "Đã bắt đầu " + step.getServiceName(), Toast.LENGTH_SHORT).show();
+                                        // Refresh the list if this was in a fragment (need to reach back)
+                                        // For simplicity, just update UI locally or toast
+                                        btnStart.setText("Đang thực hiện");
+                                        btnStart.setEnabled(false);
+                                    } else {
+                                        Toast.makeText(v.getContext(), "Không thể bắt đầu bước này", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Throwable t) {
+                                    Toast.makeText(v.getContext(), "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        });
+                    } else if ("IN_PROGRESS".equals(step.getStatus())) {
+                        btnStart.setVisibility(View.VISIBLE);
+                        btnStart.setText("Đang thực hiện");
+                        btnStart.setEnabled(false);
+                    } else {
+                        btnStart.setVisibility(View.GONE);
+                    }
+
                     stepsContainer.addView(row);
                 }
             }

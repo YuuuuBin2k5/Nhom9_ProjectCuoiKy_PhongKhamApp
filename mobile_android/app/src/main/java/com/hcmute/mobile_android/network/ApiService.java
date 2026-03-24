@@ -1,6 +1,7 @@
 package com.hcmute.mobile_android.network;
 
 import com.hcmute.mobile_android.network.models.CheckInMyStatusResponse;
+import com.hcmute.mobile_android.network.models.CreateAppointmentRequest;
 import com.hcmute.mobile_android.network.models.CreateDoctorRequest;
 import com.hcmute.mobile_android.network.models.LoginRequest;
 import com.hcmute.mobile_android.network.models.PatientMeResponse;
@@ -24,6 +25,7 @@ import java.util.List;
 import retrofit2.Call;
 import retrofit2.http.Body;
 import retrofit2.http.GET;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
 import retrofit2.http.PUT;
 import retrofit2.http.Path;
@@ -36,6 +38,15 @@ public interface ApiService {
 
     @GET("api/patients/me/checkin-status")
     Call<CheckInMyStatusResponse> getMyCheckInStatus();
+
+    @GET("api/patients/me/medical-records")
+    Call<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> getMyMedicalRecords();
+
+    @GET("api/patients/me/medical-records/{id}")
+    Call<com.hcmute.mobile_android.network.models.MedicalRecordDetailResponse> getMedicalRecordDetail(@Path("id") Long id);
+
+    @GET("api/patients/me/prescriptions/{id}")
+    Call<com.hcmute.mobile_android.network.models.PrescriptionResponse> getPrescriptionDetail(@Path("id") Long prescriptionId);
 
     @GET("api/checkin/qr-token")
     Call<com.hcmute.mobile_android.network.models.QrTokenResponse> getQrToken();
@@ -57,6 +68,12 @@ public interface ApiService {
 
     @GET("api/doctors")
     Call<List<com.hcmute.mobile_android.network.models.DoctorItem>> getDoctors();
+
+    @GET("api/doctors")
+    Call<List<com.hcmute.mobile_android.network.models.DoctorItem>> getDoctorsByService(@Query("serviceId") Long serviceId);
+
+    @POST("api/appointments")
+    Call<com.hcmute.mobile_android.network.models.UpcomingAppointment> createAppointment(@Body CreateAppointmentRequest request);
 
     @POST("api/auth/otp/request")
     Call<MessageResponse> requestOtp(@Body OtpRequest request);
@@ -105,4 +122,7 @@ public interface ApiService {
 
     @PUT("api/treatment-plans/{id}/steps")
     Call<Void> updateTreatmentPlanSteps(@Path("id") Long planId, @Body List<TreatmentPlan.Step> steps);
+
+    @PATCH("api/treatment-plans/steps/{stepId}/start")
+    Call<MessageResponse> startTreatmentStep(@Path("stepId") Long stepId);
 }
