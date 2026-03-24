@@ -18,6 +18,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
@@ -107,7 +108,14 @@ public class HomeFragment extends Fragment {
         view.findViewById(R.id.all_appointment).setOnClickListener(v -> openList(GenericListActivity.MODE_APPOINTMENTS));
         view.findViewById(R.id.all_dv).setOnClickListener(v -> openList(GenericListActivity.MODE_SERVICES));
         view.findViewById(R.id.all_bs).setOnClickListener(v -> openList(GenericListActivity.MODE_DOCTORS));
+        view.findViewById(R.id.all_dv_cat).setOnClickListener(v -> openList(GenericListActivity.MODE_SERVICES));
         btnViewDetail.setOnClickListener(v -> openAppointmentDetail());
+
+        ExtendedFloatingActionButton fabEmergency = view.findViewById(R.id.fabEmergency);
+        if (fabEmergency != null) {
+            fabEmergency.setOnClickListener(v ->
+                Toast.makeText(requireContext(), "Đang kết nối đường dây khẩn cấp...", Toast.LENGTH_SHORT).show());
+        }
 
         rvServices.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         rvDoctors.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
@@ -437,7 +445,7 @@ public class HomeFragment extends Fragment {
 
             if (position == selectedPosition) {
                 holder.flBg.setBackgroundResource(R.drawable.bg_category_icon_premium);
-                holder.tvName.setTextColor(android.graphics.Color.parseColor("#1CB1A6"));
+                holder.tvName.setTextColor(android.graphics.Color.parseColor("#3B82F6"));
             } else {
                 holder.flBg.setBackgroundColor(android.graphics.Color.TRANSPARENT);
                 holder.tvName.setTextColor(android.graphics.Color.parseColor("#757575"));

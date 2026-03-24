@@ -141,7 +141,11 @@ public class OtpActivity extends AppCompatActivity {
                 }
                 // LOGIN
                 if (body.getToken() != null && !body.getToken().isEmpty()) {
-                    new TokenManager(OtpActivity.this).saveToken(body.getToken());
+                    TokenManager tm = new TokenManager(OtpActivity.this);
+                    tm.saveToken(body.getToken());
+                    if (body.getUserId() != null) {
+                        tm.savePatientId(body.getUserId());
+                    }
                     startActivity(new Intent(OtpActivity.this, MainActivity.class)
                             .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
                     finish();

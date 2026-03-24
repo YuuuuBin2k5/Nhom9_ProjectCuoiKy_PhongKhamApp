@@ -14,7 +14,7 @@
         android:id="@+id/flCategoryBg"
         android:layout_width="60dp"
         android:layout_height="60dp"
-        android:background="@drawable/bg_category_icon_premium">
+        android:background="@drawable/bg_icon_circle_blue_soft">
         
         <ImageView
             android:id="@+id/ivCategoryIcon"
@@ -22,7 +22,7 @@
             android:layout_height="28dp"
             android:layout_gravity="center"
             android:src="@drawable/ic_treatment_plan"
-            app:tint="#1CB1A6" />
+            app:tint="#3B82F6" />
     </FrameLayout>
 
     <TextView

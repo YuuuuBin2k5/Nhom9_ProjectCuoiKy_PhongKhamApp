@@ -1,116 +1,127 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout
+<androidx.coordinatorlayout.widget.CoordinatorLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#FCFCFC">
+    android:background="#F8FAFC">
 
-    <ScrollView
+    <!-- Main scrollable content -->
+    <androidx.core.widget.NestedScrollView
         android:id="@+id/home"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingBottom="40dp">
+            android:paddingBottom="100dp">
 
-            <!-- HEADER -->
+            <!-- HEADER SECTION with subtle gradient -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingTop="32dp"
-                android:paddingBottom="16dp"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
-                android:gravity="center_vertical">
-
-                <FrameLayout
-                    android:layout_width="52dp"
-                    android:layout_height="52dp">
-                    <com.google.android.material.imageview.ShapeableImageView
-                        android:id="@+id/iv_avatar"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:src="@drawable/ic_user"
-                        android:padding="6dp"
-                        android:background="#E8F0FE"
-                        app:shapeAppearanceOverlay="@style/Widget.MaterialComponents.ShapeableImageView"
-                        app:cornerSize="50%"
-                        app:tint="#1E54F3"/>
-                    <ImageView
-                        android:id="@+id/iv_profile_warning"
-                        android:layout_width="16dp"
-                        android:layout_height="16dp"
-                        android:src="@android:drawable/ic_dialog_info"
-                        app:tint="#FFC107"
-                        android:layout_gravity="top|end"
-                        android:visibility="gone"/>
-                </FrameLayout>
+                android:orientation="vertical"
+                android:background="@drawable/bg_header_gradient_premium"
+                android:paddingTop="52dp"
+                android:paddingBottom="28dp"
+                android:paddingHorizontal="24dp">
 
                 <LinearLayout
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:layout_marginStart="16dp">
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
 
-                    <TextView
-                        android:id="@+id/tv_user_name"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Hi, Patient \uD83D\uDC4B"
-                        android:textStyle="bold"
-                        android:textColor="#1A1A1A"
-                        android:textSize="18sp"/>
+                    <!-- Avatar with ring -->
+                    <FrameLayout
+                        android:layout_width="54dp"
+                        android:layout_height="54dp">
+                        <com.google.android.material.imageview.ShapeableImageView
+                            android:id="@+id/iv_avatar"
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:src="@drawable/ic_user"
+                            android:padding="10dp"
+                            android:background="@drawable/bg_avatar_ring"
+                            app:tint="#3B82F6"/>
+                        <ImageView
+                            android:id="@+id/iv_profile_warning"
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@android:drawable/ic_dialog_info"
+                            app:tint="#F59E0B"
+                            android:layout_gravity="top|end"
+                            android:visibility="gone"/>
+                    </FrameLayout>
 
-                    <TextView
-                        android:id="@+id/tv_greeting"
-                        android:layout_width="wrap_content"
+                    <!-- Greeting text -->
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="2dp"
-                        android:text="Hôm nay bạn thấy thế nào?"
-                        android:textSize="13sp"
-                        android:textColor="#757575"/>
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:layout_marginStart="14dp">
+
+                        <TextView
+                            android:id="@+id/tv_user_name"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Hi, Patient 👋"
+                            android:textStyle="bold"
+                            android:textColor="#0F172A"
+                            android:textSize="19sp"
+                            android:letterSpacing="-0.01"/>
+
+                        <TextView
+                            android:id="@+id/tv_greeting"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="2dp"
+                            android:text="How is your smile today?"
+                            android:textSize="13sp"
+                            android:textColor="#64748B"/>
+                    </LinearLayout>
+
+                    <!-- Action icons -->
+                    <ImageView
+                        android:id="@+id/ivHeaderLogout"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_logout"
+                        app:tint="#3B82F6"
+                        android:background="@drawable/bg_icon_circle_white"
+                        android:padding="10dp"
+                        android:layout_marginEnd="10dp"/>
+
+                    <ImageView
+                        android:id="@+id/iv_notification"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/ic_notification"
+                        app:tint="#3B82F6"
+                        android:background="@drawable/bg_icon_circle_white"
+                        android:padding="10dp"/>
                 </LinearLayout>
-
-                <ImageView
-                    android:id="@+id/ivHeaderLogout"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/ic_logout"
-                    app:tint="#1E54F3"
-                    android:background="@drawable/bg_category_icon_premium"
-                    android:padding="10dp"
-                    android:layout_marginEnd="12dp"/>
-
-                <ImageView
-                    android:id="@+id/iv_notification"
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/ic_notification"
-                    app:tint="#1E54F3"
-                    android:background="@drawable/bg_category_icon_premium"
-                    android:padding="10dp"/>
             </LinearLayout>
 
-            <!-- QR BANNER -->
+            <!-- HERO BANNER -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginTop="8dp"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginTop="-16dp"
                 android:layout_marginBottom="24dp"
                 app:cardCornerRadius="24dp"
-                app:cardElevation="8dp">
+                app:cardElevation="12dp"
+                app:cardBackgroundColor="#3B82F6">
 
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:background="@drawable/bg_banner_qr_premium"
+                    android:background="@drawable/bg_banner_hero_premium"
                     android:padding="24dp">
 
                     <TextView
@@ -122,44 +133,49 @@
                         android:textSize="22sp"
                         android:textStyle="bold"
                         android:lineSpacingExtra="4dp"
+                        android:letterSpacing="-0.01"
                         app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintStart_toStartOf="parent"/>
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintEnd_toStartOf="@+id/ivBannerDecor"/>
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btn_qr_scan"
                         android:layout_width="wrap_content"
-                        android:layout_height="48dp"
-                        android:layout_marginTop="16dp"
-                        android:text="Quét mã QR / Đặt chỗ"
+                        android:layout_height="44dp"
+                        android:layout_marginTop="18dp"
+                        android:text="📱 Quét mã QR / Đặt chỗ"
                         android:textAllCaps="false"
-                        android:textColor="#1E54F3"
+                        android:textColor="#3B82F6"
+                        android:textSize="14sp"
                         android:textStyle="bold"
                         app:backgroundTint="#FFFFFF"
-                        app:cornerRadius="24dp"
+                        app:cornerRadius="22dp"
+                        app:icon="@null"
                         app:layout_constraintTop_toBottomOf="@id/tvBannerTitle"
                         app:layout_constraintStart_toStartOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent"/>
 
-                    <!-- Decorative simple graphic -->
                     <ImageView
-                        android:layout_width="60dp"
-                        android:layout_height="60dp"
+                        android:id="@+id/ivBannerDecor"
+                        android:layout_width="80dp"
+                        android:layout_height="80dp"
                         android:src="@drawable/ic_treatment_plan"
                         app:tint="#40FFFFFF"
                         app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintTop_toTopOf="parent"
                         app:layout_constraintBottom_toBottomOf="parent"
-                        android:layout_marginBottom="-10dp"
-                        android:layout_marginEnd="-10dp"/>
+                        android:alpha="0.8"/>
                 </androidx.constraintlayout.widget.ConstraintLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- CATEGORIES -->
+            <!-- CATEGORIES SECTION -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingHorizontal="24dp"
-                android:layout_marginBottom="12dp">
+                android:paddingHorizontal="20dp"
+                android:layout_marginBottom="14dp"
+                android:gravity="center_vertical">
 
                 <TextView
                     android:layout_width="0dp"
@@ -167,17 +183,20 @@
                     android:layout_weight="1"
                     android:text="Danh mục"
                     android:textStyle="bold"
-                    android:textColor="#1A1A1A"
-                    android:textSize="18sp"/>
+                    android:textColor="#0F172A"
+                    android:textSize="18sp"
+                    android:letterSpacing="-0.01"/>
 
                 <TextView
                     android:id="@+id/all_dv_cat"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tất cả"
-                    android:textSize="14sp"
-                    android:textColor="#757575"
-                    android:background="?attr/selectableItemBackground"/>
+                    android:text="Xem tất cả"
+                    android:textSize="13sp"
+                    android:textColor="#3B82F6"
+                    android:textStyle="bold"
+                    android:background="?attr/selectableItemBackground"
+                    android:paddingHorizontal="4dp"/>
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
@@ -185,44 +204,88 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clipToPadding="false"
-                android:paddingHorizontal="24dp"
-                android:layout_marginBottom="24dp"/>
+                android:paddingHorizontal="20dp"
+                android:layout_marginBottom="28dp"/>
 
-            <!-- NEXT APPOINTMENT -->
+            <!-- SERVICES SECTION -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingHorizontal="24dp"
-                android:layout_marginBottom="12dp">
+                android:paddingHorizontal="20dp"
+                android:layout_marginBottom="14dp"
+                android:gravity="center_vertical">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Lịch hẹn tiếp theo"
+                    android:text="Our Services"
                     android:textStyle="bold"
-                    android:textColor="#1A1A1A"
-                    android:textSize="18sp"/>
+                    android:textColor="#0F172A"
+                    android:textSize="18sp"
+                    android:letterSpacing="-0.01"/>
+
+                <TextView
+                    android:id="@+id/all_dv"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="See All"
+                    android:textSize="13sp"
+                    android:textColor="#3B82F6"
+                    android:textStyle="bold"
+                    android:background="?attr/selectableItemBackground"
+                    android:paddingHorizontal="4dp"/>
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_services"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:clipToPadding="false"
+                android:paddingHorizontal="20dp"
+                android:layout_marginBottom="28dp"/>
+
+            <!-- UPCOMING APPOINTMENTS SECTION -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:paddingHorizontal="20dp"
+                android:layout_marginBottom="14dp"
+                android:gravity="center_vertical">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="Upcoming Appointments"
+                    android:textStyle="bold"
+                    android:textColor="#0F172A"
+                    android:textSize="18sp"
+                    android:letterSpacing="-0.01"/>
 
                 <TextView
                     android:id="@+id/all_appointment"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tất cả"
-                    android:textSize="14sp"
-                    android:textColor="#757575"
-                    android:background="?attr/selectableItemBackground"/>
+                    android:text="See All"
+                    android:textSize="13sp"
+                    android:textColor="#3B82F6"
+                    android:textStyle="bold"
+                    android:background="?attr/selectableItemBackground"
+                    android:paddingHorizontal="4dp"/>
             </LinearLayout>
 
+            <!-- Appointment Card -->
             <androidx.cardview.widget.CardView
                 android:id="@+id/cv_appointment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="24dp"
-                android:layout_marginBottom="28dp"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginBottom="32dp"
                 app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
+                app:cardElevation="0dp"
                 app:cardBackgroundColor="#FFFFFF">
 
                 <LinearLayout
@@ -231,16 +294,23 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
                     android:gravity="center"
-                    android:paddingTop="30dp"
-                    android:paddingBottom="30dp"
+                    android:paddingTop="36dp"
+                    android:paddingBottom="36dp"
                     android:visibility="gone">
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:text="📅"
+                        android:textSize="32sp"/>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
                         android:text="Bạn chưa có lịch hẹn nào."
-                        android:textColor="#757575"
-                        android:textSize="16sp" />
+                        android:textColor="#94A3B8"
+                        android:textSize="15sp" />
                 </LinearLayout>
 
                 <LinearLayout
@@ -248,7 +318,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="16dp">
+                    android:padding="20dp">
 
                     <LinearLayout
                         android:orientation="horizontal"
@@ -259,13 +329,13 @@
                         <FrameLayout
                             android:layout_width="48dp"
                             android:layout_height="48dp"
-                            android:background="@drawable/bg_category_icon_premium">
+                            android:background="@drawable/bg_icon_circle_blue_soft">
                             <ImageView
-                                android:layout_width="24dp"
-                                android:layout_height="24dp"
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
                                 android:src="@drawable/ic_calendar"
                                 android:layout_gravity="center"
-                                app:tint="#1E54F3"/>
+                                app:tint="#3B82F6"/>
                         </FrameLayout>
 
                         <LinearLayout
@@ -277,9 +347,9 @@
 
                             <TextView
                                 android:id="@+id/tv_appointment_doctor_name"
-                                android:text="BS. Matthew Smith"
+                                android:text="BS. Nguyễn Văn An"
                                 android:textStyle="bold"
-                                android:textColor="#1A1A1A"
+                                android:textColor="#0F172A"
                                 android:textSize="16sp"
                                 android:layout_height="wrap_content"
                                 android:layout_width="wrap_content"/>
@@ -287,22 +357,22 @@
                             <TextView
                                 android:id="@+id/tv_appointment_service_name"
                                 android:text="Khám tổng quát"
-                                android:textColor="#757575"
+                                android:textColor="#64748B"
                                 android:textSize="13sp"
-                                android:layout_marginTop="2dp"
+                                android:layout_marginTop="3dp"
                                 android:layout_height="wrap_content"
                                 android:layout_width="wrap_content"/>
                         </LinearLayout>
-                        
+
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btn_view_appointment_detail"
                             style="@style/Widget.MaterialComponents.Button.Icon"
-                            android:layout_width="48dp"
-                            android:layout_height="48dp"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
                             app:icon="@drawable/ic_add_white"
-                            app:iconTint="#1E54F3"
-                            app:backgroundTint="#E8F0FE"
-                            app:cornerRadius="12dp"
+                            app:iconTint="#3B82F6"
+                            app:backgroundTint="#EFF6FF"
+                            app:cornerRadius="14dp"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"/>
                     </LinearLayout>
@@ -310,7 +380,7 @@
                     <View
                         android:layout_width="match_parent"
                         android:layout_height="1dp"
-                        android:background="#E0E0E0"
+                        android:background="#F1F5F9"
                         android:layout_marginTop="16dp"
                         android:layout_marginBottom="16dp"/>
 
@@ -318,74 +388,42 @@
                         android:id="@+id/tv_appointment_time"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="10:15 a.m • Hôm nay"
-                        android:textColor="#3A6FF8"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:drawablePadding="8dp" />
+                        android:text="10:15 AM • Hôm nay"
+                        android:textColor="#3B82F6"
+                        android:textSize="15sp"
+                        android:textStyle="bold"/>
                 </LinearLayout>
             </androidx.cardview.widget.CardView>
 
-            <!-- SERVICES -->
+            <!-- DOCTORS SECTION -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:paddingHorizontal="24dp"
-                android:layout_marginBottom="8dp">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Dịch vụ của chúng tôi"
-                    android:textStyle="bold"
-                    android:textColor="#1A1A1A"
-                    android:textSize="18sp"/>
-
-                <TextView
-                    android:id="@+id/all_dv"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Tất cả"
-                    android:textSize="14sp"
-                    android:textColor="#757575"
-                    android:background="?attr/selectableItemBackground"/>
-            </LinearLayout>
-
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rv_services"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:clipToPadding="false"
                 android:paddingHorizontal="20dp"
-                android:layout_marginBottom="24dp"/>
-
-            <!-- DOCTORS -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:paddingHorizontal="24dp"
-                android:layout_marginBottom="8dp">
+                android:layout_marginBottom="14dp"
+                android:gravity="center_vertical">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Bác sĩ Gợi ý"
+                    android:text="Bác sĩ gợi ý"
                     android:textStyle="bold"
-                    android:textColor="#1A1A1A"
-                    android:textSize="18sp"/>
+                    android:textColor="#0F172A"
+                    android:textSize="18sp"
+                    android:letterSpacing="-0.01"/>
 
                 <TextView
                     android:id="@+id/all_bs"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tất cả"
-                    android:textSize="14sp"
-                    android:textColor="#757575"
-                    android:background="?attr/selectableItemBackground"/>
+                    android:text="See All"
+                    android:textSize="13sp"
+                    android:textColor="#3B82F6"
+                    android:textStyle="bold"
+                    android:background="?attr/selectableItemBackground"
+                    android:paddingHorizontal="4dp"/>
             </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
@@ -396,5 +434,24 @@
                 android:paddingHorizontal="20dp"/>
 
         </LinearLayout>
-    </ScrollView>
-</androidx.constraintlayout.widget.ConstraintLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <!-- EMERGENCY FAB — floating pill button -->
+    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
+        android:id="@+id/fabEmergency"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="end|bottom"
+        android:layout_margin="24dp"
+        android:layout_marginBottom="88dp"
+        android:text="Cấp cứu"
+        android:textAllCaps="false"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        app:backgroundTint="#EF4444"
+        app:icon="@drawable/ic_emergency"
+        app:iconTint="#FFFFFF"
+        app:elevation="12dp"/>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

@@ -16,8 +16,9 @@ public class WelcomeActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_welcome);
+
+        checkSession();
 
         findViewById(R.id.btnCreateAccount).setOnClickListener(v -> {
             startActivity(new Intent(this, RegisterActivity.class));
@@ -32,5 +33,18 @@ public class WelcomeActivity extends AppCompatActivity {
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
             return insets;
         });
+    }
+
+    private void checkSession() {
+        com.hcmute.mobile_android.util.TokenManager tm = new com.hcmute.mobile_android.util.TokenManager(this);
+        String token = tm.getToken();
+        if (token != null && !token.isEmpty()) {
+            // Token exists, navigate to appropriate main screen
+            // For now, let's assume PATIENT role if token exists, 
+            // but ideally you'd store the role too.
+            // Let's just go to MainActivity for now.
+            startActivity(new Intent(this, MainActivity.class));
+            finish();
+        }
     }
 }

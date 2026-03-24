@@ -9,6 +9,7 @@ public class OtpVerifyResponse {
 
     @SerializedName("needsRegistration")
     private boolean needsRegistration;
+    private Long userId;
 
     public String getToken() {
         return token;
@@ -24,5 +25,9 @@ public class OtpVerifyResponse {
 
     public boolean isNeedsRegistration() {
         return needsRegistration;
+    }
+
+    public Long getUserId() {
+        return userId;
     }
 }
