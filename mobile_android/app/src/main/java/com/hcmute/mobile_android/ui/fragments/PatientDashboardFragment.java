@@ -99,8 +99,6 @@ public class PatientDashboardFragment extends Fragment {
         
         btnEmergency = view.findViewById(R.id.btnEmergency); 
         
-        View btnQrScan = view.findViewById(R.id.btn_qr_scan); 
-        if (btnQrScan != null) btnQrScan.setOnClickListener(v -> openCheckIn());
         
         rvCategories = view.findViewById(R.id.rvCategories);
         rvServices = view.findViewById(R.id.rv_services);
@@ -304,11 +302,6 @@ public class PatientDashboardFragment extends Fragment {
         });
     }
 
-    private void openCheckIn() {
-        if (isAdded()) {
-            startActivity(new Intent(requireContext(), QRCheckInActivity.class));
-        }
-    }
 
     private void openQueueStatus() {
         if (isAdded()) {

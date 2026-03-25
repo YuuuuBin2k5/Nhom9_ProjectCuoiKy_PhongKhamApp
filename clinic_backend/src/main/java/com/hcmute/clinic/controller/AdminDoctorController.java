@@ -17,6 +17,24 @@ import java.util.Map;
 public class AdminDoctorController {
 
     private final AdminDoctorService adminDoctorService;
+    private final com.hcmute.clinic.repository.DoctorRepository doctorRepository;
+
+    @GetMapping
+    public ResponseEntity<?> getAllDoctors() {
+        return ResponseEntity.ok(doctorRepository.findAll().stream()
+                .map(d -> Map.of(
+                        "id", d.getId(),
+                        "firstName", d.getFirstName() != null ? d.getFirstName() : "",
+                        "lastName", d.getLastName() != null ? d.getLastName() : "",
+                        "email", d.getEmail() != null ? d.getEmail() : "",
+                        "specialization", d.getSpecialization() != null ? d.getSpecialization() : "",
+                        "roomName", d.getClinicRoom() != null ? d.getClinicRoom().getName() : "",
+                        "experienceYears", d.getExperienceYears() != null ? d.getExperienceYears() : 0,
+                        "active", d.isActive(),
+                        "avatarUrl", d.getAvatarUrl() != null ? d.getAvatarUrl() : ""
+                ))
+                .toList());
+    }
 
     @PostMapping
     public ResponseEntity<?> createDoctor(@RequestBody CreateDoctorRequest request) {
@@ -27,6 +45,16 @@ public class AdminDoctorController {
                     "email", doctor.getEmail(),
                     "message", "Doctor created successfully"
             ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/{id}/status")
+    public ResponseEntity<?> updateDoctorStatus(@PathVariable("id") Long id, @RequestParam boolean active) {
+        try {
+            adminDoctorService.updateDoctorStatus(id, active);
+            return ResponseEntity.ok(Map.of("message", "Doctor status updated successfully"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }

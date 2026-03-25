@@ -4,69 +4,59 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_margin="8dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="4dp"
+    app:cardBackgroundColor="@android:color/white"
     app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:gravity="center"
         android:orientation="vertical"
-        android:padding="16dp"
-        android:background="@android:color/white">
+        android:padding="8dp">
 
-        <LinearLayout
+
+        <TextView
+            android:id="@+id/tvRoomName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
+            android:layout_marginTop="12dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:text="Phòng khám 1"
+            android:textColor="#FF9800"
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
-            <ImageView
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:src="@drawable/ic_clinic"
-                android:layout_marginEnd="12dp"
-                android:background="@drawable/circle_background"
-                android:padding="8dp" />
+        <TextView
+            android:id="@+id/tvWaitingCount"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:ellipsize="end"
+            android:gravity="center"
+            android:maxLines="1"
+            android:text="0 người chờ"
+            android:textColor="#666666"
+            android:textSize="12sp" />
 
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical">
-
-                <TextView
-                    android:id="@+id/tvRoomName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Phòng khám 1"
-                    android:textColor="@android:color/black"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-
-                <TextView
-                    android:id="@+id/tvStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Đang hoạt động"
-                    android:textColor="#4CAF50"
-                    android:textSize="14sp"
-                    android:layout_marginTop="2dp" />
-
-            </LinearLayout>
-
-            <TextView
-                android:id="@+id/tvWaitingCount"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="3 người chờ"
-                android:textColor="#FF9800"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:background="@drawable/badge_background"
-                android:padding="8dp" />
-
-        </LinearLayout>
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnActive"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="2dp"
+            android:paddingHorizontal="12dp"
+            android:paddingVertical="4dp"
+            android:text="Hoạt động"
+            android:textAllCaps="false"
+            android:textSize="12sp"
+            android:minHeight="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:textColor="@android:color/holo_green_dark" />
 
     </LinearLayout>
 

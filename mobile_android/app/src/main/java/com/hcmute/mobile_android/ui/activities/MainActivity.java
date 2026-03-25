@@ -77,13 +77,6 @@ public class MainActivity extends AppCompatActivity
 
     // ─── HomeFragment.HomeCallbacks ─────────────────────────────────────────────
 
-    @Override
-    public void onNavigateToQr() {
-        bottomNav.setSelectedItemId(R.id.nav_qr);
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragmentContainer, new QrCheckInFragment())
-                .commit();
-    }
 
     @Override
     public void onNavigateToNotifications() {

@@ -38,7 +38,6 @@ import retrofit2.Response;
 public class HomeFragment extends Fragment {
 
     public interface HomeCallbacks {
-        void onNavigateToQr();
         void onNavigateToNotifications();
     }
 
@@ -111,7 +110,6 @@ public class HomeFragment extends Fragment {
         }
 
         // Wire up quick action buttons
-        view.findViewById(R.id.btn_qr_scan).setOnClickListener(v -> navigateToQr());
         view.findViewById(R.id.btn_new_record).setOnClickListener(v -> {
             startActivity(new Intent(requireContext(), DoctorWorkflowActivity.class));
         });
@@ -143,13 +141,6 @@ public class HomeFragment extends Fragment {
 
     // ─── Navigation helpers ────────────────────────────────────────────────────
 
-    private void navigateToQr() {
-        if (callbacks != null) {
-            callbacks.onNavigateToQr();
-        } else if (getActivity() instanceof MainActivity) {
-            ((MainActivity) getActivity()).onNavigateToQr();
-        }
-    }
 
     private void doLogout() {
         new TokenManager(requireContext()).clearToken();

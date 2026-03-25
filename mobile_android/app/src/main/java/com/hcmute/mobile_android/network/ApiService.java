@@ -97,11 +97,21 @@ public interface ApiService {
     Call<LoginResponse> login(@Body LoginRequest request);
 
     // Admin APIs
+
     @POST("api/admin/doctors")
     Call<MessageResponse> createDoctor(@Body CreateDoctorRequest request);
 
+    @PATCH("api/admin/doctors/{id}/status")
+    Call<MessageResponse> updateDoctorStatus(@Path("id") Long id, @Query("active") boolean active);
+
+    @GET("api/admin/doctors")
+    Call<List<com.hcmute.mobile_android.network.models.DoctorItem>> getAdminDoctors();
+
     @GET("api/admin/rooms")
     Call<List<RoomItem>> getRooms();
+
+    @PATCH("api/admin/rooms/{id}/status")
+    Call<com.hcmute.mobile_android.network.models.MessageResponse> updateRoomStatus(@Path("id") Long id, @Query("active") boolean active);
 
     // Queue Management APIs
     @GET("api/queue/room/{roomId}")

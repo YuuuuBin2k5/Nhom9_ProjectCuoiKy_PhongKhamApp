@@ -49,4 +49,12 @@ public class AdminDoctorService {
 
         return doctorRepository.save(doctor);
     }
+
+    @Transactional
+    public void updateDoctorStatus(Long id, boolean active) {
+        Doctor doctor = doctorRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Doctor not found with id: " + id));
+        doctor.setActive(active);
+        doctorRepository.save(doctor);
+    }
 }

@@ -25,17 +25,6 @@
             app:titleTextColor="@android:color/white" />
     </com.google.android.material.appbar.AppBarLayout>
 
-    <ImageView
-        android:id="@+id/btnBack"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_margin="8dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:padding="12dp"
-        android:src="@drawable/ic_back"
-        android:tint="@android:color/white"
-        app:layout_anchor="@id/appBarLayout2"
-        app:layout_anchorGravity="start|center_vertical" />
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvRooms"

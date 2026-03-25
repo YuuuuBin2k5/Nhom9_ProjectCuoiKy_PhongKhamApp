@@ -255,46 +255,6 @@
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
-                    <!-- QR Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardQR"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="4dp"
-                        app:strokeWidth="0dp">
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="160dp"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:background="@android:color/white"
-                            android:padding="16dp">
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:src="@drawable/ic_qr_code"
-                                app:tint="#2196F3"
-                                android:layout_marginBottom="12dp"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="QR Check-in"
-                                android:textColor="@android:color/black"
-                                android:textStyle="bold"
-                                android:textSize="18sp"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-
-                <!-- Row 3 -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
                     <!-- Logout Card -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardLogout"
@@ -327,16 +287,8 @@
                                 android:textSize="18sp"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Placeholder/Empty space to balance Row 3 -->
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"/>
                 </LinearLayout>
             </LinearLayout>
-
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

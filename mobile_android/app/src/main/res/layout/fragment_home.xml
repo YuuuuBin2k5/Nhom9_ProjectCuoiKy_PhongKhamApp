@@ -146,37 +146,6 @@
                     android:layout_marginTop="20dp"
                     android:gravity="center">
 
-                    <!-- Quét QR -->
-                    <LinearLayout
-                        android:id="@+id/btn_qr_scan"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:gravity="center"
-                        android:background="@drawable/bg_quick_action_btn"
-                        android:padding="12dp"
-                        android:layout_marginEnd="6dp"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <ImageView
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
-                            android:src="@drawable/ic_qr_scan"
-                            app:tint="#1565C0"/>
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="6dp"
-                            android:text="Quét QR\nBệnh nhân"
-                            android:textColor="#1565C0"
-                            android:textSize="11sp"
-                            android:gravity="center"
-                            android:textStyle="bold"/>
-                    </LinearLayout>
-
                     <!-- Lập hồ sơ mới -->
                     <LinearLayout
                         android:id="@+id/btn_new_record"
@@ -187,7 +156,7 @@
                         android:gravity="center"
                         android:background="@drawable/bg_quick_action_btn"
                         android:padding="12dp"
-                        android:layout_marginHorizontal="3dp"
+                        android:layout_marginEnd="8dp"
                         android:clickable="true"
                         android:focusable="true">
 
@@ -218,7 +187,6 @@
                         android:gravity="center"
                         android:background="@drawable/bg_quick_action_btn"
                         android:padding="12dp"
-                        android:layout_marginStart="6dp"
                         android:clickable="true"
                         android:focusable="true">
 
