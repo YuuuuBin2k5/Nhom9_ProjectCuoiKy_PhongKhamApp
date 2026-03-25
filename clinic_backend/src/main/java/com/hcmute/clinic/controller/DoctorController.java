@@ -53,6 +53,8 @@ public class DoctorController {
         
         // Find today's appointment or most recent scheduled/confirmed one
         List<Appointment> todayApps = appointmentRepository.findTodayByPatientId(patientId);
+        String serviceName = "";
+        String status = "NONE";
         Long queueId = null;
         if (!todayApps.isEmpty()) {
             serviceName = todayApps.get(0).getService().getName();

@@ -237,7 +237,7 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
 
     @Override
     public void onTransferToXRay(QueueItem item) {
-        apiService.transferToXRay(item.getId()).enqueue(new Callback<Void>() {
+        apiService.transferToXRay(item.getId(), new java.util.HashMap<>()).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
