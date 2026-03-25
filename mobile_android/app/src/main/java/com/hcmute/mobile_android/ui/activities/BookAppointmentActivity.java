@@ -224,8 +224,14 @@ public class BookAppointmentActivity extends AppCompatActivity {
         }
 
         List<String> names = new ArrayList<>();
+        // Leader Addition: Professional Auto-assign option
+        names.add("Hệ thống tự sắp xếp Bác sĩ (Khuyên dùng)");
+        
         for (DoctorItem d : doctorList) {
             String label = "BS. " + d.getFullName();
+            if (d.isSpecialist()) {
+                label = "⭐ [Chuyên khoa] " + label;
+            }
             if (d.getSpecialization() != null && !d.getSpecialization().isEmpty()) {
                 label += "  •  " + d.getSpecialization();
             }
@@ -243,7 +249,11 @@ public class BookAppointmentActivity extends AppCompatActivity {
         spinnerDoctor.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                selectedDoctor = doctorList.get(position);
+                if (position == 0) {
+                    selectedDoctor = null; // Auto-assign
+                } else {
+                    selectedDoctor = doctorList.get(position - 1);
+                }
             }
 
             @Override
@@ -301,10 +311,7 @@ public class BookAppointmentActivity extends AppCompatActivity {
             Toast.makeText(this, "Vui lòng chọn dịch vụ", Toast.LENGTH_SHORT).show();
             return;
         }
-        if (selectedDoctor == null) {
-            Toast.makeText(this, "Vui lòng chọn bác sĩ", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        // Doctor is optional now (backend will auto-assign if null)
         if (selectedDatetime == null) {
             Toast.makeText(this, "Vui lòng chọn ngày và giờ khám", Toast.LENGTH_SHORT).show();
             return;
@@ -337,7 +344,7 @@ public class BookAppointmentActivity extends AppCompatActivity {
         
         CreateAppointmentRequest req = new CreateAppointmentRequest(
                 selectedService.getId(),
-                selectedDoctor.getId(),
+                selectedDoctor != null ? selectedDoctor.getId() : null,
                 patientId,
                 selectedDatetime
         );
