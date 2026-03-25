@@ -105,7 +105,7 @@ public interface ApiService {
     Call<Void> callPatient(@Path("id") Long queueId);
 
     @POST("api/queue/{id}/transfer-xray")
-    Call<Void> transferToXRay(@Path("id") Long queueId);
+    Call<Void> transferToXRay(@Path("id") Long queueId, @Body java.util.Map<String, Long> body);
 
     @PUT("api/queue/{id}/status")
     Call<Void> completePatient(@Path("id") Long queueId);

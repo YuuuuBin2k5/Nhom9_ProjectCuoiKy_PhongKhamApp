@@ -13,6 +13,7 @@ public class PatientInfo {
     private String qrCodeData;
     private String bookedService;
     private String appointmentStatus;
+    private Long queueId;
 
     // Constructors
     public PatientInfo() {}
@@ -22,6 +23,9 @@ public class PatientInfo {
 
     public String getAppointmentStatus() { return appointmentStatus; }
     public void setAppointmentStatus(String appointmentStatus) { this.appointmentStatus = appointmentStatus; }
+
+    public Long getQueueId() { return queueId; }
+    public void setQueueId(Long queueId) { this.queueId = queueId; }
 
     public PatientInfo(Long id, String firstName, String lastName, String email, String phone) {
         this.id = id;

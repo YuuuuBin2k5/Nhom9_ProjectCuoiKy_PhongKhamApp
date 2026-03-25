@@ -58,7 +58,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     private EditText etQrInput;
     private TextView tvPatientHeader, tvDoctorGreeting;
     private ImageButton btnScanQr;
-    private MaterialButton btnLookup, btnSavePlan, btnSelectTemplate, btnPrescribe, btnPrintPlan, btnViewHistory;
+    private MaterialButton btnLookup, btnSavePlan, btnSelectTemplate, btnPrescribe, btnPrintPlan, btnViewHistory, btnTransferXRay;
     private MaterialCardView cardLookup, cardTreatmentPlan;
     private LinearLayout layoutExamination;
     private RecyclerView rvTemplates, rvTreatmentSteps;
@@ -165,6 +165,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         btnSelectTemplate = findViewById(R.id.btnSelectTemplate);
         btnPrescribe = findViewById(R.id.btnPrescribe);
         btnPrintPlan = findViewById(R.id.btnPrintPlan);
+        btnTransferXRay = findViewById(R.id.btnTransferXRay);
         
         // Listeners
         btnScanQr.setOnClickListener(v -> {
@@ -183,6 +184,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         
         btnLookup.setOnClickListener(v -> lookupPatient());
         btnSavePlan.setOnClickListener(v -> saveTreatmentPlan());
+        btnTransferXRay.setOnClickListener(v -> transferPatientToXRay());
         btnSelectTemplate.setOnClickListener(v -> {
             rvTemplates.setVisibility(rvTemplates.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
         });
@@ -466,4 +468,39 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             }
         });
     }
+
+    private void transferPatientToXRay() {
+        if (currentPatient == null || currentPatient.getQueueId() == null || currentPatient.getQueueId() == -1) {
+            Toast.makeText(this, "Không thể chuyển: Bệnh nhân chưa check-in hoặc thông hàng đợi lỗi", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        new androidx.appcompat.app.AlertDialog.Builder(this)
+            .setTitle("Xác nhận Chuyển X-Quang")
+            .setMessage("Bệnh nhân " + currentPatient.getFullName() + " sẽ được chuyển sang danh sách chờ tại phòng X-Quang. \n\nHệ thống sẽ tự động cập nhật trạng thái trên App của bệnh nhân.")
+            .setPositiveButton("Xác nhận", (dialog, which) -> {
+                btnTransferXRay.setEnabled(false);
+                apiService.transferToXRay(currentPatient.getQueueId(), new HashMap<>()).enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        if (response.isSuccessful()) {
+                            Toast.makeText(DoctorWorkflowActivity.this, "Đã chuyển bệnh nhân sang phòng X-Quang thành công", Toast.LENGTH_SHORT).show();
+                            finish(); // Finish current examination after transfer
+                        } else {
+                            btnTransferXRay.setEnabled(true);
+                            Toast.makeText(DoctorWorkflowActivity.this, "Lỗi khi chuyển X-Quang: " + response.code(), Toast.LENGTH_SHORT).show();
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        btnTransferXRay.setEnabled(true);
+                        Toast.makeText(DoctorWorkflowActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    }
+                });
+            })
+            .setNegativeButton("Hủy", null)
+            .show();
+    }
 }
+      

@@ -4,7 +4,9 @@ import com.hcmute.clinic.entity.Appointment;
 import com.hcmute.clinic.entity.Patient;
 import com.hcmute.clinic.enums.AppointmentStatus;
 import com.hcmute.clinic.repository.AppointmentRepository;
+import com.hcmute.clinic.repository.CheckInQueueRepository;
 import com.hcmute.clinic.repository.PatientRepository;
+import com.hcmute.clinic.entity.CheckInQueue;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -29,6 +31,7 @@ public class DoctorController {
 
     private final PatientRepository patientRepository;
     private final AppointmentRepository appointmentRepository;
+    private final CheckInQueueRepository checkInQueueRepository;
 
     @GetMapping("/patient")
     public ResponseEntity<?> getPatientByQr(@RequestParam String qr) {
@@ -50,11 +53,14 @@ public class DoctorController {
         
         // Find today's appointment or most recent scheduled/confirmed one
         List<Appointment> todayApps = appointmentRepository.findTodayByPatientId(patientId);
-        String serviceName = "";
-        String status = "NONE";
+        Long queueId = null;
         if (!todayApps.isEmpty()) {
             serviceName = todayApps.get(0).getService().getName();
             status = todayApps.get(0).getStatus().name();
+            Optional<CheckInQueue> q = checkInQueueRepository.findByAppointmentId(todayApps.get(0).getId());
+            if (q.isPresent()) {
+                queueId = q.get().getId();
+            }
         } else {
             // Fallback: Check for any upcoming/recent appointment
             Optional<Appointment> recent = appointmentRepository.findFirstByPatientIdAndStatusInOrderByAppointmentDatetimeDesc(
@@ -62,6 +68,10 @@ public class DoctorController {
             if (recent.isPresent()) {
                 serviceName = recent.get().getService().getName();
                 status = recent.get().getStatus().name();
+                Optional<CheckInQueue> q = checkInQueueRepository.findByAppointmentId(recent.get().getId());
+                if (q.isPresent()) {
+                    queueId = q.get().getId();
+                }
             }
         }
 
@@ -72,7 +82,8 @@ public class DoctorController {
                 "email", p.getEmail() != null ? p.getEmail() : "",
                 "phone", p.getPhone() != null ? p.getPhone() : "",
                 "bookedService", serviceName,
-                "appointmentStatus", status
+                "appointmentStatus", status,
+                "queueId", queueId != null ? queueId : -1
         ));
     }
 }
