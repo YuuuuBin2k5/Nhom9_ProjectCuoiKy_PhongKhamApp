@@ -305,10 +305,10 @@ Dự án này được phân phối dưới **MIT License**. Xem file [LICENSE](
 
 | Thành viên | Vai trò | GitHub |
 |------------|---------|--------|
-| **Nguyễn Văn A** | Team Lead & Backend | [@YuuuuBin2k5](https://github.com/YuuuuBin2k5) |
-| **Trần Thị B** | Android Developer | [@member2](https://github.com/member2) |
-| **Lê Văn C** | UI/UX Designer | [@member3](https://github.com/member3) |
-| **Phạm Thị D** | QA Tester | [@member4](https://github.com/member4) |
+| **Đào Nguyễn Nhật Anh** | Team Lead & Backend | [@YuuuuBin2k5](https://github.com/YuuuuBin2k5) |
+| **Nguyễn Đoàn Trường Vĩ** | Backend & QA Tester | [@truongvi-ute](https://github.com/truongvi-ute) |
+| **Trần Hoàng Phúc Quân** | UI/UX Designer & QA Tester | [@PhucQuan](https://github.com/PhucQuan) |
+| **Nguyễn Hồng Phúc** | UI/UX Designer & QA Tester | [@NHP39](https://github.com/NHP39) |
 
 ---
 
