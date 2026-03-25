@@ -322,7 +322,7 @@ Dự án này được phân phối dưới **MIT License**. Xem file [LICENSE](
 
 ## 🙏 **Acknowledgments**
 
-- **🏫 Trường Đại học Bách Khoa TP.HCM** - Hỗ trợ học thuật
+- **🏫 Trường Đại học Công Nghệ Kỹ Thuật TP.HCM** 
 - **📚 Spring Boot Community** - Framework documentation
 - **🤖 Android Developers** - Mobile development resources
 - **🔧 ZXing Project** - QR code library
