@@ -67,6 +67,22 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="28dp"
+                android:hint="Mã bệnh nhân (Đọc cho lễ tân nếu hỏng Camera)">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etQrCode"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:enabled="false"
+                    android:textStyle="bold"
+                    android:textColor="@color/primary_blue"
+                    android:textSize="16sp"/>
+            </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.textfield.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
                 android:hint="Họ và tên">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -123,14 +139,13 @@
             
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogout"
-                style="@style/Widget.MaterialComponents.Button.TextButton"
+                style="@style/Widget.Material3.Button.TonalButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="32dp"
                 android:text="Đăng xuất"
-                android:textColor="@color/error"
-                app:icon="@drawable/ic_back"
-                app:iconTint="@color/error"/>
+                app:backgroundTint="#FEE2E2"
+                android:textColor="#DC2626" />
 
         </LinearLayout>
     </ScrollView>

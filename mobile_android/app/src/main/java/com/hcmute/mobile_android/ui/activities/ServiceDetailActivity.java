@@ -17,8 +17,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
+import com.hcmute.mobile_android.adapters.ServiceImageAdapter;
 import com.google.android.material.button.MaterialButton;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
@@ -44,6 +48,8 @@ public class ServiceDetailActivity extends AppCompatActivity {
     private Spinner spinnerDoctors;
     private LinearLayout llDatetimePicker;
     private MaterialButton btnBook;
+    private ViewPager2 vpServiceImages;
+    private TabLayout tabIndicator;
     private ApiService apiService;
 
     private List<DoctorItem> doctorList = new ArrayList<>();
@@ -57,6 +63,7 @@ public class ServiceDetailActivity extends AppCompatActivity {
     private String serviceDesc;
     private int serviceDuration;
     private String serviceCategory;
+    private List<String> imageUrls;
 
     // Chosen datetime (ISO: yyyy-MM-dd'T'HH:mm:ss)
     private String selectedDatetime = null;
@@ -74,6 +81,7 @@ public class ServiceDetailActivity extends AppCompatActivity {
         serviceDesc     = getIntent().getStringExtra("description");
         serviceDuration = getIntent().getIntExtra("duration", 0);
         serviceCategory = getIntent().getStringExtra("category");
+        imageUrls       = getIntent().getStringArrayListExtra("imageUrls");
 
         // Toolbar
         MaterialToolbar toolbar = findViewById(R.id.toolbar);
@@ -88,6 +96,8 @@ public class ServiceDetailActivity extends AppCompatActivity {
         llDatetimePicker  = findViewById(R.id.ll_datetime_picker);
         tvDatetimeSelected = findViewById(R.id.tv_datetime_selected);
         btnBook           = findViewById(R.id.btnBook);
+        vpServiceImages   = findViewById(R.id.vpServiceImages);
+        tabIndicator      = findViewById(R.id.tabIndicator);
 
         // Populate static info
         tvServiceName.setText(serviceName != null ? serviceName : "");
@@ -106,6 +116,7 @@ public class ServiceDetailActivity extends AppCompatActivity {
         spinnerDoctors.setAdapter(spinnerAdapter);
 
         loadDoctors();
+        setupImages();
 
         // Date & time picker row
         llDatetimePicker.setOnClickListener(v -> pickDatetime());
@@ -129,23 +140,28 @@ public class ServiceDetailActivity extends AppCompatActivity {
 
     // ─── Load doctors ─────────────────────────────────────────────────────────
 
-    private void loadDoctors() {
-        apiService.getDoctorsByService(serviceId).enqueue(new Callback<List<DoctorItem>>() {
-            @Override
-            public void onResponse(Call<List<DoctorItem>> call, Response<List<DoctorItem>> response) {
-                if (response.isSuccessful() && response.body() != null && !response.body().isEmpty()) {
-                    populateDoctors(response.body());
-                } else {
-                    loadAllDoctors();
-                }
-            }
-            @Override
-            public void onFailure(Call<List<DoctorItem>> call, Throwable t) { loadAllDoctors(); }
-        });
+    private void setupImages() {
+        if (imageUrls == null || imageUrls.isEmpty()) {
+            // If no actual images, show a few placeholders or just one
+            imageUrls = new ArrayList<>();
+            imageUrls.add("ic_tooth");
+        }
+        
+        ServiceImageAdapter imageAdapter = new ServiceImageAdapter(this, imageUrls);
+        vpServiceImages.setAdapter(imageAdapter);
+        
+        if (imageUrls.size() > 1) {
+            new TabLayoutMediator(tabIndicator, vpServiceImages, (tab, position) -> {
+                // No text for dots
+            }).attach();
+            tabIndicator.setVisibility(View.VISIBLE);
+        } else {
+            tabIndicator.setVisibility(View.GONE);
+        }
     }
 
-    private void loadAllDoctors() {
-        apiService.getDoctors().enqueue(new Callback<List<DoctorItem>>() {
+    private void loadDoctors() {
+        apiService.getDoctorsByService(serviceId).enqueue(new Callback<List<DoctorItem>>() {
             @Override
             public void onResponse(Call<List<DoctorItem>> call, Response<List<DoctorItem>> response) {
                 if (response.isSuccessful() && response.body() != null) {

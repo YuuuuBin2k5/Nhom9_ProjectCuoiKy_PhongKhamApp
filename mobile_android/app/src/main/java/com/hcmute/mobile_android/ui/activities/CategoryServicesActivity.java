@@ -87,10 +87,15 @@ public class CategoryServicesActivity extends AppCompatActivity {
 
     private void onServiceClick(ServiceItem item) {
         Intent intent = new Intent(this, ServiceDetailActivity.class);
-        intent.putExtra("SERVICE_ID", item.getId());
-        intent.putExtra("SERVICE_NAME", item.getName());
-        intent.putExtra("SERVICE_PRICE", item.getPrice());
-        intent.putExtra("SERVICE_DESC", item.getDescription());
+        intent.putExtra("id", item.getId());
+        intent.putExtra("name", item.getName());
+        intent.putExtra("price", item.getPrice());
+        intent.putExtra("description", item.getDescription());
+        intent.putExtra("duration", item.getDurationMinutes());
+        intent.putExtra("category", item.getCategoryName());
+        if (item.getImageUrls() != null) {
+            intent.putStringArrayListExtra("imageUrls", new java.util.ArrayList<>(item.getImageUrls()));
+        }
         startActivity(intent);
     }
 }

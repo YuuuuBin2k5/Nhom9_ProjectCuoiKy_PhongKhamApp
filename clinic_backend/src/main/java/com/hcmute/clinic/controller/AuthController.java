@@ -47,6 +47,7 @@ public class AuthController {
             if (a.isActive() && passwordEncoder.matches(request.getPassword(), a.getPasswordHash())) {
                 return ResponseEntity.ok(AuthResponse.builder()
                         .token(jwtService.generateToken(String.valueOf(a.getId()), "ADMIN"))
+                        .refreshToken(jwtService.generateRefreshToken(String.valueOf(a.getId()), "ADMIN"))
                         .email(a.getEmail())
                         .role("ADMIN")
                         .userId(a.getId())
@@ -61,6 +62,7 @@ public class AuthController {
             if (d.isActive() && passwordEncoder.matches(request.getPassword(), d.getPasswordHash())) {
                 return ResponseEntity.ok(AuthResponse.builder()
                         .token(jwtService.generateToken(String.valueOf(d.getId()), "DOCTOR"))
+                        .refreshToken(jwtService.generateRefreshToken(String.valueOf(d.getId()), "DOCTOR"))
                         .email(d.getEmail())
                         .role("DOCTOR")
                         .userId(d.getId())
@@ -84,11 +86,28 @@ public class AuthController {
                 })
                 .<ResponseEntity<?>>map(p -> ResponseEntity.ok(AuthResponse.builder()
                         .token(jwtService.generateToken(String.valueOf(p.getId()), "PATIENT"))
+                        .refreshToken(jwtService.generateRefreshToken(String.valueOf(p.getId()), "PATIENT"))
                         .email(p.getEmail())
                         .role("PATIENT")
                         .userId(p.getId())
                         .build()))
                 .orElseGet(() -> ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid email or password")));
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<?> refresh(@RequestBody RefreshTokenRequest request) {
+        try {
+            var claims = jwtService.parseClaims(request.getRefreshToken());
+            if (!"refresh".equals(claims.get("type"))) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid token type"));
+            }
+            String userId = claims.getSubject();
+            String role = claims.get("role", String.class);
+            String newToken = jwtService.generateToken(userId, role);
+            return ResponseEntity.ok(Map.of("token", newToken));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid or expired refresh token"));
+        }
     }
 
     @PostMapping("/otp/request")
@@ -148,6 +167,18 @@ public class AuthController {
         if (request.getPassword().length() < 6) {
             return ResponseEntity.badRequest().body(Map.of("message", "Password must be at least 6 characters"));
         }
+        
+        // [Tester Audit] Password Complexity check
+        if (!request.getPassword().matches(".*[a-zA-Z].*") || !request.getPassword().matches(".*[0-9].*")) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Password must contain both letters and numbers"));
+        }
+
+        // [Tester Audit] Email Format check
+        String emailRegex = "^[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,6}$";
+        if (!email.matches(emailRegex)) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Invalid email format"));
+        }
+
         if (patientRepository.findByEmailIgnoreCase(email).isPresent()) {
             return ResponseEntity.badRequest().body(Map.of("message", "Email already registered"));
         }
@@ -168,9 +199,11 @@ public class AuthController {
         patientRepository.save(patient);
 
         String token = jwtService.generateToken(String.valueOf(patient.getId()), "PATIENT");
+        String refreshToken = jwtService.generateRefreshToken(String.valueOf(patient.getId()), "PATIENT");
         return ResponseEntity.ok(Map.of(
                 "message", "User registered successfully",
                 "token", token,
+                "refreshToken", refreshToken,
                 "email", patient.getEmail(),
                 "role", "PATIENT"
         ));

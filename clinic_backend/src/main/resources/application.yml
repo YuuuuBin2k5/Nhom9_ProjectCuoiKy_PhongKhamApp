@@ -21,6 +21,9 @@ spring:
       hibernate:
         format_sql: true
         dialect: org.hibernate.dialect.PostgreSQLDialect
+  sql:
+    init:
+      mode: never
 
 app:
   jwt:
@@ -30,3 +33,5 @@ app:
     ttl-minutes: 5
     max-attempts: 5
     register-grace-minutes: 15
+  upload:
+    dir: uploads

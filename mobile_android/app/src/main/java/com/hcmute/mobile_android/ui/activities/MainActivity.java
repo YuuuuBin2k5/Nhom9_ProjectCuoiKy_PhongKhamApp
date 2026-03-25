@@ -4,10 +4,12 @@ import android.os.Bundle;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.hcmute.mobile_android.R;
+import com.hcmute.mobile_android.ui.fragments.HomeFragment;
 import com.hcmute.mobile_android.ui.fragments.PatientDashboardFragment;
 import com.hcmute.mobile_android.ui.fragments.NotificationsFragment;
 import com.hcmute.mobile_android.ui.fragments.QrCheckInFragment;
 import com.hcmute.mobile_android.ui.fragments.TreatmentPlanFragment;
+import com.hcmute.mobile_android.util.TokenManager;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,9 +18,11 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends AppCompatActivity
+        implements HomeFragment.HomeCallbacks {
 
-    private com.google.android.material.bottomnavigation.BottomNavigationView bottomNav;
+    private BottomNavigationView bottomNav;
+    private boolean isDoctor;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -26,18 +30,38 @@ public class MainActivity extends AppCompatActivity {
         EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
+        // Determine role at startup
+        TokenManager tm = new TokenManager(this);
+        String role = tm.getUserRole();
+        isDoctor = "DOCTOR".equalsIgnoreCase(role);
+
         bottomNav = findViewById(R.id.bottomNav);
         bottomNav.setOnItemSelectedListener(item -> {
             int id = item.getItemId();
             Fragment f;
-            if (id == R.id.nav_qr) {
-                f = new QrCheckInFragment();
+            if (id == R.id.nav_home) {
+                // Route by role
+                f = isDoctor ? new HomeFragment() : new PatientDashboardFragment();
+            } else if (id == R.id.nav_qr) {
+                if (isDoctor) {
+                    startActivity(new android.content.Intent(MainActivity.this, com.hcmute.mobile_android.ui.activities.staff.QRScannerActivity.class));
+                    return false;
+                } else {
+                    f = new QrCheckInFragment();
+                }
             } else if (id == R.id.nav_plan) {
                 f = new TreatmentPlanFragment();
             } else if (id == R.id.nav_notifications) {
                 f = new NotificationsFragment();
+            } else if (id == R.id.nav_profile) {
+                if (isDoctor) {
+                    f = new com.hcmute.mobile_android.ui.fragments.DoctorSettingsFragment();
+                } else {
+                    startActivity(new android.content.Intent(MainActivity.this, ProfileActivity.class));
+                    return false; // Don't change selected tab visually
+                }
             } else {
-                f = new PatientDashboardFragment();
+                f = isDoctor ? new HomeFragment() : new PatientDashboardFragment();
             }
             getSupportFragmentManager().beginTransaction()
                     .replace(R.id.fragmentContainer, f)
@@ -49,6 +73,10 @@ public class MainActivity extends AppCompatActivity {
             bottomNav.setSelectedItemId(R.id.nav_home);
         }
 
+        if (isDoctor) {
+            bottomNav.getMenu().findItem(R.id.nav_plan).setVisible(false);
+        }
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -56,10 +84,25 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
+    // ─── HomeFragment.HomeCallbacks ─────────────────────────────────────────────
+
+    @Override
     public void onNavigateToQr() {
-        bottomNav.setSelectedItemId(R.id.nav_qr);
+        if (isDoctor) {
+            startActivity(new android.content.Intent(MainActivity.this, com.hcmute.mobile_android.ui.activities.staff.QRScannerActivity.class));
+        } else {
+            bottomNav.setSelectedItemId(R.id.nav_qr);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragmentContainer, new QrCheckInFragment())
+                    .commit();
+        }
+    }
+
+    @Override
+    public void onNavigateToNotifications() {
+        bottomNav.setSelectedItemId(R.id.nav_notifications);
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragmentContainer, new QrCheckInFragment())
+                .replace(R.id.fragmentContainer, new NotificationsFragment())
                 .commit();
     }
 }

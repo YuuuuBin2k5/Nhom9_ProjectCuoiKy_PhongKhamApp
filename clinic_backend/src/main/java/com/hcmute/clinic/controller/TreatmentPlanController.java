@@ -1,5 +1,6 @@
 package com.hcmute.clinic.controller;
 
+import com.hcmute.clinic.dto.TreatmentPlanDTO;
 import com.hcmute.clinic.dto.UpdatePlanStepsRequest;
 import com.hcmute.clinic.entity.TreatmentPlan;
 import com.hcmute.clinic.entity.TreatmentPlanStep;
@@ -35,10 +36,40 @@ public class TreatmentPlanController {
         }
         try {
             TreatmentPlan plan = treatmentPlanService.createFromTemplate(templateId, patientId, medicalRecordId);
-            return ResponseEntity.ok(Map.of("id", plan.getId()));
+            return ResponseEntity.ok(toDTO(plan));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
+    }
+
+    private TreatmentPlanDTO toDTO(TreatmentPlan plan) {
+        List<TreatmentPlanDTO.StepDTO> steps = plan.getSteps() != null ? plan.getSteps().stream()
+                .sorted((a, b) -> Integer.compare(
+                        a.getSequenceOrder() != null ? a.getSequenceOrder() : 0,
+                        b.getSequenceOrder() != null ? b.getSequenceOrder() : 0))
+                .map(s -> TreatmentPlanDTO.StepDTO.builder()
+                        .id(s.getId())
+                        .treatmentPlanId(plan.getId())
+                        .serviceId(s.getService() != null ? s.getService().getId() : 0L)
+                        .serviceName(s.getService() != null ? s.getService().getName() : "")
+                        .description(s.getService() != null ? s.getService().getDescription() : "")
+                        .stepOrder(s.getSequenceOrder())
+                        .status(s.getStatus().name())
+                        .toothNumber(s.getToothNumber())
+                        .estimatedPrice(s.getService() != null && s.getService().getPrice() != null ? s.getService().getPrice().doubleValue() : 0.0)
+                        .actualPrice(s.getActualPrice() != null ? s.getActualPrice().doubleValue() : 0.0)
+                        .doctorConclusion(s.getDoctorConclusion())
+                        .roomName(s.getClinicRoom() != null ? s.getClinicRoom().getName() : null)
+                        .uiTemplateType(s.getService() != null && s.getService().getUiTemplateType() != null ? s.getService().getUiTemplateType().name() : "GENERAL")
+                        .build())
+                .collect(Collectors.toList()) : List.of();
+
+        return TreatmentPlanDTO.builder()
+                .id(plan.getId())
+                .patientId(plan.getPatient().getId())
+                .status(plan.getStatus().name())
+                .steps(steps)
+                .build();
     }
 
     @GetMapping("/my")
@@ -91,27 +122,7 @@ public class TreatmentPlanController {
     public ResponseEntity<?> getById(@PathVariable Long id) {
         try {
             TreatmentPlan plan = treatmentPlanService.getById(id);
-            List<Map<String, Object>> stepSummaries = plan.getSteps() != null ? plan.getSteps().stream()
-                    .sorted((a, b) -> Integer.compare(a.getSequenceOrder() != null ? a.getSequenceOrder() : 0, b.getSequenceOrder() != null ? b.getSequenceOrder() : 0))
-                    .map(s -> Map.<String, Object>of(
-                            "id", s.getId(),
-                            "sequenceOrder", s.getSequenceOrder() != null ? s.getSequenceOrder() : 0,
-                            "serviceId", s.getService() != null ? s.getService().getId() : 0L,
-                            "serviceName", s.getService() != null ? s.getService().getName() : "",
-                            "clinicRoomId", s.getClinicRoom() != null ? s.getClinicRoom().getId() : 0L,
-                            "roomName", s.getClinicRoom() != null ? s.getClinicRoom().getName() : "",
-                            "status", s.getStatus().name(),
-                            "toothNumber", s.getToothNumber() != null ? s.getToothNumber() : "",
-                            "doctorConclusion", s.getDoctorConclusion() != null ? s.getDoctorConclusion() : "",
-                            "uiTemplateType", s.getService() != null && s.getService().getUiTemplateType() != null ? s.getService().getUiTemplateType().name() : "GENERAL"
-                    ))
-                    .collect(Collectors.toList()) : List.of();
-            return ResponseEntity.ok(Map.of(
-                    "id", plan.getId(),
-                    "patientId", plan.getPatient().getId(),
-                    "status", plan.getStatus().name(),
-                    "steps", stepSummaries
-            ));
+            return ResponseEntity.ok(toDTO(plan));
         } catch (Exception e) {
             return ResponseEntity.notFound().build();
         }

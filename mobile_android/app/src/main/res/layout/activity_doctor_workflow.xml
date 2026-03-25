@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -13,7 +14,7 @@
         android:layout_height="wrap_content"
         android:orientation="horizontal"
         android:padding="16dp"
-        android:background="@color/primary_trust_blue"
+        android:background="#1565C0"
         android:gravity="center_vertical">
 
         <ImageButton
@@ -25,15 +26,36 @@
             android:contentDescription="Quay lại"
             app:tint="@android:color/white" />
 
-        <TextView
+        <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:text="Lập phác đồ điều trị"
-            android:textColor="@android:color/white"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginStart="16dp" />
+            android:orientation="vertical"
+            android:layout_marginStart="8dp">
+
+            <TextView
+                android:id="@+id/tv_patient_header"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Khám Bệnh nhân..."
+                android:textColor="@android:color/white"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tv_doctor_greeting"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Sơ đồ răng &amp; Phác đồ"
+                android:textColor="#E3F2FD"
+                android:textSize="13sp" />
+        </LinearLayout>
+        
+        <ImageView
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:src="@drawable/ic_calendar"
+            app:tint="@android:color/white"/>
 
     </LinearLayout>
 
@@ -49,13 +71,15 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- 1. Patient Lookup -->
+            <!-- 1. Patient Lookup (Visible initially, hidden after lookup) -->
             <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardLookup"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp">
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@android:color/white">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -66,10 +90,10 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="1. Tra cứu bệnh nhân"
-                        android:textSize="16sp"
+                        android:text="Tra cứu bệnh nhân"
+                        android:textSize="15sp"
                         android:textStyle="bold"
-                        android:textColor="@color/text_primary"
+                        android:textColor="#0D1B2A"
                         android:layout_marginBottom="12dp" />
 
                     <LinearLayout
@@ -81,163 +105,214 @@
                         <EditText
                             android:id="@+id/etQrInput"
                             android:layout_width="0dp"
-                            android:layout_height="48dp"
+                            android:layout_height="45dp"
                             android:layout_weight="1"
-                            android:hint="Nhập mã QR (patient:1)"
-                            android:background="@drawable/edittext_background"
-                            android:padding="12dp"
+                            android:hint="Mã BN (VD: patient:1)..."
+                            android:background="@drawable/bg_card_white_rounded"
+                            android:paddingHorizontal="12dp"
+                            android:textSize="14sp"
                             android:layout_marginEnd="8dp" />
+
+                        <ImageButton
+                            android:id="@+id/btnScanQr"
+                            android:layout_width="45dp"
+                            android:layout_height="45dp"
+                            android:background="@drawable/bg_card_white_rounded"
+                            android:src="@drawable/ic_qr_scan"
+                            android:layout_marginEnd="8dp"
+                            android:padding="10dp"
+                            app:tint="#1565C0"
+                            android:contentDescription="Quét QR" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnLookup"
                             android:layout_width="wrap_content"
-                            android:layout_height="48dp"
-                            android:text="Tra cứu"
-                            app:backgroundTint="@color/secondary_calm_teal"
-                            app:icon="@drawable/ic_search"
-                            app:iconSize="18dp" />
+                            android:layout_height="45dp"
+                            android:text="Tìm kiếm"
+                            android:textSize="13sp"
+                            android:textAllCaps="false"
+                            app:cornerRadius="8dp"
+                            app:backgroundTint="#1565C0"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp" />
 
                     </LinearLayout>
-
                 </LinearLayout>
-
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- 2. Patient Info -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardPatientInfo"
+            <!-- 2. Main Examination Area (Hidden until patient found) -->
+            <LinearLayout
+                android:id="@+id/layoutExamination"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                android:visibility="gone">
+                android:orientation="vertical"
+                android:visibility="gone"
+                tools:visibility="visible">
 
-                <LinearLayout
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnViewHistory"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                    android:text="Xem Lịch sử Khám bệnh"
+                    android:layout_marginBottom="12dp"
+                    app:iconGravity="textStart"
+                    app:icon="@android:drawable/ic_menu_info_details"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                <com.google.android.material.button.MaterialButtonToggleGroup
+                    android:id="@+id/toggleFormType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:singleSelection="true"
+                    app:selectionRequired="true"
+                    app:checkedButton="@+id/btnFormGeneral">
+                    
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFormGeneral"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
                         android:layout_height="wrap_content"
-                        android:text="Thông tin bệnh nhân"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="12dp" />
+                        android:text="Tổng quát"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+                        
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFormSurgery"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="Tiểu phẫu"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+                        
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFormOrtho"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="Niềng răng"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+                </com.google.android.material.button.MaterialButtonToggleGroup>
+
+                <androidx.fragment.app.FragmentContainerView
+                    android:id="@+id/fragmentContainerForm"
+                    android:name="com.hcmute.mobile_android.ui.fragments.FragmentGeneralDental"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp" />
+
+                <!-- Treatment Plan Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardTreatmentPlan"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="24dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@android:color/white">
 
                     <LinearLayout
-                        android:id="@+id/layoutPatientInfo"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:background="@color/success_background"
-                        android:padding="12dp"
-                        android:layout_marginBottom="12dp" />
+                        android:padding="16dp">
 
-                    <!-- Odontogram -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Sơ đồ răng (FDI)"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="8dp" />
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:layout_marginBottom="12dp">
+                            
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Phác đồ điều trị đề xuất"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="#0D1B2A" />
+                                
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnSelectTemplate"
+                                android:layout_width="wrap_content"
+                                android:layout_height="32dp"
+                                android:text="Mẫu phác đồ"
+                                android:textSize="11sp"
+                                android:textAllCaps="false"
+                                app:cornerRadius="16dp"
+                                app:backgroundTint="#E3F2FD"
+                                android:textColor="#1565C0"
+                                android:insetTop="0dp"
+                                android:insetBottom="0dp" />
+                        </LinearLayout>
 
-                    <com.hcmute.mobile_android.ui.views.OdontogramView
-                        android:id="@+id/odontogramView"
-                        android:layout_width="match_parent"
-                        android:layout_height="200dp"
-                        android:background="@android:color/white" />
+                        <!-- Horizontal list of templates (Visible when button clicked, or keep hidden here and use a dialog) -->
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvTemplates"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="12dp"
+                            android:visibility="gone" />
 
-                </LinearLayout>
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvTreatmentSteps"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:nestedScrollingEnabled="false" />
 
-            </com.google.android.material.card.MaterialCardView>
+                        <!-- Action Buttons -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="20dp"
+                            android:weightSum="2">
 
-            <!-- 3. Treatment Templates -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardTemplates"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp">
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnSavePlan"
+                                android:layout_width="0dp"
+                                android:layout_height="48dp"
+                                android:layout_weight="1"
+                                android:text="Lưu Hồ Sơ"
+                                android:textSize="14sp"
+                                android:textAllCaps="false"
+                                app:cornerRadius="8dp"
+                                app:backgroundTint="#1565C0"
+                                android:layout_marginEnd="8dp" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnPrescribe"
+                                android:layout_width="0dp"
+                                android:layout_height="48dp"
+                                android:layout_weight="1"
+                                android:text="Kê Đơn Thuốc"
+                                android:textSize="14sp"
+                                android:textAllCaps="false"
+                                android:textColor="#1565C0"
+                                app:cornerRadius="8dp"
+                                app:backgroundTint="@android:color/white"
+                                app:strokeColor="#1565C0"
+                                app:strokeWidth="1dp" />
+                        </LinearLayout>
+                        
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnPrintPlan"
+                            android:layout_width="match_parent"
+                            android:layout_height="40dp"
+                            android:text="In Phác đồ"
+                            android:textSize="13sp"
+                            android:textAllCaps="false"
+                            android:textColor="#546E7A"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_marginTop="8dp" />
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="2. Chọn mẫu phác đồ"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="12dp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rvTemplates"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false" />
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
-
-            <!-- 4. Treatment Plan Steps -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardTreatmentPlan"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp"
-                android:visibility="gone">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="3. Chỉnh sửa phác đồ"
-                        android:textSize="16sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"
-                        android:layout_marginBottom="12dp" />
-
-                    <androidx.recyclerview.widget.RecyclerView
-                        android:id="@+id/rvTreatmentSteps"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:nestedScrollingEnabled="false" />
-
-                    <com.google.android.material.button.MaterialButton
-                        android:id="@+id/btnSavePlan"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Lưu phác đồ"
-                        android:layout_marginTop="16dp"
-                        app:backgroundTint="@color/success_green"
-                        app:icon="@drawable/ic_save"
-                        app:iconSize="18dp" />
-
-                </LinearLayout>
-
-            </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
 
         </LinearLayout>
-
     </ScrollView>
 
 </LinearLayout>

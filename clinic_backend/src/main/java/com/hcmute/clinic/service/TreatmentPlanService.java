@@ -105,7 +105,7 @@ public class TreatmentPlanService {
                     .service(svc)
                     .clinicRoom(room)
                     .sequenceOrder(seq)
-                    .status(StepStatus.PENDING)
+                    .status(item.getStatus() != null ? StepStatus.valueOf(item.getStatus().toUpperCase()) : StepStatus.PENDING)
                     .toothNumber(item.getToothNumber())
                     .doctorConclusion(item.getDoctorConclusion())
                     .build();

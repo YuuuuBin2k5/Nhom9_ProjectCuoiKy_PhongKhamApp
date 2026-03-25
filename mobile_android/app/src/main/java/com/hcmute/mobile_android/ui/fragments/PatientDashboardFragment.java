@@ -293,9 +293,27 @@ public class PatientDashboardFragment extends Fragment {
     }
 
     private void openCheckIn() {
-        if (isAdded()) {
-            startActivity(new Intent(requireContext(), QRCheckInActivity.class));
-        }
+        if (!isAdded()) return;
+        
+        String[] options = {"Quét mã QR Check-in", "Đặt lịch hẹn khám"};
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(requireContext());
+        builder.setTitle("Bạn muốn làm gì?");
+        builder.setItems(options, (dialog, which) -> {
+            if (which == 0) {
+                // Lựa chọn: Điểm danh / Check-in
+                if (getActivity() instanceof com.hcmute.mobile_android.ui.activities.MainActivity) {
+                    ((com.hcmute.mobile_android.ui.activities.MainActivity) getActivity()).onNavigateToQr();
+                }
+            } else {
+                // Lựa chọn: Đặt lịch hẹn
+                try {
+                    startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.BookAppointmentActivity.class));
+                } catch (Exception e) {
+                    Toast.makeText(requireContext(), "Không thể mở màn hình đặt lịch", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        builder.show();
     }
 
     private void openQueueStatus() {
@@ -382,6 +400,9 @@ public class PatientDashboardFragment extends Fragment {
                 intent.putExtra("duration", s.getDurationMinutes() != null ? s.getDurationMinutes() : 0);
                 intent.putExtra("description", s.getDescription());
                 intent.putExtra("category", s.getCategoryName());
+                if (s.getImageUrls() != null) {
+                    intent.putStringArrayListExtra("imageUrls", new java.util.ArrayList<>(s.getImageUrls()));
+                }
                 v.getContext().startActivity(intent);
             });
         }

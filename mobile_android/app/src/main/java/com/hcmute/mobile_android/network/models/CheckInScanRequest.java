@@ -1,17 +1,17 @@
 package com.hcmute.mobile_android.network.models;
 
 public class CheckInScanRequest {
-    private String qrContent;
+    private String qrData;
 
-    public CheckInScanRequest(String qrContent) {
-        this.qrContent = qrContent;
+    public CheckInScanRequest(String qrData) {
+        this.qrData = qrData;
     }
 
-    public String getQrContent() {
-        return qrContent;
+    public String getQrData() {
+        return qrData;
     }
 
-    public void setQrContent(String qrContent) {
-        this.qrContent = qrContent;
+    public void setQrData(String qrData) {
+        this.qrData = qrData;
     }
 }

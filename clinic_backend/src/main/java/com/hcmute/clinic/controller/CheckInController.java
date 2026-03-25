@@ -29,10 +29,12 @@ public class CheckInController {
             return ResponseEntity.ok(Map.of(
                 "success", result.success(),
                 "queueNumber", result.queueNumber(),
+                "queuePosition", result.queuePosition(),
                 "roomName", result.roomName(),
                 "roomLocation", result.roomLocation() != null ? result.roomLocation() : "",
                 "message", result.message(),
-                "alreadyCheckedIn", result.alreadyCheckedIn()
+                "alreadyCheckedIn", result.alreadyCheckedIn(),
+                "estimatedWaitTime", result.estimatedWaitTime()
             ));
         } catch (org.springframework.web.server.ResponseStatusException e) {
             try {
@@ -47,16 +49,49 @@ public class CheckInController {
         }
     }
 
+    @PostMapping("/self-scan")
+    public ResponseEntity<?> selfCheckIn(Authentication auth, @RequestBody CheckInScanRequest request) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Vui lòng đăng nhập"));
+        }
+        long patientId = Long.parseLong(auth.getName());
+        
+        try {
+            var result = checkInQueueService.processSelfScan(patientId, request.getQrData());
+            return ResponseEntity.ok(Map.of(
+                "success", result.success(),
+                "queueNumber", result.queueNumber(),
+                "queuePosition", result.queuePosition(),
+                "roomName", result.roomName(),
+                "roomLocation", result.roomLocation() != null ? result.roomLocation() : "",
+                "message", result.message(),
+                "alreadyCheckedIn", result.alreadyCheckedIn(),
+                "estimatedWaitTime", result.estimatedWaitTime()
+            ));
+        } catch (org.springframework.web.server.ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(Map.of("success", false, "message", e.getReason() != null ? e.getReason() : "Lỗi"));
+        }
+    }
+
     @GetMapping("/qr-token")
     public ResponseEntity<?> getQrToken(Authentication auth) {
         if (auth == null || auth.getName() == null) {
-            return ResponseEntity.status(401).build();
+            return ResponseEntity.status(401).body(Map.of("success", false, "message", "Vui lòng đăng nhập"));
         }
         long patientId = Long.parseLong(auth.getName());
-        if (!patientRepository.existsById(patientId)) {
-            return ResponseEntity.notFound().build();
+        try {
+            com.hcmute.clinic.dto.GenerateCheckInQRRequest req = new com.hcmute.clinic.dto.GenerateCheckInQRRequest();
+            req.setPatientId(patientId);
+            var res = checkInQueueService.generateCheckInQR(req);
+            return ResponseEntity.ok(Map.of(
+                "token", res.getQrData(),
+                "expiresIn", 86400,
+                "expiresAt", res.getExpiresAt()
+            ));
+        } catch (org.springframework.web.server.ResponseStatusException e) {
+            return ResponseEntity.status(e.getStatusCode())
+                    .body(Map.of("success", false, "message", e.getReason() != null ? e.getReason() : "Lỗi"));
         }
-        String token = jwtService.generateQrToken(String.valueOf(patientId));
-        return ResponseEntity.ok(Map.of("token", token, "expiresIn", 180));
     }
 }

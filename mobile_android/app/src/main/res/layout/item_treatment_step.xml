@@ -117,7 +117,7 @@
                     app:drawableTint="@color/text_secondary"
                     android:visibility="gone" />
 
-                <!-- Price -->
+                <!-- Price & Room -->
                 <TextView
                     android:id="@+id/tvActualPrice"
                     android:layout_width="wrap_content"
@@ -127,9 +127,36 @@
                     android:textColor="@color/text_secondary"
                     android:drawableStart="@drawable/ic_money"
                     android:drawablePadding="4dp"
-                    app:drawableTint="@color/text_secondary" />
+                    app:drawableTint="@color/text_secondary"
+                    android:layout_marginEnd="16dp" />
+
+                <TextView
+                    android:id="@+id/tvRoomName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Phòng X-Quang"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:drawableStart="@drawable/ic_location_pin"
+                    android:drawablePadding="4dp"
+                    app:drawableTint="@color/text_secondary"
+                    android:visibility="gone" />
 
             </LinearLayout>
+
+            <!-- Doctor Conclusion -->
+            <TextView
+                android:id="@+id/tvDoctorConclusion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Kết luận của bác sĩ..."
+                android:textSize="13sp"
+                android:textStyle="italic"
+                android:textColor="#1565C0"
+                android:background="#E3F2FD"
+                android:padding="8dp"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone" />
 
             <!-- Action Buttons -->
             <LinearLayout

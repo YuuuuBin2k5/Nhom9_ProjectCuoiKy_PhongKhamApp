@@ -169,16 +169,16 @@ public class OdontogramView extends View {
         
         switch (status) {
             case "caries":
-                paint.setColor(Color.parseColor("#F05252")); // Red for caries
+                paint.setColor(Color.parseColor("#D32F2F")); // Red for caries
                 break;
             case "filled":
-                paint.setColor(Color.parseColor("#10B981")); // Green for filled
+                paint.setColor(Color.parseColor("#1565C0")); // Blue for filled
                 break;
-            case "missing":
-                paint.setColor(Color.parseColor("#94A3B8")); // Gray for missing
+            case "requested":
+                paint.setColor(Color.parseColor("#4CAF50")); // Green for patient request
                 break;
-            case "crown":
-                paint.setColor(Color.parseColor("#FF5A1F")); // Orange for crown
+            case "rct":
+                paint.setColor(Color.parseColor("#E65100")); // Orange for root canal
                 break;
             default:
                 paint.setColor(Color.WHITE); // White for healthy

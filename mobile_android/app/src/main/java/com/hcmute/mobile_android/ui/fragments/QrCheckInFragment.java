@@ -1,15 +1,12 @@
 package com.hcmute.mobile_android.ui.fragments;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.provider.MediaStore;
-
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.graphics.Bitmap;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -18,14 +15,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
 import com.hcmute.mobile_android.network.models.CheckInMyStatusResponse;
 import com.hcmute.mobile_android.network.models.PatientMeResponse;
-import com.hcmute.mobile_android.network.models.QrTokenResponse;
-import com.hcmute.mobile_android.util.QrCodeGenerator;
+import com.hcmute.mobile_android.ui.activities.PatientQRScannerActivity;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -33,7 +30,6 @@ import retrofit2.Response;
 
 public class QrCheckInFragment extends Fragment {
 
-    private ImageView ivQrCode;
     private TextView tvStatus;
     private ProgressBar progress;
     private TextView tvError;
@@ -44,12 +40,11 @@ public class QrCheckInFragment extends Fragment {
     private TextView tvQueueState;
     private TextView tvQueueHint;
     private TextView tvUserInfo;
-    private Bitmap latestQrBitmap;
-    private final Handler qrRefreshHandler = new Handler(Looper.getMainLooper());
-    private Runnable qrRefreshRunnable;
+    private MaterialButton btnScanQR;
     private final Handler queuePollHandler = new Handler(Looper.getMainLooper());
     private Runnable queuePollRunnable;
     private static final int QUEUE_POLL_INTERVAL_MS = 12000;
+    private static final int REQUEST_SCAN_QR = 101;
 
     @Nullable
     @Override
@@ -60,7 +55,6 @@ public class QrCheckInFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
-        ivQrCode = view.findViewById(R.id.ivQrCode);
         tvStatus = view.findViewById(R.id.tvStatus);
         progress = view.findViewById(R.id.progress);
         tvError = view.findViewById(R.id.tvError);
@@ -71,7 +65,10 @@ public class QrCheckInFragment extends Fragment {
         tvQueueState = view.findViewById(R.id.tvQueueState);
         tvQueueHint = view.findViewById(R.id.tvQueueHint);
         tvUserInfo = view.findViewById(R.id.tvUserInfo);
-        view.findViewById(R.id.btnDownload).setOnClickListener(v -> downloadQr());
+        btnScanQR = view.findViewById(R.id.btnScanQR);
+        
+        btnScanQR.setOnClickListener(v -> openQRScanner());
+        
         loadScreen();
     }
 
@@ -90,57 +87,22 @@ public class QrCheckInFragment extends Fragment {
         cardQueueStatus.setVisibility(View.GONE);
 
         ApiService api = RetrofitClient.getApiService(requireContext());
-        api.getQrToken().enqueue(new Callback<QrTokenResponse>() {
-            @Override
-            public void onResponse(Call<QrTokenResponse> call, Response<QrTokenResponse> response) {
-                if (response.isSuccessful() && response.body() != null && response.body().getToken() != null) {
-                    String qrData = response.body().getToken();
-                    try {
-                        latestQrBitmap = QrCodeGenerator.encodeToBitmap(qrData, 512);
-                        ivQrCode.setImageBitmap(latestQrBitmap);
-                        scrollContent.setVisibility(View.VISIBLE);
-                        fetchCheckInStatus(api);
-                        loadUserInfo(api);
-                        scheduleQrRefresh(response.body().getExpiresIn() > 0 ? response.body().getExpiresIn() : 150);
-                    } catch (Exception e) {
-                        fallbackToStaticQr(api);
-                    }
-                } else {
-                    fallbackToStaticQr(api);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<QrTokenResponse> call, Throwable t) {
-                fallbackToStaticQr(api);
-            }
-        });
-    }
-
-    private void fallbackToStaticQr(ApiService api) {
+        
+        // Load user info
         api.getPatientMe().enqueue(new Callback<PatientMeResponse>() {
             @Override
             public void onResponse(Call<PatientMeResponse> call, Response<PatientMeResponse> response) {
                 progress.setVisibility(View.GONE);
-                if (!response.isSuccessful() || response.body() == null) {
-                    tvError.setText("Vui lòng đăng nhập để sử dụng tính năng này");
-                    tvError.setVisibility(View.VISIBLE);
-                    return;
-                }
-                String qrData = response.body().getQrCodeData();
-                if (qrData == null || qrData.isEmpty()) {
-                    tvError.setText("Chưa có mã QR. Vui lòng liên hệ phòng khám.");
-                    tvError.setVisibility(View.VISIBLE);
-                    return;
-                }
-                try {
-                    latestQrBitmap = QrCodeGenerator.encodeToBitmap(qrData, 512);
-                    ivQrCode.setImageBitmap(latestQrBitmap);
+                if (response.isSuccessful() && response.body() != null) {
+                    PatientMeResponse p = response.body();
+                    String fullName = ((p.getFirstName() != null ? p.getFirstName() : "") + " "
+                            + (p.getLastName() != null ? p.getLastName() : "")).trim();
+                    if (fullName.isEmpty()) fullName = "Bạn";
+                    tvUserInfo.setText("Họ tên: " + fullName);
                     scrollContent.setVisibility(View.VISIBLE);
                     fetchCheckInStatus(api);
-                    loadUserInfo(api);
-                } catch (Exception e) {
-                    tvError.setText("Không thể tạo mã QR");
+                } else {
+                    tvError.setText("Vui lòng đăng nhập để sử dụng tính năng này");
                     tvError.setVisibility(View.VISIBLE);
                 }
             }
@@ -154,59 +116,25 @@ public class QrCheckInFragment extends Fragment {
         });
     }
 
-    private void loadUserInfo(ApiService api) {
-        api.getPatientMe().enqueue(new Callback<PatientMeResponse>() {
-            @Override
-            public void onResponse(Call<PatientMeResponse> call, Response<PatientMeResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    PatientMeResponse p = response.body();
-                    String fullName = ((p.getFirstName() != null ? p.getFirstName() : "") + " "
-                            + (p.getLastName() != null ? p.getLastName() : "")).trim();
-                    if (fullName.isEmpty()) fullName = "Bạn";
-                    tvUserInfo.setText("Họ tên: " + fullName);
-                }
-            }
-
-            @Override
-            public void onFailure(Call<PatientMeResponse> call, Throwable t) { }
-        });
+    private void openQRScanner() {
+        Intent intent = new Intent(requireContext(), PatientQRScannerActivity.class);
+        startActivityForResult(intent, REQUEST_SCAN_QR);
     }
 
-    private void downloadQr() {
-        if (latestQrBitmap == null) {
-            Toast.makeText(requireContext(), "QR chưa sẵn sàng", Toast.LENGTH_SHORT).show();
-            return;
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (requestCode == REQUEST_SCAN_QR && resultCode == android.app.Activity.RESULT_OK) {
+            // Refresh status after successful check-in
+            loadScreen();
+            Toast.makeText(requireContext(), "Check-in thành công!", Toast.LENGTH_SHORT).show();
         }
-        try {
-            String url = MediaStore.Images.Media.insertImage(
-                    requireContext().getContentResolver(),
-                    latestQrBitmap,
-                    "qr_checkin_" + System.currentTimeMillis(),
-                    "QR check-in"
-            );
-            if (url != null) {
-                Toast.makeText(requireContext(), "Đã lưu QR vào thư viện", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(requireContext(), "Không thể lưu QR", Toast.LENGTH_SHORT).show();
-            }
-        } catch (Exception e) {
-            Toast.makeText(requireContext(), "Lỗi khi lưu QR", Toast.LENGTH_SHORT).show();
-        }
-    }
-
-    private void scheduleQrRefresh(int seconds) {
-        qrRefreshHandler.removeCallbacks(qrRefreshRunnable);
-        qrRefreshRunnable = () -> {
-            if (isAdded()) loadScreen();
-        };
-        qrRefreshHandler.postDelayed(qrRefreshRunnable, Math.max(seconds - 30, 60) * 1000L);
     }
 
     private void fetchCheckInStatus(ApiService api) {
         api.getMyCheckInStatus().enqueue(new Callback<CheckInMyStatusResponse>() {
             @Override
             public void onResponse(Call<CheckInMyStatusResponse> call, Response<CheckInMyStatusResponse> response) {
-                progress.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null) {
                     applyCheckInStatus(response.body());
                 } else {
@@ -217,10 +145,8 @@ public class QrCheckInFragment extends Fragment {
 
             @Override
             public void onFailure(Call<CheckInMyStatusResponse> call, Throwable t) {
-                progress.setVisibility(View.GONE);
                 tvStatus.setText("Chưa check-in");
                 cardQueueStatus.setVisibility(View.GONE);
-                Toast.makeText(requireContext(), t.getMessage() != null ? t.getMessage() : "Không tải được trạng thái hàng đợi", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -272,7 +198,6 @@ public class QrCheckInFragment extends Fragment {
     @Override
     public void onDestroyView() {
         super.onDestroyView();
-        qrRefreshHandler.removeCallbacks(qrRefreshRunnable);
         queuePollHandler.removeCallbacks(queuePollRunnable);
     }
 }

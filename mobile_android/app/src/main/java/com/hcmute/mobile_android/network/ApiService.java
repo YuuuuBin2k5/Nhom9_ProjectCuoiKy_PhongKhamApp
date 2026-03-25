@@ -54,6 +54,9 @@ public interface ApiService {
     @POST("api/checkin/scan")
     Call<MessageResponse> scanCheckIn(@Body com.hcmute.mobile_android.network.models.CheckInScanRequest request);
 
+    @POST("api/checkin/self-scan")
+    Call<MessageResponse> selfCheckIn(@Body com.hcmute.mobile_android.network.models.CheckInScanRequest request);
+
     @GET("api/treatment-plans/my")
     Call<List<TreatmentPlanSummary>> getMyTreatmentPlans();
 
@@ -111,6 +114,9 @@ public interface ApiService {
     @GET("api/doctor/patient")
     Call<PatientInfo> lookupPatientByQR(@Query("qr") String qrCode);
 
+    @GET("api/doctor/patients/{id}/medical-records")
+    Call<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> getPatientMedicalRecords(@Path("id") Long patientId);
+
     @GET("api/treatment-templates")
     Call<List<TreatmentTemplate>> getTreatmentTemplates();
 
@@ -120,8 +126,8 @@ public interface ApiService {
     @GET("api/treatment-plans/{id}")
     Call<TreatmentPlan> getTreatmentPlan(@Path("id") Long planId);
 
-    @PUT("api/treatment-plans/{id}/steps")
-    Call<Void> updateTreatmentPlanSteps(@Path("id") Long planId, @Body List<TreatmentPlan.Step> steps);
+    @PUT("api/treatment-plans/{id}")
+    Call<Void> updateTreatmentPlanSteps(@Path("id") Long planId, @Body com.hcmute.mobile_android.network.models.request.UpdatePlanStepsRequest request);
 
     @PATCH("api/treatment-plans/steps/{stepId}/start")
     Call<MessageResponse> startTreatmentStep(@Path("stepId") Long stepId);

@@ -37,7 +37,14 @@ public class Service {
     @Column(name = "is_active")
     private boolean active = true;
 
+    @Builder.Default
     @Enumerated(EnumType.STRING)
     @Column(name = "ui_template_type")
     private UiTemplateType uiTemplateType = UiTemplateType.GENERAL;
+
+    @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private java.util.List<ServiceImage> images = new java.util.ArrayList<>();
 }

@@ -23,6 +23,8 @@ import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
 import com.hcmute.mobile_android.network.models.CheckInScanRequest;
 import com.hcmute.mobile_android.network.models.MessageResponse;
+import com.hcmute.mobile_android.network.models.PatientInfo;
+import com.hcmute.mobile_android.util.TokenManager;
 import com.journeyapps.barcodescanner.BarcodeCallback;
 import com.journeyapps.barcodescanner.BarcodeResult;
 import com.journeyapps.barcodescanner.DecoratedBarcodeView;
@@ -38,10 +40,11 @@ public class QRScannerActivity extends AppCompatActivity {
     private DecoratedBarcodeView barcodeView;
     private TextView tvScanStatus, tvScanResult;
     private ImageView ivStatusIcon;
-    private MaterialButton btnRetry;
+    private MaterialButton btnRetry, btnManualInput;
     
     private ApiService apiService;
     private boolean isScanning = true;
+    private String userRole;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -50,6 +53,9 @@ public class QRScannerActivity extends AppCompatActivity {
         setContentView(R.layout.activity_qr_scanner);
 
         apiService = RetrofitClient.getApiService(this);
+        
+        TokenManager tm = new TokenManager(this);
+        userRole = tm.getUserRole();
         
         initViews();
         checkCameraPermission();
@@ -69,8 +75,10 @@ public class QRScannerActivity extends AppCompatActivity {
         tvScanResult = findViewById(R.id.tvScanResult);
         ivStatusIcon = findViewById(R.id.ivStatusIcon);
         btnRetry = findViewById(R.id.btnRetry);
+        btnManualInput = findViewById(R.id.btnManualInput);
         
         btnRetry.setOnClickListener(v -> restartScanning());
+        btnManualInput.setOnClickListener(v -> showManualInputDialog());
         
         // Configure barcode scanner
         barcodeView.setStatusText("Đưa mã QR vào khung để quét");
@@ -130,10 +138,104 @@ public class QRScannerActivity extends AppCompatActivity {
         }
     };
 
+    private void showManualInputDialog() {
+        barcodeView.pause();
+        isScanning = false;
+        
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(this);
+        builder.setTitle("Nhập mã số kiểm tra");
+        
+        final android.widget.EditText input = new android.widget.EditText(this);
+        input.setHint("VD: KH-12345");
+        // For general codes we use normal text in case it contains letters
+        input.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
+        input.setPadding(50, 30, 50, 30);
+        builder.setView(input);
+        
+        builder.setPositiveButton("Xác nhận", (dialog, which) -> {
+            String code = input.getText().toString().trim();
+            if (code.isEmpty()) {
+                showError("Vui lòng nhập mã số");
+                restartScanning();
+            } else {
+                processQRCode(code);
+            }
+        });
+        
+        builder.setNegativeButton("Hủy", (dialog, which) -> {
+            dialog.cancel();
+            restartScanning();
+        });
+        
+        builder.setOnCancelListener(dialog -> restartScanning());
+        builder.show();
+    }
+
     private void processQRCode(String qrContent) {
+        // [Gap 5: Traffic Control]
+        // Mock logic: Nếu quét mã có tiền tố "late:", hệ thống sẽ giả lập tình huống bệnh nhân đến trễ >15p
+        if (qrContent.toLowerCase().startsWith("late:")) {
+            showLateWarningDialog(qrContent, "Khách hàng (Trễ)", 20);
+            return;
+        }
+
+        if (userRole != null && (userRole.equalsIgnoreCase("DOCTOR") || userRole.equalsIgnoreCase("ADMIN"))) {
+            performDoctorLookupAPI(qrContent);
+        } else {
+            performCheckInAPI(qrContent, false);
+        }
+    }
+
+    private void performDoctorLookupAPI(String qrContent) {
+        updateScanStatus("Đang tra cứu...", R.drawable.ic_processing, false);
+        
+        apiService.lookupPatientByQR(qrContent).enqueue(new Callback<PatientInfo>() {
+            @Override
+            public void onResponse(Call<PatientInfo> call, Response<PatientInfo> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    PatientInfo patient = response.body();
+                    updateScanStatus("Đã tìm thấy!", R.drawable.ic_check_circle, true);
+                    tvScanResult.setText("Bệnh nhân: " + patient.getFullName());
+                    
+                    // Navigate to Workflow Activity
+                    tvScanResult.postDelayed(() -> {
+                        Intent intent = new Intent(QRScannerActivity.this, DoctorWorkflowActivity.class);
+                        intent.putExtra(DoctorWorkflowActivity.EXTRA_INITIAL_QR, qrContent);
+                        startActivity(intent);
+                        finish();
+                    }, 1000);
+                } else {
+                    handleScanError("Không tìm thấy bệnh nhân");
+                }
+            }
+
+            @Override
+            public void onFailure(Call<PatientInfo> call, Throwable t) {
+                handleScanError("Lỗi kết nối: " + t.getMessage());
+            }
+        });
+    }
+    
+    private void showLateWarningDialog(String qrContent, String patientName, int mins) {
+        com.hcmute.mobile_android.ui.widgets.DialogLateWarning.show(this, patientName, mins, 
+            new com.hcmute.mobile_android.ui.widgets.DialogLateWarning.LateActionCallback() {
+                @Override
+                public void onConvertToWalkin() {
+                    performCheckInAPI(qrContent, true);
+                }
+
+                @Override
+                public void onCancel() {
+                    restartScanning();
+                }
+            });
+    }
+
+    private void performCheckInAPI(String qrContent, boolean forceWalkin) {
         updateScanStatus("Đang xử lý...", R.drawable.ic_processing, false);
         
         CheckInScanRequest request = new CheckInScanRequest(qrContent);
+        // Note: Trong tương lai Backend sẽ đọc cờ `forceWalkin` nếu cần
         
         apiService.scanCheckIn(request).enqueue(new Callback<MessageResponse>() {
             @Override

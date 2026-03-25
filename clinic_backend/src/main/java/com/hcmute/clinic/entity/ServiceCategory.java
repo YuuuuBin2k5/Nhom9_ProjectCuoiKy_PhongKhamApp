@@ -1,5 +1,6 @@
 package com.hcmute.clinic.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -12,6 +13,11 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class ServiceCategory {
+    public ServiceCategory(Long id, String name, String description) {
+        this.id = id;
+        this.name = name;
+        this.description = description;
+    }
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -23,5 +29,6 @@ public class ServiceCategory {
     private String description;
 
     @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+    @JsonIgnore
     private List<Service> services;
 }

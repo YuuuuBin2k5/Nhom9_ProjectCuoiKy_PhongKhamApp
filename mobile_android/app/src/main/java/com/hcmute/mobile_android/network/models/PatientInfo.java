@@ -11,9 +11,17 @@ public class PatientInfo {
     private String address;
     private Integer rewardPoints;
     private String qrCodeData;
+    private String bookedService;
+    private String appointmentStatus;
 
     // Constructors
     public PatientInfo() {}
+
+    public String getBookedService() { return bookedService; }
+    public void setBookedService(String bookedService) { this.bookedService = bookedService; }
+
+    public String getAppointmentStatus() { return appointmentStatus; }
+    public void setAppointmentStatus(String appointmentStatus) { this.appointmentStatus = appointmentStatus; }
 
     public PatientInfo(Long id, String firstName, String lastName, String email, String phone) {
         this.id = id;

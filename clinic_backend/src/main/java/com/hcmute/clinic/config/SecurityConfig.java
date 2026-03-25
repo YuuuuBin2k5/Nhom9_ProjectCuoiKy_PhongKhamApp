@@ -55,9 +55,11 @@ public class SecurityConfig {
                 .requestMatchers(
                         "/api/auth/**",
                         "/api/checkin/scan",
+                        "/api/upload",
                         "/api/treatment-templates",
                         "/api/services",
                         "/api/doctors",
+                        "/uploads/**",
                         "/doctor.html",
                         "/scanner.html",
                         "/queue.html",
@@ -67,6 +69,9 @@ public class SecurityConfig {
                         "/css/**",
                         "/js/**"
                 ).permitAll()
+                .requestMatchers("/api/checkin/qr-token").hasRole("PATIENT")
+                .requestMatchers("/api/checkin/self-scan").hasRole("PATIENT")
+                .requestMatchers("/api/patients/me/**").hasRole("PATIENT")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

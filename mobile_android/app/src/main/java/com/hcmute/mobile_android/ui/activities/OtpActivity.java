@@ -143,11 +143,27 @@ public class OtpActivity extends AppCompatActivity {
                 if (body.getToken() != null && !body.getToken().isEmpty()) {
                     TokenManager tm = new TokenManager(OtpActivity.this);
                     tm.saveToken(body.getToken());
+                    
+                    // Save user role
+                    if (body.getRole() != null) {
+                        tm.saveUserRole(body.getRole());
+                    }
+                    
+                    // Save patient ID if available
                     if (body.getUserId() != null) {
                         tm.savePatientId(body.getUserId());
                     }
-                    startActivity(new Intent(OtpActivity.this, MainActivity.class)
-                            .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                    
+                    // Navigate based on role
+                    Intent intent;
+                    if ("ADMIN".equals(body.getRole())) {
+                        intent = new Intent(OtpActivity.this, AdminMainActivity.class);
+                    } else {
+                        intent = new Intent(OtpActivity.this, MainActivity.class);
+                    }
+                    
+                    intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                    startActivity(intent);
                     finish();
                     return;
                 }
