@@ -47,9 +47,9 @@ public class DataSeed implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        // clearAll();
-        // seed();
-        log.info("DataSeed is currently disabled. Starting with existing database state.");
+        clearAll();
+        seed();
+        log.info("DataSeed completed. Starting with fresh database state.");
     }
 
     public void clearAll() {

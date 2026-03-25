@@ -18,6 +18,9 @@ public class ServiceItem {
     @SerializedName("categoryName")
     private String categoryName;
 
+    @SerializedName("imageUrls")
+    private java.util.List<String> imageUrls;
+
     public Long getId() { return id; }
     public String getName() { return name; }
     public String getDescription() { return description; }
@@ -25,4 +28,5 @@ public class ServiceItem {
     public Integer getDurationMinutes() { return durationMinutes; }
     public String getUiTemplateType() { return uiTemplateType; }
     public String getCategoryName() { return categoryName; }
+    public java.util.List<String> getImageUrls() { return imageUrls; }
 }

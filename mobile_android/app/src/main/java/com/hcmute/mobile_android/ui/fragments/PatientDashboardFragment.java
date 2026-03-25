@@ -400,6 +400,9 @@ public class PatientDashboardFragment extends Fragment {
                 intent.putExtra("duration", s.getDurationMinutes() != null ? s.getDurationMinutes() : 0);
                 intent.putExtra("description", s.getDescription());
                 intent.putExtra("category", s.getCategoryName());
+                if (s.getImageUrls() != null) {
+                    intent.putStringArrayListExtra("imageUrls", new java.util.ArrayList<>(s.getImageUrls()));
+                }
                 v.getContext().startActivity(intent);
             });
         }
