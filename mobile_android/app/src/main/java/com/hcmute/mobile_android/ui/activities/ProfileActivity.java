@@ -37,10 +37,12 @@ public class ProfileActivity extends AppCompatActivity {
                 Toast.makeText(this, "Tính năng đổi ảnh sẽ cập nhật sau", Toast.LENGTH_SHORT).show());
         findViewById(R.id.etEmail).setOnClickListener(v ->
                 startActivity(new Intent(this, SettingsActivity.class)));
+        findViewById(R.id.btnLogout).setOnClickListener(v -> logout());
         loadProfile();
     }
 
     private void loadProfile() {
+        EditText etQrCode = findViewById(R.id.etQrCode);
         EditText etName = findViewById(R.id.etName);
         EditText etEmail = findViewById(R.id.etEmail);
         EditText etPhone = findViewById(R.id.etPhone);
@@ -54,6 +56,7 @@ public class ProfileActivity extends AppCompatActivity {
                     PatientMeResponse p = response.body();
                     String fullName = ((p.getFirstName() != null ? p.getFirstName() : "") + " " +
                             (p.getLastName() != null ? p.getLastName() : "")).trim();
+                    etQrCode.setText(p.getQrCodeData() != null ? p.getQrCodeData() : "-");
                     etName.setText(fullName.isEmpty() ? "Bạn" : fullName);
                     etEmail.setText(p.getEmail() != null ? p.getEmail() : "-");
                     etPhone.setText(p.getPhone() != null ? p.getPhone() : "");

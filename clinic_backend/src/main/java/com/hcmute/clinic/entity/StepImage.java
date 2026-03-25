@@ -1,5 +1,6 @@
 package com.hcmute.clinic.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -19,6 +20,7 @@ public class StepImage {
 
     @ManyToOne
     @JoinColumn(name = "treatment_plan_step_id", nullable = false)
+    @JsonIgnore
     private TreatmentPlanStep step;
 
     @Column(name = "image_url", nullable = false)

@@ -58,6 +58,8 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
         private TextView tvToothNumber;
         private TextView tvActualPrice;
         private TextView tvStatus;
+        private TextView tvRoomName;
+        private TextView tvDoctorConclusion;
         private MaterialButton btnEdit;
         private MaterialButton btnComplete;
 
@@ -70,6 +72,8 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
             tvToothNumber = itemView.findViewById(R.id.tvToothNumber);
             tvActualPrice = itemView.findViewById(R.id.tvActualPrice);
             tvStatus = itemView.findViewById(R.id.tvStatus);
+            tvRoomName = itemView.findViewById(R.id.tvRoomName);
+            tvDoctorConclusion = itemView.findViewById(R.id.tvDoctorConclusion);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnComplete = itemView.findViewById(R.id.btnComplete);
         }
@@ -113,6 +117,22 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
                 }
             });
             
+            // Room Name
+            if (step.getRoomName() != null && !step.getRoomName().isEmpty()) {
+                tvRoomName.setText(step.getRoomName());
+                tvRoomName.setVisibility(View.VISIBLE);
+            } else {
+                tvRoomName.setVisibility(View.GONE);
+            }
+
+            // Doctor Conclusion
+            if (step.getDoctorConclusion() != null && !step.getDoctorConclusion().isEmpty()) {
+                tvDoctorConclusion.setText("Kết luận: " + step.getDoctorConclusion());
+                tvDoctorConclusion.setVisibility(View.VISIBLE);
+            } else {
+                tvDoctorConclusion.setVisibility(View.GONE);
+            }
+
             // Configure buttons based on status
             configureButtons(step.getStatus());
         }

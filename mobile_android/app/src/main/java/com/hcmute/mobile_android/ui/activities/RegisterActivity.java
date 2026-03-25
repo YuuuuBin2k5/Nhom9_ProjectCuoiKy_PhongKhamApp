@@ -57,6 +57,11 @@ public class RegisterActivity extends AppCompatActivity {
             Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
+            return;
+        }
         if (pass.length() < 6) {
             Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
             return;
@@ -75,7 +80,11 @@ public class RegisterActivity extends AppCompatActivity {
                     RegisterResultResponse body = response.body();
                     Toast.makeText(RegisterActivity.this, body.getMessage(), Toast.LENGTH_SHORT).show();
                     if (body.getToken() != null) {
-                        new TokenManager(RegisterActivity.this).saveToken(body.getToken());
+                        TokenManager tm = new TokenManager(RegisterActivity.this);
+                        tm.saveToken(body.getToken());
+                        if (body.getRefreshToken() != null) {
+                            tm.saveRefreshToken(body.getRefreshToken());
+                        }
                     }
                     startActivity(new Intent(RegisterActivity.this, MainActivity.class)
                             .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));

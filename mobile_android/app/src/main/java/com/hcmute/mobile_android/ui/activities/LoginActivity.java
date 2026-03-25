@@ -48,8 +48,14 @@ public class LoginActivity extends AppCompatActivity {
     private void performLogin() {
         String email = ((EditText) findViewById(R.id.etEmail)).getText().toString().trim();
         String password = ((EditText) findViewById(R.id.etPassword)).getText().toString();
+        
         if (email.isEmpty() || password.isEmpty()) {
             Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -62,6 +68,9 @@ public class LoginActivity extends AppCompatActivity {
                     if (body.getToken() != null) {
                         TokenManager tm = new TokenManager(LoginActivity.this);
                         tm.saveToken(body.getToken());
+                        if (body.getRefreshToken() != null) {
+                            tm.saveRefreshToken(body.getRefreshToken());
+                        }
                         
                         // Save user role
                         if (body.getRole() != null) {

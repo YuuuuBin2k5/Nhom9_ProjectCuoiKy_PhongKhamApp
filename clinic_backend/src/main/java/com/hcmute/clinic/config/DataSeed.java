@@ -41,13 +41,15 @@ public class DataSeed implements ApplicationRunner {
     private final TreatmentPlanRepository treatmentPlanRepository;
     private final TreatmentPlanStepRepository treatmentPlanStepRepository;
     private final TreatmentPlanTemplateRepository treatmentPlanTemplateRepository;
+    private final TreatmentPlanTemplateStepRepository treatmentPlanTemplateStepRepository;
     private final PasswordEncoder passwordEncoder;
     private final DataSource dataSource;
 
     @Override
     public void run(ApplicationArguments args) {
-        clearAll();
-        seed();
+        // clearAll();
+        // seed();
+        log.info("DataSeed is currently disabled. Starting with existing database state.");
     }
 
     public void clearAll() {
@@ -103,32 +105,32 @@ public class DataSeed implements ApplicationRunner {
         
         Service svcScale = addService(catGen, "Lấy cao răng & đánh bóng", "Vệ sinh răng miệng chuyên sâu.", 250000, 30, UiTemplateType.PERIO, 
                 "laycaorangdanhbong_anh1.png", "laycaorangdanhbong_anh2.png", "laycaorangdanhbong_anh3.png", "laycaorangdanhbong_anh4.png");
-        addService(catGen, "Trám răng sâu", "Phục hồi răng sâu bằng composite.", 300000, 30, UiTemplateType.GENERAL, 
+        Service svcFill = addService(catGen, "Trám răng sâu", "Phục hồi răng sâu bằng composite.", 300000, 30, UiTemplateType.GENERAL, 
                 "tramrangsau_anh1.png", "tramrangsau_anh2.png", "tramrangsau_anh3.png", "tramrangsau_anh4.png");
         addService(catGen, "Điều trị tủy răng", "Nội nha lấy tủy và hàn ống tủy.", 1500000, 60, UiTemplateType.GENERAL, 
                 "dieutrituyrang_anh1.png", "dieutrituyrang_anh2.png", "dieutrituyrang_anh3.png", "dieutrituyrang_anh4.png");
 
         addService(catSurg, "Nhổ răng thường", "Nhổ răng lung lay hoặc hư tổn.", 300000, 20, UiTemplateType.SURGERY, 
                 "nhorangthuong_anh1.png", "nhorangthuong_anh2.png", "nhorangthuong_anh3.png", "nhorangthuong_anh4.png");
-        addService(catSurg, "Nhổ răng khôn", "Phẫu thuật nhổ răng khôn mọc lệch.", 2000000, 45, UiTemplateType.SURGERY, 
+        Service svcWisdom = addService(catSurg, "Nhổ răng khôn", "Phẫu thuật nhổ răng khôn mọc lệch.", 2000000, 45, UiTemplateType.SURGERY, 
                 "nhorangkhon_anh1.png", "nhorangkhon_anh2.png", "nhorangkhon_anh3.png", "nhorangkhon_anh4.png");
 
-        addService(catCosm, "Tẩy trắng răng", "Làm trắng răng Laser.", 2500000, 60, UiTemplateType.GENERAL, 
+        Service svcWhite = addService(catCosm, "Tẩy trắng răng", "Làm trắng răng Laser.", 2500000, 60, UiTemplateType.GENERAL, 
                 "taytrangrang_anh1.png", "taytrangrang_anh2.png", "taytrangrang_anh3.png", "taytrangrang_anh4.png");
         addService(catCosm, "Bọc răng sứ thẩm mỹ", "Phục hình răng bằng sứ cao cấp.", 5000000, 90, UiTemplateType.GENERAL, 
                 "bocrangxu_anh1.png", "bocrangxu_anh2.png", "bocrangxu_anh3.png", "bocrangxu_anh4.png");
 
-        addService(catOrtho, "Niềng răng", "Chỉnh nha mắc cài toàn hàm.", 30000000, 60, UiTemplateType.ORTHO, 
+        Service svcBraces = addService(catOrtho, "Niềng răng", "Chỉnh nha mắc cài toàn hàm.", 30000000, 60, UiTemplateType.ORTHO, 
                 "niengrang_anh1.png", "niengrang_anh2.png", "niengrang_anh3.png", "niengrang_anh4.png");
 
         // 3. Rooms & Doctors
-        Doctor d1 = createRoomAndDoc("Phòng khám 01", "PK Tổng quát 01", "Nguyễn Văn A", "doc01@gmail.com", "Khám & Chẩn đoán", defaultPass);
-        Doctor d2 = createRoomAndDoc("Phòng khám 02", "PK Tổng quát 02", "Trần Thị B", "doc02@gmail.com", "Nha khoa Tổng quát", defaultPass);
-        Doctor d3 = createRoomAndDoc("Phòng khám 03", "PK Tổng quát 03", "Lê Văn C", "doc03@gmail.com", "Chỉnh nha", defaultPass);
-        Doctor dx = createRoomAndDoc("Phòng X-quang", "PK Chẩn đoán hình ảnh", "Phạm Văn D", "doc_xray@gmail.com", "Chẩn đoán hình ảnh", defaultPass);
-        Doctor ds = createRoomAndDoc("Phòng tiểu phẫu", "PK Phẫu thuật nhỏ", "Hoàng Thị E", "doc_surg@gmail.com", "Tiểu phẫu", defaultPass);
-        Doctor dt1 = createRoomAndDoc("Phòng điều trị 01", "PK Điều trị 01", "Ngô Văn F", "doc_treat01@gmail.com", "Nha khoa Tổng quát", defaultPass);
-        Doctor dt2 = createRoomAndDoc("Phòng điều trị 02", "PK Điều trị 02", "Đỗ Thị G", "doc_treat02@gmail.com", "Thẩm mỹ", defaultPass);
+        Doctor d1 = createRoomAndDoc("Phòng khám 01", "Tầng G — Sảnh chính", "Nguyễn Văn A", "doc01@gmail.com", "Khám & Chẩn đoán", defaultPass);
+        Doctor d2 = createRoomAndDoc("Phòng khám 02", "Tầng 1 — Hành lang trái", "Trần Thị B", "doc02@gmail.com", "Nha khoa Tổng quát", defaultPass);
+        Doctor d3 = createRoomAndDoc("Phòng khám 03", "Tầng 1 — Hành lang phải", "Lê Văn C", "doc03@gmail.com", "Chỉnh nha", defaultPass);
+        Doctor dx = createRoomAndDoc("Phòng X-quang", "Tầng 1 — Khu kỹ thuật", "Phạm Văn D", "doc_xray@gmail.com", "Chẩn đoán hình ảnh", defaultPass);
+        Doctor ds = createRoomAndDoc("Phòng tiểu phẫu", "Tầng 2 — Khu Phẫu thuật", "Hoàng Thị E", "doc_surg@gmail.com", "Tiểu phẫu", defaultPass);
+        Doctor dt1 = createRoomAndDoc("Phòng điều trị 01", "Tầng 2 — Khu Điều trị", "Ngô Văn F", "doc_treat01@gmail.com", "Nha khoa Tổng quát", defaultPass);
+        Doctor dt2 = createRoomAndDoc("Phòng điều trị 02", "Tầng 2 — Khu Điều trị", "Đỗ Thị G", "doc_treat02@gmail.com", "Thẩm mỹ", defaultPass);
 
         // 4. Admin
         adminRepository.save(Admin.builder().email("admin@gmail.com").passwordHash(defaultPass).firstName("Admin").lastName("System").isActive(true).build());
@@ -138,12 +140,59 @@ public class DataSeed implements ApplicationRunner {
         Patient p2 = createPatient("Trần Văn Bình", "patient02@gmail.com", "0922222222", defaultPass);
         Patient p3 = createPatient("Lê Thị Chi", "patient03@gmail.com", "0933333333", defaultPass);
 
+        // 6. Templates
+        seedTemplates(svcConsult, svcXray, svcScale, svcFill, svcWisdom, svcWhite, svcBraces, d1, dx, ds, dt2);
+
         // Add some queue entries
         addToQueue(p1, d1, svcConsult, 1);
         addToQueue(p2, d1, svcConsult, 2);
         addToQueue(p3, d2, svcScale, 1);
 
         log.info("Refined DataSeed completed successfully.");
+    }
+
+    private void seedTemplates(Service svcConsult, Service svcXray, Service svcScale, Service svcFill, Service svcWisdom, Service svcWhite, Service svcBraces, Doctor d1, Doctor dx, Doctor ds, Doctor dt2) {
+        log.info("Seeding Treatment Plan Templates...");
+
+        // 1. Nhổ răng khôn
+        TreatmentPlanTemplate tplWisdom = treatmentPlanTemplateRepository.save(TreatmentPlanTemplate.builder()
+                .name("Phác đồ Nhổ răng khôn")
+                .description("Quy trình chuẩn cho việc nhổ răng khôn mọc lệch/ngầm.")
+                .active(true).build());
+        
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWisdom, svcConsult, d1.getClinicRoom(), 1));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWisdom, svcXray, dx.getClinicRoom(), 2));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWisdom, svcWisdom, ds.getClinicRoom(), 3));
+
+        // 2. Niềng răng Chỉnh nha
+        TreatmentPlanTemplate tplBraces = treatmentPlanTemplateRepository.save(TreatmentPlanTemplate.builder()
+                .name("Phác đồ Niềng răng Chỉnh nha")
+                .description("Quy trình chỉnh nha mắc cài toàn hàm.")
+                .active(true).build());
+
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplBraces, svcConsult, d1.getClinicRoom(), 1));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplBraces, svcXray, dx.getClinicRoom(), 2));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplBraces, svcScale, d1.getClinicRoom(), 3));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplBraces, svcBraces, d1.getClinicRoom(), 4));
+
+        // 3. Tẩy trắng răng
+        TreatmentPlanTemplate tplWhite = treatmentPlanTemplateRepository.save(TreatmentPlanTemplate.builder()
+                .name("Phác đồ Tẩy trắng răng")
+                .description("Làm trắng răng Laser cao cấp.")
+                .active(true).build());
+
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWhite, svcConsult, d1.getClinicRoom(), 1));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWhite, svcScale, d1.getClinicRoom(), 2));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWhite, svcWhite, dt2.getClinicRoom(), 3));
+
+        // 4. Trám răng sâu
+        TreatmentPlanTemplate tplFill = treatmentPlanTemplateRepository.save(TreatmentPlanTemplate.builder()
+                .name("Phác đồ Trám răng thẩm mỹ")
+                .description("Quy trình trám phục hồi răng sâu.")
+                .active(true).build());
+
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplFill, svcConsult, d1.getClinicRoom(), 1));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplFill, svcFill, d1.getClinicRoom(), 2));
     }
 
     private Service addService(ServiceCategory cat, String name, String desc, double price, int duration, UiTemplateType type, String... images) {
@@ -182,7 +231,7 @@ public class DataSeed implements ApplicationRunner {
         Appointment app = appointmentRepository.save(Appointment.builder()
                 .patient(p).doctor(d).service(s)
                 .appointmentDatetime(LocalDateTime.now())
-                .status(AppointmentStatus.SCHEDULED).bookingType(BookingType.OFFLINE).build());
+                .status(AppointmentStatus.SCHEDULED).bookingType(BookingType.WALK_IN).build());
         
         queueRepository.save(CheckInQueue.builder()
                 .appointment(app).clinicRoom(d.getClinicRoom())

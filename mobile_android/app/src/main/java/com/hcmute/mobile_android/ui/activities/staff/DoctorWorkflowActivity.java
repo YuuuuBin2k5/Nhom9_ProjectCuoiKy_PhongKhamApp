@@ -29,9 +29,14 @@ import com.hcmute.mobile_android.network.RetrofitClient;
 import com.hcmute.mobile_android.network.models.PatientInfo;
 import com.hcmute.mobile_android.network.models.TreatmentPlan;
 import com.hcmute.mobile_android.network.models.TreatmentTemplate;
-import com.hcmute.mobile_android.network.models.CreateTreatmentPlanRequest;
 import com.hcmute.mobile_android.ui.activities.PatientQRScannerActivity;
-import com.hcmute.mobile_android.ui.views.OdontogramView;
+import com.hcmute.mobile_android.ui.fragments.BottomSheetMedicalHistory;
+import com.hcmute.mobile_android.ui.fragments.FragmentGeneralDental;
+import com.hcmute.mobile_android.ui.fragments.FragmentSurgeryChecklist;
+import com.hcmute.mobile_android.ui.fragments.FragmentOrthodontics;
+import com.hcmute.mobile_android.network.models.CreateTreatmentPlanRequest;
+import com.google.android.material.button.MaterialButtonToggleGroup;
+import androidx.fragment.app.Fragment;
 import com.hcmute.mobile_android.util.TokenManager;
 
 import java.util.ArrayList;
@@ -46,16 +51,18 @@ import retrofit2.Response;
 public class DoctorWorkflowActivity extends AppCompatActivity implements 
         TreatmentTemplateAdapter.OnTemplateSelectedListener,
         TreatmentStepAdapter.OnStepActionListener {
+    
+    public static final String EXTRA_INITIAL_QR = "EXTRA_INITIAL_QR";
 
     // Views
-    private EditText etQrInput, etReason, etDiagnosis;
-    private TextView tvPatientHeader, tvDoctorGreeting, tvToothNotes;
+    private EditText etQrInput;
+    private TextView tvPatientHeader, tvDoctorGreeting;
     private ImageButton btnScanQr;
-    private MaterialButton btnLookup, btnSavePlan, btnSelectTemplate, btnPrescribe, btnPrintPlan;
+    private MaterialButton btnLookup, btnSavePlan, btnSelectTemplate, btnPrescribe, btnPrintPlan, btnViewHistory;
     private MaterialCardView cardLookup, cardTreatmentPlan;
     private LinearLayout layoutExamination;
     private RecyclerView rvTemplates, rvTreatmentSteps;
-    private OdontogramView odontogramView;
+    private MaterialButtonToggleGroup toggleFormType;
     
     // Adapters
     private TreatmentTemplateAdapter templateAdapter;
@@ -66,9 +73,6 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     private List<TreatmentPlan.Step> treatmentSteps = new ArrayList<>();
     private PatientInfo currentPatient;
     private Long currentTreatmentPlanId;
-    
-    // Store custom notes for teeth
-    private Map<Integer, String> toothCustomNotesMap = new HashMap<>();
     
     private ActivityResultLauncher<Intent> qrScannerLauncher;
     
@@ -98,6 +102,13 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                 }
             }
         );
+        
+        // Handle initial QR from Intent
+        String initialQr = getIntent().getStringExtra(EXTRA_INITIAL_QR);
+        if (initialQr != null && !initialQr.isEmpty()) {
+            etQrInput.setText(initialQr);
+            lookupPatient();
+        }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -124,18 +135,30 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         
         // Examination Area
         layoutExamination = findViewById(R.id.layoutExamination);
-        odontogramView = findViewById(R.id.odontogramView);
-        tvToothNotes = findViewById(R.id.tvToothNotes);
-        etReason = findViewById(R.id.etReason);
-        etDiagnosis = findViewById(R.id.etDiagnosis);
+        toggleFormType = findViewById(R.id.toggleFormType);
+        
+        toggleFormType.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (isChecked) {
+                Fragment fragment = null;
+                if (checkedId == R.id.btnFormGeneral) {
+                    fragment = new FragmentGeneralDental();
+                } else if (checkedId == R.id.btnFormSurgery) {
+                    fragment = new FragmentSurgeryChecklist();
+                } else if (checkedId == R.id.btnFormOrtho) {
+                    fragment = new FragmentOrthodontics();
+                }
+                if (fragment != null) {
+                    getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragmentContainerForm, fragment)
+                        .commit();
+                }
+            }
+        });
         
         // Treatment Plan
         cardTreatmentPlan = findViewById(R.id.cardTreatmentPlan);
         rvTemplates = findViewById(R.id.rvTemplates);
         rvTreatmentSteps = findViewById(R.id.rvTreatmentSteps);
-        
-        // Setup odontogram listener
-        odontogramView.setOnToothSelectedListener(this::onToothSelected);
 
         // Buttons
         btnSavePlan = findViewById(R.id.btnSavePlan);
@@ -149,6 +172,15 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             intent.putExtra(PatientQRScannerActivity.EXTRA_RETURN_RESULT, true);
             qrScannerLauncher.launch(intent);
         });
+        
+        btnViewHistory = findViewById(R.id.btnViewHistory);
+        btnViewHistory.setOnClickListener(v -> {
+            if (currentPatient != null) {
+                BottomSheetMedicalHistory bottomSheet = BottomSheetMedicalHistory.newInstance(currentPatient.getId());
+                bottomSheet.show(getSupportFragmentManager(), "MedicalHistory");
+            }
+        });
+        
         btnLookup.setOnClickListener(v -> lookupPatient());
         btnSavePlan.setOnClickListener(v -> saveTreatmentPlan());
         btnSelectTemplate.setOnClickListener(v -> {
@@ -206,16 +238,36 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     }
 
     private void displayPatientInfo(PatientInfo patient) {
-        tvPatientHeader.setText("Khám Bệnh nhân " + patient.getFullName());
+        String header = "Khám Bệnh nhân " + patient.getFullName();
+        if (patient.getBookedService() != null && !patient.getBookedService().isEmpty()) {
+            header += "\n(Đặt lịch: " + patient.getBookedService() + ")";
+        }
+        tvPatientHeader.setText(header);
         
         // Hide lookup, show examination area
         cardLookup.setVisibility(View.GONE);
         layoutExamination.setVisibility(View.VISIBLE);
         
-        Toast.makeText(this, "Đã sẵn sàng khám: " + patient.getFullName(), Toast.LENGTH_SHORT).show();
-        
-        // Optionally, pre-fill some fields or load previous notes from backend
-        // etReason.setText("...");
+        // Cảnh báo nếu chưa Check-in (Trạng thái SCHEDULED)
+        if ("SCHEDULED".equals(patient.getAppointmentStatus())) {
+            new androidx.appcompat.app.AlertDialog.Builder(this)
+                .setTitle("Cảnh báo Check-in")
+                .setMessage("Bệnh nhân này hiện đang ở trạng thái 'Chờ khám' (Chưa làm thủ tục tại quầy lễ tân).\n\nBạn có muốn tiếp tục khám hay yêu cầu bệnh nhân quay lại làm thủ tục?")
+                .setPositiveButton("Tiếp tục khám", null)
+                .setNegativeButton("Quay lại quầy", (dialog, which) -> {
+                    // Reset view
+                    cardLookup.setVisibility(View.VISIBLE);
+                    layoutExamination.setVisibility(View.GONE);
+                })
+                .setCancelable(false)
+                .show();
+        }
+
+        String toastMsg = "Đã sẵn sàng khám: " + patient.getFullName();
+        if (patient.getBookedService() != null && !patient.getBookedService().isEmpty()) {
+            toastMsg += " - Dịch vụ: " + patient.getBookedService();
+        }
+        Toast.makeText(this, toastMsg, Toast.LENGTH_SHORT).show();
     }
 
     private void loadTemplates() {
@@ -279,9 +331,43 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         });
     }
 
+    private TreatmentPlan.Step currentStep;
+
     @Override
     public void onStepEdit(TreatmentPlan.Step step) {
-        Toast.makeText(this, "Chỉnh sửa bước: " + step.getServiceName(), Toast.LENGTH_SHORT).show();
+        this.currentStep = step;
+        
+        // If the step is PENDING, call the "start" API to move it to IN_PROGRESS
+        if ("PENDING".equals(step.getStatus())) {
+            apiService.startTreatmentStep(step.getId()).enqueue(new Callback<com.hcmute.mobile_android.network.models.MessageResponse>() {
+                @Override
+                public void onResponse(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Response<com.hcmute.mobile_android.network.models.MessageResponse> response) {
+                    if (response.isSuccessful()) {
+                        step.setStatus("IN_PROGRESS");
+                        stepAdapter.notifyDataSetChanged();
+                        Toast.makeText(DoctorWorkflowActivity.this, "Đã bắt đầu thực hiện: " + step.getServiceName(), Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Throwable t) {
+                    // Silently fail or log, as this is an optimization
+                }
+            });
+        }
+
+        Toast.makeText(this, "Nhập kết luận cho: " + step.getServiceName(), Toast.LENGTH_SHORT).show();
+        
+        if (toggleFormType != null && step.getUiTemplateType() != null) {
+            String template = step.getUiTemplateType().toUpperCase();
+            if (template.contains("SURGERY")) {
+                toggleFormType.check(R.id.btnFormSurgery);
+            } else if (template.contains("ORTHO")) {
+                toggleFormType.check(R.id.btnFormOrtho);
+            } else {
+                toggleFormType.check(R.id.btnFormGeneral);
+            }
+        }
     }
 
     @Override
@@ -291,98 +377,93 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
 
     @Override
     public void onToothSelected(int toothNumber) {
-        showToothNoteDialog(toothNumber);
-    }
-    
-    private void showToothNoteDialog(int toothNumber) {
-        com.google.android.material.bottomsheet.BottomSheetDialog dialog = 
-            new com.google.android.material.bottomsheet.BottomSheetDialog(this);
-        
-        View view = getLayoutInflater().inflate(R.layout.dialog_tooth_note, null);
-        dialog.setContentView(view);
-        
-        TextView tvTitle = view.findViewById(R.id.tvToothTitle);
-        tvTitle.setText("Ghi chú Răng R" + toothNumber);
-        
-        android.widget.RadioGroup rgStatus = view.findViewById(R.id.rgToothStatus);
-        EditText etNote = view.findViewById(R.id.etToothNote);
-        
-        // Restore previous status
-        String existingStatus = odontogramView.getToothStatus(toothNumber);
-        if (existingStatus != null) {
-            switch (existingStatus) {
-                case "caries": rgStatus.check(R.id.rbCaries); break;
-                case "filled": rgStatus.check(R.id.rbFilled); break;
-                case "requested": rgStatus.check(R.id.rbRequested); break;
-                case "rct": rgStatus.check(R.id.rbRct); break;
-                default: rgStatus.check(R.id.rbHealthy); break;
+        if (currentStep != null) {
+            currentStep.setToothNumber(toothNumber);
+            stepAdapter.notifyDataSetChanged();
+            Toast.makeText(this, "Đã chọn răng " + toothNumber + " cho bước " + currentStep.getServiceName(), Toast.LENGTH_SHORT).show();
+            
+            // Also update the UI fragment if it's the General Dental one
+            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainerForm);
+            if (fragment instanceof FragmentGeneralDental) {
+                ((FragmentGeneralDental) fragment).onToothSelected(toothNumber);
             }
         } else {
-            rgStatus.check(R.id.rbHealthy);
+            Toast.makeText(this, "Vui lòng chọn 'Chỉnh sửa' một bước điều trị trước khi chọn răng", Toast.LENGTH_SHORT).show();
         }
-        
-        // Restore previous note
-        if (toothCustomNotesMap.containsKey(toothNumber)) {
-            etNote.setText(toothCustomNotesMap.get(toothNumber));
-        }
-        
-        view.findViewById(R.id.btnCancel).setOnClickListener(v -> dialog.dismiss());
-        view.findViewById(R.id.btnSave).setOnClickListener(v -> {
-            int checkedId = rgStatus.getCheckedRadioButtonId();
-            String status = "healthy";
-            String statusText = "Bình thường";
-            
-            if (checkedId == R.id.rbCaries) { status = "caries"; statusText = "Sâu răng"; }
-            else if (checkedId == R.id.rbFilled) { status = "filled"; statusText = "Đã trám"; }
-            else if (checkedId == R.id.rbRequested) { status = "requested"; statusText = "BN yêu cầu"; }
-            else if (checkedId == R.id.rbRct) { status = "rct"; statusText = "Cần chữa tủy"; }
-            
-            odontogramView.setToothStatus(toothNumber, status);
-            
-            String customNote = etNote.getText().toString().trim();
-            if (status.equals("healthy") && customNote.isEmpty()) {
-                toothCustomNotesMap.remove(toothNumber);
-            } else {
-                String fullNote = statusText;
-                if (!customNote.isEmpty()) {
-                    fullNote += " - " + customNote;
-                }
-                toothCustomNotesMap.put(toothNumber, fullNote);
-            }
-            
-            updateToothNotesDisplay();
-            dialog.dismiss();
-        });
-        
-        dialog.show();
-    }
-    
-    private void updateToothNotesDisplay() {
-        if (toothCustomNotesMap.isEmpty()) {
-            tvToothNotes.setText("Chưa có ghi chú nào. Nhấn vào răng trên sơ đồ để thêm ghi chú.");
-            return;
-        }
-        
-        StringBuilder sb = new StringBuilder();
-        for (Map.Entry<Integer, String> entry : toothCustomNotesMap.entrySet()) {
-            sb.append("• R").append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
-        }
-        tvToothNotes.setText(sb.toString().trim());
     }
 
     private void saveTreatmentPlan() {
-        String reason = etReason.getText().toString().trim();
-        String diagnosis = etDiagnosis.getText().toString().trim();
-        
-        if (reason.isEmpty() || diagnosis.isEmpty()) {
-            Toast.makeText(this, "Vui lòng nhập lý do và chẩn đoán", Toast.LENGTH_SHORT).show();
+        if (currentTreatmentPlanId == null) {
+            Toast.makeText(this, "Không có phác đồ điều trị để cập nhật", Toast.LENGTH_SHORT).show();
             return;
         }
 
-        // Ideally, combine toothNotesMap, reason, and diagnosis and post to backend
-        // apiService.saveDentalRecord(...)
-        
-        Toast.makeText(this, "Đã lưu hồ sơ bệnh án thành công!", Toast.LENGTH_SHORT).show();
-        finish();
+        if (currentStep == null) {
+            Toast.makeText(this, "Vui lòng bấm \"Chỉnh sửa\" một bước trước khi nhập kết luận", Toast.LENGTH_LONG).show();
+            return;
+        }
+
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainerForm);
+        String finalNotes = "";
+
+        if (fragment instanceof FragmentGeneralDental) {
+            FragmentGeneralDental generalDetail = (FragmentGeneralDental) fragment;
+            String reason = generalDetail.etReason.getText().toString().trim();
+            String diagnosis = generalDetail.etDiagnosis.getText().toString().trim();
+            finalNotes = "Lý do: " + reason + "\nChẩn đoán: " + diagnosis + "\n" + 
+                         "Điều trị: " + generalDetail.getToothTreatments().size() + " răng.";
+        } else if (fragment instanceof FragmentSurgeryChecklist) {
+            finalNotes = ((FragmentSurgeryChecklist) fragment).getFormDataNotes();
+        } else if (fragment instanceof FragmentOrthodontics) {
+            finalNotes = ((FragmentOrthodontics) fragment).getFormDataNotes();
+        }
+
+        if (finalNotes.trim().isEmpty()) {
+            Toast.makeText(this, "Vui lòng nhập thông tin thăm khám", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        if (currentStep != null) {
+            currentStep.setDoctorConclusion(finalNotes);
+        }
+
+        // Build Payload cho Backend
+        List<com.hcmute.mobile_android.network.models.request.UpdatePlanStepsRequest.StepItem> apiItems = new java.util.ArrayList<>();
+        int order = 0;
+        for (TreatmentPlan.Step s : treatmentSteps) {
+            com.hcmute.mobile_android.network.models.request.UpdatePlanStepsRequest.StepItem item = 
+                new com.hcmute.mobile_android.network.models.request.UpdatePlanStepsRequest.StepItem();
+            item.setServiceId(s.getServiceId());
+            item.setSequenceOrder(order++);
+            if (s.getToothNumber() != null) {
+                item.setToothNumber(String.valueOf(s.getToothNumber()));
+            }
+            item.setDoctorConclusion(s.getDoctorConclusion());
+            item.setStatus(s.getStatus()); // Bảo lưu trạng thái (COMPLETED, IN_PROGRESS, vv)
+            apiItems.add(item);
+        }
+
+        com.hcmute.mobile_android.network.models.request.UpdatePlanStepsRequest request = 
+            new com.hcmute.mobile_android.network.models.request.UpdatePlanStepsRequest(apiItems);
+
+        btnSavePlan.setEnabled(false);
+        apiService.updateTreatmentPlanSteps(currentTreatmentPlanId, request).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                btnSavePlan.setEnabled(true);
+                if (response.isSuccessful()) {
+                    Toast.makeText(DoctorWorkflowActivity.this, "Đã lưu hồ sơ bệnh án thành công!", Toast.LENGTH_SHORT).show();
+                    finish();
+                } else {
+                    Toast.makeText(DoctorWorkflowActivity.this, "Lỗi lưu phác đồ: " + response.code(), Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                btnSavePlan.setEnabled(true);
+                Toast.makeText(DoctorWorkflowActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 }

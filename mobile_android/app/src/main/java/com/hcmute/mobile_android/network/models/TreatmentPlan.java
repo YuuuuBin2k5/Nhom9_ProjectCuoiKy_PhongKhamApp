@@ -75,11 +75,20 @@ public class TreatmentPlan {
         private Double estimatedPrice;
         private Double actualPrice;
         private String doctorConclusion;
+        private String uiTemplateType; // GENERAL, ORTHO, SURGERY
+        private String roomName;
         private String createdAt;
         private String completedAt;
 
         // Constructors
         public Step() {}
+
+        public String getRoomName() { return roomName; }
+        public void setRoomName(String roomName) { this.roomName = roomName; }
+
+        // Getters and Setters
+        public String getUiTemplateType() { return uiTemplateType; }
+        public void setUiTemplateType(String uiTemplateType) { this.uiTemplateType = uiTemplateType; }
 
         // Getters and Setters
         public Long getId() { return id; }
