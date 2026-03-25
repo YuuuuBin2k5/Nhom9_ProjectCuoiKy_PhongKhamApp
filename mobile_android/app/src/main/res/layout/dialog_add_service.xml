@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:background="@android:color/white">
+    android:background="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -12,54 +12,57 @@
         android:padding="24dp">
 
         <TextView
+            android:id="@+id/dialogTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Thêm dịch vụ mới"
-            android:textColor="@android:color/black"
+            android:textColor="@color/black"
             android:textSize="22sp"
             android:textStyle="bold"
             android:layout_marginBottom="24dp"/>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilServiceName"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Tên dịch vụ"
             android:layout_marginBottom="16dp"
-            app:hintTextColor="#2196F3"
-            app:boxStrokeColor="#2196F3">
+            android:hint="Tên dịch vụ"
+            app:hintTextColor="@color/primary_blue"
+            app:boxStrokeColor="@color/primary_blue">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etServiceName"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/black"
+                android:textColor="@color/black"
                 android:inputType="textCapWords" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilServiceDesc"
             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="Mô tả"
-            app:hintTextColor="#2196F3"
-            app:boxStrokeColor="#2196F3">
+            app:hintTextColor="@color/primary_blue"
+            app:boxStrokeColor="@color/primary_blue">
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etServiceDesc"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:textColor="@android:color/black"
+                android:textColor="@color/black"
                 android:gravity="top"
                 android:inputType="textMultiLine"
                 android:minLines="2" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <LinearLayout
+            android:id="@+id/layoutPriceDuration"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
-            android:baselineAligned="false"
-            android:layout_marginBottom="24dp">
+            android:baselineAligned="false">
 
             <com.google.android.material.textfield.TextInputLayout
                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -68,13 +71,13 @@
                 android:layout_weight="1"
                 android:layout_marginEnd="8dp"
                 android:hint="Giá (VNĐ)"
-                app:hintTextColor="#2196F3"
-                app:boxStrokeColor="#2196F3">
+                app:hintTextColor="@color/primary_blue"
+                app:boxStrokeColor="@color/primary_blue">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etServicePrice"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@android:color/black"
+                    android:textColor="@color/black"
                     android:inputType="number" />
             </com.google.android.material.textfield.TextInputLayout>
 
@@ -85,20 +88,56 @@
                 android:layout_weight="1"
                 android:layout_marginStart="8dp"
                 android:hint="Thời lượng (phút)"
-                app:hintTextColor="#2196F3"
-                app:boxStrokeColor="#2196F3">
+                app:hintTextColor="@color/primary_blue"
+                app:boxStrokeColor="@color/primary_blue">
                 <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/etServiceDuration"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="@android:color/black"
+                    android:textColor="@color/black"
                     android:inputType="number" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
         <LinearLayout
+            android:id="@+id/layoutImagePicker"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="16dp">
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
+                android:text="Hình ảnh"
+                android:textColor="@color/black"
+                android:textStyle="bold" />
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvSelectedImages"
+                android:layout_width="match_parent"
+                android:layout_height="100dp"
+                android:orientation="horizontal"
+                app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
+                android:layout_marginBottom="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPickImage"
+                style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Thêm ảnh"
+                app:icon="@android:drawable/ic_menu_add"
+                app:iconTint="@color/primary_blue"
+                app:strokeColor="@color/primary_blue"
+                android:textColor="@color/primary_blue"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
             android:gravity="end"
             android:orientation="horizontal">
 
@@ -108,7 +147,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="HỦY"
-                android:textColor="#F44336"
+                android:textColor="@color/error_red"
                 android:textStyle="bold" />
 
             <com.google.android.material.button.MaterialButton
@@ -118,7 +157,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="16dp"
                 android:text="LƯU LẠI"
-                android:textColor="#2196F3"
+                android:textColor="@color/primary_blue"
                 android:textStyle="bold" />
         </LinearLayout>
 

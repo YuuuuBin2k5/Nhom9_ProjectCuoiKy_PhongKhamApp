@@ -2,9 +2,12 @@ package com.hcmute.mobile_android.network;
 
 import com.hcmute.mobile_android.network.models.CheckInMyStatusResponse;
 import com.hcmute.mobile_android.network.models.CreateAppointmentRequest;
+import com.hcmute.mobile_android.network.models.CreateCategoryRequest;
 import com.hcmute.mobile_android.network.models.CreateDoctorRequest;
+import com.hcmute.mobile_android.network.models.CreateServiceRequest;
 import com.hcmute.mobile_android.network.models.LoginRequest;
 import com.hcmute.mobile_android.network.models.PatientMeResponse;
+import com.hcmute.mobile_android.network.models.ServiceCategory;
 import com.hcmute.mobile_android.network.models.TreatmentPlanSummary;
 import com.hcmute.mobile_android.network.models.LoginResponse;
 import com.hcmute.mobile_android.network.models.MessageResponse;
@@ -69,6 +72,9 @@ public interface ApiService {
     @GET("api/services")
     Call<List<com.hcmute.mobile_android.network.models.ServiceItem>> getServices();
 
+    @GET("api/services/categories")
+    Call<List<com.hcmute.mobile_android.network.models.ServiceCategory>> getServiceCategories();
+
     @GET("api/doctors")
     Call<List<com.hcmute.mobile_android.network.models.DoctorItem>> getDoctors();
 
@@ -128,4 +134,18 @@ public interface ApiService {
 
     @PATCH("api/treatment-plans/steps/{stepId}/start")
     Call<MessageResponse> startTreatmentStep(@Path("stepId") Long stepId);
+
+    // Admin Service Management
+    @POST("api/admin/services/categories")
+    Call<ServiceCategory> createServiceCategory(@Body CreateCategoryRequest request);
+
+    @POST("api/admin/services")
+    Call<MessageResponse> createService(@Body CreateServiceRequest request);
+
+    @retrofit2.http.PATCH("api/admin/services/{id}/status")
+    Call<MessageResponse> updateServiceStatus(@Path("id") Long id, @Query("active") boolean active);
+
+    @retrofit2.http.Multipart
+    @POST("api/upload")
+    Call<com.hcmute.mobile_android.network.models.UploadResponse> uploadFile(@retrofit2.http.Part okhttp3.MultipartBody.Part file);
 }

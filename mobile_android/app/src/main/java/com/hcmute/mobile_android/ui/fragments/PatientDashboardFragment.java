@@ -122,6 +122,18 @@ public class PatientDashboardFragment extends Fragment {
 
         View btnAllBs = view.findViewById(R.id.all_bs);
         if (btnAllBs != null) btnAllBs.setOnClickListener(v -> openList(GenericListActivity.MODE_DOCTORS));
+
+        View ivLogout = view.findViewById(R.id.iv_logout);
+        if (ivLogout != null) ivLogout.setOnClickListener(v -> logout());
+    }
+
+    private void logout() {
+        if (isAdded()) {
+            new TokenManager(requireContext()).clearToken();
+            Intent intent = new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.LoginActivity.class);
+            intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            startActivity(intent);
+        }
     }
 
     private void setupAdapters() {

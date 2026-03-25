@@ -106,7 +106,18 @@
                             android:padding="10dp"
                             android:src="@android:drawable/ic_menu_search"
                             android:background="@drawable/bg_circle_soft_blue"
-                            app:tint="@color/text_primary" />
+                            app:tint="@color/text_primary"
+                            android:layout_marginEnd="12dp" />
+
+                        <!-- Logout Icon -->
+                        <ImageView
+                            android:id="@+id/iv_logout"
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:padding="10dp"
+                            android:src="@drawable/ic_door"
+                            android:background="@drawable/bg_circle_soft_blue"
+                            app:tint="@color/alert_coral" />
                     </LinearLayout>
                 </RelativeLayout>
 

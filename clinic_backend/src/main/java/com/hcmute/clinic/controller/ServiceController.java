@@ -64,6 +64,7 @@ public class ServiceController {
                 s.getUiTemplateType() != null ? s.getUiTemplateType().name() : "GENERAL",
                 s.getCategory() != null ? s.getCategory().getId() : null,
                 s.getCategory() != null ? s.getCategory().getName() : null,
+                s.isActive(),
                 imageUrls
         );
     }
@@ -77,6 +78,7 @@ public class ServiceController {
             String uiTemplateType, 
             Long categoryId,
             String categoryName,
+            boolean active,
             List<String> imageUrls
     ) {}
 

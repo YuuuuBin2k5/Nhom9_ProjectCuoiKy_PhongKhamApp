@@ -15,8 +15,14 @@ public class ServiceItem {
     private Integer durationMinutes;
     @SerializedName("uiTemplateType")
     private String uiTemplateType;
+    @SerializedName("categoryId")
+    private Integer categoryId;
     @SerializedName("categoryName")
     private String categoryName;
+    @SerializedName("imageUrls")
+    private java.util.List<String> imageUrls;
+    @SerializedName("active")
+    private boolean active;
 
     public Long getId() { return id; }
     public String getName() { return name; }
@@ -24,5 +30,8 @@ public class ServiceItem {
     public double getPrice() { return price; }
     public Integer getDurationMinutes() { return durationMinutes; }
     public String getUiTemplateType() { return uiTemplateType; }
+    public Integer getCategoryId() { return categoryId; }
     public String getCategoryName() { return categoryName; }
+    public java.util.List<String> getImageUrls() { return imageUrls; }
+    public boolean isActive() { return active; }
 }

@@ -1,6 +1,7 @@
 package com.hcmute.mobile_android.ui.activities;
 
 import android.app.AlertDialog;
+import android.net.Uri;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -11,6 +12,8 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -20,18 +23,28 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
+import com.google.android.material.appbar.MaterialToolbar;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.adapters.AdminServiceAdapter;
+import com.hcmute.mobile_android.adapters.SelectedImageAdapter;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
 import com.hcmute.mobile_android.network.models.ServiceCategory;
 import com.hcmute.mobile_android.network.models.ServiceItem;
 import com.hcmute.mobile_android.network.models.CreateServiceRequest;
+import com.hcmute.mobile_android.network.models.CreateCategoryRequest;
 import com.hcmute.mobile_android.network.models.MessageResponse;
+import com.hcmute.mobile_android.network.models.UploadResponse;
 
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
+import okhttp3.MediaType;
+import okhttp3.MultipartBody;
+import okhttp3.RequestBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -48,6 +61,10 @@ public class AdminServiceActivity extends AppCompatActivity {
     private ExtendedFloatingActionButton fabAddService;
     private int selectedCategoryId = -1;
 
+    private List<Uri> selectedImageUris = new ArrayList<>();
+    private SelectedImageAdapter selectedImageAdapter;
+    private ActivityResultLauncher<String> pickImagesLauncher;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -56,8 +73,9 @@ public class AdminServiceActivity extends AppCompatActivity {
 
         apiService = RetrofitClient.getApiService(this);
         
+        initPickImagesLauncher();
         initViews();
-        loadCategories();
+        loadCategories(-1);
         loadServices();
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -67,8 +85,23 @@ public class AdminServiceActivity extends AppCompatActivity {
         });
     }
 
+    private void initPickImagesLauncher() {
+        pickImagesLauncher = registerForActivityResult(
+                new ActivityResultContracts.GetMultipleContents(),
+                uris -> {
+                    if (uris != null && !uris.isEmpty()) {
+                        selectedImageUris.addAll(uris);
+                        if (selectedImageAdapter != null) {
+                            selectedImageAdapter.notifyDataSetChanged();
+                        }
+                    }
+                }
+        );
+    }
+
     private void initViews() {
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+        MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
         
         spinnerCategories = findViewById(R.id.spinnerCategories);
         btnAddCategory = findViewById(R.id.btnAddCategory);
@@ -97,28 +130,45 @@ public class AdminServiceActivity extends AppCompatActivity {
         });
     }
 
-    private void loadCategories() {
-        // TODO: Implement API call to get categories
-        // For now, create dummy categories
-        categoryList.clear();
-        categoryList.add(new ServiceCategory(1, "Khám chữa bệnh", "Các dịch vụ khám và điều trị cơ bản"));
-        categoryList.add(new ServiceCategory(2, "Chẩn đoán hình ảnh", "Chụp X-Quang và các dịch vụ chẩn đoán"));
-        categoryList.add(new ServiceCategory(3, "Thẩm mỹ răng", "Các dịch vụ làm đẹp răng miệng"));
-        categoryList.add(new ServiceCategory(4, "Tiểu phẫu", "Các dịch vụ phẫu thuật nhỏ"));
-        
-        List<String> categoryNames = new ArrayList<>();
-        for (ServiceCategory category : categoryList) {
-            categoryNames.add(category.getName());
-        }
-        
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, 
-                android.R.layout.simple_spinner_item, categoryNames);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerCategories.setAdapter(adapter);
-        
-        if (!categoryList.isEmpty()) {
-            selectedCategoryId = categoryList.get(0).getId();
-        }
+    private void loadCategories(int idToSelect) {
+        apiService.getServiceCategories().enqueue(new Callback<List<ServiceCategory>>() {
+            @Override
+            public void onResponse(Call<List<ServiceCategory>> call, Response<List<ServiceCategory>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    categoryList.clear();
+                    // Add "All" option
+                    categoryList.add(new ServiceCategory(-1, "Tất cả", "Tất cả các dịch vụ"));
+                    categoryList.addAll(response.body());
+                    
+                    List<String> categoryNames = new ArrayList<>();
+                    for (ServiceCategory category : categoryList) {
+                        categoryNames.add(category.getName());
+                    }
+                    
+                    ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(AdminServiceActivity.this, 
+                            android.R.layout.simple_spinner_item, categoryNames);
+                    spinnerAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+                    spinnerCategories.setAdapter(spinnerAdapter);
+                    
+                    if (idToSelect != -1) {
+                        for (int i = 0; i < categoryList.size(); i++) {
+                            if (categoryList.get(i).getId() == idToSelect) {
+                                spinnerCategories.setSelection(i);
+                                selectedCategoryId = idToSelect;
+                                break;
+                            }
+                        }
+                    } else if (!categoryList.isEmpty()) {
+                        selectedCategoryId = categoryList.get(0).getId();
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<List<ServiceCategory>> call, Throwable t) {
+                Toast.makeText(AdminServiceActivity.this, "Lỗi tải danh mục", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void loadServices() {
@@ -128,7 +178,8 @@ public class AdminServiceActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     serviceList.clear();
                     serviceList.addAll(response.body());
-                    adapter.notifyDataSetChanged();
+                    // Re-filter with current selection
+                    loadServicesByCategory(selectedCategoryId);
                 }
             }
 
@@ -140,11 +191,15 @@ public class AdminServiceActivity extends AppCompatActivity {
     }
     
     private void loadServicesByCategory(int categoryId) {
-        // Filter services by category
         List<ServiceItem> filteredServices = new ArrayList<>();
-        for (ServiceItem service : serviceList) {
-            // TODO: Add category filtering when API supports it
-            filteredServices.add(service);
+        if (categoryId == -1) {
+            filteredServices.addAll(serviceList);
+        } else {
+            for (ServiceItem service : serviceList) {
+                if (service.getCategoryId() != null && service.getCategoryId() == categoryId) {
+                    filteredServices.add(service);
+                }
+            }
         }
         adapter.updateServices(filteredServices);
     }
@@ -168,9 +223,23 @@ public class AdminServiceActivity extends AppCompatActivity {
                 return;
             }
             
-            // TODO: Implement API call to create category
-            Toast.makeText(this, "Thêm danh mục thành công", Toast.LENGTH_SHORT).show();
-            dialog.dismiss();
+            apiService.createServiceCategory(new CreateCategoryRequest(name, desc)).enqueue(new Callback<ServiceCategory>() {
+                @Override
+                public void onResponse(Call<ServiceCategory> call, Response<ServiceCategory> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        Toast.makeText(AdminServiceActivity.this, "Thêm danh mục thành công", Toast.LENGTH_SHORT).show();
+                        loadCategories(response.body().getId());
+                        dialog.dismiss();
+                    } else {
+                        Toast.makeText(AdminServiceActivity.this, "Lỗi khi thêm danh mục", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ServiceCategory> call, Throwable t) {
+                    Toast.makeText(AdminServiceActivity.this, "Lỗi kết nối mạng", Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
         view.findViewById(R.id.btnCancel).setOnClickListener(v -> dialog.dismiss());
@@ -179,10 +248,12 @@ public class AdminServiceActivity extends AppCompatActivity {
 
     private void showAddServiceDialog() {
         if (selectedCategoryId == -1) {
-            Toast.makeText(this, "Vui lòng chọn danh mục trước", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Vui lòng chọn hoặc thêm danh mục trước", Toast.LENGTH_SHORT).show();
             return;
         }
 
+        selectedImageUris.clear();
+        
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_service, null);
         
@@ -190,6 +261,18 @@ public class AdminServiceActivity extends AppCompatActivity {
         EditText etDesc = view.findViewById(R.id.etServiceDesc);
         EditText etPrice = view.findViewById(R.id.etServicePrice);
         EditText etDuration = view.findViewById(R.id.etServiceDuration);
+        RecyclerView rvSelectedImages = view.findViewById(R.id.rvSelectedImages);
+        MaterialButton btnPickImage = view.findViewById(R.id.btnPickImage);
+
+        // Setup Selected Images RecyclerView
+        rvSelectedImages.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        selectedImageAdapter = new SelectedImageAdapter(selectedImageUris, position -> {
+            selectedImageUris.remove(position);
+            selectedImageAdapter.notifyItemRemoved(position);
+        });
+        rvSelectedImages.setAdapter(selectedImageAdapter);
+
+        btnPickImage.setOnClickListener(v -> pickImagesLauncher.launch("image/*"));
 
         builder.setView(view);
         AlertDialog dialog = builder.create();
@@ -209,10 +292,13 @@ public class AdminServiceActivity extends AppCompatActivity {
                 double price = Double.parseDouble(priceStr);
                 int duration = Integer.parseInt(durStr);
                 
-                // TODO: Implement API call to create service
-                Toast.makeText(this, "Thêm dịch vụ thành công", Toast.LENGTH_SHORT).show();
-                loadServices();
-                dialog.dismiss();
+                Toast.makeText(this, "Đang xử lý...", Toast.LENGTH_SHORT).show();
+                
+                if (selectedImageUris.isEmpty()) {
+                    saveService(name, desc, price, duration, new ArrayList<>(), dialog);
+                } else {
+                    uploadImagesAndSave(name, desc, price, duration, 0, new ArrayList<>(), dialog);
+                }
             } catch (NumberFormatException e) {
                 Toast.makeText(this, "Giá và thời lượng phải là số", Toast.LENGTH_SHORT).show();
             }
@@ -220,5 +306,76 @@ public class AdminServiceActivity extends AppCompatActivity {
 
         view.findViewById(R.id.btnCancel).setOnClickListener(v -> dialog.dismiss());
         dialog.show();
+    }
+
+    private void uploadImagesAndSave(String name, String desc, double price, int duration, int index, List<String> imageUrls, AlertDialog dialog) {
+        if (index >= selectedImageUris.size()) {
+            saveService(name, desc, price, duration, imageUrls, dialog);
+            return;
+        }
+
+        Uri uri = selectedImageUris.get(index);
+        try {
+            File file = createTempFileFromUri(uri);
+            RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
+            MultipartBody.Part body = MultipartBody.Part.createFormData("file", file.getName(), requestFile);
+
+            apiService.uploadFile(body).enqueue(new Callback<UploadResponse>() {
+                @Override
+                public void onResponse(Call<UploadResponse> call, Response<UploadResponse> response) {
+                    if (response.isSuccessful() && response.body() != null) {
+                        imageUrls.add(response.body().getFileName());
+                        uploadImagesAndSave(name, desc, price, duration, index + 1, imageUrls, dialog);
+                    } else {
+                        Toast.makeText(AdminServiceActivity.this, "Lỗi khi tải ảnh " + (index + 1), Toast.LENGTH_SHORT).show();
+                        saveService(name, desc, price, duration, imageUrls, dialog);
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<UploadResponse> call, Throwable t) {
+                    Toast.makeText(AdminServiceActivity.this, "Lỗi kết nối khi tải ảnh", Toast.LENGTH_SHORT).show();
+                    saveService(name, desc, price, duration, imageUrls, dialog);
+                }
+            });
+        } catch (Exception e) {
+            uploadImagesAndSave(name, desc, price, duration, index + 1, imageUrls, dialog);
+        }
+    }
+
+    private void saveService(String name, String desc, double price, int duration, List<String> imageUrls, AlertDialog dialog) {
+        CreateServiceRequest request = new CreateServiceRequest(selectedCategoryId, name, desc, price, duration, imageUrls);
+        apiService.createService(request).enqueue(new Callback<MessageResponse>() {
+            @Override
+            public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(AdminServiceActivity.this, "Thêm dịch vụ thành công", Toast.LENGTH_SHORT).show();
+                    loadServices();
+                    dialog.dismiss();
+                } else {
+                    Toast.makeText(AdminServiceActivity.this, "Lỗi khi lưu dịch vụ", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<MessageResponse> call, Throwable t) {
+                Toast.makeText(AdminServiceActivity.this, "Lỗi kết nối mạng", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private File createTempFileFromUri(Uri uri) throws Exception {
+        InputStream inputStream = getContentResolver().openInputStream(uri);
+        File tempFile = File.createTempFile("upload", ".jpg", getCacheDir());
+        FileOutputStream outputStream = new FileOutputStream(tempFile);
+        byte[] buffer = new byte[1024];
+        int read;
+        while ((read = inputStream.read(buffer)) != -1) {
+            outputStream.write(buffer, 0, read);
+        }
+        outputStream.flush();
+        outputStream.close();
+        inputStream.close();
+        return tempFile;
     }
 }
