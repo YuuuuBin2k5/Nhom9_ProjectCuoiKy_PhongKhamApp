@@ -1,11 +1,8 @@
 package com.hcmute.mobile_android.network.models;
 
-public class PatientMeResponse {
-    private Long id;
-    private String email;
+public class UpdatePatientRequest {
     private String firstName;
     private String lastName;
-    private String qrCodeData;
     private String phone;
     private String address;
     private String gender;
@@ -15,11 +12,21 @@ public class PatientMeResponse {
     private String underlyingConditions;
     private String bloodType;
 
-    public Long getId() { return id; }
-    public String getEmail() { return email; }
+    public UpdatePatientRequest(String firstName, String lastName, String phone, String address, String gender, String dob, String avatarUrl, String allergies, String underlyingConditions, String bloodType) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.phone = phone;
+        this.address = address;
+        this.gender = gender;
+        this.dob = dob;
+        this.avatarUrl = avatarUrl;
+        this.allergies = allergies;
+        this.underlyingConditions = underlyingConditions;
+        this.bloodType = bloodType;
+    }
+
     public String getFirstName() { return firstName; }
     public String getLastName() { return lastName; }
-    public String getQrCodeData() { return qrCodeData; }
     public String getPhone() { return phone; }
     public String getAddress() { return address; }
     public String getGender() { return gender; }
@@ -29,4 +36,3 @@ public class PatientMeResponse {
     public String getUnderlyingConditions() { return underlyingConditions; }
     public String getBloodType() { return bloodType; }
 }
-

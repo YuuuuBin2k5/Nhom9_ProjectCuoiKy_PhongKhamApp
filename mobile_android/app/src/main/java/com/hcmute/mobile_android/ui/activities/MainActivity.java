@@ -57,7 +57,7 @@ public class MainActivity extends AppCompatActivity
                 if (isDoctor) {
                     f = new com.hcmute.mobile_android.ui.fragments.DoctorSettingsFragment();
                 } else {
-                    startActivity(new android.content.Intent(MainActivity.this, ProfileActivity.class));
+                    startActivity(new android.content.Intent(MainActivity.this, MedicalRecordActivity.class));
                     return false; // Don't change selected tab visually
                 }
             } else {

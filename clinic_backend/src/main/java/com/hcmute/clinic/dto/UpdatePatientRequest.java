@@ -1,22 +1,17 @@
 package com.hcmute.clinic.dto;
 
-import lombok.Builder;
 import lombok.Data;
 
 @Data
-@Builder
-public class PatientMeResponse {
-    private Long id;
-    private String email;
+public class UpdatePatientRequest {
     private String firstName;
     private String lastName;
-    private String qrCodeData;
     private String phone;
     private String address;
     private String gender;
-    private String dob;
+    private String dob; // ISO date string: "1995-06-15"
     private String avatarUrl;
-    private String bloodType;
     private String allergies;
     private String underlyingConditions;
+    private String bloodType;
 }

@@ -42,7 +42,8 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(Exception.class)
     public ResponseEntity<Map<String, Object>> handleGeneric(Exception e) {
         log.error("Unexpected error", e);
+        String detailedMsg = "Lỗi hệ thống: " + e.getClass().getSimpleName() + " - " + e.getMessage();
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("message", "Lỗi hệ thống. Vui lòng thử lại.", "success", false));
+                .body(Map.of("message", detailedMsg, "success", false));
     }
 }

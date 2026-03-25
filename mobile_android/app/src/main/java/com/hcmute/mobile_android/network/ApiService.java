@@ -19,6 +19,7 @@ import com.hcmute.mobile_android.network.models.PatientInfo;
 import com.hcmute.mobile_android.network.models.TreatmentTemplate;
 import com.hcmute.mobile_android.network.models.TreatmentPlan;
 import com.hcmute.mobile_android.network.models.CreateTreatmentPlanRequest;
+import com.hcmute.mobile_android.network.models.UpdatePatientRequest;
 
 import java.util.List;
 
@@ -35,6 +36,9 @@ public interface ApiService {
 
     @GET("api/patients/me")
     Call<PatientMeResponse> getPatientMe();
+
+    @PUT("api/patients/me")
+    Call<PatientMeResponse> updatePatientMe(@Body UpdatePatientRequest request);
 
     @GET("api/patients/me/checkin-status")
     Call<CheckInMyStatusResponse> getMyCheckInStatus();

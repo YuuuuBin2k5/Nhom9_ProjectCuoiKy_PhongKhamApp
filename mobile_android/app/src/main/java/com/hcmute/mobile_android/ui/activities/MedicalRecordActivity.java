@@ -18,6 +18,7 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.hcmute.mobile_android.R;
@@ -26,6 +27,7 @@ import com.hcmute.mobile_android.network.RetrofitClient;
 import com.hcmute.mobile_android.network.models.PatientMeResponse;
 
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 import retrofit2.Call;
@@ -58,17 +60,22 @@ public class MedicalRecordActivity extends AppCompatActivity {
         rvMedicalHistory.setLayoutManager(new LinearLayoutManager(this));
         rvPastAppointments.setLayoutManager(new LinearLayoutManager(this));
 
+        // Setup Actions
+        findViewById(R.id.btnEditProfile).setOnClickListener(v -> {
+            startActivity(new Intent(this, ProfileActivity.class));
+        });
+
         // Load Header User Info
         loadUserInfo();
 
         // Setup Mock Data for Lists to match the UI precisely
-        setupMedicalHistory();
         setupPastAppointments();
     }
 
     private void loadUserInfo() {
         TextView tvName = findViewById(R.id.tvPatientName);
         TextView tvInfo = findViewById(R.id.tvPatientInfo);
+        ImageView ivProfile = findViewById(R.id.ivAvatar);
 
         ApiService api = RetrofitClient.getApiService(this);
         api.getPatientMe().enqueue(new Callback<PatientMeResponse>() {
@@ -76,55 +83,98 @@ public class MedicalRecordActivity extends AppCompatActivity {
             public void onResponse(Call<PatientMeResponse> call, Response<PatientMeResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     PatientMeResponse p = response.body();
-                    String fullName = ((p.getFirstName() != null ? p.getFirstName() : "") + " " +
-                            (p.getLastName() != null ? p.getLastName() : "")).trim();
+                    String firstName = p.getFirstName() != null ? p.getFirstName() : "";
+                    String lastName = p.getLastName() != null ? p.getLastName() : "";
+                    String fullName = (firstName + " " + lastName).trim();
                     tvName.setText(fullName.isEmpty() ? "Bệnh nhân" : fullName);
-                    // Mock Age and ID for now, since it might not be in the model
-                    tvInfo.setText("Nam • 28 tuổi • ID: 10293847");
+                    
+                    String gender = p.getGender() != null ? p.getGender() : "Chưa cập nhật";
+                    String dob = p.getDob() != null ? p.getDob() : "";
+                    String ageStr = "";
+                    if (!dob.isEmpty()) {
+                        try {
+                            String[] parts = dob.split("-");
+                            int birthYear = Integer.parseInt(parts[0]);
+                            int currentYear = java.util.Calendar.getInstance().get(java.util.Calendar.YEAR);
+                            ageStr = " • " + (currentYear - birthYear) + " tuổi";
+                        } catch (Exception ignored) {}
+                    }
+                    tvInfo.setText(gender + ageStr);
+                    
+                    if (p.getAvatarUrl() != null && !p.getAvatarUrl().isEmpty()) {
+                        Glide.with(MedicalRecordActivity.this)
+                                .load(p.getAvatarUrl())
+                                .placeholder(R.drawable.ic_doctor)
+                                .into(ivProfile);
+                    }
+                    
+                    setupMedicalHistory(p);
                 }
             }
-
             @Override
-            public void onFailure(Call<PatientMeResponse> call, Throwable t) {
-                // Keep default layout text
-            }
+            public void onFailure(Call<PatientMeResponse> call, Throwable t) {}
         });
     }
 
-    private void setupMedicalHistory() {
+    private void setupMedicalHistory(PatientMeResponse p) {
         List<HistoryItem> list = new ArrayList<>();
-        list.add(new HistoryItem("Dị ứng", "Không có", android.R.drawable.ic_menu_close_clear_cancel, "#FFEAEAEA", "#D32F2F"));
-        list.add(new HistoryItem("Bệnh lý nền", "Tiểu đường Type 2", android.R.drawable.ic_menu_sort_by_size, "#FFF3E0", "#E64A19"));
-        list.add(new HistoryItem("Thai kỳ", "Không có", android.R.drawable.ic_menu_info_details, "#E3F2FD", "#1976D2"));
         
-        // Setup Adapter
+        String blood = (p.getBloodType() != null && !p.getBloodType().isEmpty()) ? p.getBloodType() : "Chưa xác định";
+        list.add(new HistoryItem("NHÓM MÁU", blood, android.R.drawable.ic_dialog_info, "#F0FDFA", "#0D9488"));
+
+        String allergies = (p.getAllergies() != null && !p.getAllergies().isEmpty()) ? p.getAllergies() : "Không có";
+        list.add(new HistoryItem("DỊ ỨNG", allergies, android.R.drawable.ic_dialog_alert, "#FEF2F2", "#EF4444"));
+        
+        String conditions = (p.getUnderlyingConditions() != null && !p.getUnderlyingConditions().isEmpty()) ? p.getUnderlyingConditions() : "Không có";
+        list.add(new HistoryItem("BỆNH LÝ NỀN", conditions, android.R.drawable.ic_menu_agenda, "#EFF6FF", "#3B82F6"));
+        
         rvMedicalHistory.setAdapter(new HistoryAdapter(list));
     }
 
     private void setupPastAppointments() {
-        List<PastApptItem> list = new ArrayList<>();
-        list.add(new PastApptItem(
-                "BS. Lê Minh Tâm", 
-                "Chuyên khoa Nội tiết", 
-                "14/10/2023", 
-                "Kiểm tra định kỳ Tiểu đường Type 2, chỉ số HbA1c ổn định."
-        ));
-        
-        rvPastAppointments.setAdapter(new PastApptAdapter(list, new PastApptAdapter.OnItemClickListener() {
+        ApiService api = RetrofitClient.getApiService(this);
+        api.getMyMedicalRecords().enqueue(new Callback<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>>() {
             @Override
-            public void onDetailClick(PastApptItem appt) {
-                Intent intent = new Intent(MedicalRecordActivity.this, MedicalRecordDetailActivity.class);
-                startActivity(intent);
+            public void onResponse(Call<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> call, Response<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    List<com.hcmute.mobile_android.network.models.MedicalRecordResponse> records = response.body();
+                    List<PastApptItem> list = new ArrayList<>();
+                    
+                    for (com.hcmute.mobile_android.network.models.MedicalRecordResponse r : records) {
+                        list.add(new PastApptItem(
+                                r.getId(),
+                                r.getDoctorName() != null ? r.getDoctorName() : "Bác sĩ",
+                                r.getDoctorSpecialty() != null ? r.getDoctorSpecialty() : "Nha sĩ",
+                                r.getDate() != null ? r.getDate().split("T")[0] : "",
+                                r.getDiagnosis() != null ? r.getDiagnosis() : "Chưa có chẩn đoán"
+                        ));
+                    }
+                    
+                    rvPastAppointments.setAdapter(new PastApptAdapter(list, new PastApptAdapter.OnItemClickListener() {
+                        @Override
+                        public void onDetailClick(PastApptItem appt) {
+                            Intent intent = new Intent(MedicalRecordActivity.this, MedicalRecordDetailActivity.class);
+                            intent.putExtra("recordId", appt.id);
+                            startActivity(intent);
+                        }
+
+                        @Override
+                        public void onPrescriptionClick(PastApptItem appt) {
+                            Intent intent = new Intent(MedicalRecordActivity.this, PrescriptionDetailActivity.class);
+                            intent.putExtra("recordId", appt.id);
+                            intent.putExtra("doctorName", appt.doctorName);
+                            intent.putExtra("date", appt.date);
+                            startActivity(intent);
+                        }
+                    }));
+                }
             }
 
             @Override
-            public void onPrescriptionClick(PastApptItem appt) {
-                Intent intent = new Intent(MedicalRecordActivity.this, PrescriptionDetailActivity.class);
-                intent.putExtra("doctorName", appt.doctorName);
-                intent.putExtra("date", appt.date);
-                startActivity(intent);
+            public void onFailure(Call<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> call, Throwable t) {
+                // Handle failure
             }
-        }));
+        });
     }
 
     // --- Inner Models and Adapters ---
@@ -152,12 +202,19 @@ public class MedicalRecordActivity extends AppCompatActivity {
             HistoryItem item = items.get(position);
             holder.tvTitle.setText(item.title);
             holder.tvValue.setText(item.value);
-            // Ignore strict resource checking for generic android icons used as placeholders
-            try { holder.ivIcon.setImageResource(item.iconRes); } catch (Exception ignored) {}
             
-            try { holder.ivIcon.setColorFilter(Color.parseColor(item.iconColor)); } catch (Exception ignored){}
-            // Placeholder background color parsing isn't directly settable as a tint without gradient drawable
-            // For simplicity, we skip full background tinting or assume background is just generic rounded.
+            try { 
+                holder.ivIcon.setImageResource(item.iconRes);
+                holder.ivIcon.setBackground(createIconBg(item.bgColor));
+                holder.ivIcon.setColorFilter(Color.parseColor(item.iconColor)); 
+            } catch (Exception ignored) {}
+        }
+
+        private android.graphics.drawable.Drawable createIconBg(String color) {
+            android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
+            gd.setColor(Color.parseColor(color));
+            gd.setCornerRadius(100f); // Circle
+            return gd;
         }
 
         @Override
@@ -176,9 +233,10 @@ public class MedicalRecordActivity extends AppCompatActivity {
     }
 
     private static class PastApptItem {
+        Long id;
         String doctorName, doctorSpec, date, diagnosis;
-        PastApptItem(String n, String s, String d, String diag) {
-            doctorName = n; doctorSpec = s; date = d; diagnosis = diag;
+        PastApptItem(Long id, String n, String s, String d, String diag) {
+            this.id = id; doctorName = n; doctorSpec = s; date = d; diagnosis = diag;
         }
     }
 

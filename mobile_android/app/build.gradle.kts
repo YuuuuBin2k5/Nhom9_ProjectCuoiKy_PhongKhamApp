@@ -122,6 +122,9 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     
+    // Glide
+    implementation(libs.glide)
+    
     // SwipeRefreshLayout
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     
