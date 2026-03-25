@@ -19,13 +19,27 @@ public class AuthInterceptor implements Interceptor {
 
     @Override
     public Response intercept(Chain chain) throws IOException {
-        var request = chain.request();
+        var originalRequest = chain.request();
+        var request = originalRequest;
         String token = new TokenManager(context).getToken();
         if (token != null && !token.isEmpty()) {
             request = request.newBuilder()
                     .addHeader("Authorization", "Bearer " + token)
                     .build();
         }
-        return chain.proceed(request);
+        
+        Response response = chain.proceed(request);
+        
+        if (response.code() == 401) {
+            // Token is likely invalid or expired
+            new TokenManager(context).clearToken();
+            
+            // Redirect to login only if not already on login/otp screens
+            android.content.Intent intent = new android.content.Intent(context, com.hcmute.mobile_android.ui.activities.LoginActivity.class);
+            intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+            context.startActivity(intent);
+        }
+        
+        return response;
     }
 }

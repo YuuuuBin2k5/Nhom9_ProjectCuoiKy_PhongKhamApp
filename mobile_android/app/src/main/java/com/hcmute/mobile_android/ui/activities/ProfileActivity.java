@@ -37,6 +37,9 @@ public class ProfileActivity extends AppCompatActivity {
                 Toast.makeText(this, "Tính năng đổi ảnh sẽ cập nhật sau", Toast.LENGTH_SHORT).show());
         findViewById(R.id.etEmail).setOnClickListener(v ->
                 startActivity(new Intent(this, SettingsActivity.class)));
+        
+        findViewById(R.id.btnLogout).setOnClickListener(v -> logout());
+        
         loadProfile();
     }
 
