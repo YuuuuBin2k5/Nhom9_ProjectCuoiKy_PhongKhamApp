@@ -14,6 +14,7 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.MaterialToolbar;
 import com.hcmute.mobile_android.R;
+import com.hcmute.mobile_android.adapters.PatientServiceAdapter;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
 import com.hcmute.mobile_android.network.models.DoctorItem;
@@ -94,18 +95,28 @@ public class GenericListActivity extends AppCompatActivity {
         api.getServices().enqueue(new Callback<List<ServiceItem>>() {
             @Override
             public void onResponse(Call<List<ServiceItem>> call, Response<List<ServiceItem>> response) {
-                List<SimpleRow> rows = new ArrayList<>();
                 if (response.isSuccessful() && response.body() != null) {
-                    for (ServiceItem s : response.body()) {
-                        String subtitle = "Giá: " + ((long) s.getPrice()) + "đ";
-                        rows.add(new SimpleRow(
-                                s.getName() != null ? s.getName() : "Dịch vụ",
-                                subtitle,
-                                s
-                        ));
-                    }
+                    List<ServiceItem> services = response.body();
+                    tvEmpty.setVisibility(services.isEmpty() ? View.VISIBLE : View.GONE);
+                    recycler.setVisibility(services.isEmpty() ? View.GONE : View.VISIBLE);
+                    
+                    PatientServiceAdapter serviceAdapter = new PatientServiceAdapter(services, service -> {
+                        Intent intent = new Intent(GenericListActivity.this, ServiceDetailActivity.class);
+                        intent.putExtra("id", service.getId());
+                        intent.putExtra("name", service.getName());
+                        intent.putExtra("price", service.getPrice());
+                        intent.putExtra("duration", service.getDurationMinutes() != null ? service.getDurationMinutes() : 0);
+                        intent.putExtra("description", service.getDescription());
+                        intent.putExtra("category", service.getCategoryName());
+                        if (service.getImageUrls() != null) {
+                            intent.putStringArrayListExtra("imageUrls", new java.util.ArrayList<>(service.getImageUrls()));
+                        }
+                        startActivity(intent);
+                    });
+                    recycler.setAdapter(serviceAdapter);
+                } else {
+                    showRows(new ArrayList<>());
                 }
-                showRows(rows);
             }
 
             @Override
