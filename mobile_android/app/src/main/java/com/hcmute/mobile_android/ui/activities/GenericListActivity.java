@@ -1,5 +1,6 @@
 package com.hcmute.mobile_android.ui.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -73,7 +74,8 @@ public class GenericListActivity extends AppCompatActivity {
                     for (UpcomingAppointment a : response.body()) {
                         rows.add(new SimpleRow(
                                 a.getServiceName() != null ? a.getServiceName() : "Khám tổng quát",
-                                "BS. " + (a.getDoctorName() != null ? a.getDoctorName() : "") + " • " + (a.getDatetime() != null ? a.getDatetime() : "")
+                                "BS. " + (a.getDoctorName() != null ? a.getDoctorName() : "") + " • " + (a.getDatetime() != null ? a.getDatetime() : ""),
+                                a
                         ));
                     }
                 }
@@ -98,7 +100,8 @@ public class GenericListActivity extends AppCompatActivity {
                         String subtitle = "Giá: " + ((long) s.getPrice()) + "đ";
                         rows.add(new SimpleRow(
                                 s.getName() != null ? s.getName() : "Dịch vụ",
-                                subtitle
+                                subtitle,
+                                s
                         ));
                     }
                 }
@@ -122,7 +125,8 @@ public class GenericListActivity extends AppCompatActivity {
                     for (DoctorItem d : response.body()) {
                         rows.add(new SimpleRow(
                                 "BS. " + d.getFullName(),
-                                d.getSpecialization() != null ? d.getSpecialization() : "Bác sĩ đa khoa"
+                                d.getSpecialization() != null ? d.getSpecialization() : "Bác sĩ đa khoa",
+                                d
                         ));
                     }
                 }
@@ -142,16 +146,51 @@ public class GenericListActivity extends AppCompatActivity {
         recycler.setVisibility(rows.isEmpty() ? View.GONE : View.VISIBLE);
     }
 
-    private static class SimpleRow {
-        final String title;
-        final String subtitle;
-        SimpleRow(String title, String subtitle) {
-            this.title = title;
-            this.subtitle = subtitle;
+    private void onRowClick(SimpleRow row) {
+        if (row.data instanceof ServiceItem) {
+            ServiceItem s = (ServiceItem) row.data;
+            Intent intent = new Intent(this, ServiceDetailActivity.class);
+            intent.putExtra("id", s.getId());
+            intent.putExtra("name", s.getName());
+            intent.putExtra("price", s.getPrice());
+            intent.putExtra("duration", s.getDurationMinutes() != null ? s.getDurationMinutes() : 0);
+            intent.putExtra("description", s.getDescription());
+            intent.putExtra("category", s.getCategoryName());
+            if (s.getImageUrls() != null) {
+                intent.putStringArrayListExtra("imageUrls", new java.util.ArrayList<>(s.getImageUrls()));
+            }
+            startActivity(intent);
+        } else if (row.data instanceof DoctorItem) {
+            DoctorItem d = (DoctorItem) row.data;
+            Intent intent = new Intent(this, DoctorDetailActivity.class);
+            intent.putExtra("doctorId", d.getId());
+            intent.putExtra("doctorName", "BS. " + d.getFullName());
+            intent.putExtra("specialization", d.getSpecialization());
+            startActivity(intent);
+        } else if (row.data instanceof UpcomingAppointment) {
+            UpcomingAppointment a = (UpcomingAppointment) row.data;
+            Intent intent = new Intent(this, AppointmentDetailActivity.class);
+            intent.putExtra("appointmentId", a.getId());
+            intent.putExtra("datetime", a.getAppointmentTime());
+            intent.putExtra("serviceName", a.getServiceName());
+            intent.putExtra("doctorName", a.getDoctorName());
+            intent.putExtra("status", a.getStatus());
+            startActivity(intent);
         }
     }
 
-    private static class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.Holder> {
+    private static class SimpleRow {
+        final String title;
+        final String subtitle;
+        final Object data;
+        SimpleRow(String title, String subtitle, Object data) {
+            this.title = title;
+            this.subtitle = subtitle;
+            this.data = data;
+        }
+    }
+
+    private class SimpleAdapter extends RecyclerView.Adapter<SimpleAdapter.Holder> {
         private List<SimpleRow> rows = new ArrayList<>();
 
         void setRows(List<SimpleRow> rows) {
@@ -171,6 +210,7 @@ public class GenericListActivity extends AppCompatActivity {
             SimpleRow row = rows.get(position);
             holder.tvTitle.setText(row.title);
             holder.tvSubtitle.setText(row.subtitle);
+            holder.itemView.setOnClickListener(v -> onRowClick(row));
         }
 
         @Override
@@ -178,7 +218,7 @@ public class GenericListActivity extends AppCompatActivity {
             return rows.size();
         }
 
-        static class Holder extends RecyclerView.ViewHolder {
+        class Holder extends RecyclerView.ViewHolder {
             TextView tvTitle, tvSubtitle;
             Holder(@NonNull View itemView) {
                 super(itemView);

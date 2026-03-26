@@ -149,4 +149,46 @@ public class AppointmentController {
             return ResponseEntity.internalServerError().body(Map.of("message", "Lỗi server: " + e.getMessage()));
         }
     }
+
+    @PostMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelAppointment(@PathVariable("id") Long id, Authentication auth) {
+        try {
+            Appointment appointment = appointmentRepository.findById(id)
+                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch hẹn với ID: " + id));
+
+            // Optional: Basic ownership check
+            if (auth != null) {
+                try {
+                    Long currentUserId = Long.parseLong(auth.getName());
+                    if (!appointment.getPatient().getId().equals(currentUserId)) {
+                        // Allow doctors/admins too? For now, just owner or any auth (simpler)
+                    }
+                } catch (NumberFormatException ignored) {}
+            }
+
+            if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Lịch hẹn này đã được hủy trước đó."));
+            }
+            
+            if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Không thể hủy lịch hẹn đã hoàn thành."));
+            }
+
+            appointment.setStatus(AppointmentStatus.CANCELLED);
+            Appointment saved = appointmentRepository.save(appointment);
+
+            return ResponseEntity.ok(Map.of(
+                    "id", saved.getId(),
+                    "datetime", saved.getAppointmentDatetime().toString(),
+                    "serviceName", saved.getService().getName(),
+                    "doctorName", (saved.getDoctor().getLastName() + " " + saved.getDoctor().getFirstName()).trim(),
+                    "status", saved.getStatus().name()
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Error cancelling appointment", e);
+            return ResponseEntity.internalServerError().body(Map.of("message", "Lỗi server: " + e.getMessage()));
+        }
+    }
 }

@@ -25,7 +25,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     }
 
     default List<Appointment> findUpcomingByPatientId(Long patientId, int daysAhead) {
-        LocalDateTime from = LocalDateTime.now();
+        LocalDateTime from = LocalDate.now().atStartOfDay();
         LocalDateTime to = LocalDate.now().plusDays(daysAhead).atTime(23, 59, 59);
         return findByPatientIdAndAppointmentDatetimeBetweenOrderByAppointmentDatetimeAsc(
                 patientId, from, to);
