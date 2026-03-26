@@ -78,11 +78,7 @@ public interface ApiService {
     Call<List<com.hcmute.mobile_android.network.models.ServiceItem>> getServices();
 
     @GET("api/services/categories")
-<<<<<<< HEAD
-    Call<List<com.hcmute.mobile_android.network.models.ServiceCategory>> getServiceCategories();
-=======
     Call<List<ServiceCategory>> getServiceCategories();
->>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
 
     @GET("api/doctors")
     Call<List<com.hcmute.mobile_android.network.models.DoctorItem>> getDoctors();
@@ -120,11 +116,7 @@ public interface ApiService {
     Call<List<RoomItem>> getRooms();
 
     @PATCH("api/admin/rooms/{id}/status")
-<<<<<<< HEAD
-    Call<com.hcmute.mobile_android.network.models.MessageResponse> updateRoomStatus(@Path("id") Long id, @Query("active") boolean active);
-=======
     Call<MessageResponse> updateRoomStatus(@Path("id") Long id, @Query("active") boolean active);
->>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
 
     // Queue Management APIs
     @GET("api/queue/room/{roomId}")
@@ -168,21 +160,13 @@ public interface ApiService {
     @POST("api/admin/services")
     Call<MessageResponse> createService(@Body CreateServiceRequest request);
 
-<<<<<<< HEAD
-    @retrofit2.http.PATCH("api/admin/services/{id}/status")
-=======
     @GET("api/admin/services")
     Call<List<com.hcmute.mobile_android.network.models.ServiceItem>> getAdminServices();
 
     @PATCH("api/admin/services/{id}/status")
->>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
     Call<MessageResponse> updateServiceStatus(@Path("id") Long id, @Query("active") boolean active);
 
     @retrofit2.http.Multipart
     @POST("api/upload")
-<<<<<<< HEAD
-    Call<com.hcmute.mobile_android.network.models.UploadResponse> uploadFile(@retrofit2.http.Part okhttp3.MultipartBody.Part file);
-=======
     Call<UploadResponse> uploadFile(@retrofit2.http.Part okhttp3.MultipartBody.Part file);
->>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
 }

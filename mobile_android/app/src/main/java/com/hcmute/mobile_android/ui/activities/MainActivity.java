@@ -43,12 +43,7 @@ public class MainActivity extends AppCompatActivity
                 // Route by role
                 f = isDoctor ? new HomeFragment() : new PatientDashboardFragment();
             } else if (id == R.id.nav_qr) {
-                if (isDoctor) {
-                    startActivity(new android.content.Intent(MainActivity.this, com.hcmute.mobile_android.ui.activities.staff.QRScannerActivity.class));
-                    return false;
-                } else {
-                    f = new QrCheckInFragment();
-                }
+                f = new QrCheckInFragment();
             } else if (id == R.id.nav_plan) {
                 f = new TreatmentPlanFragment();
             } else if (id == R.id.nav_notifications) {
@@ -75,6 +70,7 @@ public class MainActivity extends AppCompatActivity
 
         if (isDoctor) {
             bottomNav.getMenu().findItem(R.id.nav_plan).setVisible(false);
+            bottomNav.getMenu().findItem(R.id.nav_qr).setVisible(false);
         }
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
@@ -86,20 +82,6 @@ public class MainActivity extends AppCompatActivity
 
     // ─── HomeFragment.HomeCallbacks ─────────────────────────────────────────────
 
-<<<<<<< HEAD
-=======
-    @Override
-    public void onNavigateToQr() {
-        if (isDoctor) {
-            startActivity(new android.content.Intent(MainActivity.this, com.hcmute.mobile_android.ui.activities.staff.QRScannerActivity.class));
-        } else {
-            bottomNav.setSelectedItemId(R.id.nav_qr);
-            getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.fragmentContainer, new QrCheckInFragment())
-                    .commit();
-        }
-    }
->>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
 
     @Override
     public void onNavigateToNotifications() {

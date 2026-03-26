@@ -167,13 +167,8 @@
                             android:background="@android:color/white"
                             android:padding="16dp">
                             <ImageView
-<<<<<<< HEAD
                                 android:layout_width="48dp"
                                 android:layout_height="48dp"
-=======
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
->>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
                                 android:src="@drawable/ic_medical_services"
                                 app:tint="#2196F3"
                                 android:layout_marginBottom="12dp"/>
@@ -183,11 +178,7 @@
                                 android:text="Dịch vụ"
                                 android:textColor="@android:color/black"
                                 android:textStyle="bold"
-<<<<<<< HEAD
                                 android:textSize="18sp"/>
-=======
-                                android:textSize="16sp"/>
->>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
@@ -209,13 +200,8 @@
                             android:background="@android:color/white"
                             android:padding="16dp">
                             <ImageView
-<<<<<<< HEAD
                                 android:layout_width="48dp"
                                 android:layout_height="48dp"
-=======
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
->>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
                                 android:src="@drawable/ic_door"
                                 app:tint="#2196F3"
                                 android:layout_marginBottom="12dp"/>
@@ -225,25 +211,18 @@
                                 android:text="Phòng khám"
                                 android:textColor="@android:color/black"
                                 android:textStyle="bold"
-<<<<<<< HEAD
                                 android:textSize="18sp"/>
-=======
-                                android:textSize="16sp"/>
->>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
 
-                <!-- Row 2: Doctors & QR -->
-
-                <!-- Row 3: Queue & Workflow -->
+                <!-- Row 2: Doctors & Workflow -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
                     <!-- Doctors Card -->
-
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardDoctors"
                         android:layout_width="0dp"
@@ -256,52 +235,29 @@
 
                         <LinearLayout
                             android:layout_width="match_parent"
-<<<<<<< HEAD
                             android:layout_height="160dp"
                             android:orientation="vertical"
                             android:gravity="center"
-=======
-                            android:layout_height="140dp"
->>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
                             android:background="@android:color/white"
-                            android:gravity="center"
-                            android:orientation="vertical"
                             android:padding="16dp">
 
                             <ImageView
-<<<<<<< HEAD
                                 android:layout_width="48dp"
                                 android:layout_height="48dp"
                                 android:src="@drawable/ic_person"
                                 app:tint="#2196F3"
                                 android:layout_marginBottom="12dp"/>
-=======
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
-                                android:layout_marginBottom="12dp"
-                                android:src="@drawable/ic_person"
-                                app:tint="#2196F3" />
-
->>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Bác sĩ"
                                 android:textColor="@android:color/black"
-<<<<<<< HEAD
                                 android:textStyle="bold"
                                 android:textSize="18sp"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
-=======
-                                android:textSize="16sp"
-                                android:textStyle="bold" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- QR Card -->
-
+                    <!-- Workflow Card -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardDoctorWorkflow"
                         android:layout_width="0dp"
@@ -314,15 +270,15 @@
 
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="140dp"
+                            android:layout_height="160dp"
                             android:background="@android:color/white"
                             android:gravity="center"
                             android:orientation="vertical"
                             android:padding="16dp">
 
                             <ImageView
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
                                 android:layout_marginBottom="12dp"
                                 android:src="@drawable/ic_tooth"
                                 app:tint="#2196F3" />
@@ -332,12 +288,13 @@
                                 android:layout_height="wrap_content"
                                 android:text="Phác đồ"
                                 android:textColor="@android:color/black"
-                                android:textSize="16sp"
+                                android:textSize="18sp"
                                 android:textStyle="bold" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
 
+                <!-- Row 3: Queue & Logout -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -354,16 +311,6 @@
                         app:cardElevation="4dp"
                         app:strokeWidth="0dp"/>
 
-                    <!-- Workflow Card -->
-                </LinearLayout>
-
-                <!-- Row 4: Logout -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
->>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
                     <!-- Logout Card -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardLogout"
@@ -382,13 +329,8 @@
                             android:background="@android:color/white"
                             android:padding="16dp">
                             <ImageView
-<<<<<<< HEAD
                                 android:layout_width="48dp"
                                 android:layout_height="48dp"
-=======
-                                android:layout_width="40dp"
-                                android:layout_height="40dp"
->>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
                                 android:src="@drawable/ic_logout"
                                 app:tint="#F44336"
                                 android:layout_marginBottom="12dp"/>
@@ -398,23 +340,11 @@
                                 android:text="Đăng xuất"
                                 android:textColor="#F44336"
                                 android:textStyle="bold"
-<<<<<<< HEAD
                                 android:textSize="18sp"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
-=======
-                                android:textSize="16sp"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Spacer -->
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"/>
->>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
                 </LinearLayout>
+
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
