@@ -22,6 +22,8 @@ import com.hcmute.mobile_android.network.models.PatientInfo;
 import com.hcmute.mobile_android.network.models.TreatmentTemplate;
 import com.hcmute.mobile_android.network.models.TreatmentPlan;
 import com.hcmute.mobile_android.network.models.CreateTreatmentPlanRequest;
+import com.hcmute.mobile_android.network.models.UpdatePatientRequest;
+import com.hcmute.mobile_android.network.models.UploadResponse;
 
 import java.util.List;
 
@@ -38,6 +40,9 @@ public interface ApiService {
 
     @GET("api/patients/me")
     Call<PatientMeResponse> getPatientMe();
+
+    @PUT("api/patients/me")
+    Call<PatientMeResponse> updatePatientMe(@Body UpdatePatientRequest request);
 
     @GET("api/patients/me/checkin-status")
     Call<CheckInMyStatusResponse> getMyCheckInStatus();
@@ -73,7 +78,11 @@ public interface ApiService {
     Call<List<com.hcmute.mobile_android.network.models.ServiceItem>> getServices();
 
     @GET("api/services/categories")
+<<<<<<< HEAD
     Call<List<com.hcmute.mobile_android.network.models.ServiceCategory>> getServiceCategories();
+=======
+    Call<List<ServiceCategory>> getServiceCategories();
+>>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
 
     @GET("api/doctors")
     Call<List<com.hcmute.mobile_android.network.models.DoctorItem>> getDoctors();
@@ -111,7 +120,11 @@ public interface ApiService {
     Call<List<RoomItem>> getRooms();
 
     @PATCH("api/admin/rooms/{id}/status")
+<<<<<<< HEAD
     Call<com.hcmute.mobile_android.network.models.MessageResponse> updateRoomStatus(@Path("id") Long id, @Query("active") boolean active);
+=======
+    Call<MessageResponse> updateRoomStatus(@Path("id") Long id, @Query("active") boolean active);
+>>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
 
     // Queue Management APIs
     @GET("api/queue/room/{roomId}")
@@ -121,7 +134,7 @@ public interface ApiService {
     Call<Void> callPatient(@Path("id") Long queueId);
 
     @POST("api/queue/{id}/transfer-xray")
-    Call<Void> transferToXRay(@Path("id") Long queueId);
+    Call<Void> transferToXRay(@Path("id") Long queueId, @Body java.util.Map<String, Long> body);
 
     @PUT("api/queue/{id}/status")
     Call<Void> completePatient(@Path("id") Long queueId);
@@ -129,6 +142,9 @@ public interface ApiService {
     // Doctor Workflow APIs
     @GET("api/doctor/patient")
     Call<PatientInfo> lookupPatientByQR(@Query("qr") String qrCode);
+
+    @GET("api/doctor/patients/{id}/medical-records")
+    Call<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> getPatientMedicalRecords(@Path("id") Long patientId);
 
     @GET("api/treatment-templates")
     Call<List<TreatmentTemplate>> getTreatmentTemplates();
@@ -139,8 +155,8 @@ public interface ApiService {
     @GET("api/treatment-plans/{id}")
     Call<TreatmentPlan> getTreatmentPlan(@Path("id") Long planId);
 
-    @PUT("api/treatment-plans/{id}/steps")
-    Call<Void> updateTreatmentPlanSteps(@Path("id") Long planId, @Body List<TreatmentPlan.Step> steps);
+    @PUT("api/treatment-plans/{id}")
+    Call<Void> updateTreatmentPlanSteps(@Path("id") Long planId, @Body com.hcmute.mobile_android.network.models.request.UpdatePlanStepsRequest request);
 
     @PATCH("api/treatment-plans/steps/{stepId}/start")
     Call<MessageResponse> startTreatmentStep(@Path("stepId") Long stepId);
@@ -152,10 +168,21 @@ public interface ApiService {
     @POST("api/admin/services")
     Call<MessageResponse> createService(@Body CreateServiceRequest request);
 
+<<<<<<< HEAD
     @retrofit2.http.PATCH("api/admin/services/{id}/status")
+=======
+    @GET("api/admin/services")
+    Call<List<com.hcmute.mobile_android.network.models.ServiceItem>> getAdminServices();
+
+    @PATCH("api/admin/services/{id}/status")
+>>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
     Call<MessageResponse> updateServiceStatus(@Path("id") Long id, @Query("active") boolean active);
 
     @retrofit2.http.Multipart
     @POST("api/upload")
+<<<<<<< HEAD
     Call<com.hcmute.mobile_android.network.models.UploadResponse> uploadFile(@retrofit2.http.Part okhttp3.MultipartBody.Part file);
+=======
+    Call<UploadResponse> uploadFile(@retrofit2.http.Part okhttp3.MultipartBody.Part file);
+>>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
 }

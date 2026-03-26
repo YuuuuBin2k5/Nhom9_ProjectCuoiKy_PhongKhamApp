@@ -2,7 +2,9 @@ package com.hcmute.clinic.controller;
 
 import com.hcmute.clinic.dto.CheckInMyStatusResponse;
 import com.hcmute.clinic.dto.PatientMeResponse;
+import com.hcmute.clinic.dto.UpdatePatientRequest;
 import com.hcmute.clinic.entity.Appointment;
+import com.hcmute.clinic.entity.Patient;
 import com.hcmute.clinic.enums.AppointmentStatus;
 import com.hcmute.clinic.repository.AppointmentRepository;
 import com.hcmute.clinic.entity.MedicalRecord;
@@ -14,11 +16,9 @@ import com.hcmute.clinic.service.CheckInQueueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -49,8 +49,69 @@ public class PatientController {
                         .firstName(p.getFirstName())
                         .lastName(p.getLastName())
                         .qrCodeData(p.getQrCodeData())
+                        .phone(p.getPhone())
+                        .address(p.getAddress())
+                        .gender(p.getGender())
+                        .dob(p.getDob() != null ? p.getDob().toString() : null)
+                        .avatarUrl(p.getAvatarUrl())
+                        .allergies(p.getProfile() != null ? p.getProfile().getAllergies() : null)
+                        .underlyingConditions(p.getProfile() != null ? p.getProfile().getUnderlyingConditions() : null)
+                        .bloodType(p.getProfile() != null ? p.getProfile().getBloodType() : null)
                         .build()))
                 .orElse(ResponseEntity.notFound().build());
+    }
+
+    @PutMapping("/me")
+    @jakarta.transaction.Transactional
+    public ResponseEntity<?> updateMe(@RequestBody UpdatePatientRequest req, Authentication auth) {
+        if (auth == null || auth.getPrincipal() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        long patientId = Long.parseLong(auth.getName());
+        return patientRepository.findById(patientId).map(p -> {
+            if (req.getFirstName() != null && !req.getFirstName().isBlank()) p.setFirstName(req.getFirstName().trim());
+            if (req.getLastName() != null && !req.getLastName().isBlank()) p.setLastName(req.getLastName().trim());
+            if (req.getPhone() != null) p.setPhone(req.getPhone().trim());
+            if (req.getAddress() != null) p.setAddress(req.getAddress().trim());
+            if (req.getGender() != null) p.setGender(req.getGender());
+            if (req.getAvatarUrl() != null) p.setAvatarUrl(req.getAvatarUrl().trim());
+            if (req.getDob() != null && !req.getDob().isBlank()) {
+                try { p.setDob(java.time.LocalDate.parse(req.getDob())); } catch (Exception ignored) {}
+            }
+            
+            // Handle PatientProfile fields
+            if (p.getProfile() == null) {
+                com.hcmute.clinic.entity.PatientProfile newProfile = com.hcmute.clinic.entity.PatientProfile.builder()
+                        .patient(p)
+                        .build();
+                p.setProfile(newProfile);
+            }
+            if (req.getAllergies() != null) p.getProfile().setAllergies(req.getAllergies().trim());
+            if (req.getUnderlyingConditions() != null) p.getProfile().setUnderlyingConditions(req.getUnderlyingConditions().trim());
+            if (req.getBloodType() != null) p.getProfile().setBloodType(req.getBloodType().trim());
+
+            try {
+                patientRepository.saveAndFlush(p);
+            } catch (Exception e) {
+                return ResponseEntity.status(500).body(Map.of("message", "Database error: " + e.getMessage()));
+            }
+
+            return ResponseEntity.ok(PatientMeResponse.builder()
+                    .id(p.getId())
+                    .email(p.getEmail())
+                    .firstName(p.getFirstName())
+                    .lastName(p.getLastName())
+                    .qrCodeData(p.getQrCodeData())
+                    .phone(p.getPhone())
+                    .address(p.getAddress())
+                    .gender(p.getGender())
+                    .dob(p.getDob() != null ? p.getDob().toString() : null)
+                    .avatarUrl(p.getAvatarUrl())
+                    .allergies(p.getProfile() != null ? p.getProfile().getAllergies() : null)
+                    .underlyingConditions(p.getProfile() != null ? p.getProfile().getUnderlyingConditions() : null)
+                    .bloodType(p.getProfile() != null ? p.getProfile().getBloodType() : null)
+                    .build());
+        }).orElse(ResponseEntity.notFound().build());
     }
 
     @GetMapping("/me/checkin-status")

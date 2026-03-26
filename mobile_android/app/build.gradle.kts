@@ -122,6 +122,9 @@ dependencies {
     implementation(libs.activity)
     implementation(libs.constraintlayout)
     
+    // Glide
+    implementation(libs.glide)
+    
     // SwipeRefreshLayout
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     
@@ -144,6 +147,10 @@ dependencies {
     // Security
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
     implementation(libs.glide)
+    
+    // Firebase Realtime Database
+    implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
+    implementation("com.google.firebase:firebase-database")
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

@@ -1,6 +1,6 @@
-# ===================================
-# Nhom9 PhongKham App - .gitignore
-# ===================================
+# ===== PROJECT GENERAL =====
+.gradle/
+build/
 
 # ===== IDE & EDITOR FILES =====
 .idea/
@@ -239,3 +239,10 @@ bower_components
 .fusebox/
 .dynamodb/
 .tern-port
+
+# Build and Run Logs
+build_output*.txt
+clinic_backend/build_error*.txt
+clinic_backend/run_error*.txt
+clinic_backend/run_log*.txt
+clinic_backend/mvn_output.log

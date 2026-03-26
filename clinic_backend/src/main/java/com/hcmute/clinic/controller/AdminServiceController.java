@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 package com.hcmute.clinic.controller;
 
+=======
+import com.hcmute.clinic.dto.ServiceDto;
+import com.hcmute.clinic.entity.Service;
+>>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
 import com.hcmute.clinic.entity.ServiceCategory;
 import com.hcmute.clinic.service.AdminServiceManagementService;
 import lombok.Data;
@@ -7,9 +12,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+<<<<<<< HEAD
 
 import java.util.List;
 import java.util.Map;
+=======
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
+
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+>>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
 
 @RestController
 @RequestMapping("/api/admin/services")
@@ -19,6 +32,18 @@ public class AdminServiceController {
 
     private final AdminServiceManagementService adminService;
 
+<<<<<<< HEAD
+=======
+    @GetMapping
+    public ResponseEntity<List<ServiceDto>> listAll() {
+        List<Service> all = adminService.getAllServices();
+        List<ServiceDto> dtos = all.stream()
+                .map(this::toDto)
+                .collect(Collectors.toList());
+        return ResponseEntity.ok(dtos);
+    }
+
+>>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
     @PostMapping("/categories")
     public ResponseEntity<?> createCategory(@RequestBody CategoryRequest request) {
         ServiceCategory category = adminService.createCategory(request.getName(), request.getDescription());
@@ -60,6 +85,31 @@ public class AdminServiceController {
         }
     }
 
+<<<<<<< HEAD
+=======
+    private ServiceDto toDto(Service s) {
+        List<String> imageUrls = s.getImages().stream()
+                .map(img -> ServletUriComponentsBuilder.fromCurrentContextPath()
+                        .path("/uploads/")
+                        .path(img.getImageUrl())
+                        .toUriString())
+                .collect(Collectors.toList());
+
+        return new ServiceDto(
+                s.getId(),
+                s.getName(),
+                s.getDescription(),
+                s.getPrice() != null ? s.getPrice().doubleValue() : 0,
+                s.getDurationMinutes(),
+                s.getUiTemplateType() != null ? s.getUiTemplateType().name() : "GENERAL",
+                s.getCategory() != null ? s.getCategory().getId() : null,
+                s.getCategory() != null ? s.getCategory().getName() : null,
+                imageUrls,
+                s.isActive()
+        );
+    }
+
+>>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
     @Data
     public static class CategoryRequest {
         private String name;

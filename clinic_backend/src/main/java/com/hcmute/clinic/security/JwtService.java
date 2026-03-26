@@ -48,7 +48,20 @@ public class JwtService {
                 .setSubject(subjectUserId)
                 .claim("role", role)
                 .setIssuedAt(now)
-                .setExpiration(new Date(now.getTime() + expirationMs))
+                .setExpiration(new Date(now.getTime() + expirationMs)) // Access Token
+                .signWith(key, SignatureAlgorithm.HS256)
+                .compact();
+    }
+
+    public String generateRefreshToken(String subjectUserId, String role) {
+        Date now = new Date();
+        long refreshExpirationMs = 7L * 24 * 60 * 60 * 1000; // 7 days
+        return Jwts.builder()
+                .setSubject(subjectUserId)
+                .claim("role", role)
+                .claim("type", "refresh")
+                .setIssuedAt(now)
+                .setExpiration(new Date(now.getTime() + refreshExpirationMs))
                 .signWith(key, SignatureAlgorithm.HS256)
                 .compact();
     }

@@ -164,8 +164,8 @@ public class PatientQRScannerActivity extends AppCompatActivity {
         builder.setTitle("Nhập mã số");
         
         final EditText input = new EditText(this);
-        input.setHint("Nhập mã số từ lễ tân");
-        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        input.setHint("Ví dụ: CHECKIN:123 hoặc 123");
+        input.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
         input.setPadding(50, 30, 50, 30);
         builder.setView(input);
         

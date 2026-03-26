@@ -43,7 +43,12 @@ public class MainActivity extends AppCompatActivity
                 // Route by role
                 f = isDoctor ? new HomeFragment() : new PatientDashboardFragment();
             } else if (id == R.id.nav_qr) {
-                f = new QrCheckInFragment();
+                if (isDoctor) {
+                    startActivity(new android.content.Intent(MainActivity.this, com.hcmute.mobile_android.ui.activities.staff.QRScannerActivity.class));
+                    return false;
+                } else {
+                    f = new QrCheckInFragment();
+                }
             } else if (id == R.id.nav_plan) {
                 f = new TreatmentPlanFragment();
             } else if (id == R.id.nav_notifications) {
@@ -52,7 +57,7 @@ public class MainActivity extends AppCompatActivity
                 if (isDoctor) {
                     f = new com.hcmute.mobile_android.ui.fragments.DoctorSettingsFragment();
                 } else {
-                    startActivity(new android.content.Intent(MainActivity.this, ProfileActivity.class));
+                    startActivity(new android.content.Intent(MainActivity.this, MedicalRecordActivity.class));
                     return false; // Don't change selected tab visually
                 }
             } else {
@@ -68,6 +73,10 @@ public class MainActivity extends AppCompatActivity
             bottomNav.setSelectedItemId(R.id.nav_home);
         }
 
+        if (isDoctor) {
+            bottomNav.getMenu().findItem(R.id.nav_plan).setVisible(false);
+        }
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
@@ -77,6 +86,20 @@ public class MainActivity extends AppCompatActivity
 
     // ─── HomeFragment.HomeCallbacks ─────────────────────────────────────────────
 
+<<<<<<< HEAD
+=======
+    @Override
+    public void onNavigateToQr() {
+        if (isDoctor) {
+            startActivity(new android.content.Intent(MainActivity.this, com.hcmute.mobile_android.ui.activities.staff.QRScannerActivity.class));
+        } else {
+            bottomNav.setSelectedItemId(R.id.nav_qr);
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.fragmentContainer, new QrCheckInFragment())
+                    .commit();
+        }
+    }
+>>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
 
     @Override
     public void onNavigateToNotifications() {

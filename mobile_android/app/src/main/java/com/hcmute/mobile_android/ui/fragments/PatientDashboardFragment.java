@@ -121,6 +121,7 @@ public class PatientDashboardFragment extends Fragment {
         View btnAllBs = view.findViewById(R.id.all_bs);
         if (btnAllBs != null) btnAllBs.setOnClickListener(v -> openList(GenericListActivity.MODE_DOCTORS));
 
+<<<<<<< HEAD
         View ivLogout = view.findViewById(R.id.iv_logout);
         if (ivLogout != null) ivLogout.setOnClickListener(v -> logout());
     }
@@ -131,6 +132,14 @@ public class PatientDashboardFragment extends Fragment {
             Intent intent = new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.LoginActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
+=======
+        // Setup Avatar click directly here for better reliability
+        View avatarContainer = view.findViewById(R.id.rlAvatarContainer);
+        if (avatarContainer != null) {
+            avatarContainer.setOnClickListener(v -> {
+                startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.MedicalRecordActivity.class));
+            });
+>>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
         }
     }
 
@@ -182,6 +191,9 @@ public class PatientDashboardFragment extends Fragment {
             @Override
             public void onResponse(Call<PatientMeResponse> call, Response<PatientMeResponse> response) {
                 if (!isAdded()) return;
+
+                if (!isAdded()) return;
+
                 if (response.isSuccessful() && response.body() != null) {
                     currentPatient = response.body();
                     if (currentPatient.getId() != null) {
@@ -199,19 +211,17 @@ public class PatientDashboardFragment extends Fragment {
                     if (warningIcon != null) {
                         warningIcon.setVisibility(isMissingInfo ? View.VISIBLE : View.GONE);
                     }
-                    
-                    View avatarContainer = getView() != null ? getView().findViewById(R.id.rlAvatarContainer) : null;
-                    if (avatarContainer != null) {
-                        avatarContainer.setOnClickListener(v -> {
-                            startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.MedicalRecordActivity.class));
-                        });
-                    }
+                } else if (response.code() == 404 || response.code() == 401) {
+                    // Patient not found in this database instance
+                    Toast.makeText(requireContext(), "Phiên làm việc hết hạn. Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
+                    logout();
                 }
                 swipeRefresh.setRefreshing(false);
             }
 
             @Override
             public void onFailure(Call<PatientMeResponse> call, Throwable t) {
+                if (!isAdded()) return;
                 if (!isAdded()) return;
                 Toast.makeText(requireContext(), "Lỗi tải thông tin bệnh nhân", Toast.LENGTH_SHORT).show();
                 swipeRefresh.setRefreshing(false);
@@ -302,6 +312,32 @@ public class PatientDashboardFragment extends Fragment {
         });
     }
 
+<<<<<<< HEAD
+=======
+    private void openCheckIn() {
+        if (!isAdded()) return;
+        
+        String[] options = {"Quét mã QR Check-in", "Đặt lịch hẹn khám"};
+        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(requireContext());
+        builder.setTitle("Bạn muốn làm gì?");
+        builder.setItems(options, (dialog, which) -> {
+            if (which == 0) {
+                // Lựa chọn: Điểm danh / Check-in
+                if (getActivity() instanceof com.hcmute.mobile_android.ui.activities.MainActivity) {
+                    ((com.hcmute.mobile_android.ui.activities.MainActivity) getActivity()).onNavigateToQr();
+                }
+            } else {
+                // Lựa chọn: Đặt lịch hẹn
+                try {
+                    startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.BookAppointmentActivity.class));
+                } catch (Exception e) {
+                    Toast.makeText(requireContext(), "Không thể mở màn hình đặt lịch", Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+        builder.show();
+    }
+>>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
 
     private void openQueueStatus() {
         if (isAdded()) {
@@ -319,6 +355,13 @@ public class PatientDashboardFragment extends Fragment {
             intent.putExtra("status", appointment.getStatus());
             startActivity(intent);
         }
+    }
+
+    private void logout() {
+        if (!isAdded()) return;
+        new TokenManager(requireContext()).clearToken();
+        startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.LoginActivity.class)
+                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
     }
 
     private void openList(String mode) {
@@ -387,6 +430,9 @@ public class PatientDashboardFragment extends Fragment {
                 intent.putExtra("duration", s.getDurationMinutes() != null ? s.getDurationMinutes() : 0);
                 intent.putExtra("description", s.getDescription());
                 intent.putExtra("category", s.getCategoryName());
+                if (s.getImageUrls() != null) {
+                    intent.putStringArrayListExtra("imageUrls", new java.util.ArrayList<>(s.getImageUrls()));
+                }
                 v.getContext().startActivity(intent);
             });
         }
@@ -436,6 +482,15 @@ public class PatientDashboardFragment extends Fragment {
             holder.tvSpecialization.setText(d.getSpecialization() != null && !d.getSpecialization().isEmpty()
                     ? d.getSpecialization() : "Bác sĩ Gia đình");
             holder.tvRating.setText("4." + (8 - (position % 4))); // Mock rating
+
+            holder.itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), com.hcmute.mobile_android.ui.activities.DoctorDetailActivity.class);
+                intent.putExtra("doctorId", d.getId());
+                intent.putExtra("doctorName", "BS. " + d.getFullName());
+                intent.putExtra("specialization", d.getSpecialization() != null && !d.getSpecialization().isEmpty()
+                        ? d.getSpecialization() : "Bác sĩ Gia đình");
+                v.getContext().startActivity(intent);
+            });
         }
 
         @Override

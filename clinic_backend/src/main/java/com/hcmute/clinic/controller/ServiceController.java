@@ -8,8 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
+import com.hcmute.clinic.dto.ServiceDto;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,6 +63,7 @@ public class ServiceController {
                 s.getUiTemplateType() != null ? s.getUiTemplateType().name() : "GENERAL",
                 s.getCategory() != null ? s.getCategory().getId() : null,
                 s.getCategory() != null ? s.getCategory().getName() : null,
+<<<<<<< HEAD
                 s.isActive(),
                 imageUrls
         );
@@ -81,6 +81,13 @@ public class ServiceController {
             boolean active,
             List<String> imageUrls
     ) {}
+=======
+                imageUrls,
+                s.isActive()
+        );
+    }
+
+>>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
 
     public record CategoryWithServicesDto(
             Long id,

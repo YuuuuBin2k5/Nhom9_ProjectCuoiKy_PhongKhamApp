@@ -1,5 +1,6 @@
 package com.hcmute.clinic.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.hcmute.clinic.enums.StepStatus;
 import jakarta.persistence.*;
 import lombok.*;
@@ -19,18 +20,19 @@ public class TreatmentPlanStep {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id", nullable = false)
+    @JsonIgnore
     private TreatmentPlan plan;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "service_id", nullable = false)
     private Service service;
 
     @Column(name = "appointment_id")
     private Long appointmentId; // Use ID to avoid circularity or separate scheduling
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "clinic_room_id")
     private ClinicRoom clinicRoom;
 

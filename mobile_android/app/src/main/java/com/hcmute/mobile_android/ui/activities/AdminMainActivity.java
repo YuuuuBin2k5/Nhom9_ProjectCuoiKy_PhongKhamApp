@@ -16,7 +16,11 @@ import com.hcmute.mobile_android.util.TokenManager;
 
 public class AdminMainActivity extends AppCompatActivity {
 
+<<<<<<< HEAD
     private MaterialCardView cardServices, cardRooms, cardDoctors, cardLogout;
+=======
+    private MaterialCardView cardServices, cardRooms, cardDoctors, cardQueue, cardDoctorWorkflow, cardLogout;
+>>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -38,6 +42,11 @@ public class AdminMainActivity extends AppCompatActivity {
         cardServices = findViewById(R.id.cardServices);
         cardRooms = findViewById(R.id.cardRooms);
         cardDoctors = findViewById(R.id.cardDoctors);
+<<<<<<< HEAD
+=======
+        cardQueue = findViewById(R.id.cardQueue);
+        cardDoctorWorkflow = findViewById(R.id.cardDoctorWorkflow);
+>>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
         cardLogout = findViewById(R.id.cardLogout);
     }
 
@@ -54,7 +63,17 @@ public class AdminMainActivity extends AppCompatActivity {
             startActivity(new Intent(this, AdminDoctorActivity.class));
         });
 
+<<<<<<< HEAD
 
+=======
+        cardQueue.setOnClickListener(v -> {
+            startActivity(new Intent(this, com.hcmute.mobile_android.ui.activities.staff.QueueManagementActivity.class));
+        });
+
+        cardDoctorWorkflow.setOnClickListener(v -> {
+            startActivity(new Intent(this, com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity.class));
+        });
+>>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
 
         cardLogout.setOnClickListener(v -> {
             logout();

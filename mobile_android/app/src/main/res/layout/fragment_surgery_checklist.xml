@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@android:color/white"
+    android:padding="16dp">
+
+    <TextView 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:text="Chỉ số Sinh hiệu (Tiền phẫu thuật)" 
+        android:textSize="16sp" 
+        android:textColor="#0D1B2A"
+        android:textStyle="bold" 
+        android:layout_marginBottom="16dp"/>
+    
+    <EditText 
+        android:id="@+id/etBloodPressure" 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" 
+        android:hint="Huyết áp (VD: 120/80 mmHg)" 
+        android:background="@drawable/bg_card_white_rounded"
+        android:padding="12dp"
+        android:layout_marginBottom="12dp"/>
+        
+    <EditText 
+        android:id="@+id/etHeartRate" 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" 
+        android:hint="Nhịp tim (lần/phút)" 
+        android:inputType="number"
+        android:background="@drawable/bg_card_white_rounded"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp"/>
+        
+    <CheckBox 
+        android:id="@+id/cbCoagulation" 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" 
+        android:buttonTint="#1565C0"
+        android:textColor="#333333"
+        android:text="Bệnh nhân có hội chứng máu khó đông" />
+        
+    <CheckBox 
+        android:id="@+id/cbAllergy" 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" 
+        android:buttonTint="#D32F2F"
+        android:textColor="#333333"
+        android:text="Có tiền sử dị ứng thuốc tê/thuốc mê" 
+        android:layout_marginBottom="16dp"/>
+
+    <EditText 
+        android:id="@+id/etSurgeryNotes" 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" 
+        android:hint="Ghi chú lâm sàng tiền phẫu/tiểu phẫu" 
+        android:minLines="4" 
+        android:gravity="top" 
+        android:background="@drawable/bg_card_white_rounded"
+        android:padding="12dp"/>
+</LinearLayout>

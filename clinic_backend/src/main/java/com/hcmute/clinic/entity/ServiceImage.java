@@ -1,5 +1,6 @@
 package com.hcmute.clinic.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
@@ -19,6 +20,7 @@ public class ServiceImage {
 
     @ManyToOne
     @JoinColumn(name = "service_id", nullable = false)
+    @JsonIgnore
     private Service service;
 
     @Column(name = "image_url", nullable = false)

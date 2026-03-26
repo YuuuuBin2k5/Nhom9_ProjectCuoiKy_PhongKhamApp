@@ -21,4 +21,3 @@ glide = { group = "com.github.bumptech.glide", name = "glide", version.ref = "gl
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }
-

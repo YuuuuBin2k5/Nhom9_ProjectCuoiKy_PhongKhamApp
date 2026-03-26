@@ -6,6 +6,8 @@ public class RegisterResultResponse {
     private String email;
     private String role;
 
+    private String refreshToken;
+
     public String getMessage() {
         return message;
     }
@@ -20,5 +22,9 @@ public class RegisterResultResponse {
 
     public String getRole() {
         return role;
+    }
+
+    public String getRefreshToken() {
+        return refreshToken;
     }
 }

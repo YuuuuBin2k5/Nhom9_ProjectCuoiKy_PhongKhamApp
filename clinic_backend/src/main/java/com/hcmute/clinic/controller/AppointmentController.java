@@ -53,19 +53,36 @@ public class AppointmentController {
             Patient patient = patientRepository.findById(patientId)
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bệnh nhân với ID: " + request.getPatientId()));
 
-            // 2. Resolve Doctor
-            if (request.getDoctorId() == null) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Doctor ID is required"));
-            }
-            Doctor doctor = doctorRepository.findById(request.getDoctorId())
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bác sĩ với ID: " + request.getDoctorId()));
-
-            // 3. Resolve Service
+            // 2. Resolve Service
             if (request.getServiceId() == null) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Service ID is required"));
             }
             Service service = serviceRepository.findById(request.getServiceId())
                     .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy dịch vụ với ID: " + request.getServiceId()));
+
+            // 3. Resolve Doctor
+            Doctor doctor = null;
+            if (request.getDoctorId() == null) {
+                log.info("Doctor ID is null, attempting to auto-assign based on service category: {}", service.getCategory().getName());
+                // Simple auto-assign: first active doctor with matching specialization
+                doctor = doctorRepository.findAll().stream()
+                        .filter(d -> d.isActive() && d.getSpecialization() != null && 
+                                d.getSpecialization().toLowerCase().contains(service.getCategory().getName().toLowerCase()))
+                        .findFirst()
+                        .orElse(null);
+                
+                if (doctor == null) {
+                    // Fallback: any active doctor if no specialty match found (though unlikely with good seeding)
+                    doctor = doctorRepository.findAll().stream().filter(d -> d.isActive()).findFirst().orElse(null);
+                }
+
+                if (doctor == null) {
+                    return ResponseEntity.badRequest().body(Map.of("message", "Hệ thống hiện tại chưa có bác sĩ nào sẵn sàng cho dịch vụ này."));
+                }
+            } else {
+                doctor = doctorRepository.findById(request.getDoctorId())
+                        .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy bác sĩ với ID: " + request.getDoctorId()));
+            }
 
             // 4. Parse DateTime
             LocalDateTime appointmentTime;

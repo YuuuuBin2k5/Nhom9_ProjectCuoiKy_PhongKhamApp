@@ -1,5 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
+<<<<<<< HEAD
     <item android:alpha="0.5" android:color="#2DFF1F" android:state_checked="true" />
     <item android:alpha="0.2" android:color="#212121" android:state_checked="false" />
+=======
+    <item android:color="#4D1A56DB" android:state_checked="true" /> <!-- 30% alpha of primary -->
+    <item android:color="@color/gray_200" />
+>>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
 </selector>

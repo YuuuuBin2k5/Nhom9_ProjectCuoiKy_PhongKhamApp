@@ -14,9 +14,11 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
-import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
+import androidx.viewpager2.widget.ViewPager2;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.android.material.button.MaterialButton;
+import com.hcmute.mobile_android.ui.fragments.QueueListFragment;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.adapters.QueueAdapter;
 import com.hcmute.mobile_android.network.ApiService;
@@ -31,15 +33,15 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class QueueManagementActivity extends AppCompatActivity implements QueueAdapter.OnQueueActionListener {
+public class QueueManagementActivity extends AppCompatActivity implements QueueAdapter.OnQueueActionListener, QueueListFragment.OnRefreshRequestedListener {
 
     private Spinner spinnerRooms;
-    private RecyclerView rvQueue;
-    private SwipeRefreshLayout swipeRefresh;
     private MaterialButton btnRefresh;
     
-    private QueueAdapter queueAdapter;
-    private List<QueueItem> queueList = new ArrayList<>();
+    private TabLayout tabLayout;
+    private ViewPager2 viewPager;
+    private com.hcmute.mobile_android.adapters.QueuePagerAdapter pagerAdapter;
+    private com.hcmute.mobile_android.services.FirebaseQueueManager firebaseQueueManager;
     private List<RoomItem> roomList = new ArrayList<>();
     
     private ApiService apiService;
@@ -67,17 +69,22 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
         
         spinnerRooms = findViewById(R.id.spinnerRooms);
-        rvQueue = findViewById(R.id.rvQueue);
-        swipeRefresh = findViewById(R.id.swipeRefresh);
         btnRefresh = findViewById(R.id.btnRefresh);
+        tabLayout = findViewById(R.id.tabLayout);
+        viewPager = findViewById(R.id.viewPager);
         
-        // Setup RecyclerView
-        rvQueue.setLayoutManager(new LinearLayoutManager(this));
-        queueAdapter = new QueueAdapter(queueList, this);
-        rvQueue.setAdapter(queueAdapter);
+        // Setup Tabs and ViewPager
+        pagerAdapter = new com.hcmute.mobile_android.adapters.QueuePagerAdapter(this);
+        viewPager.setAdapter(pagerAdapter);
         
-        // Setup refresh
-        swipeRefresh.setOnRefreshListener(this::loadQueue);
+        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
+            switch (position) {
+                case 0: tab.setText("Đang chờ"); break;
+                case 1: tab.setText("Cận lâm sàng"); break;
+                case 2: tab.setText("Ưu tiên"); break;
+            }
+        }).attach();
+        
         btnRefresh.setOnClickListener(v -> loadQueue());
         
         // Setup room selection
@@ -86,7 +93,7 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 if (position < roomList.size()) {
                     selectedRoomId = roomList.get(position).getId();
-                    loadQueue();
+                    setupFirebaseListener(); // Changed from loadQueue()
                 }
             }
 
@@ -118,7 +125,7 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
                     
                     if (!roomList.isEmpty()) {
                         selectedRoomId = roomList.get(0).getId();
-                        loadQueue();
+                        setupFirebaseListener();
                     }
                 }
             }
@@ -131,20 +138,58 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
         });
     }
 
-    private void loadQueue() {
+    @Override
+    public void onRefreshRequested() {
+        loadQueue(); // Fallback to manual refresh
+    }
+    
+    private void setupFirebaseListener() {
         if (selectedRoomId == null) return;
         
-        swipeRefresh.setRefreshing(true);
+        if (firebaseQueueManager != null) {
+            firebaseQueueManager.stopListening();
+        }
+        
+        firebaseQueueManager = new com.hcmute.mobile_android.services.FirebaseQueueManager(
+            selectedRoomId, 
+            this::filterAndDistributeQueue
+        );
+        firebaseQueueManager.startListening();
+    }
+    
+    private void filterAndDistributeQueue(List<QueueItem> allItems) {
+        List<QueueItem> waiting = new ArrayList<>();
+        List<QueueItem> subClinical = new ArrayList<>();
+        List<QueueItem> priority = new ArrayList<>();
+        
+        for (QueueItem item : allItems) {
+            String status = item.getStatus();
+            if (item.isPriority() || item.isReturnedPriority()) {
+                priority.add(item);
+            } else if ("PAUSED_FOR_TEST".equals(status)) {
+                subClinical.add(item);
+            } else if ("WAITING".equals(status) || "IN_PROGRESS".equals(status)) {
+                if ("IN_PROGRESS".equals(status)) {
+                    waiting.add(0, item); // Current patient at top
+                } else {
+                    waiting.add(item);
+                }
+            }
+        }
+        
+        pagerAdapter.getWaitingFragment().updateList(waiting);
+        pagerAdapter.getSubClinicalFragment().updateList(subClinical);
+        pagerAdapter.getPriorityFragment().updateList(priority);
+    }
+
+    private void loadQueue() {
+        if (selectedRoomId == null) return;
         
         apiService.getQueueByRoom(selectedRoomId).enqueue(new Callback<List<QueueItem>>() {
             @Override
             public void onResponse(Call<List<QueueItem>> call, Response<List<QueueItem>> response) {
-                swipeRefresh.setRefreshing(false);
-                
                 if (response.isSuccessful() && response.body() != null) {
-                    queueList.clear();
-                    queueList.addAll(response.body());
-                    queueAdapter.notifyDataSetChanged();
+                    filterAndDistributeQueue(response.body());
                 } else {
                     Toast.makeText(QueueManagementActivity.this, 
                         "Lỗi tải hàng đợi", Toast.LENGTH_SHORT).show();
@@ -153,11 +198,18 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
 
             @Override
             public void onFailure(Call<List<QueueItem>> call, Throwable t) {
-                swipeRefresh.setRefreshing(false);
                 Toast.makeText(QueueManagementActivity.this, 
                     "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (firebaseQueueManager != null) {
+            firebaseQueueManager.stopListening();
+        }
     }
 
     @Override
@@ -185,7 +237,7 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
 
     @Override
     public void onTransferToXRay(QueueItem item) {
-        apiService.transferToXRay(item.getId()).enqueue(new Callback<Void>() {
+        apiService.transferToXRay(item.getId(), new java.util.HashMap<>()).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
                 if (response.isSuccessful()) {
@@ -227,5 +279,18 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
                     "Lỗi kết nối", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    @Override
+    public void onExaminePatient(QueueItem item) {
+        if (item.getPatientId() == null) {
+            Toast.makeText(this, "Lỗi: Không tìm thấy ID bệnh nhân", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        android.content.Intent intent = new android.content.Intent(this, DoctorWorkflowActivity.class);
+        intent.putExtra(DoctorWorkflowActivity.EXTRA_INITIAL_QR, "patient:" + item.getPatientId());
+        Toast.makeText(this, "Đang mở hồ sơ: " + item.getPatientName(), Toast.LENGTH_SHORT).show();
+        startActivity(intent);
     }
 }

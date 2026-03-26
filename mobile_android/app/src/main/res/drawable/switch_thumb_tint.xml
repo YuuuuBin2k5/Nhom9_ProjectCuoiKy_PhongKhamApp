@@ -1,4 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
+<<<<<<< HEAD
     <item android:color="#FFFFFF" />
+=======
+    <item android:color="@color/primary" android:state_checked="true" />
+    <item android:color="@color/gray_400" />
+>>>>>>> 492f872343b2ce06255b5595414c8b8dfe77b756
 </selector>
