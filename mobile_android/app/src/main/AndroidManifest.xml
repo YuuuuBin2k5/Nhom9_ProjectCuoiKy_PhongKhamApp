@@ -122,6 +122,9 @@
         <activity
             android:name=".ui.activities.ChatActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.activities.AdminServiceDetailActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

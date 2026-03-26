@@ -57,10 +57,11 @@ public class AdminDoctorActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+        com.google.android.material.appbar.MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
         
         rvDoctors = findViewById(R.id.rvDoctors);
-        rvDoctors.setLayoutManager(new LinearLayoutManager(this));
+        rvDoctors.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(this, 2));
         
         adapter = new AdminDoctorAdapter(doctorList);
         rvDoctors.setAdapter(adapter);
@@ -70,7 +71,7 @@ public class AdminDoctorActivity extends AppCompatActivity {
     }
 
     private void loadDoctors() {
-        apiService.getDoctors().enqueue(new Callback<List<DoctorItem>>() {
+        apiService.getAdminDoctors().enqueue(new Callback<List<DoctorItem>>() {
             @Override
             public void onResponse(Call<List<DoctorItem>> call, Response<List<DoctorItem>> response) {
                 if (response.isSuccessful() && response.body() != null) {

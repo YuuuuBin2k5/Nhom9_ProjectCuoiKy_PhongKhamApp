@@ -75,20 +75,13 @@ public class TreatmentPlan {
         private Double estimatedPrice;
         private Double actualPrice;
         private String doctorConclusion;
-        private String uiTemplateType; // GENERAL, ORTHO, SURGERY
-        private String roomName;
         private String createdAt;
         private String completedAt;
+        private String roomName;
+        private String uiTemplateType;
 
         // Constructors
         public Step() {}
-
-        public String getRoomName() { return roomName; }
-        public void setRoomName(String roomName) { this.roomName = roomName; }
-
-        // Getters and Setters
-        public String getUiTemplateType() { return uiTemplateType; }
-        public void setUiTemplateType(String uiTemplateType) { this.uiTemplateType = uiTemplateType; }
 
         // Getters and Setters
         public Long getId() { return id; }
@@ -129,6 +122,12 @@ public class TreatmentPlan {
 
         public String getCompletedAt() { return completedAt; }
         public void setCompletedAt(String completedAt) { this.completedAt = completedAt; }
+
+        public String getRoomName() { return roomName; }
+        public void setRoomName(String roomName) { this.roomName = roomName; }
+
+        public String getUiTemplateType() { return uiTemplateType; }
+        public void setUiTemplateType(String uiTemplateType) { this.uiTemplateType = uiTemplateType; }
 
         // Helper methods
         public boolean isCompleted() {

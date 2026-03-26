@@ -50,10 +50,16 @@ public class AdminRoomActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+        com.google.android.material.appbar.MaterialToolbar toolbar = findViewById(R.id.toolbar);
+        toolbar.setNavigationOnClickListener(v -> finish());
+        
+        // Remove old btnBack if it exists but it is easier to just clear it if not needed or just use toolbar
+        // The activity_admin_room.xml has both toolbar and btnBack like AdminDoctorActivity
         
         rvRooms = findViewById(R.id.rvRooms);
-        rvRooms.setLayoutManager(new LinearLayoutManager(this));
+        rvRooms.setLayoutManager(new androidx.recyclerview.widget.GridLayoutManager(this, 2));
+        rvRooms.setPadding(8, 8, 8, 80); // bottom padding for FAB clear
+        rvRooms.setClipToPadding(false);
         
         adapter = new AdminRoomAdapter(roomList);
         rvRooms.setAdapter(adapter);

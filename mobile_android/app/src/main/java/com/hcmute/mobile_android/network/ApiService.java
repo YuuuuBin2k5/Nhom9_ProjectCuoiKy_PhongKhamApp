@@ -2,9 +2,12 @@ package com.hcmute.mobile_android.network;
 
 import com.hcmute.mobile_android.network.models.CheckInMyStatusResponse;
 import com.hcmute.mobile_android.network.models.CreateAppointmentRequest;
+import com.hcmute.mobile_android.network.models.CreateCategoryRequest;
 import com.hcmute.mobile_android.network.models.CreateDoctorRequest;
+import com.hcmute.mobile_android.network.models.CreateServiceRequest;
 import com.hcmute.mobile_android.network.models.LoginRequest;
 import com.hcmute.mobile_android.network.models.PatientMeResponse;
+import com.hcmute.mobile_android.network.models.ServiceCategory;
 import com.hcmute.mobile_android.network.models.TreatmentPlanSummary;
 import com.hcmute.mobile_android.network.models.LoginResponse;
 import com.hcmute.mobile_android.network.models.MessageResponse;
@@ -20,6 +23,7 @@ import com.hcmute.mobile_android.network.models.TreatmentTemplate;
 import com.hcmute.mobile_android.network.models.TreatmentPlan;
 import com.hcmute.mobile_android.network.models.CreateTreatmentPlanRequest;
 import com.hcmute.mobile_android.network.models.UpdatePatientRequest;
+import com.hcmute.mobile_android.network.models.UploadResponse;
 
 import java.util.List;
 
@@ -73,6 +77,9 @@ public interface ApiService {
     @GET("api/services")
     Call<List<com.hcmute.mobile_android.network.models.ServiceItem>> getServices();
 
+    @GET("api/services/categories")
+    Call<List<ServiceCategory>> getServiceCategories();
+
     @GET("api/doctors")
     Call<List<com.hcmute.mobile_android.network.models.DoctorItem>> getDoctors();
 
@@ -95,11 +102,21 @@ public interface ApiService {
     Call<LoginResponse> login(@Body LoginRequest request);
 
     // Admin APIs
+
     @POST("api/admin/doctors")
     Call<MessageResponse> createDoctor(@Body CreateDoctorRequest request);
 
+    @PATCH("api/admin/doctors/{id}/status")
+    Call<MessageResponse> updateDoctorStatus(@Path("id") Long id, @Query("active") boolean active);
+
+    @GET("api/admin/doctors")
+    Call<List<com.hcmute.mobile_android.network.models.DoctorItem>> getAdminDoctors();
+
     @GET("api/admin/rooms")
     Call<List<RoomItem>> getRooms();
+
+    @PATCH("api/admin/rooms/{id}/status")
+    Call<MessageResponse> updateRoomStatus(@Path("id") Long id, @Query("active") boolean active);
 
     // Queue Management APIs
     @GET("api/queue/room/{roomId}")
@@ -135,4 +152,18 @@ public interface ApiService {
 
     @PATCH("api/treatment-plans/steps/{stepId}/start")
     Call<MessageResponse> startTreatmentStep(@Path("stepId") Long stepId);
+
+    // Admin Service Management
+    @POST("api/admin/services/categories")
+    Call<ServiceCategory> createServiceCategory(@Body CreateCategoryRequest request);
+
+    @POST("api/admin/services")
+    Call<MessageResponse> createService(@Body CreateServiceRequest request);
+
+    @PATCH("api/admin/services/{id}/status")
+    Call<MessageResponse> updateServiceStatus(@Path("id") Long id, @Query("active") boolean active);
+
+    @retrofit2.http.Multipart
+    @POST("api/upload")
+    Call<UploadResponse> uploadFile(@retrofit2.http.Part okhttp3.MultipartBody.Part file);
 }

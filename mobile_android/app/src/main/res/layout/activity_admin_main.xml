@@ -143,7 +143,7 @@
                 android:orientation="vertical"
                 android:layout_marginBottom="24dp">
 
-                <!-- Row 1 -->
+                <!-- Row 1: Services & Rooms -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -157,7 +157,7 @@
                         android:layout_weight="1"
                         android:layout_margin="8dp"
                         app:cardCornerRadius="16dp"
-                        app:cardElevation="2dp"
+                        app:cardElevation="4dp"
                         app:strokeWidth="0dp">
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -169,15 +169,16 @@
                             <ImageView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:src="@drawable/ic_services"
-                                android:layout_marginBottom="8dp"/>
+                                android:src="@drawable/ic_medical_services"
+                                app:tint="#2196F3"
+                                android:layout_marginBottom="12dp"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Dịch vụ"
                                 android:textColor="@android:color/black"
                                 android:textStyle="bold"
-                                android:textSize="14sp"/>
+                                android:textSize="16sp"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
@@ -189,7 +190,7 @@
                         android:layout_weight="1"
                         android:layout_margin="8dp"
                         app:cardCornerRadius="16dp"
-                        app:cardElevation="2dp"
+                        app:cardElevation="4dp"
                         app:strokeWidth="0dp">
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -201,20 +202,21 @@
                             <ImageView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:src="@drawable/ic_clinic"
-                                android:layout_marginBottom="8dp"/>
+                                android:src="@drawable/ic_door"
+                                app:tint="#2196F3"
+                                android:layout_marginBottom="12dp"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Phòng khám"
                                 android:textColor="@android:color/black"
                                 android:textStyle="bold"
-                                android:textSize="14sp"/>
+                                android:textSize="16sp"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
 
-                <!-- Row 2 -->
+                <!-- Row 2: Doctors & QR -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -228,7 +230,7 @@
                         android:layout_weight="1"
                         android:layout_margin="8dp"
                         app:cardCornerRadius="16dp"
-                        app:cardElevation="2dp"
+                        app:cardElevation="4dp"
                         app:strokeWidth="0dp">
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -240,15 +242,16 @@
                             <ImageView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:src="@drawable/ic_doctor"
-                                android:layout_marginBottom="8dp"/>
+                                android:src="@drawable/ic_person"
+                                app:tint="#2196F3"
+                                android:layout_marginBottom="12dp"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Bác sĩ"
                                 android:textColor="@android:color/black"
                                 android:textStyle="bold"
-                                android:textSize="14sp"/>
+                                android:textSize="16sp"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
@@ -260,7 +263,7 @@
                         android:layout_weight="1"
                         android:layout_margin="8dp"
                         app:cardCornerRadius="16dp"
-                        app:cardElevation="2dp"
+                        app:cardElevation="4dp"
                         app:strokeWidth="0dp">
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -273,25 +276,26 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:src="@android:drawable/ic_menu_camera"
-                                android:layout_marginBottom="8dp"/>
+                                app:tint="#2196F3"
+                                android:layout_marginBottom="12dp"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="QR Check-in"
                                 android:textColor="@android:color/black"
                                 android:textStyle="bold"
-                                android:textSize="14sp"/>
+                                android:textSize="16sp"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
 
-                <!-- Row 3 -->
+                <!-- Row 3: Queue & Workflow -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
-                    <!-- Queue Management Card -->
+                    <!-- Queue Card -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardQueue"
                         android:layout_width="0dp"
@@ -299,7 +303,7 @@
                         android:layout_weight="1"
                         android:layout_margin="8dp"
                         app:cardCornerRadius="16dp"
-                        app:cardElevation="2dp"
+                        app:cardElevation="4dp"
                         app:strokeWidth="0dp">
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -312,18 +316,19 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:src="@drawable/ic_queue"
-                                android:layout_marginBottom="8dp"/>
+                                app:tint="#2196F3"
+                                android:layout_marginBottom="12dp"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Hàng đợi"
                                 android:textColor="@android:color/black"
                                 android:textStyle="bold"
-                                android:textSize="14sp"/>
+                                android:textSize="16sp"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
-                    <!-- Doctor Workflow Card -->
+                    <!-- Workflow Card -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardDoctorWorkflow"
                         android:layout_width="0dp"
@@ -331,7 +336,7 @@
                         android:layout_weight="1"
                         android:layout_margin="8dp"
                         app:cardCornerRadius="16dp"
-                        app:cardElevation="2dp"
+                        app:cardElevation="4dp"
                         app:strokeWidth="0dp">
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -344,19 +349,20 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:src="@drawable/ic_tooth"
-                                android:layout_marginBottom="8dp"/>
+                                app:tint="#2196F3"
+                                android:layout_marginBottom="12dp"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Phác đồ"
                                 android:textColor="@android:color/black"
                                 android:textStyle="bold"
-                                android:textSize="14sp"/>
+                                android:textSize="16sp"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
 
-                <!-- Row 4 -->
+                <!-- Row 4: Logout -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -370,7 +376,7 @@
                         android:layout_weight="1"
                         android:layout_margin="8dp"
                         app:cardCornerRadius="16dp"
-                        app:cardElevation="2dp"
+                        app:cardElevation="4dp"
                         app:strokeWidth="0dp">
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -382,19 +388,20 @@
                             <ImageView
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
-                                android:src="@android:drawable/ic_menu_close_clear_cancel"
-                                android:layout_marginBottom="8dp"/>
+                                android:src="@drawable/ic_logout"
+                                app:tint="#F44336"
+                                android:layout_marginBottom="12dp"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Đăng xuất"
                                 android:textColor="#F44336"
                                 android:textStyle="bold"
-                                android:textSize="14sp"/>
+                                android:textSize="16sp"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
-                    <!-- Placeholder/Empty space to balance Row 4 -->
+                    <!-- Spacer -->
                     <View
                         android:layout_width="0dp"
                         android:layout_height="match_parent"
@@ -402,7 +409,6 @@
                         android:layout_margin="8dp"/>
                 </LinearLayout>
             </LinearLayout>
-
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

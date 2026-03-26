@@ -60,15 +60,15 @@ public class AdminMainActivity extends AppCompatActivity {
         });
 
         cardQueue.setOnClickListener(v -> {
-            startActivity(new Intent(this, QueueManagementActivity.class));
+            startActivity(new Intent(this, com.hcmute.mobile_android.ui.activities.staff.QueueManagementActivity.class));
         });
 
         cardDoctorWorkflow.setOnClickListener(v -> {
-            startActivity(new Intent(this, DoctorWorkflowActivity.class));
+            startActivity(new Intent(this, com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity.class));
         });
 
         cardQR.setOnClickListener(v -> {
-            startActivity(new Intent(this, QRScannerActivity.class));
+            startActivity(new Intent(this, com.hcmute.mobile_android.ui.activities.staff.QRScannerActivity.class));
         });
 
         cardLogout.setOnClickListener(v -> {

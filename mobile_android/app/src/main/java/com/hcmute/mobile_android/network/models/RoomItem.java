@@ -5,6 +5,7 @@ public class RoomItem {
     private String name;
     private String status;
     private int waitingCount;
+    private boolean active;
 
     public RoomItem() {}
 
@@ -27,4 +28,7 @@ public class RoomItem {
 
     public int getWaitingCount() { return waitingCount; }
     public void setWaitingCount(int waitingCount) { this.waitingCount = waitingCount; }
+
+    public boolean isActive() { return active; }
+    public void setActive(boolean active) { this.active = active; }
 }

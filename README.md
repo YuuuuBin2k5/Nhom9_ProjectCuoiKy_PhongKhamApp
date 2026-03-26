@@ -1,6 +1,7 @@
 # 🦷 Nhom9 PhongKham App - Clinic Management System
 
 **Hệ thống quản lý phòng khám nha khoa hiện đại với ứng dụng Android và backend Spring Boot**
+**Modern Dental Clinic Management System with Android Application and Spring Boot Backend**
 
 [![Build Status](https://img.shields.io/badge/build-passing-brightgreen)](https://github.com/YuuuuBin2k5/Nhom9_ProjectCuoiKy_PhongKhamApp)
 [![Android](https://img.shields.io/badge/Android-API%2024+-green)](https://developer.android.com)
@@ -9,302 +10,134 @@
 
 ---
 
-## 📱 **Tổng quan dự án**
+## 📱 **Tổng quan dự án | Project Overview**
 
-Dự án **PhongKham App** là một hệ thống quản lý phòng khám nha khoa toàn diện, bao gồm:
+Dự án **PhongKham App** là một giải pháp chuyển đổi số toàn diện cho phòng khám nha khoa, được thiết kế bởi **Nhóm 9**. Hệ thống giúp tối ưu hóa quy trình từ khâu tiếp đón đến điều trị chuyên sâu.
 
-- **📱 Mobile Android App**: Ứng dụng cho bệnh nhân và nhân viên
-- **🖥️ Spring Boot Backend**: API server với JWT authentication
-- **🔄 Real-time Features**: Queue management và notifications
-- **📊 Admin Dashboard**: Quản lý bác sĩ, phòng khám, dịch vụ
+The **PhongKham App** project is a comprehensive digital transformation solution for dental clinics, designed by **Team 9**. The system optimizes workflows from reception to advanced clinical treatment.
+
+- **📱 Mobile Android App**: Ứng dụng dành cho Bệnh nhân & Đội ngũ y tế (Patient & Staff application).
+- **🖥️ Spring Boot Backend**: API Server mạnh mẽ với bảo mật JWT (Robust API server with JWT security).
+- **🔄 Real-time Features**: Quản lý hàng đợi và thông báo tức thời (Live Queue management & instant notifications).
+- **📊 Admin Dashboard**: Quản lý toàn diện bác sĩ, dịch vụ và cơ sở vật chất (Full management of doctors, services, and facilities).
 
 ---
 
-## 🚀 **Tính năng chính**
+## 🚀 **Tính năng chính | Key Features**
 
-### **👥 Cho Bệnh nhân**
-- ✅ **Đăng ký/Đăng nhập** với OTP qua SMS
-- ✅ **QR Check-in** với ZXing library
-- ✅ **Theo dõi hàng đợi** real-time
-- ✅ **Xem phác đồ điều trị** và tiến độ
-- ✅ **Lịch hẹn** và thông báo
-- ✅ **Profile management** cá nhân
+### **👥 Cho Bệnh nhân | For Patients**
+- ✅ **Đăng ký & Xác thực OTP**: Bảo mật tài khoản qua mã OTP gửi về điện thoại.
+- ✅ **Check-in thông minh**: Tự động check-in qua QR code tại phòng khám.
+- ✅ **Theo dõi hàng đợi**: Xem vị trí và thời gian chờ dự kiến trong hàng đợi real-time.
+- ✅ **Hồ sơ bệnh án điện tử**: Xem lịch sử khám, đơn thuốc và phác đồ điều trị mọi lúc.
+- ✅ **Quản lý lịch hẹn**: Đặt và theo dõi lịch hẹn với bác sĩ chuyên khoa.
 
-### **👨‍⚕️ Cho Nhân viên Y tế**
-- ✅ **QR Scanner** để check-in bệnh nhân
-- ✅ **Queue Management** với drag & drop
-- ✅ **Doctor Workflow** với odontogram
-- ✅ **Treatment Plan** management
-- ✅ **Patient Information** access
+### **👨‍⚕️ Cho Nhân viên Y tế | For Staff & Doctors**
+- ✅ **Quét mã QR**: Tiếp đón bệnh nhân nhanh chóng bằng scanner tích hợp.
+- ✅ **Quản lý hàng đợi**: Điều phối bệnh nhân, chuyển phòng (X-quang, Tiểu phẫu) linh hoạt.
+- ✅ **Lập phác đồ điều trị**: Sử dụng các template chuyên nghiệp để thiết kế quy trình điều trị.
+- ✅ **Giao diện Odontogram**: Tương tác trực tiếp trên sơ đồ răng để ghi chú tình trạng.
+- ✅ **Truy cập bệnh án**: Tra cứu nhanh lịch sử và thông tin lâm sàng của bệnh nhân.
 
-### **👨‍💼 Cho Quản trị viên**
-- ✅ **Doctor Management** - thêm/sửa/xóa bác sĩ
-- ✅ **Room Management** - quản lý phòng khám
-- ✅ **Service Management** - quản lý dịch vụ
-- ✅ **Analytics Dashboard** với biểu đồ
-- ✅ **System Configuration**
+### **👨‍💼 Cho Quản trị viên | For Admin**
+- ✅ **Quản trị Dashboard**: Theo dõi số liệu thống kê và hiệu suất hoạt động của phòng khám.
+- ✅ **Quản lý Dịch vụ**: Cập nhật danh mục kỹ thuật, đơn giá và hình ảnh minh họa.
+- ✅ **Quản lý Đội ngũ**: Thêm mới và kiểm soát trạng thái hoạt động của bác sĩ.
+- ✅ **Quản lý Cơ sở**: Theo dõi tình trạng các phòng khám và trang thiết bị.
 
 ---
 
 ## 🛠️ **Tech Stack**
 
 ### **📱 Android App**
-```
-• Language: Java
-• UI Framework: Material Design 3
-• Architecture: MVVM Pattern
-• Networking: Retrofit + OkHttp
-• QR System: ZXing Library
-• Authentication: JWT Token
-• Local Storage: SharedPreferences
-• Build System: Gradle (Kotlin DSL)
-```
+- **Language**: Java / Android SDK
+- **UI Framework**: Material Design 3
+- **Networking**: Retrofit 2 + OkHttp
+- **QR System**: ZXing Library
+- **Image Loading**: Glide
+- **Architecture**: Integrated Activity-based Pattern
 
 ### **🖥️ Backend API**
-```
-• Framework: Spring Boot 3.2+
-• Language: Java 17+
-• Database: MySQL with JPA/Hibernate
-• Security: Spring Security + JWT
-• Build System: Maven
-• Real-time: Server-Sent Events (SSE)
-• Documentation: OpenAPI/Swagger
-```
+- **Framework**: Spring Boot 3.2+
+- **Security**: Spring Security + JWT (Stateless)
+- **Database**: PostgreSQL (với JPA/Hibernate)
+- **Build System**: Gradle
+- **Real-time**: Server-Sent Events (SSE) & Async Processing
 
 ---
 
-## 📂 **Cấu trúc dự án**
+## 📂 **Cấu trúc dự án | Project Structure**
 
-```
+```text
 Nhom9_ProjectCuoiKy_PhongKhamApp/
-├── 📱 mobile_android/          # Android Application
-│   ├── app/src/main/java/      # Java source code
-│   ├── app/src/main/res/       # Android resources
-│   ├── app/build.gradle.kts    # Android build config
-│   └── 📋 *.md                 # Documentation files
-├── 🖥️ clinic_backend/          # Spring Boot Backend
-│   ├── src/main/java/          # Java source code
-│   ├── src/main/resources/     # Application resources
-│   ├── pom.xml                 # Maven configuration
-│   └── 📋 *.md                 # API documentation
-├── 📚 docs/                    # Project documentation
-├── 🎯 prod/                    # Production planning docs
-└── 📄 README.md                # This file
+├── 📱 mobile_android/          # Android Mobile Application
+│   ├── app/src/main/java/      # Source code (Activities, Adapters, Models)
+│   ├── app/src/main/res/       # Material UI resources & Layouts
+│   └── build.gradle            # Android build configuration
+├── 🖥️ clinic_backend/          # Spring Boot REST API
+│   ├── src/main/java/          # Source code (Controller, Service, Entity)
+│   ├── src/main/resources/     # Configuration (application.yml, DataSeed)
+│   └── build.gradle            # Backend build configuration
+├── 📚 docs/                    # Tài liệu hướng dẫn & Thiết kế
+└── 📄 README.md                # Tài liệu tổng quan dự án
 ```
 
 ---
 
-## 🚀 **Cài đặt và Chạy**
-
-### **📋 Yêu cầu hệ thống**
-- **Java 17+** (cho backend)
-- **Android Studio** (cho mobile app)
-- **MySQL 8.0+** (database)
-- **Git** (version control)
+## 🚀 **Cài đặt và Chạy | Setup & Run**
 
 ### **🖥️ Backend Setup**
-
-1. **Clone repository:**
-```bash
-git clone https://github.com/YuuuuBin2k5/Nhom9_ProjectCuoiKy_PhongKhamApp.git
-cd Nhom9_ProjectCuoiKy_PhongKhamApp/clinic_backend
-```
-
-2. **Cấu hình database:**
-```bash
-# Tạo database MySQL
-mysql -u root -p
-CREATE DATABASE clinic_db;
-```
-
-3. **Cấu hình application.yml:**
-```yaml
-spring:
-  datasource:
-    url: jdbc:mysql://localhost:3306/clinic_db
-    username: your_username
-    password: your_password
-```
-
-4. **Chạy backend:**
-```bash
-./mvnw spring-boot:run
-```
-
-Backend sẽ chạy tại: `http://localhost:8081`
+1. **Database**: Khởi tạo PostgreSQL database tên `phongkham`.
+2. **Configuration**: Cập nhật file `src/main/resources/application.yml` (copy từ bản `.example`).
+3. **Run Server**:
+   ```bash
+   cd clinic_backend
+   ./mvnw spring-boot:run
+   ```
+   *Server sẽ tự động khởi tạo dữ liệu mẫu (Data Seed) khi chạy lần đầu.*
 
 ### **📱 Android App Setup**
-
-1. **Mở Android Studio:**
-```bash
-cd mobile_android
-# Open in Android Studio
-```
-
-2. **Cấu hình API URL:**
-```java
-// Trong build.gradle.kts
-buildConfigField("String", "API_BASE_URL", "\"http://10.0.2.2:8081/\"")
-```
-
-3. **Build và chạy:**
-```bash
-./gradlew assembleDebug
-# Hoặc Run từ Android Studio
-```
+1. **API Endpoint**: Cập nhật IP trong `local.properties` (ví dụ: `backend.host=192.168.1.10`). Hệ thống sẽ tự động cập nhật vào `BuildConfig`.
+2. **Build**: Mở thư mục `mobile_android` bằng Android Studio.
+3. **Run**: Chạy trên emulator hoặc thiết bị thật cùng lớp mạng với server.
 
 ---
 
-## 📱 **Screenshots**
+## 🔑 **Tài khoản dùng thử | Demo Credentials**
 
-### **Patient App**
-| Login Screen | QR Check-in | Dashboard | Treatment Plan |
-|--------------|-------------|-----------|----------------|
-| ![Login](docs/screenshots/login.png) | ![QR](docs/screenshots/qr.png) | ![Dashboard](docs/screenshots/dashboard.png) | ![Treatment](docs/screenshots/treatment.png) |
-
-### **Staff App**
-| QR Scanner | Queue Management | Doctor Workflow | Admin Panel |
-|------------|------------------|-----------------|-------------|
-| ![Scanner](docs/screenshots/scanner.png) | ![Queue](docs/screenshots/queue.png) | ![Workflow](docs/screenshots/workflow.png) | ![Admin](docs/screenshots/admin.png) |
+| Role | Email | Password |
+| :--- | :--- | :--- |
+| **Admin** | `admin@gmail.com` | `123456` |
+| **Doctor** | `doc01@gmail.com` | `123456` |
+| **Patient** | `patient01@gmail.com` | `123456` |
 
 ---
 
-## 🔧 **API Documentation**
+## 🔧 **API Documentation (Summary)**
 
-### **🔐 Authentication Endpoints**
-```http
-POST /api/auth/login          # Đăng nhập
-POST /api/auth/register       # Đăng ký
-POST /api/auth/otp/request    # Yêu cầu OTP
-POST /api/auth/otp/verify     # Xác thực OTP
-```
-
-### **👤 Patient Endpoints**
-```http
-GET  /api/patient/me          # Thông tin cá nhân
-GET  /api/patient/appointments # Lịch hẹn
-GET  /api/patient/treatment-plans # Phác đồ điều trị
-POST /api/patient/checkin/qr  # Tạo QR check-in
-```
-
-### **🏥 Staff Endpoints**
-```http
-GET  /api/queue               # Danh sách hàng đợi
-POST /api/queue/scan          # Quét QR check-in
-PUT  /api/queue/{id}/status   # Cập nhật trạng thái
-GET  /api/doctors             # Danh sách bác sĩ
-```
-
-### **👨‍💼 Admin Endpoints**
-```http
-GET  /api/admin/doctors       # Quản lý bác sĩ
-POST /api/admin/doctors       # Thêm bác sĩ mới
-GET  /api/admin/rooms         # Quản lý phòng
-GET  /api/admin/services      # Quản lý dịch vụ
-```
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| **POST** | `/api/auth/login` | Đăng nhập hệ thống |
+| **GET** | `/api/patients/me` | Lấy thông tin cá nhân bệnh nhân |
+| **POST** | `/api/checkin/scan` | Quét mã QR tiếp đón |
+| **GET** | `/api/treatment-plans/my` | Xem phác đồ điều trị của tôi |
+| **PATCH** | `/api/admin/doctors/{id}/status` | Cập nhật hồ sơ bác sĩ (Admin) |
 
 ---
 
-## 🎯 **Tính năng đặc biệt**
-
-### **📱 QR Check-in System**
-- **ZXing Library** integration
-- **Real-time QR generation** với expiry time
-- **Professional scanner UI** với viewfinder
-- **Offline QR display** capability
-
-### **🔄 Real-time Queue Management**
-- **Server-Sent Events (SSE)** cho live updates
-- **Drag & drop** queue reordering
-- **Status tracking** với color coding
-- **Estimated wait time** calculation
-
-### **🦷 Digital Odontogram**
-- **Interactive tooth chart** với custom view
-- **Treatment step tracking** per tooth
-- **Visual progress indicators**
-- **Touch-optimized interface**
-
-### **📊 Admin Analytics**
-- **Real-time dashboard** với charts
-- **Service statistics** và performance metrics
-- **Doctor workload** monitoring
-- **Patient flow** analysis
+## 🔒 **Bảo mật | Security**
+- **Bảo mật Token**: Sử dụng JWT cho mọi API request sau khi đăng nhập.
+- **Xác thực 2 lớp**: OTP qua điện thoại cho các thao tác đăng ký quan trọng.
+- **Phân quyền (RBAC)**: Kiểm soát truy cập chặt chẽ dựa trên vai trò Admin/Doctor/Patient.
 
 ---
 
-## 🔒 **Bảo mật**
+## 🤝 **Thành viên phát triển | Team Members - Nhóm 9**
 
-- **🔐 JWT Authentication** với refresh tokens
-- **📱 OTP Verification** qua SMS
-- **🛡️ Input Validation** và sanitization
-- **🔒 HTTPS Encryption** (production)
-- **👥 Role-based Access Control** (RBAC)
-- **🚫 SQL Injection Protection** với JPA
-
----
-
-## 🧪 **Testing**
-
-### **Backend Testing**
-```bash
-cd clinic_backend
-./mvnw test
-```
-
-### **Android Testing**
-```bash
-cd mobile_android
-./gradlew test
-./gradlew connectedAndroidTest
-```
-
----
-
-## 📈 **Performance**
-
-### **Backend Metrics**
-- **⚡ Response Time**: < 200ms average
-- **🔄 Throughput**: 1000+ requests/second
-- **💾 Memory Usage**: < 512MB heap
-- **📊 Database**: Optimized queries với indexing
-
-### **Mobile Metrics**
-- **📱 APK Size**: < 15MB
-- **🔋 Battery Usage**: Optimized với background limits
-- **📶 Network**: Efficient caching và compression
-- **🚀 Startup Time**: < 3 seconds cold start
-
----
-
-## 🤝 **Contributing**
-
-Chúng tôi hoan nghênh mọi đóng góp! Vui lòng:
-
-1. **Fork** repository
-2. **Create feature branch**: `git checkout -b feature/amazing-feature`
-3. **Commit changes**: `git commit -m 'Add amazing feature'`
-4. **Push to branch**: `git push origin feature/amazing-feature`
-5. **Open Pull Request**
-
-### **📋 Development Guidelines**
-- Follow **Java Code Conventions**
-- Write **comprehensive tests**
-- Update **documentation**
-- Use **meaningful commit messages**
-
----
-
-## 📄 **License**
-
-Dự án này được phân phối dưới **MIT License**. Xem file [LICENSE](LICENSE) để biết thêm chi tiết.
-
----
-
-## 👥 **Team Members - Nhóm 9**
+Chúng tôi tự hào giới thiệu đội ngũ phát triển đằng sau dự án PhongKham App:
 
 | Thành viên | Vai trò | GitHub |
-|------------|---------|--------|
+| :--- | :--- | :--- |
 | **Đào Nguyễn Nhật Anh** | Team Lead & Backend | [@YuuuuBin2k5](https://github.com/YuuuuBin2k5) |
 | **Nguyễn Đoàn Trường Vĩ** | Backend & QA Tester | [@truongvi-ute](https://github.com/truongvi-ute) |
 | **Trần Hoàng Phúc Quân** | UI/UX Designer & QA Tester | [@PhucQuan](https://github.com/PhucQuan) |
@@ -312,21 +145,11 @@ Dự án này được phân phối dưới **MIT License**. Xem file [LICENSE](
 
 ---
 
-## 📞 **Liên hệ**
-
-- **📧 Email**: nhom9.phongkham@gmail.com
-- **🐛 Issues**: [GitHub Issues](https://github.com/YuuuuBin2k5/Nhom9_ProjectCuoiKy_PhongKhamApp/issues)
-- **💬 Discussions**: [GitHub Discussions](https://github.com/YuuuuBin2k5/Nhom9_ProjectCuoiKy_PhongKhamApp/discussions)
-
----
-
-## 🙏 **Acknowledgments**
-
-- **🏫 Trường Đại học Công Nghệ Kỹ Thuật TP.HCM** 
-- **📚 Spring Boot Community** - Framework documentation
-- **🤖 Android Developers** - Mobile development resources
-- **🔧 ZXing Project** - QR code library
-- **🎨 Material Design** - UI/UX guidelines
+## 🙏 **Lời cảm ơn | Acknowledgments**
+- **🏫 Trường Đại học Công Nghệ Kỹ Thuật TP.HCM (HUTECH)**
+- **📚 Cộng đồng Spring Boot & Android Developers Việt Nam**
+- **🔧 ZXing Project** - Thư viện hỗ trợ QR Code tuyệt vời.
+- **🎨 Material Design** - Tiêu chuẩn cho giao diện chuyên nghiệp.
 
 ---
 
@@ -334,6 +157,6 @@ Dự án này được phân phối dưới **MIT License**. Xem file [LICENSE](
 
 **⭐ Nếu dự án hữu ích, hãy cho chúng tôi một star! ⭐**
 
-Made with ❤️ by **Nhóm 9** - HCMUT
+Made with ❤️ by **Nhóm 9** - Digital Dental Solution
 
 </div>
