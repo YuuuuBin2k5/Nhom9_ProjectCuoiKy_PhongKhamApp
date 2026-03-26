@@ -5,12 +5,16 @@
     android:layout_height="match_parent"
     android:background="#F4F7FB">
 
-    <!-- Top Background & Header -->
-    <LinearLayout
+    <!-- Top Image Pager & Header -->
+    <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="300dp"
-        android:background="@color/primary_trust_blue"
-        android:orientation="vertical">
+        android:layout_height="320dp">
+
+        <androidx.viewpager2.widget.ViewPager2
+            android:id="@+id/vpServiceImages"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/primary_trust_blue" />
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbar"
@@ -20,22 +24,28 @@
             app:titleCentered="true"
             app:titleTextColor="@color/white"
             app:navigationIcon="@drawable/ic_arrow_back"
-            app:navigationIconTint="@color/white" />
+            app:navigationIconTint="@color/white"
+            android:elevation="8dp" />
 
-        <ImageView
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            android:layout_gravity="center"
-            android:layout_marginTop="20dp"
-            android:src="@drawable/ic_tooth"
-            app:tint="@color/white" />
+        <!-- Simple indicator dots if desired, or just use the pager -->
+        <com.google.android.material.tabs.TabLayout
+            android:id="@+id/tabIndicator"
+            android:layout_width="wrap_content"
+            android:layout_height="20dp"
+            android:layout_gravity="bottom|center_horizontal"
+            android:layout_marginBottom="110dp"
+            app:tabBackground="@drawable/bg_circle_premium"
+            app:tabIndicatorHeight="0dp"
+            app:tabGravity="center"
+            app:tabMaxWidth="12dp"
+            android:background="@android:color/transparent" />
             
-    </LinearLayout>
+    </FrameLayout>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginTop="220dp"
+        android:layout_marginTop="240dp"
         android:fillViewport="true">
 
         <LinearLayout

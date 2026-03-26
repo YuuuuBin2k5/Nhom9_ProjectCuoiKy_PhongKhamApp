@@ -23,18 +23,20 @@ public class AuthInterceptor implements Interceptor {
         Request request = chain.request();
         TokenManager tm = new TokenManager(context);
         String token = tm.getToken();
-        
+
         if (token != null && !token.isEmpty()) {
             request = request.newBuilder()
                     .addHeader("Authorization", "Bearer " + token)
                     .build();
         }
-        
+
         Response response = chain.proceed(request);
-        
-        // Handle Session Expired (401 Unauthorized) via Silent Refresh
+
+        // Handle Session Expired (401 Unauthorized)
         if (response.code() == 401) {
             String refreshToken = tm.getRefreshToken();
+            boolean refreshSuccess = false;
+            
             if (refreshToken != null && !refreshToken.isEmpty() && !request.url().encodedPath().contains("/refresh")) {
                 String newToken = refreshAccessToken(refreshToken);
                 if (newToken != null) {
@@ -47,6 +49,14 @@ public class AuthInterceptor implements Interceptor {
                     return chain.proceed(newRequest);
                 }
             }
+            
+            // If refresh fails or no refresh token, redirect to login
+            if (!refreshSuccess) {
+                tm.clearToken();
+                android.content.Intent intent = new android.content.Intent(context, com.hcmute.mobile_android.ui.activities.LoginActivity.class);
+                intent.setFlags(android.content.Intent.FLAG_ACTIVITY_NEW_TASK | android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK);
+                context.startActivity(intent);
+            }
         }
         return response;
     }
@@ -57,17 +67,23 @@ public class AuthInterceptor implements Interceptor {
         
         okhttp3.OkHttpClient client = new okhttp3.OkHttpClient.Builder()
             .connectTimeout(15, java.util.concurrent.TimeUnit.SECONDS).build();
-        String json = "{\"refreshToken\":\"" + refreshToken + "\"}";
-        okhttp3.RequestBody body = okhttp3.RequestBody.create(json, okhttp3.MediaType.parse("application/json; charset=utf-8"));
-        okhttp3.Request request = new okhttp3.Request.Builder()
-                .url(baseUrl + "api/auth/refresh")
-                .post(body)
-                .build();
-        try (Response response = client.newCall(request).execute()) {
-            if (response.isSuccessful() && response.body() != null) {
-                String respStr = response.body().string();
-                org.json.JSONObject obj = new org.json.JSONObject(respStr);
-                return obj.getString("token");
+        
+        try {
+            org.json.JSONObject json = new org.json.JSONObject();
+            json.put("refreshToken", refreshToken);
+            okhttp3.RequestBody body = okhttp3.RequestBody.create(json.toString(), okhttp3.MediaType.parse("application/json; charset=utf-8"));
+            
+            okhttp3.Request request = new okhttp3.Request.Builder()
+                    .url(baseUrl + "api/auth/refresh")
+                    .post(body)
+                    .build();
+                    
+            try (Response response = client.newCall(request).execute()) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String respStr = response.body().string();
+                    org.json.JSONObject obj = new org.json.JSONObject(respStr);
+                    return obj.getString("token");
+                }
             }
         } catch (Exception e) {
             e.printStackTrace();

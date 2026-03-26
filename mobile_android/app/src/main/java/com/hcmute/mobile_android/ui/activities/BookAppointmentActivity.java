@@ -179,43 +179,22 @@ public class BookAppointmentActivity extends AppCompatActivity {
                             (a, b) -> Integer.compare(a.getAppointmentCount(), b.getAppointmentCount()));
                     populateDoctorSpinner();
                 } else {
-                    loadAllDoctors();
-                }
-            }
-
-            @Override
-            public void onFailure(Call<List<DoctorItem>> call, Throwable t) {
-                pbDoctors.setVisibility(View.GONE);
-                loadAllDoctors();
-            }
-        });
-    }
-
-    private void loadAllDoctors() {
-        pbDoctors.setVisibility(View.VISIBLE);
-        api.getDoctors().enqueue(new Callback<List<DoctorItem>>() {
-            @Override
-            public void onResponse(Call<List<DoctorItem>> call, Response<List<DoctorItem>> response) {
-                pbDoctors.setVisibility(View.GONE);
-                if (response.isSuccessful() && response.body() != null) {
-                    doctorList = new ArrayList<>(response.body());
-                    Collections.sort(doctorList,
-                            (a, b) -> Integer.compare(a.getAppointmentCount(), b.getAppointmentCount()));
+                    doctorList = new ArrayList<>();
                     populateDoctorSpinner();
-                } else {
-                    Toast.makeText(BookAppointmentActivity.this,
-                            "Không tải được danh sách bác sĩ", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<List<DoctorItem>> call, Throwable t) {
                 pbDoctors.setVisibility(View.GONE);
+                doctorList = new ArrayList<>();
+                populateDoctorSpinner();
                 Toast.makeText(BookAppointmentActivity.this,
-                        "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                        "Lỗi tải bác sĩ: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
     }
+
 
     private void populateDoctorSpinner() {
         if (doctorList.isEmpty()) {

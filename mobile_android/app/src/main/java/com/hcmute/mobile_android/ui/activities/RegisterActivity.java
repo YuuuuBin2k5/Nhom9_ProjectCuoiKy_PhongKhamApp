@@ -66,6 +66,13 @@ public class RegisterActivity extends AppCompatActivity {
             Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
             return;
         }
+        
+        // Password complexity check: letters and numbers
+        if (!pass.matches(".*[a-zA-Z].*") || !pass.matches(".*[0-9].*")) {
+            Toast.makeText(this, "Password must contain both letters and numbers", Toast.LENGTH_LONG).show();
+            return;
+        }
+
         if (!pass.equals(passConfirm)) {
             Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
             return;
@@ -90,13 +97,23 @@ public class RegisterActivity extends AppCompatActivity {
                             .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
                     finish();
                 } else {
-                    Toast.makeText(RegisterActivity.this, "Failed: " + response.code(), Toast.LENGTH_SHORT).show();
+                    String errorMsg = "Registration failed";
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorJson = response.errorBody().string();
+                            org.json.JSONObject obj = new org.json.JSONObject(errorJson);
+                            errorMsg = obj.optString("message", "Error " + response.code());
+                        }
+                    } catch (Exception e) {
+                        errorMsg = "Error " + response.code();
+                    }
+                    Toast.makeText(RegisterActivity.this, errorMsg, Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
             public void onFailure(Call<RegisterResultResponse> call, Throwable t) {
-                Toast.makeText(RegisterActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
+                Toast.makeText(RegisterActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }

@@ -40,7 +40,8 @@
     
     <!-- Additional colors for compatibility -->
     <color name="error_red">#dc2626</color>
-    
+    <color name="error">#dc2626</color>
+
     <!-- Missing color references -->
     <color name="primary_blue">#1A56DB</color>
     <color name="background">#F9FAFB</color>

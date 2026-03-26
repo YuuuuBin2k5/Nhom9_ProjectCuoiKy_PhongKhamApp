@@ -172,6 +172,15 @@ public class PatientDashboardFragment extends Fragment {
             @Override
             public void onResponse(Call<PatientMeResponse> call, Response<PatientMeResponse> response) {
                 if (!isAdded()) return;
+
+                // Always ensure click listener is set even if data fails to load
+                View avatarContainer = getView() != null ? getView().findViewById(R.id.rlAvatarContainer) : null;
+                if (avatarContainer != null) {
+                    avatarContainer.setOnClickListener(v -> {
+                        startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.ProfileActivity.class));
+                    });
+                }
+
                 if (response.isSuccessful() && response.body() != null) {
                     currentPatient = response.body();
                     if (currentPatient.getId() != null) {
@@ -189,13 +198,10 @@ public class PatientDashboardFragment extends Fragment {
                     if (warningIcon != null) {
                         warningIcon.setVisibility(isMissingInfo ? View.VISIBLE : View.GONE);
                     }
-                    
-                    View avatarContainer = getView() != null ? getView().findViewById(R.id.rlAvatarContainer) : null;
-                    if (avatarContainer != null) {
-                        avatarContainer.setOnClickListener(v -> {
-                            startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.MedicalRecordActivity.class));
-                        });
-                    }
+                } else if (response.code() == 404 || response.code() == 401) {
+                    // Patient not found in this database instance
+                    Toast.makeText(requireContext(), "Phiên làm việc hết hạn. Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
+                    logout();
                 }
                 swipeRefresh.setRefreshing(false);
             }
@@ -203,6 +209,13 @@ public class PatientDashboardFragment extends Fragment {
             @Override
             public void onFailure(Call<PatientMeResponse> call, Throwable t) {
                 if (!isAdded()) return;
+                // Still ensure click listener is set on network failure
+                View avatarContainer = getView() != null ? getView().findViewById(R.id.rlAvatarContainer) : null;
+                if (avatarContainer != null) {
+                    avatarContainer.setOnClickListener(v -> {
+                        startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.ProfileActivity.class));
+                    });
+                }
                 Toast.makeText(requireContext(), "Lỗi tải thông tin bệnh nhân", Toast.LENGTH_SHORT).show();
                 swipeRefresh.setRefreshing(false);
             }
@@ -334,6 +347,13 @@ public class PatientDashboardFragment extends Fragment {
         }
     }
 
+    private void logout() {
+        if (!isAdded()) return;
+        new TokenManager(requireContext()).clearToken();
+        startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.LoginActivity.class)
+                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+    }
+
     private void openList(String mode) {
         Intent i = new Intent(requireContext(), GenericListActivity.class);
         i.putExtra(GenericListActivity.EXTRA_MODE, mode);
@@ -400,6 +420,9 @@ public class PatientDashboardFragment extends Fragment {
                 intent.putExtra("duration", s.getDurationMinutes() != null ? s.getDurationMinutes() : 0);
                 intent.putExtra("description", s.getDescription());
                 intent.putExtra("category", s.getCategoryName());
+                if (s.getImageUrls() != null) {
+                    intent.putStringArrayListExtra("imageUrls", new java.util.ArrayList<>(s.getImageUrls()));
+                }
                 v.getContext().startActivity(intent);
             });
         }
@@ -449,6 +472,15 @@ public class PatientDashboardFragment extends Fragment {
             holder.tvSpecialization.setText(d.getSpecialization() != null && !d.getSpecialization().isEmpty()
                     ? d.getSpecialization() : "Bác sĩ Gia đình");
             holder.tvRating.setText("4." + (8 - (position % 4))); // Mock rating
+
+            holder.itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(v.getContext(), com.hcmute.mobile_android.ui.activities.DoctorDetailActivity.class);
+                intent.putExtra("doctorId", d.getId());
+                intent.putExtra("doctorName", "BS. " + d.getFullName());
+                intent.putExtra("specialization", d.getSpecialization() != null && !d.getSpecialization().isEmpty()
+                        ? d.getSpecialization() : "Bác sĩ Gia đình");
+                v.getContext().startActivity(intent);
+            });
         }
 
         @Override
