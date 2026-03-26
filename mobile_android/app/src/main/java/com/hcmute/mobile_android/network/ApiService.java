@@ -160,6 +160,9 @@ public interface ApiService {
     @POST("api/admin/services")
     Call<MessageResponse> createService(@Body CreateServiceRequest request);
 
+    @GET("api/admin/services")
+    Call<List<com.hcmute.mobile_android.network.models.ServiceItem>> getAdminServices();
+
     @PATCH("api/admin/services/{id}/status")
     Call<MessageResponse> updateServiceStatus(@Path("id") Long id, @Query("active") boolean active);
 

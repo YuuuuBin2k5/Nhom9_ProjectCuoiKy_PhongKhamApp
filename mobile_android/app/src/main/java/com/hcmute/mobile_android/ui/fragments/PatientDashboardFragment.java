@@ -122,6 +122,14 @@ public class PatientDashboardFragment extends Fragment {
 
         View btnAllBs = view.findViewById(R.id.all_bs);
         if (btnAllBs != null) btnAllBs.setOnClickListener(v -> openList(GenericListActivity.MODE_DOCTORS));
+
+        // Setup Avatar click directly here for better reliability
+        View avatarContainer = view.findViewById(R.id.rlAvatarContainer);
+        if (avatarContainer != null) {
+            avatarContainer.setOnClickListener(v -> {
+                startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.MedicalRecordActivity.class));
+            });
+        }
     }
 
     private void setupAdapters() {
@@ -173,13 +181,7 @@ public class PatientDashboardFragment extends Fragment {
             public void onResponse(Call<PatientMeResponse> call, Response<PatientMeResponse> response) {
                 if (!isAdded()) return;
 
-                // Always ensure click listener is set even if data fails to load
-                View avatarContainer = getView() != null ? getView().findViewById(R.id.rlAvatarContainer) : null;
-                if (avatarContainer != null) {
-                    avatarContainer.setOnClickListener(v -> {
-                        startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.ProfileActivity.class));
-                    });
-                }
+                if (!isAdded()) return;
 
                 if (response.isSuccessful() && response.body() != null) {
                     currentPatient = response.body();
@@ -209,13 +211,7 @@ public class PatientDashboardFragment extends Fragment {
             @Override
             public void onFailure(Call<PatientMeResponse> call, Throwable t) {
                 if (!isAdded()) return;
-                // Still ensure click listener is set on network failure
-                View avatarContainer = getView() != null ? getView().findViewById(R.id.rlAvatarContainer) : null;
-                if (avatarContainer != null) {
-                    avatarContainer.setOnClickListener(v -> {
-                        startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.ProfileActivity.class));
-                    });
-                }
+                if (!isAdded()) return;
                 Toast.makeText(requireContext(), "Lỗi tải thông tin bệnh nhân", Toast.LENGTH_SHORT).show();
                 swipeRefresh.setRefreshing(false);
             }

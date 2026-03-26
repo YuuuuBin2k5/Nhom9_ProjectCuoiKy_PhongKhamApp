@@ -145,6 +145,19 @@
                     android:visibility="gone" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnExamine"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Khám ngay"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="8dp"
+                    app:backgroundTint="@color/primary_trust_blue"
+                    app:icon="@drawable/ic_medical_services"
+                    app:iconSize="16dp"
+                    android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnXRay"
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="wrap_content"

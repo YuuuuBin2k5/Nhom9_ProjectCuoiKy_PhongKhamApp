@@ -280,4 +280,17 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
             }
         });
     }
+
+    @Override
+    public void onExaminePatient(QueueItem item) {
+        if (item.getPatientId() == null) {
+            Toast.makeText(this, "Lỗi: Không tìm thấy ID bệnh nhân", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        android.content.Intent intent = new android.content.Intent(this, DoctorWorkflowActivity.class);
+        intent.putExtra(DoctorWorkflowActivity.EXTRA_INITIAL_QR, "patient:" + item.getPatientId());
+        Toast.makeText(this, "Đang mở hồ sơ: " + item.getPatientName(), Toast.LENGTH_SHORT).show();
+        startActivity(intent);
+    }
 }

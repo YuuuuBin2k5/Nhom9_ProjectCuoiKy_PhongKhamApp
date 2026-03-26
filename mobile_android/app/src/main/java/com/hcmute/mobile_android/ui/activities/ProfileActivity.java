@@ -86,7 +86,6 @@ public class ProfileActivity extends AppCompatActivity {
 
         findViewById(R.id.btnSave).setOnClickListener(v -> saveProfile());
         ivProfile.setOnClickListener(v -> showAvatarEditDialog());
-        findViewById(R.id.btnLogout).setOnClickListener(v -> logout());
         
         // Setup Avatar Edit FAB
         View fabEdit = findViewById(R.id.fabAvatarEdit); 
@@ -211,10 +210,4 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
-    private void logout() {
-        new TokenManager(this).clearToken();
-        startActivity(new Intent(this, LoginActivity.class)
-                .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
-        finish();
-    }
 }

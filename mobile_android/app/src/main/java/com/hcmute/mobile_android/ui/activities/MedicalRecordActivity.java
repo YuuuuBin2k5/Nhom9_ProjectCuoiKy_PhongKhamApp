@@ -65,6 +65,15 @@ public class MedicalRecordActivity extends AppCompatActivity {
             startActivity(new Intent(this, ProfileActivity.class));
         });
 
+        toolbar.inflateMenu(R.menu.menu_medical_record);
+        toolbar.setOnMenuItemClickListener(item -> {
+            if (item.getItemId() == R.id.action_settings) {
+                startActivity(new Intent(this, SettingsActivity.class));
+                return true;
+            }
+            return false;
+        });
+
         // Load Header User Info
         loadUserInfo();
 

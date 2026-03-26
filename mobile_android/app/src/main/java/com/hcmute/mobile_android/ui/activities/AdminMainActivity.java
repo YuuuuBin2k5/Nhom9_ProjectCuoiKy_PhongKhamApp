@@ -18,7 +18,7 @@ import com.hcmute.mobile_android.util.TokenManager;
 
 public class AdminMainActivity extends AppCompatActivity {
 
-    private MaterialCardView cardServices, cardRooms, cardDoctors, cardQueue, cardDoctorWorkflow, cardQR, cardLogout;
+    private MaterialCardView cardServices, cardRooms, cardDoctors, cardQueue, cardDoctorWorkflow, cardLogout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -42,7 +42,6 @@ public class AdminMainActivity extends AppCompatActivity {
         cardDoctors = findViewById(R.id.cardDoctors);
         cardQueue = findViewById(R.id.cardQueue);
         cardDoctorWorkflow = findViewById(R.id.cardDoctorWorkflow);
-        cardQR = findViewById(R.id.cardQR);
         cardLogout = findViewById(R.id.cardLogout);
     }
 
@@ -65,10 +64,6 @@ public class AdminMainActivity extends AppCompatActivity {
 
         cardDoctorWorkflow.setOnClickListener(v -> {
             startActivity(new Intent(this, com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity.class));
-        });
-
-        cardQR.setOnClickListener(v -> {
-            startActivity(new Intent(this, com.hcmute.mobile_android.ui.activities.staff.QRScannerActivity.class));
         });
 
         cardLogout.setOnClickListener(v -> {

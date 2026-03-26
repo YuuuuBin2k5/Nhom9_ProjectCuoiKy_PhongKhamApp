@@ -281,16 +281,39 @@ public class CheckInQueueService {
     public List<QueueItemDto> getRoomQueue(Long roomId) {
         var queues = checkInQueueRepository.findTodayByClinicRoomId(roomId);
         return queues.stream()
-                .map(q -> new QueueItemDto(
-                        q.getId(),
-                        q.getQueueNumber(),
-                        q.getStatus().name(),
-                        q.getPriorityLevel() != null ? q.getPriorityLevel() : 0,
-                        q.getAppointment() != null && q.getAppointment().getPatient() != null
-                                ? (q.getAppointment().getPatient().getLastName() + " " + q.getAppointment().getPatient().getFirstName()).trim()
-                                : "",
-                        q.getAppointment() != null && q.getAppointment().getPatient() != null ? q.getAppointment().getPatient().getId() : null
-                ))
+                .map(q -> {
+                    String patientName = "";
+                    String patientPhone = "";
+                    String serviceName = "";
+                    String appTime = "";
+                    Long patientId = null;
+
+                    if (q.getAppointment() != null) {
+                        Appointment app = q.getAppointment();
+                        serviceName = app.getService() != null ? app.getService().getName() : "";
+                        appTime = app.getAppointmentDatetime() != null ? 
+                            app.getAppointmentDatetime().toLocalTime().toString().substring(0, 5) : "";
+                        
+                        if (app.getPatient() != null) {
+                            Patient p = app.getPatient();
+                            patientName = (p.getLastName() + " " + p.getFirstName()).trim();
+                            patientPhone = p.getPhone() != null ? p.getPhone() : "";
+                            patientId = p.getId();
+                        }
+                    }
+
+                    return new QueueItemDto(
+                            q.getId(),
+                            q.getQueueNumber(),
+                            q.getStatus().name(),
+                            q.getPriorityLevel() != null ? q.getPriorityLevel() : 0,
+                            patientName,
+                            patientPhone,
+                            serviceName,
+                            appTime,
+                            patientId
+                    );
+                })
                 .toList();
     }
 
@@ -368,7 +391,7 @@ public class CheckInQueueService {
         }
     }
 
-    public record QueueItemDto(Long id, Integer queueNumber, String status, Integer priorityLevel, String patientName, Long patientId) {}
+    public record QueueItemDto(Long id, Integer queueNumber, String status, Integer priority, String patientName, String patientPhone, String serviceName, String appointmentTime, Long patientId) {}
 
     @Transactional
     public CheckInResult processSelfScan(long authenticatedPatientId, String qrData) {

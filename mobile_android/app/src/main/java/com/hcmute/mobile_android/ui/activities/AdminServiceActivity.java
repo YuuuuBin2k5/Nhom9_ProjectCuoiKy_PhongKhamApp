@@ -172,7 +172,7 @@ public class AdminServiceActivity extends AppCompatActivity {
     }
 
     private void loadServices() {
-        apiService.getServices().enqueue(new Callback<List<ServiceItem>>() {
+        apiService.getAdminServices().enqueue(new Callback<List<ServiceItem>>() {
             @Override
             public void onResponse(Call<List<ServiceItem>> call, Response<List<ServiceItem>> response) {
                 if (response.isSuccessful() && response.body() != null) {
