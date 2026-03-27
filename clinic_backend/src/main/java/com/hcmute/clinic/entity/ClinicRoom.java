@@ -20,5 +20,6 @@ public class ClinicRoom {
     @Column(columnDefinition = "TEXT")
     private String description;
 
-    private Integer capacity;
+    @Builder.Default
+    private boolean isActive = true;
 }

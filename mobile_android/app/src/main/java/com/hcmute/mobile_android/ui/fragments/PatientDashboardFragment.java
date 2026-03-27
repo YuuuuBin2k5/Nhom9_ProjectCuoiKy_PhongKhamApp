@@ -99,8 +99,6 @@ public class PatientDashboardFragment extends Fragment {
         
         btnEmergency = view.findViewById(R.id.btnEmergency); 
         
-        View btnQrScan = view.findViewById(R.id.btn_qr_scan); 
-        if (btnQrScan != null) btnQrScan.setOnClickListener(v -> openCheckIn());
         
         rvCategories = view.findViewById(R.id.rvCategories);
         rvServices = view.findViewById(R.id.rv_services);
@@ -123,7 +121,10 @@ public class PatientDashboardFragment extends Fragment {
         View btnAllBs = view.findViewById(R.id.all_bs);
         if (btnAllBs != null) btnAllBs.setOnClickListener(v -> openList(GenericListActivity.MODE_DOCTORS));
 
-        // Setup Avatar click directly here for better reliability
+        View ivLogout = view.findViewById(R.id.iv_logout);
+        if (ivLogout != null) ivLogout.setOnClickListener(v -> logout());
+
+        // Setup Avatar click
         View avatarContainer = view.findViewById(R.id.rlAvatarContainer);
         if (avatarContainer != null) {
             avatarContainer.setOnClickListener(v -> {
@@ -301,29 +302,7 @@ public class PatientDashboardFragment extends Fragment {
         });
     }
 
-    private void openCheckIn() {
-        if (!isAdded()) return;
-        
-        String[] options = {"Quét mã QR Check-in", "Đặt lịch hẹn khám"};
-        androidx.appcompat.app.AlertDialog.Builder builder = new androidx.appcompat.app.AlertDialog.Builder(requireContext());
-        builder.setTitle("Bạn muốn làm gì?");
-        builder.setItems(options, (dialog, which) -> {
-            if (which == 0) {
-                // Lựa chọn: Điểm danh / Check-in
-                if (getActivity() instanceof com.hcmute.mobile_android.ui.activities.MainActivity) {
-                    ((com.hcmute.mobile_android.ui.activities.MainActivity) getActivity()).onNavigateToQr();
-                }
-            } else {
-                // Lựa chọn: Đặt lịch hẹn
-                try {
-                    startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.BookAppointmentActivity.class));
-                } catch (Exception e) {
-                    Toast.makeText(requireContext(), "Không thể mở màn hình đặt lịch", Toast.LENGTH_SHORT).show();
-                }
-            }
-        });
-        builder.show();
-    }
+
 
     private void openQueueStatus() {
         if (isAdded()) {

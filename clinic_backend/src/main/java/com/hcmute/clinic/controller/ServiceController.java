@@ -9,6 +9,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.hcmute.clinic.dto.ServiceDto;
+import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -67,7 +68,6 @@ public class ServiceController {
                 s.isActive()
         );
     }
-
 
     public record CategoryWithServicesDto(
             Long id,

@@ -13,7 +13,7 @@ import com.hcmute.mobile_android.R;
 
 import java.util.List;
 
-public class ImageSliderAdapter extends RecyclerView.Adapter<ImageSliderAdapter.SliderViewHolder> {
+public class ImageSliderAdapter extends RecyclerView.Adapter<ImageSliderAdapter.Holder> {
 
     private List<String> imageUrls;
 
@@ -23,20 +23,19 @@ public class ImageSliderAdapter extends RecyclerView.Adapter<ImageSliderAdapter.
 
     @NonNull
     @Override
-    public SliderViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-        View view = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_service_image, parent, false);
-        return new SliderViewHolder(view);
+    public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+        View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_image_slider, parent, false);
+        return new Holder(v);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SliderViewHolder holder, int position) {
-        String url = imageUrls.get(position);
+    public void onBindViewHolder(@NonNull Holder holder, int position) {
         Glide.with(holder.itemView.getContext())
-                .load(url)
-                .placeholder(R.drawable.placeholder_image)
-                .error(R.drawable.placeholder_image)
+                .load(imageUrls.get(position))
+                .placeholder(R.drawable.background)
+                .error(R.drawable.background)
                 .centerCrop()
-                .into(holder.imageView);
+                .into(holder.ivSliderImage);
     }
 
     @Override
@@ -44,12 +43,12 @@ public class ImageSliderAdapter extends RecyclerView.Adapter<ImageSliderAdapter.
         return imageUrls != null ? imageUrls.size() : 0;
     }
 
-    static class SliderViewHolder extends RecyclerView.ViewHolder {
-        ImageView imageView;
+    static class Holder extends RecyclerView.ViewHolder {
+        ImageView ivSliderImage;
 
-        public SliderViewHolder(@NonNull View itemView) {
-            super(itemView);
-            imageView = itemView.findViewById(R.id.ivServiceImage);
+        Holder(View v) {
+            super(v);
+            ivSliderImage = v.findViewById(R.id.ivSliderImage);
         }
     }
 }

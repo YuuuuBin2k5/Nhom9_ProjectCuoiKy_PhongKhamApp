@@ -206,7 +206,7 @@ public class DataSeed implements ApplicationRunner {
     }
 
     private Doctor createRoomAndDoc(String rName, String rDesc, String docName, String email, String spec, String pass) {
-        ClinicRoom room = roomRepository.save(new ClinicRoom(null, rName, rDesc, 1));
+        ClinicRoom room = roomRepository.save(new ClinicRoom(null, rName, rDesc, true));
         String[] parts = docName.split(" ");
         String lastName = parts[parts.length - 1];
         String firstName = docName.substring(0, docName.length() - lastName.length()).trim();

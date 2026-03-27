@@ -55,19 +55,11 @@ public class DoctorListController {
                         d.getSpecialization() != null ? d.getSpecialization() : "",
                         d.getClinicRoom() != null ? d.getClinicRoom().getName() : null,
                         d.getExperienceYears(),
-                        (int) appointmentRepository.countByDoctorId(d.getId())
+                        d.isActive()
                 ))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
 
-    public record DoctorDto(
-            Long id, 
-            String firstName, 
-            String lastName, 
-            String specialization, 
-            String roomName, 
-            Integer experienceYears,
-            int appointmentCount
-    ) {}
+    public record DoctorDto(Long id, String firstName, String lastName, String specialization, String roomName, Integer experienceYears, boolean active) {}
 }

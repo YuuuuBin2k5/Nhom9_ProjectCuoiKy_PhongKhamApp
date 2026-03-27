@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <selector xmlns:android="http://schemas.android.com/apk/res/android">
-    <item android:color="#4D1A56DB" android:state_checked="true" /> <!-- 30% alpha of primary -->
-    <item android:color="@color/gray_200" />
+    <!-- Bật: xanh lá -->
+    <item android:state_checked="true" android:color="#4CAF50" />
+    <!-- Tắt: xám -->
+    <item android:color="#9E9E9E" />
 </selector>

@@ -66,8 +66,6 @@ public class ProfileActivity extends AppCompatActivity {
                     if (result.getResultCode() == android.app.Activity.RESULT_OK && result.getData() != null) {
                         android.net.Uri imageUri = result.getData().getData();
                         if (imageUri != null) {
-                            // In a real app, you would upload this to a server.
-                            // For now, we'll use the local URI or simulate an upload.
                             ivProfile.setImageURI(imageUri);
                             currentAvatarUrl = imageUri.toString();
                             Toast.makeText(this, "Ảnh đã được chọn!", Toast.LENGTH_SHORT).show();
@@ -86,12 +84,19 @@ public class ProfileActivity extends AppCompatActivity {
 
         findViewById(R.id.btnSave).setOnClickListener(v -> saveProfile());
         ivProfile.setOnClickListener(v -> showAvatarEditDialog());
-        
+
         // Setup Avatar Edit FAB
-        View fabEdit = findViewById(R.id.fabAvatarEdit); 
+        View fabEdit = findViewById(R.id.fabAvatarEdit);
         if (fabEdit != null) {
             fabEdit.setOnClickListener(v -> showAvatarEditDialog());
         }
+
+        // Logout button
+        View btnLogout = findViewById(R.id.btnLogout);
+        if (btnLogout != null) {
+            btnLogout.setOnClickListener(v -> logout());
+        }
+
         
         loadProfile();
     }
@@ -210,4 +215,11 @@ public class ProfileActivity extends AppCompatActivity {
         });
     }
 
+    private void logout() {
+        new TokenManager(this).clearToken();
+        Intent intent = new Intent(this, LoginActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
+        startActivity(intent);
+        finish();
+    }
 }

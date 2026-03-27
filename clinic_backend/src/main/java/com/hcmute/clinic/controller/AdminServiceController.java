@@ -1,3 +1,5 @@
+package com.hcmute.clinic.controller;
+
 import com.hcmute.clinic.dto.ServiceDto;
 import com.hcmute.clinic.entity.Service;
 import com.hcmute.clinic.entity.ServiceCategory;

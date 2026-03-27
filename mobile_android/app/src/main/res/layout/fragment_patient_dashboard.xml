@@ -106,75 +106,23 @@
                             android:padding="10dp"
                             android:src="@android:drawable/ic_menu_search"
                             android:background="@drawable/bg_circle_soft_blue"
-                            app:tint="@color/text_primary" />
+                            app:tint="@color/text_primary"
+                            android:layout_marginEnd="12dp" />
+
+                        <!-- Logout Icon -->
+                        <ImageView
+                            android:id="@+id/iv_logout"
+                            android:layout_width="42dp"
+                            android:layout_height="42dp"
+                            android:padding="10dp"
+                            android:src="@drawable/ic_door"
+                            android:background="@drawable/bg_circle_soft_blue"
+                            app:tint="@color/alert_coral" />
                     </LinearLayout>
                 </RelativeLayout>
 
                 <!-- 2. Hero Banner for Booking (Replaces generic bottom button) -->
                 <!-- 2. Hero Banner for QR Check-in / Booking -->
-                <RelativeLayout
-                    android:id="@+id/btn_qr_scan"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:padding="24dp"
-                    android:layout_marginBottom="32dp"
-                    android:background="@drawable/bg_banner_qr_premium"
-                    android:clickable="true"
-                    android:focusable="true">
-
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:layout_alignParentStart="true"
-                        android:layout_centerVertical="true">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Nụ cười hoàn hảo\nbắt đầu từ đây"
-                            android:textSize="22sp"
-                            android:textStyle="bold"
-                            android:fontFamily="sans-serif-medium"
-                            android:textColor="@android:color/white"
-                            android:lineSpacingExtra="4dp"/>
-
-                        <LinearLayout
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:background="@drawable/bg_pill_gray_premium"
-                            android:backgroundTint="@android:color/white"
-                            android:paddingHorizontal="16dp"
-                            android:paddingVertical="8dp"
-                            android:layout_marginTop="16dp"
-                            android:gravity="center_vertical">
-
-                            <ImageView
-                                android:layout_width="16dp"
-                                android:layout_height="16dp"
-                                android:src="@android:drawable/ic_menu_camera"
-                                app:tint="#1976D2"
-                                android:layout_marginEnd="8dp"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Quét mã QR / Đặt chỗ"
-                                android:textColor="#1976D2"
-                                android:textStyle="bold"
-                                android:textSize="14sp"/>
-                        </LinearLayout>
-                    </LinearLayout>
-
-                    <ImageView
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
-                        android:src="@android:drawable/ic_dialog_map"
-                        app:tint="#40FFFFFF"
-                        android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"/>
-                </RelativeLayout>
 
                 <!-- 3. Active Check In Tracker (Only shows if checked in) -->
                 <com.google.android.material.card.MaterialCardView
