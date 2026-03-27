@@ -41,6 +41,7 @@ public class CheckInQueueService {
     private final JwtService jwtService;
     private final NotificationRepository notificationRepository;
     private final QueueEventService queueEventService;
+    private final FcmService fcmService;
 
     @Transactional
     public CheckInResult processScan(String qrData) {
@@ -97,6 +98,7 @@ public class CheckInQueueService {
                     .type("CHECK_IN")
                     .build();
             notificationRepository.save(notif);
+            fcmService.sendNotification(p.getFcmToken(), notif.getTitle(), notif.getMessage());
         }
 
         try {

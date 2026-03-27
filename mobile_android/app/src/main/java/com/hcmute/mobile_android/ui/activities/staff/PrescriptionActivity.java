@@ -75,7 +75,7 @@ public class PrescriptionActivity extends AppCompatActivity {
         addMedicineRow(null);
     }
 
-    private void addMedicineRow(PrescriptionResponse.DetailResponse detail) {
+    private void addMedicineRow(PrescriptionResponse.PrescriptionDetail detail) {
         View view = LayoutInflater.from(this).inflate(R.layout.item_prescription_detail, llMedicinesContainer, false);
         
         TextInputEditText etMedicineName = view.findViewById(R.id.etMedicineName);
@@ -114,7 +114,7 @@ public class PrescriptionActivity extends AppCompatActivity {
                     medicineViews.clear();
                     
                     if (prescription.getDetails() != null) {
-                        for (PrescriptionResponse.DetailResponse detail : prescription.getDetails()) {
+                        for (PrescriptionResponse.PrescriptionDetail detail : prescription.getDetails()) {
                             addMedicineRow(detail);
                         }
                     }

@@ -26,6 +26,9 @@ public class Patient extends User {
     @Column(name = "qr_code_data")
     private String qrCodeData;
 
+    @Column(name = "fcm_token")
+    private String fcmToken;
+
     @OneToOne(mappedBy = "patient", cascade = CascadeType.ALL)
     private PatientProfile profile;
 }

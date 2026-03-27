@@ -61,6 +61,20 @@ public class PatientController {
                 .orElse(ResponseEntity.notFound().build());
     }
 
+    @PutMapping("/fcm-token")
+    @jakarta.transaction.Transactional
+    public ResponseEntity<?> updateFcmToken(@RequestBody java.util.Map<String, String> body, Authentication auth) {
+        if (auth == null || auth.getPrincipal() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        long patientId = Long.parseLong(auth.getName());
+        return patientRepository.findById(patientId).map(p -> {
+            p.setFcmToken(body.get("token"));
+            patientRepository.save(p);
+            return ResponseEntity.ok(Map.of("message", "FCM token updated successfully"));
+        }).orElse(ResponseEntity.notFound().build());
+    }
+
     @PutMapping("/me")
     @jakarta.transaction.Transactional
     public ResponseEntity<?> updateMe(@RequestBody UpdatePatientRequest req, Authentication auth) {

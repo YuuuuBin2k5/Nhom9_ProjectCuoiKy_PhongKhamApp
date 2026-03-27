@@ -7,9 +7,13 @@ public class PrescriptionResponse {
     private Long medicalRecordId;
     private Long doctorId;
     private String doctorName;
-    private List<DetailResponse> details;
+    private String createdAt;
+    private List<PrescriptionDetail> details;
 
-    public static class DetailResponse {
+    public String getDoctorName() { return doctorName; }
+    public String getDate() { return createdAt; }
+
+    public static class PrescriptionDetail {
         private Long id;
         private String medicineName;
         private String dosage;
@@ -24,5 +28,5 @@ public class PrescriptionResponse {
         public String getUnit() { return unit; }
     }
 
-    public List<DetailResponse> getDetails() { return details; }
+    public List<PrescriptionDetail> getDetails() { return details; }
 }

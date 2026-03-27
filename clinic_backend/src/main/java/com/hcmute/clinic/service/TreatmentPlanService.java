@@ -27,6 +27,7 @@ public class TreatmentPlanService {
     private final ServiceRepository serviceRepository;
     private final ClinicRoomRepository clinicRoomRepository;
     private final NotificationRepository notificationRepository;
+    private final FcmService fcmService;
 
     public List<TreatmentPlanTemplate> listActiveTemplates() {
         return templateRepository.findByActiveTrueOrderByNameAsc();
@@ -249,6 +250,9 @@ public class TreatmentPlanService {
                     .type("TREATMENT_COMPLETE")
                     .build();
             notifRepo.save(notif);
+            if (plan.getPatient().getFcmToken() != null && !plan.getPatient().getFcmToken().isBlank()) {
+                fcmService.sendNotification(plan.getPatient().getFcmToken(), notif.getTitle(), notif.getMessage());
+            }
             return null; // No next room
         }
 
@@ -292,8 +296,12 @@ public class TreatmentPlanService {
                         .type("ROOM_TRANSFER")
                         .build();
                 notifRepo.save(notif);
+                
+                if (plan.getPatient().getFcmToken() != null && !plan.getPatient().getFcmToken().isBlank()) {
+                    fcmService.sendNotification(plan.getPatient().getFcmToken(), notif.getTitle(), notif.getMessage());
+                }
 
-                // Broadcast update cho cả 2 phòng (cũ mất đi, mới thêm vào)
+                // Broadcast update for both rooms (old room loses, new room gains)
                 try {
                     queueEventService.broadcastQueueUpdated(oldRoomId);
                     queueEventService.broadcastQueueUpdated(nextRoom.getId());
