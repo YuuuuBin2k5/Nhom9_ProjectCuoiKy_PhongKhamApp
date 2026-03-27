@@ -107,6 +107,24 @@ public class AppointmentController {
                 return ResponseEntity.badRequest().body(Map.of("message", "Thời gian đặt lịch phải từ 08:00 đến 16:40"));
             }
 
+            // 5.1 Validate existing active appointments for patient
+            boolean hasActiveAppt = appointmentRepository.existsByPatientIdAndStatusIn(patient.getId(), 
+                java.util.List.of(AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS));
+            if (hasActiveAppt) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Bệnh nhân đang có một lịch khám chưa hoàn thành. Không thể đặt thêm."));
+            }
+
+            // 5.2 Validate doctor availability (assume each appointment is ~30 mins)
+            boolean doctorBusy = appointmentRepository.existsByDoctorIdAndAppointmentDatetimeBetween(
+                doctor.getId(), 
+                appointmentTime.minusMinutes(29), 
+                appointmentTime.plusMinutes(29)
+            );
+            
+            if (doctorBusy) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Bác sĩ đã có lịch hẹn trong khung giờ này. Vui lòng chọn giờ khác."));
+            }
+
             // 6. Create Appointment
             BookingType bookingType = BookingType.ONLINE;
             if (request.getBookingType() != null) {

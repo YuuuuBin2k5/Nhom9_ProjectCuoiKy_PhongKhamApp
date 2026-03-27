@@ -21,6 +21,10 @@ import java.util.stream.Collectors;
 public class TreatmentPlanController {
 
     private final TreatmentPlanService treatmentPlanService;
+    private final com.hcmute.clinic.repository.CheckInQueueRepository checkInQueueRepository;
+    private final com.hcmute.clinic.service.QueueEventService queueEventService;
+    private final com.hcmute.clinic.repository.NotificationRepository notificationRepository;
+    private final com.hcmute.clinic.repository.DoctorRepository doctorRepository;
 
     @PostMapping("/from-template")
     @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
@@ -68,6 +72,7 @@ public class TreatmentPlanController {
                 .id(plan.getId())
                 .patientId(plan.getPatient().getId())
                 .status(plan.getStatus().name())
+                .isDraft(plan.isDraft())
                 .steps(steps)
                 .build();
     }
@@ -139,14 +144,88 @@ public class TreatmentPlanController {
         }
     }
 
+    @GetMapping("/{id}/for-room")
+    @PreAuthorize("hasRole('DOCTOR')")
+    public ResponseEntity<?> getByIdForRoom(@PathVariable Long id, Authentication auth) {
+        try {
+            TreatmentPlan plan = treatmentPlanService.getById(id);
+            String email = auth.getName();
+            
+            // Tìm phòng của bác sĩ
+            com.hcmute.clinic.entity.Doctor doc = doctorRepository.findByEmailIgnoreCase(email)
+                    .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin bác sĩ"));
+            Long docRoomId = doc.getClinicRoom() != null ? doc.getClinicRoom().getId() : null;
+
+            TreatmentPlanDTO dto = toDTO(plan);
+            
+            // Set editable flag per step
+            if (dto.getSteps() != null) {
+                for (TreatmentPlanDTO.StepDTO s : dto.getSteps()) {
+                    boolean isEditable = false;
+                    // Nếu bước PENDING hoặc IN_PROGRESS, VÀ bác sĩ đang ở cùng phòng với bước đó
+                    if (("PENDING".equals(s.getStatus()) || "IN_PROGRESS".equals(s.getStatus())) 
+                            && docRoomId != null 
+                            && plan.getSteps().stream().anyMatch(st -> st.getId().equals(s.getId()) && st.getClinicRoom() != null && st.getClinicRoom().getId().equals(docRoomId))) {
+                        isEditable = true;
+                    }
+                    s.setEditable(isEditable);
+                }
+            }
+
+            return ResponseEntity.ok(dto);
+        } catch (Exception e) {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
     @PatchMapping("/steps/{stepId}/start")
     public ResponseEntity<?> startStep(@PathVariable Long stepId, Authentication auth) {
         if (auth == null || auth.getName() == null) {
             return ResponseEntity.status(401).build();
         }
         try {
-            treatmentPlanService.updateStepStatus(stepId, "IN_PROGRESS");
+            treatmentPlanService.startStep(stepId);
             return ResponseEntity.ok(Map.of("message", "Đã bắt đầu bước điều trị"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{id}/activate")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> activatePlan(@PathVariable Long id) {
+        try {
+            treatmentPlanService.activatePlan(id);
+            return ResponseEntity.ok(Map.of("message", "Phác đồ đã được kích hoạt"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/steps/{stepId}/complete")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> completeStep(@PathVariable Long stepId, @RequestBody(required = false) Map<String, String> body, Authentication auth) {
+        try {
+            // Check cross-room permission
+            String email = auth.getName();
+            boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            
+            Long docRoomId = null;
+            if (!isAdmin) {
+                com.hcmute.clinic.entity.Doctor doc = doctorRepository.findByEmailIgnoreCase(email)
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin bác sĩ"));
+                docRoomId = doc.getClinicRoom() != null ? doc.getClinicRoom().getId() : null;
+            }
+            
+            String conclusion = body != null ? body.get("doctorConclusion") : null;
+            String nextRoom = treatmentPlanService.completeStepAndAdvance(stepId, conclusion, docRoomId, checkInQueueRepository, queueEventService, notificationRepository);
+            
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("message", "Đã hoàn thành bước điều trị");
+            if (nextRoom != null) {
+                response.put("nextRoomName", nextRoom);
+            }
+            return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }

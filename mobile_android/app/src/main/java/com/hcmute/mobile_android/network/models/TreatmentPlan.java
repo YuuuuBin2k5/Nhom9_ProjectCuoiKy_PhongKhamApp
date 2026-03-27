@@ -11,6 +11,7 @@ public class TreatmentPlan {
     private String updatedAt;
     private Double totalEstimatedCost;
     private Double totalActualCost;
+    private boolean isDraft;
     private List<Step> steps;
 
     // Constructors
@@ -47,6 +48,9 @@ public class TreatmentPlan {
     public Double getTotalActualCost() { return totalActualCost; }
     public void setTotalActualCost(Double totalActualCost) { this.totalActualCost = totalActualCost; }
 
+    public boolean isDraft() { return isDraft; }
+    public void setDraft(boolean draft) { isDraft = draft; }
+
     public List<Step> getSteps() { return steps; }
     public void setSteps(List<Step> steps) { this.steps = steps; }
 
@@ -79,6 +83,7 @@ public class TreatmentPlan {
         private String completedAt;
         private String roomName;
         private String uiTemplateType;
+        private boolean editable;
 
         // Constructors
         public Step() {}
@@ -141,5 +146,8 @@ public class TreatmentPlan {
         public boolean isPending() {
             return "PENDING".equals(status);
         }
+
+        public boolean isEditable() { return editable; }
+        public void setEditable(boolean editable) { this.editable = editable; }
     }
 }

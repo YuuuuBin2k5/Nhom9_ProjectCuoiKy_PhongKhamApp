@@ -19,6 +19,7 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
 
     private List<TreatmentPlan.Step> stepList;
     private OnStepActionListener listener;
+    private boolean isDraftMode = false;
 
     public interface OnStepActionListener {
         void onStepEdit(TreatmentPlan.Step step);
@@ -29,6 +30,11 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
     public TreatmentStepAdapter(List<TreatmentPlan.Step> stepList, OnStepActionListener listener) {
         this.stepList = stepList;
         this.listener = listener;
+    }
+    
+    public void setDraftMode(boolean draftMode) {
+        this.isDraftMode = draftMode;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -42,7 +48,7 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
     @Override
     public void onBindViewHolder(@NonNull StepViewHolder holder, int position) {
         TreatmentPlan.Step step = stepList.get(position);
-        holder.bind(step, position + 1, listener);
+        holder.bind(step, position + 1, listener, isDraftMode);
     }
 
     @Override
@@ -78,7 +84,7 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
             btnComplete = itemView.findViewById(R.id.btnComplete);
         }
 
-        public void bind(TreatmentPlan.Step step, int stepNumber, OnStepActionListener listener) {
+        public void bind(TreatmentPlan.Step step, int stepNumber, OnStepActionListener listener, boolean isDraft) {
             tvStepNumber.setText(String.valueOf(stepNumber));
             tvServiceName.setText(step.getServiceName());
             tvStepDescription.setText(step.getDescription());
@@ -102,7 +108,7 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
             tvStatus.setText(getStatusDisplay(step.getStatus()));
             
             // Card styling based on status
-            setCardStyle(step.getStatus());
+            setCardStyle(step.getStatus(), step.isEditable(), isDraft);
             
             // Button actions
             btnEdit.setOnClickListener(v -> {
@@ -134,7 +140,7 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
             }
 
             // Configure buttons based on status
-            configureButtons(step.getStatus());
+            configureButtons(step.getStatus(), step.isEditable(), isDraft);
         }
 
         private String getStatusDisplay(String status) {
@@ -149,8 +155,18 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
             }
         }
 
-        private void setCardStyle(String status) {
+        private void setCardStyle(String status, boolean isEditable, boolean isDraft) {
             if (status == null) status = "PENDING";
+            
+            if (!isDraft && !isEditable && ("PENDING".equalsIgnoreCase(status) || "IN_PROGRESS".equalsIgnoreCase(status))) {
+                // Read-only future/current steps across other rooms
+                cardStep.setCardBackgroundColor(itemView.getContext().getColor(R.color.background_gray));
+                cardStep.setStrokeColor(itemView.getContext().getColor(R.color.border_gray));
+                cardStep.setStrokeWidth(1);
+                cardStep.setAlpha(0.7f);
+                return;
+            }
+            cardStep.setAlpha(1.0f); // Reset alpha
             
             switch (status.toUpperCase()) {
                 case "COMPLETED":
@@ -176,9 +192,28 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
             }
         }
 
-        private void configureButtons(String status) {
+        private void configureButtons(String status, boolean isEditable, boolean isDraft) {
             if (status == null) status = "PENDING";
             
+            if (isDraft) {
+                // Draft mode - everything can be edited or removed (we mock "Edit" as "Change")
+                btnEdit.setVisibility(View.VISIBLE);
+                btnEdit.setText("Tùy chỉnh");
+                btnComplete.setVisibility(View.GONE);
+                return;
+            }
+
+            if (!isEditable && ("PENDING".equalsIgnoreCase(status) || "IN_PROGRESS".equalsIgnoreCase(status))) {
+                // Cross-room read only step
+                btnEdit.setVisibility(View.VISIBLE);
+                btnEdit.setText("Chỉ xem");
+                btnEdit.setEnabled(false); // Disable click
+                btnComplete.setVisibility(View.GONE);
+                return;
+            }
+            
+            btnEdit.setEnabled(true); // Reset
+
             switch (status.toUpperCase()) {
                 case "COMPLETED":
                     btnEdit.setVisibility(View.VISIBLE);
@@ -187,7 +222,7 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
                     break;
                 case "IN_PROGRESS":
                     btnEdit.setVisibility(View.VISIBLE);
-                    btnEdit.setText("Chỉnh sửa");
+                    btnEdit.setText("Khám bệnh");
                     btnComplete.setVisibility(View.VISIBLE);
                     break;
                 case "CANCELLED":

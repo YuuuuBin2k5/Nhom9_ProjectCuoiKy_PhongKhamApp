@@ -118,6 +118,8 @@ public class CheckInQueueService {
                     throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã QR không hợp lệ");
                 }
                 return Long.parseLong(claims.getSubject());
+            } catch (ResponseStatusException rse) {
+                throw rse;
             } catch (Exception e) {
                 log.warn("Invalid QR JWT: {}", e.getMessage());
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã QR hết hạn hoặc không hợp lệ");
@@ -127,10 +129,12 @@ public class CheckInQueueService {
         // Cập nhật: Code của Patient sinh ra có dạng "CHECKIN:appointmentId"
         if (qrData.startsWith("CHECKIN:")) {
             try {
-                long appointmentId = Long.parseLong(qrData.split(":")[1]);
+                long appointmentId = Long.parseLong(qrData.split(":")[1].trim());
                 Appointment appt = appointmentRepository.findById(appointmentId)
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy lịch hẹn"));
                 return appt.getPatient().getId();
+            } catch (ResponseStatusException rse) {
+                throw rse;
             } catch (Exception e) {
                 throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã CHECKIN không hợp lệ");
             }
@@ -139,7 +143,11 @@ public class CheckInQueueService {
         // Dự phòng: Nếu là dạnh patient:ID cũ
         Matcher m = QR_PATTERN.matcher(qrData);
         if (m.matches()) {
-            return Long.parseLong(m.group(1));
+            try {
+                return Long.parseLong(m.group(1));
+            } catch (NumberFormatException e) {
+                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã patient không hợp lệ");
+            }
         }
         
         // Dự phòng cho mã nhập tay (chỉ có ID của appointment hoặc Patient ID)
@@ -154,28 +162,48 @@ public class CheckInQueueService {
             return numericId;
         } catch (NumberFormatException e) {
             log.warn("Invalid QR format: {}", qrData);
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Mã không hợp lệ. Vui lòng thử lại.");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Mã không hợp lệ. Vui lòng thử lại.");
         }
     }
 
     private int calculateEstimatedWaitTime(CheckInQueue current) {
         if (current == null || current.getClinicRoom() == null) return 0;
-        int position = calculateQueuePosition(current);
         
         LocalDate today = LocalDate.now();
-        boolean isDoctorBusy = checkInQueueRepository.countByClinicRoomIdAndStatusAndCheckInTimeBetween(
-                current.getClinicRoom().getId(), QueueStatus.IN_PROGRESS, 
-                today.atStartOfDay(), today.plusDays(1).atStartOfDay()) > 0;
+        List<CheckInQueue> waitingList = checkInQueueRepository.findByRoomAndDateRange(
+                current.getClinicRoom().getId(),
+                today.atStartOfDay(),
+                today.plusDays(1).atStartOfDay(),
+                List.of(QueueStatus.WAITING, QueueStatus.RETURNED_PRIORITY));
 
-        if (position == 1 && !isDoctorBusy) {
-            return 0;
+        int waitTime = 0;
+        for (CheckInQueue q : waitingList) {
+            if (q.getId().equals(current.getId())) {
+                break;
+            }
+            if (q.getAppointment() != null && q.getAppointment().getService() != null && q.getAppointment().getService().getDurationMinutes() != null) {
+                waitTime += q.getAppointment().getService().getDurationMinutes();
+            } else {
+                waitTime += 15;
+            }
         }
 
-        int baseWait = (position - 1) * 15;
-        if (isDoctorBusy) {
-            baseWait += 10; // Residual time for current patient
+        List<CheckInQueue> inProgressList = checkInQueueRepository.findByRoomAndDateRange(
+                current.getClinicRoom().getId(),
+                today.atStartOfDay(),
+                today.plusDays(1).atStartOfDay(),
+                List.of(QueueStatus.IN_PROGRESS));
+                
+        if (!inProgressList.isEmpty()) {
+            CheckInQueue inProgress = inProgressList.get(0);
+            if (inProgress.getAppointment() != null && inProgress.getAppointment().getService() != null && inProgress.getAppointment().getService().getDurationMinutes() != null) {
+                waitTime += inProgress.getAppointment().getService().getDurationMinutes() / 2;
+            } else {
+                waitTime += 10;
+            }
         }
-        return baseWait;
+
+        return waitTime;
     }
 
     private int calculateQueuePosition(CheckInQueue current) {

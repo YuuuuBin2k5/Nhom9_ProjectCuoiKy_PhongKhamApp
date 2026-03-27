@@ -27,22 +27,53 @@ import java.util.regex.Pattern;
 @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
 public class DoctorController {
 
-    private static final Pattern QR_PATTERN = Pattern.compile("^patient:(\\d+)$");
-
     private final PatientRepository patientRepository;
     private final AppointmentRepository appointmentRepository;
     private final CheckInQueueRepository checkInQueueRepository;
+    private final com.hcmute.clinic.security.JwtService jwtService;
 
     @GetMapping("/patient")
     public ResponseEntity<?> getPatientByQr(@RequestParam String qr) {
         if (qr == null || qr.isBlank()) {
             return ResponseEntity.badRequest().body(Map.of("message", "QR data is required"));
         }
-        Matcher m = QR_PATTERN.matcher(qr.trim());
-        if (!m.matches()) {
-            return ResponseEntity.badRequest().body(Map.of("message", "Mã QR không hợp lệ"));
+        
+        long patientId = -1;
+        Long appointmentIdFromQr = null;
+        
+        qr = qr.trim();
+        if (qr.startsWith("eyJ")) {
+            try {
+                io.jsonwebtoken.Claims claims = jwtService.parseClaims(qr);
+                patientId = Long.parseLong(claims.getSubject());
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Mã QR JWT không hợp lệ"));
+            }
+        } else if (qr.startsWith("CHECKIN:")) {
+            try {
+                appointmentIdFromQr = Long.parseLong(qr.split(":")[1].trim());
+                Appointment appt = appointmentRepository.findById(appointmentIdFromQr)
+                        .orElseThrow(() -> new RuntimeException());
+                patientId = appt.getPatient().getId();
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Mã CHECKIN không hợp lệ"));
+            }
+        } else if (qr.matches("^patient:(\\d+)$")) {
+            patientId = Long.parseLong(qr.replaceAll("patient:", ""));
+        } else {
+            try {
+                long numericId = Long.parseLong(qr);
+                var appt = appointmentRepository.findById(numericId);
+                if (appt.isPresent()) {
+                    appointmentIdFromQr = appt.get().getId();
+                    patientId = appt.get().getPatient().getId();
+                } else {
+                    patientId = numericId;
+                }
+            } catch (NumberFormatException e) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Mã không hợp lệ"));
+            }
         }
-        long patientId = Long.parseLong(m.group(1));
         
         Optional<Patient> patientOpt = patientRepository.findById(patientId);
         if (patientOpt.isEmpty()) {
@@ -77,6 +108,20 @@ public class DoctorController {
             }
         }
 
+        Long finalAppointmentId = appointmentIdFromQr;
+
+        if (finalAppointmentId == null) {
+            if (!todayApps.isEmpty()) {
+                finalAppointmentId = todayApps.get(0).getId();
+            } else {
+                Optional<Appointment> recent = appointmentRepository.findFirstByPatientIdAndStatusInOrderByAppointmentDatetimeDesc(
+                    patientId, List.of(AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED, AppointmentStatus.IN_PROGRESS));
+                if (recent.isPresent()) {
+                    finalAppointmentId = recent.get().getId();
+                }
+            }
+        }
+
         return ResponseEntity.ok(Map.of(
                 "id", p.getId(),
                 "firstName", p.getFirstName() != null ? p.getFirstName() : "",
@@ -85,7 +130,8 @@ public class DoctorController {
                 "phone", p.getPhone() != null ? p.getPhone() : "",
                 "bookedService", serviceName,
                 "appointmentStatus", status,
-                "queueId", queueId != null ? queueId : -1
+                "queueId", queueId != null ? queueId : -1,
+                "appointmentId", finalAppointmentId != null ? finalAppointmentId : -1
         ));
     }
 }

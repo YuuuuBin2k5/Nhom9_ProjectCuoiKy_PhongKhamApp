@@ -16,6 +16,10 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     List<Appointment> findByPatientIdAndAppointmentDatetimeBetweenOrderByAppointmentDatetimeAsc(
             Long patientId, java.time.LocalDateTime start, java.time.LocalDateTime end);
 
+    boolean existsByDoctorIdAndAppointmentDatetimeBetween(Long doctorId, LocalDateTime start, LocalDateTime end);
+
+    boolean existsByPatientIdAndStatusIn(Long patientId, List<AppointmentStatus> statuses);
+
     default List<Appointment> findTodayByPatientId(Long patientId) {
         LocalDate today = LocalDate.now();
         return findByPatientIdAndAppointmentDatetimeBetweenOrderByAppointmentDatetimeAsc(

@@ -10,6 +10,7 @@ public class UpdatePlanStepsRequest {
 
     @Data
     public static class StepItem {
+        private Long id;
         private Long serviceId;
         private Long clinicRoomId;
         private Integer sequenceOrder;

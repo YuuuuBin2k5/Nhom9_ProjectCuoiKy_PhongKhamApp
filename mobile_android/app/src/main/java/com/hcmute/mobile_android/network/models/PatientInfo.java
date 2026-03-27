@@ -14,6 +14,7 @@ public class PatientInfo {
     private String bookedService;
     private String appointmentStatus;
     private Long queueId;
+    private Long appointmentId;
 
     // Constructors
     public PatientInfo() {}
@@ -26,6 +27,9 @@ public class PatientInfo {
 
     public Long getQueueId() { return queueId; }
     public void setQueueId(Long queueId) { this.queueId = queueId; }
+
+    public Long getAppointmentId() { return appointmentId; }
+    public void setAppointmentId(Long appointmentId) { this.appointmentId = appointmentId; }
 
     public PatientInfo(Long id, String firstName, String lastName, String email, String phone) {
         this.id = id;

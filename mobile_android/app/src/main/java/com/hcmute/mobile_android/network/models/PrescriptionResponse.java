@@ -4,16 +4,13 @@ import java.util.List;
 
 public class PrescriptionResponse {
     private Long id;
+    private Long medicalRecordId;
+    private Long doctorId;
     private String doctorName;
-    private String date;
-    private List<PrescriptionDetail> details;
+    private List<DetailResponse> details;
 
-    public Long getId() { return id; }
-    public String getDoctorName() { return doctorName; }
-    public String getDate() { return date; }
-    public List<PrescriptionDetail> getDetails() { return details; }
-
-    public static class PrescriptionDetail {
+    public static class DetailResponse {
+        private Long id;
         private String medicineName;
         private String dosage;
         private String frequency;
@@ -26,4 +23,6 @@ public class PrescriptionResponse {
         public String getDuration() { return duration; }
         public String getUnit() { return unit; }
     }
+
+    public List<DetailResponse> getDetails() { return details; }
 }

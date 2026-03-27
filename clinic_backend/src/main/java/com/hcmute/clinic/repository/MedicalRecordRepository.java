@@ -7,4 +7,5 @@ import org.springframework.stereotype.Repository;
 @Repository
 public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Long> {
     java.util.List<MedicalRecord> findByPatientIdOrderByCreatedAtDesc(Long patientId);
+    java.util.Optional<MedicalRecord> findByAppointmentId(Long appointmentId);
 }

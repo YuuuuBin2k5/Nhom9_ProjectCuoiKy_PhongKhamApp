@@ -38,6 +38,10 @@ public class TreatmentPlan {
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
+    
+    @Builder.Default
+    @Column(name = "is_draft")
+    private boolean isDraft = true;
 
     @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<TreatmentPlanStep> steps;

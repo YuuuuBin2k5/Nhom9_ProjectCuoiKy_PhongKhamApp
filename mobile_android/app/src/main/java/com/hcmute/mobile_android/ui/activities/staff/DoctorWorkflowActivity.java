@@ -58,7 +58,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     private EditText etQrInput;
     private TextView tvPatientHeader, tvDoctorGreeting;
     private ImageButton btnScanQr;
-    private MaterialButton btnLookup, btnSavePlan, btnSelectTemplate, btnPrescribe, btnPrintPlan, btnViewHistory, btnTransferXRay;
+    private MaterialButton btnLookup, btnSavePlan, btnActivatePlan, btnSelectTemplate, btnPrescribe, btnPrintPlan, btnViewHistory, btnTransferXRay;
     private MaterialCardView cardLookup, cardTreatmentPlan;
     private LinearLayout layoutExamination;
     private RecyclerView rvTemplates, rvTreatmentSteps;
@@ -162,6 +162,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
 
         // Buttons
         btnSavePlan = findViewById(R.id.btnSavePlan);
+        btnActivatePlan = findViewById(R.id.btnActivatePlan);
         btnSelectTemplate = findViewById(R.id.btnSelectTemplate);
         btnPrescribe = findViewById(R.id.btnPrescribe);
         btnPrintPlan = findViewById(R.id.btnPrintPlan);
@@ -184,11 +185,20 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         
         btnLookup.setOnClickListener(v -> lookupPatient());
         btnSavePlan.setOnClickListener(v -> saveTreatmentPlan());
+        btnActivatePlan.setOnClickListener(v -> activatePlan());
         btnTransferXRay.setOnClickListener(v -> transferPatientToXRay());
         btnSelectTemplate.setOnClickListener(v -> {
             rvTemplates.setVisibility(rvTemplates.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
         });
-        btnPrescribe.setOnClickListener(v -> Toast.makeText(this, "Tính năng kê đơn thuốc đang phát triển", Toast.LENGTH_SHORT).show());
+        btnPrescribe.setOnClickListener(v -> {
+            if (currentPatient != null && currentPatient.getAppointmentId() != null && currentPatient.getAppointmentId() != -1) {
+                Intent intent = new Intent(this, PrescriptionActivity.class);
+                intent.putExtra(PrescriptionActivity.EXTRA_APPOINTMENT_ID, currentPatient.getAppointmentId());
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "Không thể xác định lịch hẹn cho bệnh nhân này", Toast.LENGTH_SHORT).show();
+            }
+        });
         btnPrintPlan.setOnClickListener(v -> Toast.makeText(this, "Đang xuất PDF phác đồ...", Toast.LENGTH_SHORT).show());
     }
 
@@ -315,6 +325,8 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                     
                     treatmentSteps.clear();
                     treatmentSteps.addAll(plan.getSteps());
+                    
+                    updateUIMode(plan.isDraft());
                     stepAdapter.notifyDataSetChanged();
                     
                     Toast.makeText(DoctorWorkflowActivity.this, 
@@ -372,9 +384,120 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         }
     }
 
+    private void updateUIMode(boolean isDraft) {
+        stepAdapter.setDraftMode(isDraft);
+        if (isDraft) {
+            btnActivatePlan.setVisibility(View.VISIBLE);
+            btnSavePlan.setVisibility(View.VISIBLE);
+        } else {
+            btnActivatePlan.setVisibility(View.GONE);
+            btnSavePlan.setVisibility(View.GONE);
+        }
+    }
+
+    private void activatePlan() {
+        if (currentTreatmentPlanId == null) return;
+        
+        btnActivatePlan.setEnabled(false);
+        apiService.activatePlan(currentTreatmentPlanId).enqueue(new Callback<com.hcmute.mobile_android.network.models.MessageResponse>() {
+            @Override
+            public void onResponse(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Response<com.hcmute.mobile_android.network.models.MessageResponse> response) {
+                btnActivatePlan.setEnabled(true);
+                if (response.isSuccessful()) {
+                    Toast.makeText(DoctorWorkflowActivity.this, "Đã kích hoạt phác đồ", Toast.LENGTH_SHORT).show();
+                    // Tiện tay reload lại từ API for-room để có data mới nhất theo room
+                    loadTreatmentPlanForRoom(currentTreatmentPlanId);
+                } else {
+                    Toast.makeText(DoctorWorkflowActivity.this, "Lỗi kích hoạt", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Throwable t) {
+                btnActivatePlan.setEnabled(true);
+                Toast.makeText(DoctorWorkflowActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void loadTreatmentPlanForRoom(Long planId) {
+        apiService.getTreatmentPlanForRoom(planId).enqueue(new Callback<TreatmentPlan>() {
+            @Override
+            public void onResponse(Call<TreatmentPlan> call, Response<TreatmentPlan> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    TreatmentPlan plan = response.body();
+                    treatmentSteps.clear();
+                    treatmentSteps.addAll(plan.getSteps());
+                    updateUIMode(plan.isDraft());
+                    stepAdapter.notifyDataSetChanged();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<TreatmentPlan> call, Throwable t) {
+                // Ignore
+            }
+        });
+    }
+
     @Override
     public void onStepComplete(TreatmentPlan.Step step) {
-        Toast.makeText(this, "Hoàn thành bước: " + step.getServiceName(), Toast.LENGTH_SHORT).show();
+        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainerForm);
+        String finalNotes = "";
+
+        if (fragment instanceof FragmentGeneralDental) {
+            FragmentGeneralDental generalDetail = (FragmentGeneralDental) fragment;
+            String reason = generalDetail.etReason.getText().toString().trim();
+            String diagnosis = generalDetail.etDiagnosis.getText().toString().trim();
+            finalNotes = "Lý do: " + reason + "\nChẩn đoán: " + diagnosis + "\n" + 
+                         "Điều trị: " + generalDetail.getToothTreatments().size() + " răng.";
+        } else if (fragment instanceof FragmentSurgeryChecklist) {
+            finalNotes = ((FragmentSurgeryChecklist) fragment).getFormDataNotes();
+        } else if (fragment instanceof FragmentOrthodontics) {
+            finalNotes = ((FragmentOrthodontics) fragment).getFormDataNotes();
+        }
+
+        if (finalNotes.trim().isEmpty()) {
+            Toast.makeText(this, "Vui lòng nhập thông tin thăm khám trước khi hoàn thành", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        HashMap<String, String> body = new HashMap<>();
+        body.put("doctorConclusion", finalNotes);
+
+        apiService.completeTreatmentStep(step.getId(), body).enqueue(new Callback<com.hcmute.mobile_android.network.models.MessageResponse>() {
+            @Override
+            public void onResponse(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Response<com.hcmute.mobile_android.network.models.MessageResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String msg = response.body().getMessage();
+                    String nextRoom = response.body().getNextRoomName();
+                    
+                    if (nextRoom != null) {
+                        new androidx.appcompat.app.AlertDialog.Builder(DoctorWorkflowActivity.this)
+                            .setTitle("Chuyển phòng")
+                            .setMessage("Bệnh nhân cần được chuyển sang " + nextRoom + " để tiếp tục.\nHệ thống đã tự động đẩy hồ sơ.")
+                            .setPositiveButton("OK", (dialog, which) -> {
+                                finish(); // Done for this doctor
+                            })
+                            .setCancelable(false)
+                            .show();
+                    } else {
+                        Toast.makeText(DoctorWorkflowActivity.this, "Hoàn tất bước khám", Toast.LENGTH_SHORT).show();
+                        loadTreatmentPlanForRoom(currentTreatmentPlanId); // reload step states
+                    }
+                } else {
+                    try {
+                        String errorBody = response.errorBody().string();
+                        Toast.makeText(DoctorWorkflowActivity.this, "Lỗi: " + errorBody, Toast.LENGTH_SHORT).show();
+                    } catch (Exception e) {}
+                }
+            }
+
+            @Override
+            public void onFailure(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Throwable t) {
+                Toast.makeText(DoctorWorkflowActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     @Override

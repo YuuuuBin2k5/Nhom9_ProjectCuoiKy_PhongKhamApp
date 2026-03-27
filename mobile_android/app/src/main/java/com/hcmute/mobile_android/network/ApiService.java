@@ -147,11 +147,27 @@ public interface ApiService {
     @GET("api/treatment-plans/{id}")
     Call<TreatmentPlan> getTreatmentPlan(@Path("id") Long planId);
 
+    @GET("api/treatment-plans/{id}/for-room")
+    Call<TreatmentPlan> getTreatmentPlanForRoom(@Path("id") Long planId);
+
     @PUT("api/treatment-plans/{id}")
     Call<Void> updateTreatmentPlanSteps(@Path("id") Long planId, @Body com.hcmute.mobile_android.network.models.request.UpdatePlanStepsRequest request);
 
+    @POST("api/treatment-plans/{id}/activate")
+    Call<MessageResponse> activatePlan(@Path("id") Long planId);
+
     @PATCH("api/treatment-plans/steps/{stepId}/start")
     Call<MessageResponse> startTreatmentStep(@Path("stepId") Long stepId);
+
+    @PATCH("api/treatment-plans/steps/{stepId}/complete")
+    Call<MessageResponse> completeTreatmentStep(@Path("stepId") Long stepId, @Body java.util.Map<String, String> body);
+
+    // Prescription APIs
+    @POST("api/prescriptions")
+    Call<com.hcmute.mobile_android.network.models.PrescriptionResponse> createPrescription(@Body com.hcmute.mobile_android.network.models.request.PrescriptionRequest request);
+
+    @GET("api/prescriptions/appointment/{appointmentId}")
+    Call<com.hcmute.mobile_android.network.models.PrescriptionResponse> getPrescriptionByAppointment(@Path("appointmentId") Long appointmentId);
 
     // Admin Service Management
     @POST("api/admin/services/categories")
