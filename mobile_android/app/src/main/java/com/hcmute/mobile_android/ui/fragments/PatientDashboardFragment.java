@@ -10,7 +10,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.hcmute.mobile_android.util.ToastUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -228,7 +228,7 @@ public class PatientDashboardFragment extends Fragment {
                         warningIcon.setVisibility(isMissingInfo ? View.VISIBLE : View.GONE);
                     }
                 } else if (response.code() == 404 || response.code() == 401) {
-                    Toast.makeText(requireContext(), "Phiên làm việc hết hạn. Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
+                    ToastUtils.showCenteredToastLong(requireContext(), "Phiên làm việc hết hạn. Vui lòng đăng nhập lại.");
                     logout();
                 }
                 swipeRefresh.setRefreshing(false);
@@ -237,7 +237,7 @@ public class PatientDashboardFragment extends Fragment {
             @Override
             public void onFailure(Call<PatientMeResponse> call, Throwable t) {
                 if (!isAdded()) return;
-                Toast.makeText(requireContext(), "Lỗi tải thông tin bệnh nhân", Toast.LENGTH_SHORT).show();
+                ToastUtils.showCenteredToast(requireContext(), "Lỗi tải thông tin bệnh nhân");
                 swipeRefresh.setRefreshing(false);
             }
         });

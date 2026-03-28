@@ -15,6 +15,7 @@ import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
 import com.hcmute.mobile_android.network.models.LoginRequest;
+import com.hcmute.mobile_android.util.ToastUtils;
 import com.hcmute.mobile_android.network.models.LoginResponse;
 import com.hcmute.mobile_android.util.TokenManager;
 
@@ -50,12 +51,12 @@ public class LoginActivity extends AppCompatActivity {
         String password = ((EditText) findViewById(R.id.etPassword)).getText().toString();
         
         if (email.isEmpty() || password.isEmpty()) {
-            Toast.makeText(this, "Please enter email and password", Toast.LENGTH_SHORT).show();
+            ToastUtils.showCenteredToast(this, "Please enter email and password");
             return;
         }
 
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
+            ToastUtils.showCenteredToast(this, "Please enter a valid email address");
             return;
         }
 
@@ -94,6 +95,7 @@ public class LoginActivity extends AppCompatActivity {
                     
                     // Navigate based on user role
                     Intent intent;
+                    ToastUtils.showCenteredToast(LoginActivity.this, "Đăng nhập thành công");
                     if ("ADMIN".equals(body.getRole())) {
                         intent = new Intent(LoginActivity.this, AdminMainActivity.class);
                     } else {
@@ -104,16 +106,13 @@ public class LoginActivity extends AppCompatActivity {
                     startActivity(intent);
                     finish();
                 } else {
-                    Toast.makeText(LoginActivity.this, "Invalid email or password", Toast.LENGTH_SHORT).show();
+                    ToastUtils.showCenteredToast(LoginActivity.this, "Sai tài khoản hoặc mật khẩu");
                 }
             }
 
             @Override
             public void onFailure(Call<LoginResponse> call, Throwable t) {
-                String msg = t.getMessage() != null ? t.getMessage() : "";
-                Toast.makeText(LoginActivity.this,
-                        getString(R.string.login_network_error) + "\n" + msg,
-                        Toast.LENGTH_LONG).show();
+                ToastUtils.showCenteredToast(LoginActivity.this, "Lỗi kết nối");
             }
         });
     }

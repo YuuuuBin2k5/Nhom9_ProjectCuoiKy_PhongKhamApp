@@ -1,10 +1,14 @@
 package com.hcmute.mobile_android.ui.activities;
 
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.TextView;
+import com.hcmute.mobile_android.util.ToastUtils;
+import android.content.Intent;
 import com.google.android.material.button.MaterialButton;
 
+import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.google.android.material.appbar.MaterialToolbar;
@@ -12,6 +16,7 @@ import com.hcmute.mobile_android.R;
 
 public class AppointmentDetailActivity extends AppCompatActivity {
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -71,14 +76,20 @@ public class AppointmentDetailActivity extends AppCompatActivity {
                     btnCancel.setEnabled(true);
                     btnCancel.setText("Hủy lịch hẹn");
                     if (response.isSuccessful()) {
-                        android.widget.Toast.makeText(AppointmentDetailActivity.this, 
-                            "✅ Đã hủy lịch hẹn thành công", android.widget.Toast.LENGTH_LONG).show();
+                        ToastUtils.showCenteredToastLong(AppointmentDetailActivity.this, "✅ Đã hủy lịch hẹn thành công");
                         btnCancel.setVisibility(View.GONE);
                         tvStatus.setText("Đã hủy");
                         setStatusStyle(tvStatus, "CANCELLED");
+                        
+                        // Auto return to home after success
+                        new android.os.Handler().postDelayed(() -> {
+                            Intent intent = new Intent(AppointmentDetailActivity.this, MainActivity.class);
+                            intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
+                            startActivity(intent);
+                            finish();
+                        }, 1000);
                     } else {
-                        android.widget.Toast.makeText(AppointmentDetailActivity.this, 
-                            "Lỗi: " + response.code(), android.widget.Toast.LENGTH_SHORT).show();
+                        ToastUtils.showCenteredToast(AppointmentDetailActivity.this, "Lỗi: " + response.code());
                     }
                 }
 
@@ -86,12 +97,12 @@ public class AppointmentDetailActivity extends AppCompatActivity {
                 public void onFailure(retrofit2.Call<com.hcmute.mobile_android.network.models.UpcomingAppointment> call, Throwable t) {
                     btnCancel.setEnabled(true);
                     btnCancel.setText("Hủy lịch hẹn");
-                    android.widget.Toast.makeText(AppointmentDetailActivity.this, 
-                        "Kiểm tra kết nối mạng", android.widget.Toast.LENGTH_SHORT).show();
+                    ToastUtils.showCenteredToast(AppointmentDetailActivity.this, "Kiểm tra kết nối mạng");
                 }
             });
     }
 
+    @RequiresApi(api = Build.VERSION_CODES.O)
     private String formatDateTime(String dateTime) {
         if (dateTime == null || dateTime.isEmpty()) return "";
         try {

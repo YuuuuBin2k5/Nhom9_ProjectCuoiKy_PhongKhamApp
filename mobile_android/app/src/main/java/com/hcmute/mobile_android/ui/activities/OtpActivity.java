@@ -3,7 +3,7 @@ package com.hcmute.mobile_android.ui.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.hcmute.mobile_android.util.ToastUtils;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -106,19 +106,19 @@ public class OtpActivity extends AppCompatActivity {
         api.requestOtp(new OtpRequest(phone, purpose)).enqueue(new Callback<MessageResponse>() {
             @Override
             public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
-                Toast.makeText(OtpActivity.this, R.string.otp_resend, Toast.LENGTH_SHORT).show();
+                ToastUtils.showCenteredToast(OtpActivity.this, getString(R.string.otp_resend));
             }
 
             @Override
             public void onFailure(Call<MessageResponse> call, Throwable t) {
-                Toast.makeText(OtpActivity.this, t.getMessage(), Toast.LENGTH_SHORT).show();
+                ToastUtils.showCenteredToast(OtpActivity.this, t.getMessage());
             }
         });
     }
 
     private void submit() {
         if (cursor < 6) {
-            Toast.makeText(this, "Enter 6 digits", Toast.LENGTH_SHORT).show();
+            ToastUtils.showCenteredToast(this, "Enter 6 digits");
             return;
         }
         String code = new String(digits).replace(" ", "");
@@ -127,7 +127,7 @@ public class OtpActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<OtpVerifyResponse> call, Response<OtpVerifyResponse> response) {
                 if (!response.isSuccessful() || response.body() == null) {
-                    Toast.makeText(OtpActivity.this, "Invalid code", Toast.LENGTH_SHORT).show();
+                    ToastUtils.showCenteredToast(OtpActivity.this, "Invalid code");
                     return;
                 }
                 OtpVerifyResponse body = response.body();
@@ -168,7 +168,7 @@ public class OtpActivity extends AppCompatActivity {
                     return;
                 }
                 if (body.isNeedsRegistration()) {
-                    Toast.makeText(OtpActivity.this, "No account yet — please sign up", Toast.LENGTH_LONG).show();
+                    ToastUtils.showCenteredToastLong(OtpActivity.this, "No account yet — please sign up");
                     Intent i = new Intent(OtpActivity.this, PhoneLoginActivity.class);
                     i.putExtra(IntentExtras.EXTRA_REGISTER_FLOW, true);
                     startActivity(i);
@@ -178,7 +178,7 @@ public class OtpActivity extends AppCompatActivity {
 
             @Override
             public void onFailure(Call<OtpVerifyResponse> call, Throwable t) {
-                Toast.makeText(OtpActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
+                ToastUtils.showCenteredToastLong(OtpActivity.this, t.getMessage());
             }
         });
     }

@@ -1,6 +1,7 @@
 package com.hcmute.mobile_android.ui.activities;
 
 import com.hcmute.mobile_android.util.TokenManager;
+import com.hcmute.mobile_android.util.ToastUtils;
 
 import android.app.DatePickerDialog;
 import android.app.TimePickerDialog;
@@ -119,23 +120,21 @@ public class BookAppointmentActivity extends AppCompatActivity {
                     }
                     populateServiceSpinner();
                 } else {
-                    Toast.makeText(BookAppointmentActivity.this,
-                            "Không tải được danh sách dịch vụ", Toast.LENGTH_SHORT).show();
+                    ToastUtils.showCenteredToast(BookAppointmentActivity.this, "Không tải được danh sách dịch vụ");
                 }
             }
 
             @Override
             public void onFailure(Call<List<ServiceItem>> call, Throwable t) {
                 pbServices.setVisibility(View.GONE);
-                Toast.makeText(BookAppointmentActivity.this,
-                        "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                ToastUtils.showCenteredToast(BookAppointmentActivity.this, "Lỗi mạng: " + t.getMessage());
             }
         });
     }
 
     private void populateServiceSpinner() {
         if (serviceList.isEmpty()) {
-            Toast.makeText(this, "Không có dịch vụ nào trong danh mục này", Toast.LENGTH_SHORT).show();
+            ToastUtils.showCenteredToast(this, "Không có dịch vụ nào trong danh mục này");
             return;
         }
 
@@ -189,8 +188,7 @@ public class BookAppointmentActivity extends AppCompatActivity {
                 pbDoctors.setVisibility(View.GONE);
                 doctorList = new ArrayList<>();
                 populateDoctorSpinner();
-                Toast.makeText(BookAppointmentActivity.this,
-                        "Lỗi tải bác sĩ: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                ToastUtils.showCenteredToast(BookAppointmentActivity.this, "Lỗi tải bác sĩ: " + t.getMessage());
             }
         });
     }
@@ -198,7 +196,7 @@ public class BookAppointmentActivity extends AppCompatActivity {
 
     private void populateDoctorSpinner() {
         if (doctorList.isEmpty()) {
-            Toast.makeText(this, "Không có bác sĩ phù hợp", Toast.LENGTH_SHORT).show();
+            ToastUtils.showCenteredToast(this, "Không có bác sĩ phù hợp");
             return;
         }
 
@@ -262,8 +260,18 @@ public class BookAppointmentActivity extends AppCompatActivity {
                     int endMinutes = 16 * 60 + 40; // 16:40
 
                     if (totalMinutes < startMinutes || totalMinutes > endMinutes) {
-                        Toast.makeText(this, "Vui lòng chọn từ 08:00 đến 16:40", Toast.LENGTH_LONG).show();
+                        ToastUtils.showCenteredToastLong(this, "Vui lòng chọn từ 08:00 đến 16:40");
                         // Re-open the time picker
+                        showTimePicker(year, month, dayOfMonth);
+                        return;
+                    }
+
+                    Calendar selectedCalend = Calendar.getInstance();
+                    selectedCalend.set(year, month, dayOfMonth, hourOfDay, minute, 0);
+                    selectedCalend.set(Calendar.MILLISECOND, 0);
+
+                    if (selectedCalend.before(now)) {
+                        ToastUtils.showCenteredToastLong(this, "Thời gian chọn không được trong quá khứ");
                         showTimePicker(year, month, dayOfMonth);
                         return;
                     }
@@ -287,12 +295,12 @@ public class BookAppointmentActivity extends AppCompatActivity {
 
     private void submitBooking() {
         if (selectedService == null) {
-            Toast.makeText(this, "Vui lòng chọn dịch vụ", Toast.LENGTH_SHORT).show();
+            ToastUtils.showCenteredToast(this, "Vui lòng chọn dịch vụ");
             return;
         }
         // Doctor is optional now (backend will auto-assign if null)
         if (selectedDatetime == null) {
-            Toast.makeText(this, "Vui lòng chọn ngày và giờ khám", Toast.LENGTH_SHORT).show();
+            ToastUtils.showCenteredToast(this, "Vui lòng chọn ngày và giờ khám");
             return;
         }
 
@@ -309,7 +317,7 @@ public class BookAppointmentActivity extends AppCompatActivity {
             int endMinutes = 16 * 60 + 40; // 16:40
             
             if (totalMinutes < startMinutes || totalMinutes > endMinutes) {
-                Toast.makeText(this, "Thời gian đặt lịch phải từ 08:00 đến 16:40", Toast.LENGTH_LONG).show();
+                ToastUtils.showCenteredToastLong(this, "Thời gian đặt lịch phải từ 08:00 đến 16:40");
                 return;
             }
         } catch (Exception e) {
@@ -334,16 +342,25 @@ public class BookAppointmentActivity extends AppCompatActivity {
                 btnBook.setEnabled(true);
                 btnBook.setText("Đặt lịch khám");
                 if (response.isSuccessful()) {
-                    Toast.makeText(BookAppointmentActivity.this,
-                            "✅ Đặt lịch thành công!", Toast.LENGTH_LONG).show();
+                    ToastUtils.showCenteredToastLong(BookAppointmentActivity.this, "✅ Đặt lịch hẹn thành công!");
                     Intent intent = new Intent(BookAppointmentActivity.this, MainActivity.class);
                     intent.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_SINGLE_TOP);
                     startActivity(intent);
                     finish();
                 } else {
-                    Toast.makeText(BookAppointmentActivity.this,
-                            "Đặt lịch thất bại (lỗi " + response.code() + "). Vui lòng thử lại.",
-                            Toast.LENGTH_LONG).show();
+                    String errorMsg = "Đặt lịch thất bại (lỗi " + response.code() + ")";
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorStr = response.errorBody().string();
+                            org.json.JSONObject obj = new org.json.JSONObject(errorStr);
+                            if (obj.has("message")) {
+                                errorMsg = obj.getString("message");
+                            }
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                    ToastUtils.showCenteredToast(BookAppointmentActivity.this, errorMsg);
                 }
             }
 
@@ -351,8 +368,7 @@ public class BookAppointmentActivity extends AppCompatActivity {
             public void onFailure(Call<UpcomingAppointment> call, Throwable t) {
                 btnBook.setEnabled(true);
                 btnBook.setText("Đặt lịch khám");
-                Toast.makeText(BookAppointmentActivity.this,
-                        "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                ToastUtils.showCenteredToast(BookAppointmentActivity.this, "Kiểm tra kết nối mạng");
             }
         });
     }

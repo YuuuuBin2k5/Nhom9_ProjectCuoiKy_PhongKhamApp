@@ -34,6 +34,7 @@
     <!-- Legacy Toothly colors (keep for compatibility) -->
     <color name="toothly_teal">#0d9488</color>
     <color name="toothly_teal_dark">#0f766e</color>
+    <color name="toothly_teal_light">#2dd4bf</color>
     <color name="toothly_pearl">#f8fafc</color>
     <color name="toothly_gold">#d97706</color>
     <color name="toothly_text_body">#374151</color>

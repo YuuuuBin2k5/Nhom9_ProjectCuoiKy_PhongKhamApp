@@ -24,6 +24,7 @@ import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.tabs.TabLayoutMediator;
 import com.hcmute.mobile_android.adapters.ServiceImageAdapter;
 import com.google.android.material.button.MaterialButton;
+import com.hcmute.mobile_android.util.ToastUtils;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
@@ -216,15 +217,24 @@ public class ServiceDetailActivity extends AppCompatActivity {
             int endMin = 16 * 60 + 40; // 16:40
 
             if (totalMin < startMin || totalMin > endMin) {
-                Toast.makeText(this, "Vui lòng chọn từ 08:00 đến 16:40", Toast.LENGTH_LONG).show();
+                ToastUtils.showCenteredToastLong(this, "Vui lòng chọn từ 08:00 đến 16:40");
                 // Re-open the time picker
                 showTimePicker(year, month, day);
                 return;
             }
 
-            // Update ISO format for Backend (Using 'T' for strict compatibility)
+            Calendar selectedCalendar = Calendar.getInstance();
+            selectedCalendar.set(year, month, day, hour, minute, 0);
+            selectedCalendar.set(Calendar.MILLISECOND, 0);
+
+            if (selectedCalendar.before(now)) {
+                ToastUtils.showCenteredToastLong(this, "Thời gian chọn không được trong quá khứ");
+                showTimePicker(year, month, day);
+                return;
+            }
+            // Update ISO format for Backend
             selectedDatetime = String.format(Locale.getDefault(),
-                    "%04d-%02d-%02dT%02d:%02d:00",
+                    "%04d-%02d-%02d %02d:%02d:00",
                     year, month + 1, day, hour, minute);
             // Format for display
             String display = String.format(Locale.getDefault(),
@@ -239,11 +249,11 @@ public class ServiceDetailActivity extends AppCompatActivity {
 
     private void submitBooking() {
         if (doctorList.isEmpty()) {
-            Toast.makeText(this, "Vui lòng chờ tải danh sách bác sĩ", Toast.LENGTH_SHORT).show();
+            ToastUtils.showCenteredToast(this, "Hiện tại không có bác sĩ phù hợp");
             return;
         }
         if (selectedDatetime == null) {
-            Toast.makeText(this, "Vui lòng chọn ngày & giờ khám", Toast.LENGTH_SHORT).show();
+            ToastUtils.showCenteredToast(this, "Vui lòng chọn ngày & giờ khám");
             return;
         }
 
@@ -262,33 +272,29 @@ public class ServiceDetailActivity extends AppCompatActivity {
             public void onResponse(Call<UpcomingAppointment> call, Response<UpcomingAppointment> response) {
                 btnBook.setEnabled(true);
                 btnBook.setText("Đặt lịch hẹn ngay");
-                if (response.isSuccessful()) {
-                    Toast.makeText(ServiceDetailActivity.this,
-                            "✅ Đặt lịch thành công!", Toast.LENGTH_LONG).show();
+                if (response.isSuccessful()) {  
+                    ToastUtils.showCenteredToastLong(ServiceDetailActivity.this, "✅ Đặt lịch thành công!");
                     finish(); // Về Home → onResume reload upcoming appointments
                 } else {
-                    // Improved Error Parsing: Extract message from backend JSON body
                     String errorMsg = "Đặt lịch thất bại (lỗi " + response.code() + ")";
-                    if (response.errorBody() != null) {
-                        try {
-                            String errorJson = response.errorBody().string();
-                            com.google.gson.reflect.TypeToken<java.util.Map<String, String>> mapType = 
-                                    new com.google.gson.reflect.TypeToken<java.util.Map<String, String>>() {};
-                            java.util.Map<String, String> errorMap = new com.google.gson.Gson().fromJson(errorJson, mapType.getType());
-                            if (errorMap != null && errorMap.containsKey("message")) {
-                                errorMsg = errorMap.get("message");
+                    try {
+                        if (response.errorBody() != null) {
+                            String errorStr = response.errorBody().string();
+                            org.json.JSONObject obj = new org.json.JSONObject(errorStr);
+                            if (obj.has("message")) {
+                                errorMsg = obj.getString("message");
                             }
-                        } catch (Exception ignored) {}
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                    Toast.makeText(ServiceDetailActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                    ToastUtils.showCenteredToastLong(ServiceDetailActivity.this, errorMsg);
                 }
             }
-            @Override
             public void onFailure(Call<UpcomingAppointment> call, Throwable t) {
                 btnBook.setEnabled(true);
                 btnBook.setText("Đặt lịch hẹn ngay");
-                Toast.makeText(ServiceDetailActivity.this,
-                        "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                ToastUtils.showCenteredToast(ServiceDetailActivity.this, "Lỗi kết nối: " + t.getMessage());
             }
         });
     }

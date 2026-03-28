@@ -71,6 +71,12 @@ public interface ApiService {
     @GET("api/notifications/me")
     Call<List<com.hcmute.mobile_android.network.models.NotificationItem>> getMyNotifications();
 
+    @PATCH("api/notifications/{id}/read")
+    Call<MessageResponse> markNotificationAsRead(@Path("id") long id);
+
+    @PATCH("api/notifications/read-all")
+    Call<MessageResponse> markAllNotificationsAsRead();
+
     @GET("api/patients/me/appointments/upcoming")
     Call<List<com.hcmute.mobile_android.network.models.UpcomingAppointment>> getUpcomingAppointments();
 

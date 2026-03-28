@@ -8,6 +8,7 @@ import com.hcmute.clinic.entity.Service;
 import com.hcmute.clinic.enums.AppointmentStatus;
 import com.hcmute.clinic.enums.BookingType;
 import com.hcmute.clinic.repository.AppointmentRepository;
+import com.hcmute.clinic.repository.CheckInQueueRepository;
 import com.hcmute.clinic.repository.DoctorRepository;
 import com.hcmute.clinic.repository.PatientRepository;
 import com.hcmute.clinic.repository.ServiceRepository;
@@ -33,6 +34,8 @@ public class AppointmentController {
     private final DoctorRepository doctorRepository;
     private final ServiceRepository serviceRepository;
     private final com.hcmute.clinic.service.AppointmentService appointmentService;
+    private final com.hcmute.clinic.service.NotificationService notificationService;
+    private final CheckInQueueRepository checkInQueueRepository;
 
     @PostMapping
     public ResponseEntity<?> createAppointment(@RequestBody AppointmentRequest request, Authentication auth) {
@@ -110,8 +113,9 @@ public class AppointmentController {
             }
 
             // 5.1 Validate existing active appointments for patient
+            // Patients must finish or cancel before booking next
             boolean hasActiveAppt = appointmentRepository.existsByPatientIdAndStatusIn(patient.getId(), 
-                java.util.List.of(AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS));
+                java.util.List.of(AppointmentStatus.SCHEDULED, AppointmentStatus.CONFIRMED, AppointmentStatus.IN_PROGRESS));
             if (hasActiveAppt) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Bệnh nhân đang có một lịch khám chưa hoàn thành. Không thể đặt thêm."));
             }
@@ -153,6 +157,15 @@ public class AppointmentController {
 
             Appointment saved = appointmentRepository.save(appointment);
 
+            // 6.2 Create Notification
+            notificationService.createNotification(
+                patient,
+                "Đặt lịch thành công",
+                "Lịch hẹn khám " + service.getName() + " của bạn vào lúc " + 
+                appointmentTime.format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")) + " đã được ghi nhận.",
+                "APPOINTMENT"
+            );
+
             // 6. Return response (Matching UpcomingAppointment model in Android app)
             return ResponseEntity.ok(Map.of(
                     "id", saved.getId(),
@@ -184,7 +197,7 @@ public class AppointmentController {
         }
     }
     
-    @PatchMapping("/{id}/cancel")
+    @PostMapping("/{id}/cancel")
     public ResponseEntity<?> cancelAppointment(
         @PathVariable Long id,
         @RequestBody(required = false) com.hcmute.clinic.dto.CancelRequest request,
@@ -207,13 +220,8 @@ public class AppointmentController {
                 }
             }
             
-            // Check if can cancel (at least 2 hours before)
-            if (appointment.getAppointmentDatetime().isBefore(LocalDateTime.now().plusHours(2))) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "message", "Không thể hủy lịch hẹn trong vòng 2 giờ trước giờ khám"
-                ));
-            }
-            
+            // Check if can cancel (removed 2-hour restriction as per user request)
+           
             // Check if already cancelled or completed
             if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Lịch hẹn đã được hủy trước đó"));
@@ -223,11 +231,27 @@ public class AppointmentController {
             }
             
             appointment.setStatus(AppointmentStatus.CANCELLED);
-            appointmentRepository.save(appointment);
+            Appointment saved = appointmentRepository.save(appointment);
+            
+            // Remove from queue if exists
+            checkInQueueRepository.findByAppointmentId(id)
+                .ifPresent(checkInQueueRepository::delete);
+            
+            // Send Notification
+            notificationService.createNotification(
+                appointment.getPatient(),
+                "Hủy lịch hẹn thành công",
+                "Lịch hẹn khám " + appointment.getService().getName() + " vào lúc " + 
+                appointment.getAppointmentDatetime().format(DateTimeFormatter.ofPattern("HH:mm dd/MM/yyyy")) + " đã được hủy.",
+                "CANCEL"
+            );
             
             return ResponseEntity.ok(Map.of(
-                "message", "Hủy lịch hẹn thành công",
-                "appointmentId", id
+                    "id", saved.getId(),
+                    "datetime", saved.getAppointmentDatetime().toString(),
+                    "serviceName", saved.getService().getName(),
+                    "doctorName", (saved.getDoctor().getLastName() + " " + saved.getDoctor().getFirstName()).trim(),
+                    "status", saved.getStatus().name()
             ));
             
         } catch (IllegalArgumentException e) {

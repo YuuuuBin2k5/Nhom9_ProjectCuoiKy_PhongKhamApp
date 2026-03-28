@@ -11,12 +11,14 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import com.hcmute.mobile_android.util.ToastUtils;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
+import com.hcmute.mobile_android.network.models.MessageResponse;
 import com.hcmute.mobile_android.network.models.NotificationItem;
 
 import java.util.ArrayList;
@@ -29,7 +31,7 @@ import retrofit2.Response;
 public class NotificationsFragment extends Fragment {
 
     private ProgressBar progress;
-    private TextView tvEmpty;
+    private TextView tvEmpty, tvMarkAllRead;
     private RecyclerView recycler;
     private NotificationsAdapter adapter;
 
@@ -44,6 +46,8 @@ public class NotificationsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
         progress = view.findViewById(R.id.progress);
         tvEmpty = view.findViewById(R.id.tvEmpty);
+        tvMarkAllRead = view.findViewById(R.id.tvMarkAllRead);
+        tvMarkAllRead.setOnClickListener(v -> markAllAsRead());
         recycler = view.findViewById(R.id.recycler);
         recycler.setLayoutManager(new LinearLayoutManager(requireContext()));
         adapter = new NotificationsAdapter(new ArrayList<>());
@@ -57,6 +61,23 @@ public class NotificationsFragment extends Fragment {
         if (getView() != null) {
             loadNotifications();
         }
+    }
+
+    private void markAllAsRead() {
+        ApiService api = RetrofitClient.getApiService(requireContext());
+        api.markAllNotificationsAsRead().enqueue(new Callback<MessageResponse>() {
+            @Override
+            public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
+                if (response.isSuccessful()) {
+                    loadNotifications();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<MessageResponse> call, Throwable t) {
+                ToastUtils.showCenteredToast(getContext(), "Lỗi kết nối");
+            }
+        });
     }
 
     private void loadNotifications() {
@@ -85,7 +106,7 @@ public class NotificationsFragment extends Fragment {
                 progress.setVisibility(View.GONE);
                 tvEmpty.setVisibility(View.VISIBLE);
                 tvEmpty.setText(t.getMessage() != null ? t.getMessage() : "Không tải được");
-                Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                ToastUtils.showCenteredToast(getContext(), "Lỗi kết nối");
             }
         });
     }
@@ -113,11 +134,45 @@ public class NotificationsFragment extends Fragment {
             NotificationItem n = items.get(position);
             holder.tvTitle.setText(n.getTitle() != null ? n.getTitle() : "");
             holder.tvMessage.setText(n.getMessage() != null ? n.getMessage() : "");
+            
+            // Highlight unread notifications
+            if (!n.isRead()) {
+                holder.card.setCardBackgroundColor(holder.itemView.getContext().getResources().getColor(R.color.toothly_pearl));
+                holder.tvTitle.setTextColor(holder.itemView.getContext().getResources().getColor(R.color.toothly_teal_dark));
+            } else {
+                holder.card.setCardBackgroundColor(holder.itemView.getContext().getResources().getColor(android.R.color.white));
+                holder.tvTitle.setTextColor(holder.itemView.getContext().getResources().getColor(android.R.color.darker_gray));
+            }
+
             String time = n.getCreatedAt();
             if (time != null && time.length() > 10) {
-                time = time.substring(0, 10) + " " + (time.length() > 19 ? time.substring(11, 19) : "");
+                // Formatting "2026-03-24T10:00:00" -> "2026-03-24 10:00:00"
+                time = time.replace("T", " ");
+                if (time.length() > 19) time = time.substring(0, 19);
             }
             holder.tvTime.setText(time != null ? time : "");
+
+            holder.itemView.setOnClickListener(v -> {
+                if (!n.isRead()) {
+                    markAsRead(n, holder);
+                }
+            });
+        }
+
+        private void markAsRead(NotificationItem n, ViewHolder holder) {
+            ApiService api = RetrofitClient.getApiService(holder.itemView.getContext());
+            api.markNotificationAsRead(n.getId()).enqueue(new Callback<MessageResponse>() {
+                @Override
+                public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
+                    if (response.isSuccessful()) {
+                        n.setRead(true);
+                        notifyItemChanged(holder.getAdapterPosition());
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<MessageResponse> call, Throwable t) {}
+            });
         }
 
         @Override
@@ -127,12 +182,14 @@ public class NotificationsFragment extends Fragment {
 
         static class ViewHolder extends RecyclerView.ViewHolder {
             TextView tvTitle, tvMessage, tvTime;
+            com.google.android.material.card.MaterialCardView card;
 
             ViewHolder(View itemView) {
                 super(itemView);
                 tvTitle = itemView.findViewById(R.id.tvTitle);
                 tvMessage = itemView.findViewById(R.id.tvMessage);
                 tvTime = itemView.findViewById(R.id.tvTime);
+                card = (com.google.android.material.card.MaterialCardView) itemView;
             }
         }
     }

@@ -199,7 +199,7 @@ public class CheckInQueueService {
         return appointmentRepository.save(walkInAppt);
     }
 
-    private int calculateEstimatedWaitTime(CheckInQueue current) {
+    public int calculateEstimatedWaitTime(CheckInQueue current) {
         if (current == null || current.getClinicRoom() == null) return 0;
         
         LocalDate today = LocalDate.now();
