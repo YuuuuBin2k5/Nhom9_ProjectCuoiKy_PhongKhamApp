@@ -23,6 +23,10 @@ public class Prescription {
     private MedicalRecord medicalRecord;
 
     @ManyToOne
+    @JoinColumn(name = "step_id")
+    private TreatmentPlanStep step;
+
+    @ManyToOne
     @JoinColumn(name = "doctor_id", nullable = false)
     private Doctor doctor;
 

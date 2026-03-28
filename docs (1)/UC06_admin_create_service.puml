@@ -1,0 +1,26 @@
+@startuml UC06
+title UC06: Quản trị viên tạo Dịch vụ mới
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Quản trị viên (Admin)" as A
+
+rectangle "Quản lý Dịch vụ" {
+    usecase "Thêm dịch vụ mới" as UC6_1
+    usecase "Chọn Danh mục (Category)" as UC_Cat
+    usecase "Nhập thông tin (Tên, Giá biểu, ...)" as UC6_2
+    usecase "Xác thực & Lưu dịch vụ" as UC_S
+
+    UC6_1 ..> UC_Cat : <<include>>
+    UC6_1 ..> UC6_2 : <<include>>
+    UC6_2 ..> UC_S : <<include>>
+}
+
+A --> UC6_1
+
+note bottom of UC_S
+  Trạng thái mặc định: active = true
+end note
+
+@enduml

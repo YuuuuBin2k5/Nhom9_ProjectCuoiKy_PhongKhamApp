@@ -1,0 +1,49 @@
+@startuml AC14
+title AC14: Theo dõi lộ trình điều trị (Treatment Path Tracking)
+
+|Bệnh nhân|
+start
+:Mở ứng dụng;
+:Truy cập tab **Liệu trình**;
+
+|Hệ thống|
+:Gọi API /api/treatment-plans/my;
+:Truy vấn danh sách phác đồ\ncủa bệnh nhân;
+
+if (Có phác đồ nào?) then (Không)
+  |Bệnh nhân|
+  :Hiển thị "Chưa có liệu trình";
+  stop
+else (Có)
+endif
+
+:Tính toán tiến độ mỗi phác đồ\n(completedSteps / totalSteps);
+:Xác định bước tiếp theo (nextStepName);
+:Trả về danh sách PlanSummary;
+
+|Bệnh nhân|
+:Hiển thị danh sách phác đồ\n(Trạng thái, Tiến độ, Bước tiếp theo);
+:Chọn một phác đồ để xem chi tiết;
+
+|Hệ thống|
+:Tải danh sách các bước\n(StepSummary: serviceName, roomName, status);
+
+|Bệnh nhân|
+:Hiển thị từng bước điều trị\n(Tên dịch vụ, Phòng, Trạng thái);
+
+if (Bước tiếp theo là PENDING?) then (Có)
+  :Hiển thị nút **Bắt đầu**;
+  :Bệnh nhân nhấn "Bắt đầu";
+  
+  |Hệ thống|
+  :Gọi API PATCH /steps/{id}/start;
+  :Cập nhật trạng thái\nPENDING -> IN_PROGRESS;
+  
+  |Bệnh nhân|
+  :Cập nhật UI\n(Bước đang thực hiện);
+else (Không)
+  :Hiển thị trạng thái hiện tại\n(IN_PROGRESS / COMPLETED);
+endif
+
+stop
+@enduml

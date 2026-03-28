@@ -1,0 +1,24 @@
+@startuml UC14
+title UC14: Bệnh nhân theo dõi lộ trình điều trị
+
+left to right direction
+skinparam actorStyle awesome
+
+actor "Bệnh nhân" as P
+
+rectangle "Hệ thống Quản lý Phòng khám" {
+    usecase "Theo dõi lộ trình điều trị" as UC14
+    usecase "Đăng nhập" as Login
+    usecase "Xem danh sách bước điều trị" as ViewSteps
+    usecase "Xem chi tiết bước (dịch vụ, phòng, thời gian)" as ViewStepDetail
+    usecase "Theo dõi trạng thái từng bước" as TrackStatus
+
+    UC14 ..> Login : <<include>>
+    UC14 ..> ViewSteps : <<include>>
+    ViewSteps ..> ViewStepDetail : <<include>>
+    UC14 ..> TrackStatus : <<include>>
+}
+
+P --> UC14
+
+@enduml

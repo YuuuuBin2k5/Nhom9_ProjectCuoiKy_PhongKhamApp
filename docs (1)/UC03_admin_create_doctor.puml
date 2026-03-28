@@ -1,0 +1,25 @@
+@startuml UC03
+title UC03: Quản trị viên tạo tài khoản Bác sĩ
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Quản trị viên (Admin)" as A
+
+rectangle "Quản lý Bác sĩ" {
+    usecase "Tạo tài khoản Bác sĩ" as UC03
+    usecase "Nhập thông tin bác sĩ" as InputData
+    usecase "Gán phòng khám" as AssignClinic
+    usecase "Xác thực thông tin hợp lệ" as Validate
+    usecase "Lưu tài khoản bác sĩ" as SaveDoctor
+
+    UC03 ..> InputData : <<include>>
+    UC03 ..> Validate : <<include>>
+    UC03 ..> SaveDoctor : <<include>>
+
+    AssignClinic ..> InputData : <<extend>>
+}
+
+A --> UC03
+
+@enduml

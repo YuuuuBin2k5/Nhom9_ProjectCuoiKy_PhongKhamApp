@@ -7,6 +7,7 @@ import com.hcmute.clinic.repository.AppointmentRepository;
 import com.hcmute.clinic.repository.DoctorRepository;
 import com.hcmute.clinic.repository.MedicalRecordRepository;
 import com.hcmute.clinic.repository.PrescriptionRepository;
+import com.hcmute.clinic.repository.TreatmentPlanRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
@@ -26,6 +27,7 @@ public class PrescriptionService {
     private final MedicalRecordRepository medicalRecordRepository;
     private final AppointmentRepository appointmentRepository;
     private final DoctorRepository doctorRepository;
+    private final TreatmentPlanRepository treatmentPlanRepository;
 
     @Transactional
     public PrescriptionDTO createPrescription(PrescriptionRequest request, String doctorEmail) {
@@ -54,6 +56,14 @@ public class PrescriptionService {
         if (request.getDiagnosis() != null) medicalRecord.setDiagnosis(request.getDiagnosis());
         if (request.getSymptoms() != null) medicalRecord.setSymptoms(request.getSymptoms());
         if (request.getAdvice() != null) medicalRecord.setAdvice(request.getAdvice());
+        
+        // Data Freezing: Check if treatment plan is completed
+        java.util.Optional<TreatmentPlan> planOpt = treatmentPlanRepository.findFirstByMedicalRecordId(medicalRecord.getId());
+        if (planOpt.isPresent() && "COMPLETED".equalsIgnoreCase(planOpt.get().getStatus().name())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                "Hồ sơ đã hoàn tất và đóng dữ liệu. Không thể kê thêm đơn thuốc.");
+        }
+
         medicalRecordRepository.save(medicalRecord);
 
         // Check if Prescription already exists for this MedicalRecord

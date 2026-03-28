@@ -15,6 +15,11 @@ public class PatientInfo {
     private String appointmentStatus;
     private Long queueId;
     private Long appointmentId;
+    
+    // FIX 1: Thêm fields mới cho TreatmentPlan
+    private Long treatmentPlanId;
+    private Boolean hasTreatmentPlan;
+    private String treatmentPlanStatus;
 
     // Constructors
     public PatientInfo() {}
@@ -30,6 +35,16 @@ public class PatientInfo {
 
     public Long getAppointmentId() { return appointmentId; }
     public void setAppointmentId(Long appointmentId) { this.appointmentId = appointmentId; }
+
+    // FIX 1: Getters and Setters cho TreatmentPlan fields
+    public Long getTreatmentPlanId() { return treatmentPlanId; }
+    public void setTreatmentPlanId(Long treatmentPlanId) { this.treatmentPlanId = treatmentPlanId; }
+
+    public Boolean getHasTreatmentPlan() { return hasTreatmentPlan; }
+    public void setHasTreatmentPlan(Boolean hasTreatmentPlan) { this.hasTreatmentPlan = hasTreatmentPlan; }
+
+    public String getTreatmentPlanStatus() { return treatmentPlanStatus; }
+    public void setTreatmentPlanStatus(String treatmentPlanStatus) { this.treatmentPlanStatus = treatmentPlanStatus; }
 
     public PatientInfo(Long id, String firstName, String lastName, String email, String phone) {
         this.id = id;

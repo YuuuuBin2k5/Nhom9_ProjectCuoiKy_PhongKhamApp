@@ -77,23 +77,45 @@
                 android:textSize="11sp"
                 android:layout_marginTop="2dp"/>
 
+            <LinearLayout
+                android:id="@+id/ll_action_buttons"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="6dp"
+                android:visibility="gone">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_delay"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Lùi 1 lượt"
+                    android:textSize="11sp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:textColor="#F57F17"
+                    app:strokeColor="#F57F17"
+                    app:strokeWidth="1dp"
+                    app:backgroundTint="#FFFFFF"
+                    android:layout_marginEnd="8dp"
+                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btn_call"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Gọi vào phòng"
+                    android:textSize="11sp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:textColor="#FFFFFF"
+                    app:backgroundTint="#1565C0"
+                    style="@style/Widget.MaterialComponents.Button"/>
+
+            </LinearLayout>
+
         </LinearLayout>
 
-        <!-- Khám ngay button -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btn_kham_ngay"
-            android:layout_width="wrap_content"
-            android:layout_height="32dp"
-            android:text="Khám ngay"
-            android:textSize="11sp"
-            android:textAllCaps="false"
-            android:textColor="#FFFFFF"
-            app:backgroundTint="#1565C0"
-            app:cornerRadius="16dp"
-            android:layout_marginStart="6dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:visibility="gone"/>
 
     </LinearLayout>
 

@@ -98,6 +98,14 @@ public class FragmentGeneralDental extends Fragment {
             dialog.dismiss();
         });
         
+        // Add service button inside dialog
+        view.findViewById(R.id.btnAssignService).setOnClickListener(v -> {
+            dialog.dismiss();
+            if (getActivity() instanceof com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) {
+                ((com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) getActivity()).onToothSelected(toothNumber);
+            }
+        });
+        
         dialog.show();
     }
 
@@ -122,5 +130,20 @@ public class FragmentGeneralDental extends Fragment {
             ));
         }
         return list;
+    }
+
+    public String getFormDataNotes() {
+        StringBuilder sb = new StringBuilder();
+        String reason = etReason.getText().toString().trim();
+        String diagnosis = etDiagnosis.getText().toString().trim();
+        if (!reason.isEmpty()) sb.append("Lý do: ").append(reason).append("\n");
+        if (!diagnosis.isEmpty()) sb.append("Chẩn đoán: ").append(diagnosis).append("\n");
+        if (!toothCustomNotesMap.isEmpty()) {
+            sb.append("Tình trạng răng:\n");
+            for (Map.Entry<Integer, String> entry : toothCustomNotesMap.entrySet()) {
+                sb.append("- R").append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
+            }
+        }
+        return sb.toString().trim();
     }
 }

@@ -138,7 +138,6 @@
 
                 </LinearLayout>
 
-                <!-- Quick Action Buttons row -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -156,7 +155,7 @@
                         android:gravity="center"
                         android:background="@drawable/bg_quick_action_btn"
                         android:padding="12dp"
-                        android:layout_marginEnd="8dp"
+                        android:layout_marginEnd="6dp"
                         android:clickable="true"
                         android:focusable="true">
 
@@ -171,6 +170,37 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:text="Lập hồ sơ\nmới"
+                            android:textColor="#1565C0"
+                            android:textSize="11sp"
+                            android:gravity="center"
+                            android:textStyle="bold"/>
+                    </LinearLayout>
+
+                    <!-- Quét QR bệnh nhân (fallback) -->
+                    <LinearLayout
+                        android:id="@+id/btn_scan_qr"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:gravity="center"
+                        android:background="@drawable/bg_quick_action_btn"
+                        android:padding="12dp"
+                        android:layout_marginEnd="6dp"
+                        android:clickable="true"
+                        android:focusable="true">
+
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@drawable/ic_qr_code"
+                            app:tint="#1565C0"/>
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="Quét QR\nbệnh nhân"
                             android:textColor="#1565C0"
                             android:textSize="11sp"
                             android:gravity="center"
@@ -208,6 +238,7 @@
                     </LinearLayout>
 
                 </LinearLayout>
+
 
                 <!-- Stats row -->
                 <LinearLayout
@@ -461,6 +492,35 @@
                     </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <!-- Đang chờ phòng khác section                            -->
+            <!-- ═══════════════════════════════════════════════════════ -->
+            <LinearLayout
+                android:id="@+id/layout_transferred"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingHorizontal="12dp"
+                android:paddingTop="16dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Đang thực hiện dịch vụ phòng khác"
+                    android:textColor="#E65100"
+                    android:textSize="14sp"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="8dp"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rv_transferred"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"/>
 
             </LinearLayout>
 

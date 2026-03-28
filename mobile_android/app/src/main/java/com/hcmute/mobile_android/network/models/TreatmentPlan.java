@@ -75,7 +75,7 @@ public class TreatmentPlan {
         private String description;
         private Integer stepOrder;
         private String status; // PENDING, IN_PROGRESS, COMPLETED, CANCELLED
-        private Integer toothNumber;
+        private String toothNumber;
         private Double estimatedPrice;
         private Double actualPrice;
         private String doctorConclusion;
@@ -84,6 +84,14 @@ public class TreatmentPlan {
         private String roomName;
         private String uiTemplateType;
         private boolean editable;
+        private List<ImageItem> images;
+
+        public static class ImageItem {
+            private Long id;
+            private String imageUrl;
+            public String getImageUrl() { return imageUrl; }
+            public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+        }
 
         // Constructors
         public Step() {}
@@ -110,8 +118,11 @@ public class TreatmentPlan {
         public String getStatus() { return status; }
         public void setStatus(String status) { this.status = status; }
 
-        public Integer getToothNumber() { return toothNumber; }
-        public void setToothNumber(Integer toothNumber) { this.toothNumber = toothNumber; }
+        public String getToothNumber() { return toothNumber; }
+        public void setToothNumber(String toothNumber) { this.toothNumber = toothNumber; }
+
+        public List<ImageItem> getImages() { return images; }
+        public void setImages(List<ImageItem> images) { this.images = images; }
 
         public Double getEstimatedPrice() { return estimatedPrice; }
         public void setEstimatedPrice(Double estimatedPrice) { this.estimatedPrice = estimatedPrice; }
@@ -136,11 +147,11 @@ public class TreatmentPlan {
 
         // Helper methods
         public boolean isCompleted() {
-            return "COMPLETED".equals(status);
+            return "COMPLETED".equalsIgnoreCase(status);
         }
 
         public boolean isInProgress() {
-            return "IN_PROGRESS".equals(status);
+            return "IN_PROGRESS".equalsIgnoreCase(status);
         }
 
         public boolean isPending() {

@@ -30,7 +30,45 @@ public class DoctorController {
     private final PatientRepository patientRepository;
     private final AppointmentRepository appointmentRepository;
     private final CheckInQueueRepository checkInQueueRepository;
+    private final com.hcmute.clinic.repository.DoctorRepository doctorRepository;
+    private final com.hcmute.clinic.repository.TreatmentPlanRepository treatmentPlanRepository;
+    private final com.hcmute.clinic.service.CheckInQueueService checkInQueueService;
     private final com.hcmute.clinic.security.JwtService jwtService;
+
+    @GetMapping("/me/queue")
+    public ResponseEntity<?> getMyQueue(org.springframework.security.core.Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        long doctorId = Long.parseLong(auth.getName());
+        com.hcmute.clinic.entity.Doctor doctor = doctorRepository.findById(doctorId).orElse(null);
+        if (doctor == null || doctor.getClinicRoom() == null) {
+            return ResponseEntity.ok(List.of()); // No room or doctor -> empty queue
+        }
+        return ResponseEntity.ok(checkInQueueService.getDoctorDashboardQueue(doctor.getClinicRoom().getId()));
+    }
+
+    @GetMapping("/me/appointments/upcoming")
+    public ResponseEntity<?> getMyAppointments(org.springframework.security.core.Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        long doctorId = Long.parseLong(auth.getName());
+        List<Appointment> list = appointmentRepository.findTodayByDoctorId(doctorId).stream()
+                .filter(a -> a.getStatus() == AppointmentStatus.SCHEDULED || a.getStatus() == AppointmentStatus.CONFIRMED || a.getStatus() == AppointmentStatus.IN_PROGRESS)
+                .collect(java.util.stream.Collectors.toList());
+                
+        List<Map<String, Object>> items = list.stream()
+                .map(a -> Map.<String, Object>of(
+                        "id", a.getId(),
+                        "datetime", a.getAppointmentDatetime() != null ? a.getAppointmentDatetime().toString() : "",
+                        "serviceName", a.getService() != null ? a.getService().getName() : "",
+                        "patientName", a.getPatient() != null ? (a.getPatient().getLastName() + " " + a.getPatient().getFirstName()).trim() : "",
+                        "status", a.getStatus() != null ? a.getStatus().name() : ""
+                ))
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(items);
+    }
 
     @GetMapping("/patient")
     public ResponseEntity<?> getPatientByQr(@RequestParam String qr) {
@@ -122,16 +160,37 @@ public class DoctorController {
             }
         }
 
-        return ResponseEntity.ok(Map.of(
-                "id", p.getId(),
-                "firstName", p.getFirstName() != null ? p.getFirstName() : "",
-                "lastName", p.getLastName() != null ? p.getLastName() : "",
-                "email", p.getEmail() != null ? p.getEmail() : "",
-                "phone", p.getPhone() != null ? p.getPhone() : "",
-                "bookedService", serviceName,
-                "appointmentStatus", status,
-                "queueId", queueId != null ? queueId : -1,
-                "appointmentId", finalAppointmentId != null ? finalAppointmentId : -1
-        ));
+        // FIX 1: Tìm TreatmentPlan liên kết với appointment
+        Long treatmentPlanId = null;
+        String treatmentPlanStatus = "NONE";
+        boolean hasTreatmentPlan = false;
+        
+        if (finalAppointmentId != null) {
+            Optional<com.hcmute.clinic.entity.TreatmentPlan> planOpt = treatmentPlanRepository
+                .findFirstByAppointmentIdOrderByCreatedAtDesc(finalAppointmentId);
+            
+            if (planOpt.isPresent()) {
+                com.hcmute.clinic.entity.TreatmentPlan plan = planOpt.get();
+                treatmentPlanId = plan.getId();
+                treatmentPlanStatus = plan.getStatus().name();
+                hasTreatmentPlan = true;
+            }
+        }
+
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("id", p.getId());
+        response.put("firstName", p.getFirstName() != null ? p.getFirstName() : "");
+        response.put("lastName", p.getLastName() != null ? p.getLastName() : "");
+        response.put("email", p.getEmail() != null ? p.getEmail() : "");
+        response.put("phone", p.getPhone() != null ? p.getPhone() : "");
+        response.put("bookedService", serviceName);
+        response.put("appointmentStatus", status);
+        response.put("queueId", queueId != null ? queueId : -1);
+        response.put("appointmentId", finalAppointmentId != null ? finalAppointmentId : -1);
+        response.put("treatmentPlanId", treatmentPlanId != null ? treatmentPlanId : -1);
+        response.put("hasTreatmentPlan", hasTreatmentPlan);
+        response.put("treatmentPlanStatus", treatmentPlanStatus);
+        
+        return ResponseEntity.ok(response);
     }
 }

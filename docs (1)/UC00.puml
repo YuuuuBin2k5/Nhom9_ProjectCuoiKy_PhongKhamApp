@@ -1,0 +1,63 @@
+@startuml UC00
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Bệnh nhân" as P
+actor "Bác sĩ" as D
+actor "Quản trị viên" as A
+
+rectangle "Hệ thống Quản lý Phòng khám Nha khoa" {
+    
+    package "Quản lý Định danh & Cá nhân" {
+        usecase "Đăng ký tài khoản" as UC02
+        usecase "Đăng nhập" as UC01
+        usecase "Quản lý thông tin cá nhân" as UC11
+    }
+
+    package "Dịch vụ Bệnh nhân" {
+        usecase "Tra cứu danh mục & Dịch vụ" as UC16
+        usecase "Đặt lịch khám" as UC12
+        usecase "Xác nhận hiện diện (QR/Mã tiếp)" as UC13
+        usecase "Theo dõi lộ trình điều trị" as UC14
+        usecase "Tra cứu hồ sơ & Đơn thuốc" as UC17
+        usecase "Thanh toán & Đánh giá" as UC15
+    }
+
+    package "Nghiệp vụ Bác sĩ" {
+        usecase "Quản lý hàng đợi" as UC18
+        usecase "Khai thác bệnh án (Quét mã QR)" as UC19
+        usecase "Lập phác đồ điều trị" as UC20
+        usecase "Ghi nhận kết quả & Chẩn đoán" as UC21
+    }
+
+    package "Quản trị Hệ thống" {
+        usecase "Quản lý tài khoản Bác sĩ" as UC03_04
+        usecase "Quản lý danh mục Dịch vụ" as UC05_06_07
+        usecase "Giám sát vận hành & Trạng thái phòng" as UC08_09
+        usecase "Thống kê báo cáo (Doanh thu)" as UC10
+    }
+}
+
+P --> UC01
+P --> UC02
+P --> UC11
+P --> UC16
+P --> UC12
+P --> UC13
+P --> UC14
+P --> UC17
+P --> UC15
+
+D --> UC01
+D --> UC18
+D --> UC19
+D --> UC20
+D --> UC21
+
+A --> UC01
+A --> UC03_04
+A --> UC05_06_07
+A --> UC08_09
+A --> UC10
+
+@enduml

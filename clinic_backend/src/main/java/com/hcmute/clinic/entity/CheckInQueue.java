@@ -26,6 +26,9 @@ public class CheckInQueue {
     @JoinColumn(name = "clinic_room_id", nullable = false)
     private ClinicRoom clinicRoom;
 
+    @Column(name = "original_room_id")
+    private Long originalRoomId;
+
     @OneToOne
     @JoinColumn(name = "treatment_plan_step_id")
     private TreatmentPlanStep treatmentPlanStep;

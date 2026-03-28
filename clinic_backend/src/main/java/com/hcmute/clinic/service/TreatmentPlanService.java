@@ -14,6 +14,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -28,15 +29,52 @@ public class TreatmentPlanService {
     private final ClinicRoomRepository clinicRoomRepository;
     private final NotificationRepository notificationRepository;
     private final FcmService fcmService;
+    private final com.hcmute.clinic.repository.AppointmentRepository appointmentRepository;
 
     public List<TreatmentPlanTemplate> listActiveTemplates() {
         return templateRepository.findByActiveTrueOrderByNameAsc();
     }
 
+    /**
+     * FIX 5: Tạo TreatmentPlan từ Appointment
+     * Đây là method mới để tạo plan đúng cách từ appointment
+     */
+    @Transactional
+    public TreatmentPlan createFromAppointment(Long appointmentId, Long templateId) {
+        Appointment appointment = appointmentRepository.findById(appointmentId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy lịch hẹn"));
+        
+        // Kiểm tra xem đã có plan chưa
+        Optional<TreatmentPlan> existingPlan = planRepository
+                .findFirstByAppointmentIdOrderByCreatedAtDesc(appointmentId);
+        if (existingPlan.isPresent() && existingPlan.get().getStatus() != TreatmentPlanStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                "Lịch hẹn này đã có phác đồ điều trị đang hoạt động");
+        }
+        
+        // Tạo hoặc lấy MedicalRecord
+        MedicalRecord medicalRecord = medicalRecordRepository.findByAppointmentId(appointmentId)
+                .orElseGet(() -> {
+                    MedicalRecord newRecord = MedicalRecord.builder()
+                            .appointment(appointment)
+                            .patient(appointment.getPatient())
+                            .doctor(appointment.getDoctor())
+                            .createdAt(java.time.LocalDateTime.now())
+                            .build();
+                    return medicalRecordRepository.save(newRecord);
+                });
+        
+        // Tạo TreatmentPlan
+        return createFromTemplate(templateId, appointment.getPatient().getId(), medicalRecord.getId());
+    }
+
     @Transactional
     public TreatmentPlan createFromTemplate(Long templateId, Long patientId, Long medicalRecordId) {
-        TreatmentPlanTemplate template = templateRepository.findByIdWithSteps(templateId)
+        TreatmentPlanTemplate template = null;
+        if (templateId != null) {
+            template = templateRepository.findByIdWithSteps(templateId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mẫu không tồn tại"));
+        }
         Patient patient = patientRepository.findById(patientId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bệnh nhân không tồn tại"));
 
@@ -45,10 +83,17 @@ public class TreatmentPlanService {
             medicalRecord = medicalRecordRepository.findById(medicalRecordId).orElse(null);
         }
 
+        // FIX 2: Tìm appointment để link
+        Appointment appointment = null;
+        if (medicalRecord != null && medicalRecord.getAppointment() != null) {
+            appointment = medicalRecord.getAppointment();
+        }
+
         TreatmentPlan plan = TreatmentPlan.builder()
                 .patient(patient)
                 .medicalRecord(medicalRecord)
-                .templateId(template.getId())
+                .appointment(appointment)
+                .templateId(template != null ? template.getId() : null)
                 .status(TreatmentPlanStatus.IN_PROGRESS)
                 .isDraft(true)
                 .build();
@@ -57,7 +102,8 @@ public class TreatmentPlanService {
             plan.setSteps(new ArrayList<>());
         }
 
-        List<TreatmentPlanTemplateStep> templateSteps = template.getSteps();
+        if (template != null) {
+            List<TreatmentPlanTemplateStep> templateSteps = template.getSteps();
         if (templateSteps != null && !templateSteps.isEmpty()) {
             List<TreatmentPlanTemplateStep> sorted = new ArrayList<>(templateSteps);
             sorted.sort(Comparator.comparingInt(TreatmentPlanTemplateStep::getSequenceOrder));
@@ -74,6 +120,7 @@ public class TreatmentPlanService {
             }
             planRepository.save(plan);
         }
+        }
         Notification notif = Notification.builder()
                 .patient(patient)
                 .title("Phác đồ điều trị mới")
@@ -88,6 +135,10 @@ public class TreatmentPlanService {
     public TreatmentPlan updateSteps(Long planId, UpdatePlanStepsRequest request) {
         TreatmentPlan plan = planRepository.findById(planId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phác đồ không tồn tại"));
+
+        if (plan.getStatus() == TreatmentPlanStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Hồ sơ đã hoàn tất và bị khóa, không thể chỉnh sửa");
+        }
 
         if (request == null || request.getSteps() == null) {
             return plan;
@@ -124,7 +175,24 @@ public class TreatmentPlanService {
                             }
                         });
             } else {
-                // Create new
+                // Create new - BUT FIRST: check if a PENDING step for this service/tooth already exists
+                // to avoid duplicates from rapid sync calls
+                TreatmentPlanStep existingPending = existingSteps.stream()
+                        .filter(s -> s.getId() != null 
+                                && s.getStatus() == StepStatus.PENDING 
+                                && s.getService().getId().equals(item.getServiceId())
+                                && ((s.getToothNumber() == null && item.getToothNumber() == null) || 
+                                    (s.getToothNumber() != null && s.getToothNumber().equals(item.getToothNumber()))))
+                        .findFirst()
+                        .orElse(null);
+                
+                if (existingPending != null) {
+                    existingPending.setSequenceOrder(seq);
+                    existingPending.setDoctorConclusion(item.getDoctorConclusion());
+                    continue;
+                }
+
+                // Actually create new
                 com.hcmute.clinic.entity.Service svc = serviceRepository.findById(item.getServiceId() != null ? item.getServiceId() : 0L)
                         .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dịch vụ không tồn tại: " + item.getServiceId()));
                 ClinicRoom room = null;
@@ -160,6 +228,11 @@ public class TreatmentPlanService {
     public void updateStepStatus(Long stepId, String status) {
         TreatmentPlanStep step = stepRepository.findById(stepId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bước điều trị không tồn tại"));
+        
+        if (step.getPlan() != null && step.getPlan().getStatus() == TreatmentPlanStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Hồ sơ đã hoàn tất và bị khóa");
+        }
+
         try {
             step.setStatus(StepStatus.valueOf(status.toUpperCase()));
             stepRepository.save(step);
@@ -171,6 +244,11 @@ public class TreatmentPlanService {
     public void startStep(Long stepId) {
         TreatmentPlanStep step = stepRepository.findById(stepId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bước điều trị không tồn tại"));
+        
+        if (step.getPlan() != null && step.getPlan().getStatus() == TreatmentPlanStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Hồ sơ đã hoàn tất và bị khóa");
+        }
+
         if (step.getStatus() == StepStatus.PENDING) {
             step.setStatus(StepStatus.IN_PROGRESS);
             stepRepository.save(step);
@@ -182,6 +260,11 @@ public class TreatmentPlanService {
     @Transactional
     public void activatePlan(Long planId) {
         TreatmentPlan plan = getById(planId);
+        
+        if (plan.getStatus() == TreatmentPlanStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Hồ sơ đã hoàn tất và bị khóa");
+        }
+
         if (!plan.isDraft()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phác đồ đã được kích hoạt");
         }
@@ -205,15 +288,27 @@ public class TreatmentPlanService {
         }
     }
 
+    /**
+     * FIX 4: Method đã được đơn giản hóa - Xóa logic tự động sinh bước
+     * Hoàn thành bước điều trị hiện tại và chuyển sang bước tiếp theo
+     */
     @Transactional
-    public String completeStepAndAdvance(Long stepId, String doctorConclusion, Long doctorRoomId, com.hcmute.clinic.repository.CheckInQueueRepository queueRepo, com.hcmute.clinic.service.QueueEventService queueEventService, com.hcmute.clinic.repository.NotificationRepository notifRepo) {
+    public String completeStepAndAdvance(Long stepId, String doctorConclusion, List<String> imageUrls, Long doctorRoomId, 
+                                         com.hcmute.clinic.repository.CheckInQueueRepository queueRepo, 
+                                         com.hcmute.clinic.service.QueueEventService queueEventService, 
+                                         com.hcmute.clinic.repository.NotificationRepository notifRepo) {
         TreatmentPlanStep currentStep = stepRepository.findById(stepId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bước không tồn tại"));
 
-        if (doctorRoomId != null) {
-            Long stepRoomId = currentStep.getClinicRoom() != null ? currentStep.getClinicRoom().getId() : null;
-            if (!doctorRoomId.equals(stepRoomId)) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Bạn không có quyền cập nhật bước điều trị này");
+        if (currentStep.getPlan() != null && currentStep.getPlan().getStatus() == TreatmentPlanStatus.COMPLETED) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Hồ sơ đã hoàn tất và bị khóa");
+        }
+
+        // Kiểm tra quyền: Bác sĩ phải ở đúng phòng
+        if (doctorRoomId != null && currentStep.getClinicRoom() != null) {
+            if (!doctorRoomId.equals(currentStep.getClinicRoom().getId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                    "Bạn không có quyền hoàn thành bước này. Bước này thuộc về phòng khác.");
             }
         }
 
@@ -221,28 +316,40 @@ public class TreatmentPlanService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bước này đã hoàn thành");
         }
 
+        // Hoàn thành bước hiện tại
         currentStep.setStatus(StepStatus.COMPLETED);
+        currentStep.setCompletedAt(java.time.LocalDateTime.now());
         if (doctorConclusion != null) {
             currentStep.setDoctorConclusion(doctorConclusion);
         }
+        
+        // Lưu ảnh
+        if (imageUrls != null && !imageUrls.isEmpty()) {
+            if (currentStep.getImages() == null) currentStep.setImages(new ArrayList<>());
+            for (String url : imageUrls) {
+                StepImage img = StepImage.builder()
+                        .step(currentStep)
+                        .imageUrl(url)
+                        .build();
+                currentStep.getImages().add(img);
+            }
+        }
+        
         stepRepository.save(currentStep);
 
         TreatmentPlan plan = currentStep.getPlan();
         
-        // Find next step
+        // Tìm bước tiếp theo (chỉ PENDING, không IN_PROGRESS)
         TreatmentPlanStep nextStep = plan.getSteps().stream()
-                .filter(s -> s.getStatus() == StepStatus.PENDING || s.getStatus() == StepStatus.IN_PROGRESS)
-                .min((a, b) -> Integer.compare(
-                        a.getSequenceOrder() != null ? a.getSequenceOrder() : 0,
-                        b.getSequenceOrder() != null ? b.getSequenceOrder() : 0))
+                .filter(s -> s.getStatus() == StepStatus.PENDING)
+                .min(Comparator.comparingInt(s -> s.getSequenceOrder() != null ? s.getSequenceOrder() : 0))
                 .orElse(null);
 
         if (nextStep == null) {
-            // All steps completed
-            plan.setStatus(com.hcmute.clinic.enums.TreatmentPlanStatus.COMPLETED);
+            // Hoàn tất toàn bộ phác đồ - KHÔNG TỰ ĐỘNG SINH BƯỚC
+            plan.setStatus(TreatmentPlanStatus.COMPLETED);
             planRepository.save(plan);
 
-            // Notify patient
             com.hcmute.clinic.entity.Notification notif = com.hcmute.clinic.entity.Notification.builder()
                     .patient(plan.getPatient())
                     .title("Phác đồ hoàn tất")
@@ -253,42 +360,41 @@ public class TreatmentPlanService {
             if (plan.getPatient().getFcmToken() != null && !plan.getPatient().getFcmToken().isBlank()) {
                 fcmService.sendNotification(plan.getPatient().getFcmToken(), notif.getTitle(), notif.getMessage());
             }
-            return null; // No next room
+            return null; // Không còn bước nào
         }
 
-        // Activate next step
+        // Kích hoạt bước tiếp theo
         nextStep.setStatus(StepStatus.IN_PROGRESS);
         stepRepository.save(nextStep);
 
-        // Handle room transfer if the next step has a specific room
+        // Chuyển phòng nếu bước tiếp theo thuộc phòng khác
         ClinicRoom nextRoom = nextStep.getClinicRoom();
         if (nextRoom != null) {
-            Long currentRoomId = currentStep.getClinicRoom() != null ? currentStep.getClinicRoom().getId() : null;
-            
-            // Tìm queue hiện tại của bệnh nhân
-            // Assuming we only have one active appointment/queue per patient per day
+            // Lấy hàng đợi hiện tại của bệnh nhân
             java.util.List<com.hcmute.clinic.entity.CheckInQueue> queues = queueRepo.findTodayForPatient(
                 plan.getPatient().getId(), 
                 java.time.LocalDate.now().atStartOfDay(), 
                 java.time.LocalDate.now().plusDays(1).atStartOfDay()
             );
-
-            // Tìm queue đang IN_PROGRESS hoặc WAITING
             com.hcmute.clinic.entity.CheckInQueue activeQueue = queues.stream()
-                .filter(q -> q.getStatus() == com.hcmute.clinic.enums.QueueStatus.IN_PROGRESS || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.WAITING)
+                .filter(q -> q.getStatus() == com.hcmute.clinic.enums.QueueStatus.IN_PROGRESS 
+                          || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.WAITING)
                 .findFirst()
                 .orElse(null);
-
+            
             if (activeQueue != null && !nextRoom.getId().equals(activeQueue.getClinicRoom().getId())) {
                 Long oldRoomId = activeQueue.getClinicRoom().getId();
                 
-                // Cập nhật queue sang phòng mới
+                // Lưu originalRoomId nếu chưa có
+                if (activeQueue.getOriginalRoomId() == null) {
+                    activeQueue.setOriginalRoomId(oldRoomId);
+                }
+                
                 activeQueue.setClinicRoom(nextRoom);
                 activeQueue.setStatus(com.hcmute.clinic.enums.QueueStatus.WAITING);
-                activeQueue.setPriorityLevel(activeQueue.getPriorityLevel() + 5); // Ưu tiên nhẹ vì đang điều trị dở dang
+                activeQueue.setPriorityLevel(activeQueue.getPriorityLevel() + 5); 
                 queueRepo.save(activeQueue);
 
-                // Gửi thông báo
                 com.hcmute.clinic.entity.Notification notif = com.hcmute.clinic.entity.Notification.builder()
                         .patient(plan.getPatient())
                         .title("Chuyển phòng khám")
@@ -301,13 +407,10 @@ public class TreatmentPlanService {
                     fcmService.sendNotification(plan.getPatient().getFcmToken(), notif.getTitle(), notif.getMessage());
                 }
 
-                // Broadcast update for both rooms (old room loses, new room gains)
                 try {
                     queueEventService.broadcastQueueUpdated(oldRoomId);
                     queueEventService.broadcastQueueUpdated(nextRoom.getId());
-                } catch (Exception e) {
-                    // ignore
-                }
+                } catch (Exception e) {}
 
                 return nextRoom.getName();
             }

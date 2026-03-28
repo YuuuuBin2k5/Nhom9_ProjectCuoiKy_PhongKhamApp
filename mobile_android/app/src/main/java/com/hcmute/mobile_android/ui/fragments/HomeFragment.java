@@ -49,12 +49,15 @@ public class HomeFragment extends Fragment {
     private TextView tvStatAppointments;
     private TextView tvStatPlans;
     private RecyclerView rvQueue;
+    private RecyclerView rvTransferred;
+    private View layoutTransferred;
     private RecyclerView rvUpcoming;
     private TextView tvQueueEmpty;
     private TextView tvUpcomingEmpty;
 
     // Adapters
     private HomeQueueAdapter queueAdapter;
+    private HomeQueueAdapter transferredAdapter;
     private HomeAppointmentAdapter appointmentAdapter;
 
     @Override
@@ -82,17 +85,24 @@ public class HomeFragment extends Fragment {
         tvStatAppointments = view.findViewById(R.id.tv_stat_appointments);
         tvStatPlans = view.findViewById(R.id.tv_stat_plans);
         rvQueue = view.findViewById(R.id.rv_queue);
+        rvTransferred = view.findViewById(R.id.rv_transferred);
+        layoutTransferred = view.findViewById(R.id.layout_transferred);
         rvUpcoming = view.findViewById(R.id.rv_upcoming);
         tvQueueEmpty = view.findViewById(R.id.tv_queue_empty);
         tvUpcomingEmpty = view.findViewById(R.id.tv_upcoming_empty);
 
         // Setup RecyclerViews
         queueAdapter = new HomeQueueAdapter();
+        transferredAdapter = new HomeQueueAdapter();
         appointmentAdapter = new HomeAppointmentAdapter();
 
         rvQueue.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvQueue.setAdapter(queueAdapter);
         rvQueue.setNestedScrollingEnabled(false);
+
+        rvTransferred.setLayoutManager(new LinearLayoutManager(requireContext()));
+        rvTransferred.setAdapter(transferredAdapter);
+        rvTransferred.setNestedScrollingEnabled(false);
 
         rvUpcoming.setLayoutManager(new LinearLayoutManager(requireContext()));
         rvUpcoming.setAdapter(appointmentAdapter);
@@ -112,6 +122,12 @@ public class HomeFragment extends Fragment {
         // Wire up quick action buttons
         view.findViewById(R.id.btn_new_record).setOnClickListener(v -> {
             startActivity(new Intent(requireContext(), DoctorWorkflowActivity.class));
+        });
+        view.findViewById(R.id.btn_scan_qr).setOnClickListener(v -> {
+            // Launch QR scanner, passing flag to open camera immediately
+            Intent intent = new Intent(requireContext(), DoctorWorkflowActivity.class);
+            intent.putExtra("OPEN_SCANNER", true);
+            startActivity(intent);
         });
         view.findViewById(R.id.btn_tooth_chart).setOnClickListener(v -> {
             Toast.makeText(requireContext(), "Sơ đồ răng nhanh - Đang phát triển", Toast.LENGTH_SHORT).show();
@@ -171,31 +187,46 @@ public class HomeFragment extends Fragment {
     }
 
     private void loadQueue(ApiService api) {
-        api.getQueueByRoom(1L).enqueue(new Callback<List<QueueItem>>() {
+        api.getDoctorQueue().enqueue(new Callback<com.hcmute.mobile_android.network.models.DoctorQueueResponse>() {
             @Override
-            public void onResponse(Call<List<QueueItem>> call, Response<List<QueueItem>> response) {
+            public void onResponse(Call<com.hcmute.mobile_android.network.models.DoctorQueueResponse> call, Response<com.hcmute.mobile_android.network.models.DoctorQueueResponse> response) {
                 if (!isAdded()) return;
                 if (response.isSuccessful() && response.body() != null) {
-                    List<QueueItem> items = response.body();
-                    // Filter out COMPLETED
+                    com.hcmute.mobile_android.network.models.DoctorQueueResponse data = response.body();
+                    
+                    // Parse Queued Patients
                     List<QueueItem> active = new ArrayList<>();
-                    for (QueueItem q : items) {
-                        if (!"COMPLETED".equals(q.getStatus()) && !"SKIPPED".equals(q.getStatus())) {
-                            active.add(q);
+                    if (data.getQueuedPatients() != null) {
+                        for (QueueItem q : data.getQueuedPatients()) {
+                            if (!"COMPLETED".equals(q.getStatus()) && !"SKIPPED".equals(q.getStatus())) {
+                                active.add(q);
+                            }
                         }
                     }
                     updateQueueUI(active);
-                    // Update "Hôm nay" stat
-                    tvStatToday.setText("Hôm nay: " + items.size() + " BN");
+                    tvStatToday.setText("Hôm nay: " + (data.getQueuedPatients() != null ? data.getQueuedPatients().size() : 0) + " BN");
+                    
+                    // Parse Transferred Patients
+                    List<QueueItem> transferred = new ArrayList<>();
+                    if (data.getTransferredPatients() != null) {
+                        for (QueueItem q : data.getTransferredPatients()) {
+                            if (!"COMPLETED".equals(q.getStatus()) && !"SKIPPED".equals(q.getStatus())) {
+                                transferred.add(q);
+                            }
+                        }
+                    }
+                    updateTransferredUI(transferred);
                 } else {
                     updateQueueUI(new ArrayList<>());
+                    updateTransferredUI(new ArrayList<>());
                 }
             }
 
             @Override
-            public void onFailure(Call<List<QueueItem>> call, Throwable t) {
+            public void onFailure(Call<com.hcmute.mobile_android.network.models.DoctorQueueResponse> call, Throwable t) {
                 if (!isAdded()) return;
                 updateQueueUI(new ArrayList<>());
+                updateTransferredUI(new ArrayList<>());
             }
         });
     }
@@ -211,8 +242,17 @@ public class HomeFragment extends Fragment {
         }
     }
 
+    private void updateTransferredUI(List<QueueItem> items) {
+        if (items.isEmpty()) {
+            layoutTransferred.setVisibility(View.GONE);
+        } else {
+            layoutTransferred.setVisibility(View.VISIBLE);
+            transferredAdapter.updateItems(items);
+        }
+    }
+
     private void loadUpcoming(ApiService api) {
-        api.getUpcomingAppointments().enqueue(new Callback<List<UpcomingAppointment>>() {
+        api.getDoctorUpcomingAppointments().enqueue(new Callback<List<UpcomingAppointment>>() {
             @Override
             public void onResponse(Call<List<UpcomingAppointment>> call,
                                    Response<List<UpcomingAppointment>> response) {
@@ -287,14 +327,32 @@ public class HomeFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull Holder holder, int position) {
             QueueItem q = items.get(position);
-            ApiService api = RetrofitClient.getApiService(requireContext());
+
+            // --- Visual: IN_PROGRESS = bright, WAITING = slightly dim ---
+            String status = q.getStatus() != null ? q.getStatus() : "";
+            boolean isActive = "IN_PROGRESS".equals(status);
+            holder.itemView.setAlpha(isActive ? 1.0f : 0.72f);
+            holder.itemView.setClickable(true);
+
+            // --- Open patient profile on card click ---
+            holder.itemView.setOnClickListener(v -> {
+                if (q.getPatientId() != null) {
+                    android.content.Intent intent = new android.content.Intent(
+                            requireContext(), DoctorWorkflowActivity.class);
+                    intent.putExtra(DoctorWorkflowActivity.EXTRA_INITIAL_QR,
+                            "patient:" + q.getPatientId());
+                    startActivity(intent);
+                } else {
+                    Toast.makeText(requireContext(),
+                            "Không tìm thấy thông tin bệnh nhân", Toast.LENGTH_SHORT).show();
+                }
+            });
 
             // Avatar: first letter of patient name
             String name = q.getPatientName() != null ? q.getPatientName() : "?";
             holder.tvAvatar.setText(name.length() > 0
                     ? String.valueOf(name.charAt(0)).toUpperCase() : "?");
 
-            // Choose avatar color based on position
             int[] colors = {
                     Color.parseColor("#1565C0"), Color.parseColor("#00695C"),
                     Color.parseColor("#6A1B9A"), Color.parseColor("#BF360C"),
@@ -302,17 +360,52 @@ public class HomeFragment extends Fragment {
             };
             holder.tvAvatar.getBackground().setTint(colors[position % colors.length]);
 
-            // Name
             holder.tvPatientName.setText(name);
 
-            // STT + reason
             String stt = q.getQueueNumber() != null
                     ? String.format("STT: %02d", q.getQueueNumber()) : "STT: --";
             String reason = q.getServiceName() != null ? q.getServiceName() : "Khám bệnh";
-            holder.tvSttReason.setText(stt + " • Lý do: " + reason);
+            holder.tvSttReason.setText(stt + " • " + reason);
+
+            // Action buttons: only for first patient in WAITING/RETURNED_PRIORITY
+            boolean isFirstWaiting = position == 0 &&
+                    ("WAITING".equals(status) || "RETURNED_PRIORITY".equals(status));
+            holder.llActionButtons.setVisibility(isFirstWaiting ? View.VISIBLE : View.GONE);
+
+            if (isFirstWaiting) {
+                holder.btnCall.setOnClickListener(v -> {
+                    ApiService api = RetrofitClient.getApiService(holder.itemView.getContext());
+                    api.callPatientToRoom(q.getId()).enqueue(new Callback<Void>() {
+                        @Override
+                        public void onResponse(Call<Void> call, Response<Void> res) {
+                            Toast.makeText(holder.itemView.getContext(),
+                                    res.isSuccessful() ? "Đã gọi: " + name : "Lỗi khi gọi", Toast.LENGTH_SHORT).show();
+                            if (res.isSuccessful() && isAdded()) loadData();
+                        }
+                        @Override
+                        public void onFailure(Call<Void> call, Throwable t) {
+                            Toast.makeText(holder.itemView.getContext(), "Lỗi mạng", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+                holder.btnDelay.setOnClickListener(v -> {
+                    ApiService api = RetrofitClient.getApiService(holder.itemView.getContext());
+                    api.delayPatient(q.getId()).enqueue(new Callback<Void>() {
+                        @Override
+                        public void onResponse(Call<Void> call, Response<Void> res) {
+                            Toast.makeText(holder.itemView.getContext(),
+                                    res.isSuccessful() ? "Đã lùi lượt " + name : "Lỗi khi lùi", Toast.LENGTH_SHORT).show();
+                            if (res.isSuccessful() && isAdded()) loadData();
+                        }
+                        @Override
+                        public void onFailure(Call<Void> call, Throwable t) {
+                            Toast.makeText(holder.itemView.getContext(), "Lỗi mạng", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                });
+            }
 
             // Status badge
-            String status = q.getStatus() != null ? q.getStatus() : "";
             switch (status) {
                 case "IN_PROGRESS":
                     holder.tvStatusBadge.setText("Đang khám");
@@ -324,44 +417,16 @@ public class HomeFragment extends Fragment {
                     holder.tvStatusBadge.setTextColor(Color.parseColor("#E65100"));
                     holder.tvStatusBadge.setBackgroundResource(R.drawable.bg_status_waiting);
                     break;
-                default: // WAITING or others
+                case "RETURNED_PRIORITY":
+                    holder.tvStatusBadge.setText("Ưu tiên");
+                    holder.tvStatusBadge.setTextColor(Color.parseColor("#F57F17"));
+                    holder.tvStatusBadge.setBackgroundResource(R.drawable.bg_status_waiting);
+                    break;
+                default:
                     holder.tvStatusBadge.setText("Đang chờ");
                     holder.tvStatusBadge.setTextColor(Color.parseColor("#E65100"));
                     holder.tvStatusBadge.setBackgroundResource(R.drawable.bg_status_waiting);
                     break;
-            }
-
-            // "Khám ngay" button: show only for WAITING
-            if ("WAITING".equals(status)) {
-                holder.btnKhamNgay.setVisibility(View.VISIBLE);
-                holder.btnKhamNgay.setOnClickListener(v -> {
-                    holder.btnKhamNgay.setEnabled(false);
-                    api.callPatient(q.getId()).enqueue(new Callback<Void>() {
-                        @Override
-                        public void onResponse(Call<Void> call, Response<Void> response) {
-                            if (!isAdded()) return;
-                            if (response.isSuccessful()) {
-                                Toast.makeText(requireContext(),
-                                        "Đã gọi: " + name, Toast.LENGTH_SHORT).show();
-                                loadData();
-                            } else {
-                                holder.btnKhamNgay.setEnabled(true);
-                                Toast.makeText(requireContext(),
-                                        "Gọi thất bại", Toast.LENGTH_SHORT).show();
-                            }
-                        }
-
-                        @Override
-                        public void onFailure(Call<Void> call, Throwable t) {
-                            if (!isAdded()) return;
-                            holder.btnKhamNgay.setEnabled(true);
-                            Toast.makeText(requireContext(),
-                                    "Lỗi kết nối", Toast.LENGTH_SHORT).show();
-                        }
-                    });
-                });
-            } else {
-                holder.btnKhamNgay.setVisibility(View.GONE);
             }
         }
 
@@ -370,7 +435,8 @@ public class HomeFragment extends Fragment {
 
         class Holder extends RecyclerView.ViewHolder {
             TextView tvAvatar, tvPatientName, tvSttReason, tvStatusBadge;
-            com.google.android.material.button.MaterialButton btnKhamNgay;
+            View llActionButtons;
+            View btnCall, btnDelay;
 
             Holder(View v) {
                 super(v);
@@ -378,7 +444,9 @@ public class HomeFragment extends Fragment {
                 tvPatientName = v.findViewById(R.id.tv_patient_name);
                 tvSttReason = v.findViewById(R.id.tv_stt_reason);
                 tvStatusBadge = v.findViewById(R.id.tv_status_badge);
-                btnKhamNgay = v.findViewById(R.id.btn_kham_ngay);
+                llActionButtons = v.findViewById(R.id.ll_action_buttons);
+                btnCall = v.findViewById(R.id.btn_call);
+                btnDelay = v.findViewById(R.id.btn_delay);
             }
         }
     }
@@ -410,8 +478,8 @@ public class HomeFragment extends Fragment {
                     : (a.getDatetime() != null ? a.getDatetime() : "");
             holder.tvTime.setText(formatTime(dt));
             holder.tvService.setText(a.getServiceName() != null ? a.getServiceName() : "Khám");
-            String doctorName = a.getDoctorName() != null ? a.getDoctorName() : "";
-            holder.tvPatient.setText(doctorName.isEmpty() ? "" : "BS. " + doctorName);
+            String patientName = a.getPatientName() != null ? a.getPatientName() : "";
+            holder.tvPatient.setText(patientName.isEmpty() ? "" : patientName);
         }
 
         private String formatTime(String dt) {

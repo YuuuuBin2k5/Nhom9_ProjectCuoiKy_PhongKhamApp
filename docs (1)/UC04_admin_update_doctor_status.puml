@@ -1,0 +1,26 @@
+@startuml UC04
+title UC04: Quản trị viên cập nhật trạng thái Bác sĩ
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Quản trị viên (Admin)" as A
+
+rectangle "Quản lý Bác sĩ" {
+    usecase "Cập nhật trạng thái Bác sĩ" as UC04
+    usecase "Chọn Bác sĩ" as SelectDoctor
+    usecase "Thay đổi trạng thái (Kích hoạt/Khóa)" as ChangeStatus
+    usecase "Lưu thay đổi" as Save
+
+    UC04 ..> SelectDoctor : <<include>>
+    UC04 ..> ChangeStatus : <<include>>
+    UC04 ..> Save : <<include>>
+}
+
+A --> UC04
+
+note bottom of UC04
+  Yêu cầu quyền ADMIN
+end note
+
+@enduml

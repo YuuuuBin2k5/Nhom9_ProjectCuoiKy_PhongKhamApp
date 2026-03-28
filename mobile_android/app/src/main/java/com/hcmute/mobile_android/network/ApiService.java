@@ -123,13 +123,23 @@ public interface ApiService {
     Call<List<QueueItem>> getQueueByRoom(@Path("roomId") Long roomId);
 
     @POST("api/queue/{id}/call")
-    Call<Void> callPatient(@Path("id") Long queueId);
+    Call<Void> callPatientToRoom(@Path("id") Long queueId);
+
+    @POST("api/queue/{id}/delay")
+    Call<Void> delayPatient(@Path("id") Long queueId);
 
     @POST("api/queue/{id}/transfer-xray")
     Call<Void> transferToXRay(@Path("id") Long queueId, @Body java.util.Map<String, Long> body);
 
     @PUT("api/queue/{id}/status")
     Call<Void> completePatient(@Path("id") Long queueId);
+
+    // Doctor Dashboard APIs
+    @GET("api/doctor/me/queue")
+    Call<com.hcmute.mobile_android.network.models.DoctorQueueResponse> getDoctorQueue();
+
+    @GET("api/doctor/me/appointments/upcoming")
+    Call<List<com.hcmute.mobile_android.network.models.UpcomingAppointment>> getDoctorUpcomingAppointments();
 
     // Doctor Workflow APIs
     @GET("api/doctor/patient")
@@ -138,11 +148,17 @@ public interface ApiService {
     @GET("api/doctor/patients/{id}/medical-records")
     Call<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> getPatientMedicalRecords(@Path("id") Long patientId);
 
+    @GET("api/treatment-plans/patient/{patientId}")
+    Call<List<TreatmentPlan>> getTreatmentPlansByPatient(@Path("patientId") Long patientId);
+
     @GET("api/treatment-templates")
     Call<List<TreatmentTemplate>> getTreatmentTemplates();
 
     @POST("api/treatment-plans/from-template")
     Call<TreatmentPlan> createTreatmentPlanFromTemplate(@Body CreateTreatmentPlanRequest request);
+
+    @POST("api/treatment-plans/from-appointment")
+    Call<TreatmentPlan> createTreatmentPlanFromAppointment(@Body java.util.Map<String, Long> body);
 
     @GET("api/treatment-plans/{id}")
     Call<TreatmentPlan> getTreatmentPlan(@Path("id") Long planId);
@@ -160,7 +176,7 @@ public interface ApiService {
     Call<MessageResponse> startTreatmentStep(@Path("stepId") Long stepId);
 
     @PATCH("api/treatment-plans/steps/{stepId}/complete")
-    Call<MessageResponse> completeTreatmentStep(@Path("stepId") Long stepId, @Body java.util.Map<String, String> body);
+    Call<MessageResponse> completeTreatmentStep(@Path("stepId") Long stepId, @Body java.util.Map<String, Object> body);
 
     // Prescription APIs
     @POST("api/prescriptions")
@@ -185,4 +201,27 @@ public interface ApiService {
     @retrofit2.http.Multipart
     @POST("api/upload")
     Call<UploadResponse> uploadFile(@retrofit2.http.Part okhttp3.MultipartBody.Part file);
+
+    // Review APIs
+    @POST("api/reviews")
+    Call<com.hcmute.mobile_android.network.models.Review> createReview(@Body com.hcmute.mobile_android.network.models.ReviewRequest request);
+
+    @GET("api/reviews/my")
+    Call<List<com.hcmute.mobile_android.network.models.Review>> getMyReviews();
+
+    @GET("api/reviews/doctor/{doctorId}")
+    Call<List<com.hcmute.mobile_android.network.models.Review>> getDoctorReviews(@Path("doctorId") Long doctorId);
+
+    @GET("api/reviews/service/{serviceId}")
+    Call<List<com.hcmute.mobile_android.network.models.Review>> getServiceReviews(@Path("serviceId") Long serviceId);
+
+    // Invoice APIs
+    @GET("api/invoices/my")
+    Call<List<com.hcmute.mobile_android.network.models.Invoice>> getMyInvoices();
+
+    @GET("api/invoices/{id}")
+    Call<com.hcmute.mobile_android.network.models.Invoice> getInvoiceDetail(@Path("id") Long id);
+
+    @POST("api/invoices/{id}/pay")
+    Call<com.hcmute.mobile_android.network.models.PaymentResponse> processPayment(@Path("id") Long id, @Body com.hcmute.mobile_android.network.models.PaymentRequest request);
 }

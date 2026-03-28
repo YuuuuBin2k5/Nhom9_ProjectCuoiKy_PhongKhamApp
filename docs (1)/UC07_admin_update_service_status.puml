@@ -1,0 +1,24 @@
+@startuml UC07
+title UC07: Quản trị viên cập nhật trạng thái Dịch vụ
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Quản trị viên (Admin)" as A
+
+rectangle "Quản lý Dịch vụ" {
+    usecase "Quản lý trạng thái dịch vụ" as UC7
+    usecase "Chọn Danh mục (Category)" as UC_Cat
+    usecase "Xem danh sách Dịch vụ" as UC7_1
+    usecase "Thay đổi trạng thái (Active/Inactive)" as UC7_2
+    usecase "Cập nhật vào CSDL" as UC_S
+
+    UC7 ..> UC_Cat : <<include>>
+    UC7 ..> UC7_1 : <<include>>
+    UC7 ..> UC7_2 : <<include>>
+    UC7_2 ..> UC_S : <<include>>
+}
+
+A --> UC7
+
+@enduml

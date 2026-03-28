@@ -176,6 +176,9 @@
                     if (q.status === 'RETURNED_PRIORITY') cls += ' priority';
                     if (q.status === 'IN_PROGRESS') cls += ' in-progress';
                     const statusLabel = { WAITING: 'Chờ', IN_PROGRESS: 'Đang khám', PAUSED_FOR_TEST: 'Đi XQ', RETURNED_PRIORITY: 'Ưu tiên' }[q.status] || q.status;
+                    const patientLink = q.patientId
+                        ? `<a href="/doctor.html?patientId=${q.patientId}" style="font-weight:600;color:#0d9488;text-decoration:none;" title="Mở hồ sơ khám">${q.patientName || '—'}</a>`
+                        : `<span>${q.patientName || '—'}</span>`;
                     let actions = '';
                     if (q.status === 'WAITING' || q.status === 'RETURNED_PRIORITY') {
                         actions += `<button class="sm" onclick="callToRoom(${q.id})">Gọi vào</button>`;
@@ -186,7 +189,7 @@
                     }
                     return `<div class="${cls}">
                         <span class="num">#${q.queueNumber}</span>
-                        <span class="name">${q.patientName || '—'}</span>
+                        <span class="name">${patientLink}<br><small style="color:#94a3b8;">${q.serviceName || ''}</small></span>
                         <span class="status">${statusLabel}</span>
                         <span class="actions">${actions}</span>
                     </div>`;

@@ -1,0 +1,26 @@
+@startuml UC05
+title UC05: Quản trị viên tạo danh mục dịch vụ
+
+left to right direction
+skinparam packageStyle rectangle
+
+actor "Quản trị viên (Admin)" as A
+
+rectangle "Quản lý Danh mục (Category Management)" {
+    usecase "Quản lý danh mục" as UC5_1
+    usecase "Tạo danh mục mới" as UC5_2
+    usecase "Nhập thông tin (Tên, Mô tả)" as UC5_3
+    usecase "Lưu danh mục" as UC_S
+    
+    UC5_2 ..> UC5_1 : <<include>>
+    UC5_2 ..> UC5_3 : <<include>>
+    UC5_3 ..> UC_S : <<include>>
+}
+
+A --> UC5_2
+
+note bottom of A
+  Yêu cầu quyền ADMIN
+end note
+
+@enduml

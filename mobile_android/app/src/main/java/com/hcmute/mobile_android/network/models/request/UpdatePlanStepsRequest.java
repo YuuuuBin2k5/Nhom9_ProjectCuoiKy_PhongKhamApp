@@ -13,6 +13,7 @@ public class UpdatePlanStepsRequest {
     public void setSteps(List<StepItem> steps) { this.steps = steps; }
 
     public static class StepItem {
+        private Long id;
         private Long serviceId;
         private Long clinicRoomId;
         private Integer sequenceOrder;
@@ -21,6 +22,9 @@ public class UpdatePlanStepsRequest {
         private String status;
 
         public StepItem() {}
+
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
 
         public String getStatus() { return status; }
         public void setStatus(String status) { this.status = status; }

@@ -72,6 +72,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/checkin/qr-token").hasRole("PATIENT")
                 .requestMatchers("/api/checkin/self-scan").hasRole("PATIENT")
                 .requestMatchers("/api/patients/me/**").hasRole("PATIENT")
+                .requestMatchers("/api/reception/**").hasRole("RECEPTIONIST")
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/doctor/**").hasRole("DOCTOR")
                 .anyRequest().authenticated()
             )
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);

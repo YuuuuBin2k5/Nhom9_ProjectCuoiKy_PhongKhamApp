@@ -10,4 +10,5 @@ import java.util.List;
 @Repository
 public interface NotificationRepository extends JpaRepository<Notification, Long> {
     List<Notification> findByPatientIdOrderByCreatedAtDesc(Long patientId, Pageable pageable);
+    List<Notification> findByPatientIdAndIsReadOrderByCreatedAtDesc(Long patientId, boolean isRead);
 }

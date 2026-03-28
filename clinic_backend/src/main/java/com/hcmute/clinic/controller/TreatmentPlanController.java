@@ -25,6 +25,7 @@ public class TreatmentPlanController {
     private final com.hcmute.clinic.service.QueueEventService queueEventService;
     private final com.hcmute.clinic.repository.NotificationRepository notificationRepository;
     private final com.hcmute.clinic.repository.DoctorRepository doctorRepository;
+    private final com.hcmute.clinic.repository.StepImageRepository stepImageRepository;
 
     @PostMapping("/from-template")
     @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
@@ -35,11 +36,30 @@ public class TreatmentPlanController {
         Long templateId = body.get("templateId");
         Long patientId = body.get("patientId");
         Long medicalRecordId = body.get("medicalRecordId");
-        if (templateId == null || patientId == null) {
-            return ResponseEntity.badRequest().body(Map.of("message", "templateId and patientId are required"));
+        if (patientId == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "patientId is required"));
         }
         try {
             TreatmentPlan plan = treatmentPlanService.createFromTemplate(templateId, patientId, medicalRecordId);
+            return ResponseEntity.ok(toDTO(plan));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/from-appointment")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> createFromAppointment(@RequestBody Map<String, Long> body, Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        Long appointmentId = body.get("appointmentId");
+        Long templateId = body.get("templateId");
+        if (appointmentId == null || templateId == null) {
+            return ResponseEntity.badRequest().body(Map.of("message", "appointmentId and templateId are required"));
+        }
+        try {
+            TreatmentPlan plan = treatmentPlanService.createFromAppointment(appointmentId, templateId);
             return ResponseEntity.ok(toDTO(plan));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
@@ -122,6 +142,18 @@ public class TreatmentPlanController {
         return ResponseEntity.ok(summaries);
     }
 
+    @GetMapping("/patient/{patientId}")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> getByPatient(@PathVariable Long patientId) {
+        try {
+            List<TreatmentPlan> plans = treatmentPlanService.findByPatientId(patientId);
+            List<TreatmentPlanDTO> dtos = plans.stream().map(this::toDTO).collect(Collectors.toList());
+            return ResponseEntity.ok(dtos);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     @GetMapping("/{id}")
     @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<?> getById(@PathVariable Long id) {
@@ -137,6 +169,10 @@ public class TreatmentPlanController {
     @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<?> updateSteps(@PathVariable Long id, @RequestBody UpdatePlanStepsRequest request) {
         try {
+            TreatmentPlan plan = treatmentPlanService.getById(id);
+            if (plan.getStatus() == com.hcmute.clinic.enums.TreatmentPlanStatus.COMPLETED) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Hồ sơ đã hoàn tất và bị khóa, không thể cập nhật"));
+            }
             treatmentPlanService.updateSteps(id, request);
             return ResponseEntity.ok(Map.of("message", "Đã cập nhật phác đồ"));
         } catch (Exception e) {
@@ -149,25 +185,59 @@ public class TreatmentPlanController {
     public ResponseEntity<?> getByIdForRoom(@PathVariable Long id, Authentication auth) {
         try {
             TreatmentPlan plan = treatmentPlanService.getById(id);
-            String email = auth.getName();
-            
-            // Tìm phòng của bác sĩ
-            com.hcmute.clinic.entity.Doctor doc = doctorRepository.findByEmailIgnoreCase(email)
-                    .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin bác sĩ"));
+            String authName = auth.getName();
+            com.hcmute.clinic.entity.Doctor doc = null;
+            try {
+                Long docId = Long.parseLong(authName);
+                doc = doctorRepository.findById(docId).orElse(null);
+            } catch (Exception e) {}
+
+            if (doc == null) {
+                doc = doctorRepository.findByEmailIgnoreCase(authName)
+                        .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin bác sĩ"));
+            }
             Long docRoomId = doc.getClinicRoom() != null ? doc.getClinicRoom().getId() : null;
 
             TreatmentPlanDTO dto = toDTO(plan);
             
+            // Fetch original room to identify the main doctor
+            Long originalRoomId = null;
+            java.util.List<com.hcmute.clinic.entity.CheckInQueue> queues = checkInQueueRepository.findTodayForPatient(
+                plan.getPatient().getId(), 
+                java.time.LocalDate.now().atStartOfDay(), 
+                java.time.LocalDate.now().plusDays(1).atStartOfDay()
+            );
+            if (!queues.isEmpty()) {
+                originalRoomId = queues.get(0).getOriginalRoomId();
+                if (originalRoomId == null) originalRoomId = queues.get(0).getClinicRoom().getId();
+            }
+
             // Set editable flag per step
             if (dto.getSteps() != null) {
                 for (TreatmentPlanDTO.StepDTO s : dto.getSteps()) {
                     boolean isEditable = false;
-                    // Nếu bước PENDING hoặc IN_PROGRESS, VÀ bác sĩ đang ở cùng phòng với bước đó
-                    if (("PENDING".equals(s.getStatus()) || "IN_PROGRESS".equals(s.getStatus())) 
-                            && docRoomId != null 
-                            && plan.getSteps().stream().anyMatch(st -> st.getId().equals(s.getId()) && st.getClinicRoom() != null && st.getClinicRoom().getId().equals(docRoomId))) {
-                        isEditable = true;
+                    
+                    // Case 1: Doctor is the main doctor (original room) -> Can edit everything not completed
+                    if (docRoomId != null && docRoomId.equals(originalRoomId)) {
+                        if (!"COMPLETED".equals(s.getStatus()) && !"CANCELLED".equals(s.getStatus())) {
+                            isEditable = true;
+                        }
+                    } 
+                    // Case 2: Room doctor -> Can edit steps in their room
+                    else if (docRoomId != null) {
+                        Long stepRoomId = plan.getSteps().stream()
+                                .filter(st -> st.getId().equals(s.getId()))
+                                .findFirst()
+                                .map(st -> st.getClinicRoom() != null ? st.getClinicRoom().getId() : null)
+                                .orElse(null);
+                        
+                        if (docRoomId.equals(stepRoomId) || stepRoomId == null) {
+                            if (!"COMPLETED".equals(s.getStatus()) && !"CANCELLED".equals(s.getStatus())) {
+                                isEditable = true;
+                            }
+                        }
                     }
+                    
                     s.setEditable(isEditable);
                 }
             }
@@ -204,21 +274,31 @@ public class TreatmentPlanController {
 
     @PatchMapping("/steps/{stepId}/complete")
     @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
-    public ResponseEntity<?> completeStep(@PathVariable Long stepId, @RequestBody(required = false) Map<String, String> body, Authentication auth) {
+    public ResponseEntity<?> completeStep(@PathVariable Long stepId, @RequestBody(required = false) Map<String, Object> body, Authentication auth) {
         try {
             // Check cross-room permission
-            String email = auth.getName();
+            String authName = auth.getName();
             boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
             
             Long docRoomId = null;
             if (!isAdmin) {
-                com.hcmute.clinic.entity.Doctor doc = doctorRepository.findByEmailIgnoreCase(email)
-                        .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin bác sĩ"));
+                com.hcmute.clinic.entity.Doctor doc = null;
+                try {
+                    Long docId = Long.parseLong(authName);
+                    doc = doctorRepository.findById(docId).orElse(null);
+                } catch (Exception e) {}
+
+                if (doc == null) {
+                    doc = doctorRepository.findByEmailIgnoreCase(authName)
+                            .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin bác sĩ"));
+                }
                 docRoomId = doc.getClinicRoom() != null ? doc.getClinicRoom().getId() : null;
             }
             
-            String conclusion = body != null ? body.get("doctorConclusion") : null;
-            String nextRoom = treatmentPlanService.completeStepAndAdvance(stepId, conclusion, docRoomId, checkInQueueRepository, queueEventService, notificationRepository);
+            String conclusion = body != null ? (String) body.get("doctorConclusion") : null;
+            List<String> imageUrls = body != null ? (List<String>) body.get("imageUrls") : null;
+
+            String nextRoom = treatmentPlanService.completeStepAndAdvance(stepId, conclusion, imageUrls, docRoomId, checkInQueueRepository, queueEventService, notificationRepository);
             
             Map<String, Object> response = new java.util.HashMap<>();
             response.put("message", "Đã hoàn thành bước điều trị");
@@ -226,6 +306,24 @@ public class TreatmentPlanController {
                 response.put("nextRoomName", nextRoom);
             }
             return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+    
+    @GetMapping("/steps/{stepId}/images")
+    public ResponseEntity<?> getStepImages(@PathVariable Long stepId) {
+        try {
+            List<com.hcmute.clinic.entity.StepImage> images = stepImageRepository.findByStepIdOrderByCreatedAtDesc(stepId);
+            List<Map<String, Object>> result = images.stream()
+                .map(img -> Map.of(
+                    "id", (Object) img.getId(),
+                    "imageUrl", img.getImageUrl(),
+                    "description", img.getDescription() != null ? img.getDescription() : "",
+                    "createdAt", img.getCreatedAt().toString()
+                ))
+                .collect(Collectors.toList());
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }

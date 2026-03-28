@@ -1,0 +1,62 @@
+@startuml AC20
+title AC20: Lập phác đồ điều trị (Treatment Plan Creation)
+
+|Bác sĩ|
+start
+:Đã xác định bệnh nhân\n(qua UC19);
+:Truy cập tính năng **Lập phác đồ**;
+:Nhấn "Chọn mẫu phác đồ";
+
+|Hệ thống|
+:Gọi API GET /api/treatment-plan-templates;
+:Tải danh sách mẫu phác đồ;
+
+|Bác sĩ|
+:Xem danh sách mẫu;
+
+if (Chọn từ mẫu?) then (Có)
+  :Chọn mẫu phù hợp;
+  
+  |Hệ thống|
+  :Gọi API POST /api/treatment-plans/from-template;
+  :Gửi {templateId, patientId};
+  :Tạo TreatmentPlan (isDraft = true);
+  :Sao chép các bước từ template\nvào plan steps;
+  :Trả về TreatmentPlanDTO;
+  
+  |Bác sĩ|
+  :Hiển thị danh sách các bước\n(Service, Room, Status);
+else (Không - Tạo thủ công)
+  :Thêm từng bước điều trị\n(chọn dịch vụ, phòng, thứ tự);
+endif
+
+if (Cần tùy chỉnh?) then (Có)
+  |Bác sĩ|
+  :Chỉnh sửa bước\n(thay đổi thứ tự, thêm/xóa dịch vụ);
+  :Chỉ định răng cụ thể (toothNumber);
+  :Nhấn **Lưu phác đồ**;
+  
+  |Hệ thống|
+  :Gọi API PUT /api/treatment-plans/{id};
+  :Cập nhật danh sách steps;
+else (Không)
+endif
+
+|Bác sĩ|
+
+if (Kích hoạt ngay?) then (Có)
+  :Nhấn **Kích hoạt phác đồ**;
+  
+  |Hệ thống|
+  :Gọi API POST /api/treatment-plans/{id}/activate;
+  :Cập nhật status -> ACTIVE\n(isDraft = false);
+  :Bệnh nhân có thể theo dõi\ntrên ứng dụng (UC14);
+  
+  |Bác sĩ|
+  :Nhận xác nhận "Đã kích hoạt";
+else (Không - Lưu nháp)
+  :Phác đồ giữ trạng thái Draft;
+endif
+
+stop
+@enduml

@@ -18,6 +18,9 @@ public class UpcomingAppointment {
     @SerializedName("doctorName")
     private String doctorName;
 
+    @SerializedName("patientName")
+    private String patientName;
+
     @SerializedName("status")
     private String status;
 
@@ -26,5 +29,6 @@ public class UpcomingAppointment {
     public String getAppointmentTime() { return appointmentTime != null ? appointmentTime : datetime; }
     public String getServiceName() { return serviceName; }
     public String getDoctorName() { return doctorName; }
+    public String getPatientName() { return patientName; }
     public String getStatus() { return status; }
 }
