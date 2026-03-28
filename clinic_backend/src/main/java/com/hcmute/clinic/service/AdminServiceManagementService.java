@@ -73,4 +73,8 @@ public class AdminServiceManagementService {
         service.setActive(active);
         return serviceRepository.save(service);
     }
+
+    public List<com.hcmute.clinic.entity.Service> getAllServices() {
+        return serviceRepository.findAllByOrderByNameAsc();
+    }
 }

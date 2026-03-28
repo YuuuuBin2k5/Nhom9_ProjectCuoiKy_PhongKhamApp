@@ -8,8 +8,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import com.hcmute.clinic.dto.ServiceDto;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
-
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -64,21 +64,10 @@ public class ServiceController {
                 s.getUiTemplateType() != null ? s.getUiTemplateType().name() : "GENERAL",
                 s.getCategory() != null ? s.getCategory().getId() : null,
                 s.getCategory() != null ? s.getCategory().getName() : null,
-                imageUrls
+                imageUrls,
+                s.isActive()
         );
     }
-
-    public record ServiceDto(
-            Long id, 
-            String name, 
-            String description, 
-            double price, 
-            Integer durationMinutes, 
-            String uiTemplateType, 
-            Long categoryId,
-            String categoryName,
-            List<String> imageUrls
-    ) {}
 
     public record CategoryWithServicesDto(
             Long id,

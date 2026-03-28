@@ -62,4 +62,22 @@ public interface CheckInQueueRepository extends JpaRepository<CheckInQueue, Long
             @Param("patientId") Long patientId,
             @Param("start") LocalDateTime start,
             @Param("end") LocalDateTime end);
+
+    @Query("""
+            SELECT q FROM CheckInQueue q
+            JOIN FETCH q.appointment a
+            JOIN FETCH a.patient
+            JOIN FETCH q.clinicRoom
+            WHERE q.originalRoomId = :roomId
+            AND q.clinicRoom.id != :roomId
+            AND q.checkInTime >= :start
+            AND q.checkInTime < :end
+            AND q.status IN :statuses
+            ORDER BY q.priorityLevel DESC, q.queueNumber ASC
+            """)
+    List<CheckInQueue> findTransferredByRoomAndDateRange(
+            @Param("roomId") Long roomId,
+            @Param("start") LocalDateTime start,
+            @Param("end") LocalDateTime end,
+            @Param("statuses") List<QueueStatus> statuses);
 }

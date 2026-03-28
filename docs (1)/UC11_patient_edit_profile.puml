@@ -1,0 +1,23 @@
+@startuml UC11
+title UC11: Bệnh nhân chỉnh sửa hồ sơ cá nhân
+
+left to right direction
+skinparam actorStyle awesome
+
+actor "Bệnh nhân" as P
+
+rectangle "Hệ thống Quản lý Phòng khám" {
+    usecase "Đăng nhập" as Login
+    usecase "Chỉnh sửa hồ sơ cá nhân" as UC11
+    usecase "Cập nhật ảnh đại diện" as UC_Avatar
+
+    ' Quan hệ: Để chỉnh sửa hồ sơ thì bắt buộc phải đăng nhập trước
+    UC11 ..> Login : <<include>>
+
+    ' Quan hệ: Cập nhật ảnh là một tính năng mở rộng (không bắt buộc) của chỉnh sửa hồ sơ
+    UC_Avatar ..> UC11 : <<extend>>
+}
+
+P --> UC11
+
+@enduml

@@ -28,6 +28,10 @@ public class TreatmentPlan {
     @JoinColumn(name = "medical_record_id")
     private MedicalRecord medicalRecord;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "appointment_id")
+    private Appointment appointment;
+
     @Column(name = "template_id")
     private Long templateId; // Optional: reference to a template if any
 
@@ -38,8 +42,14 @@ public class TreatmentPlan {
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
+    
+    @Builder.Default
+    @Column(name = "is_draft")
+    private boolean isDraft = true;
 
     @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<TreatmentPlanStep> steps;
 
 }

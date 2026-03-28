@@ -19,4 +19,15 @@ public interface TreatmentPlanRepository extends JpaRepository<TreatmentPlan, Lo
 
     @Query("SELECT p FROM TreatmentPlan p LEFT JOIN FETCH p.steps s LEFT JOIN FETCH s.service LEFT JOIN FETCH s.clinicRoom WHERE p.id = :id")
     java.util.Optional<TreatmentPlan> findByIdWithSteps(@Param("id") Long id);
+
+    java.util.Optional<TreatmentPlan> findFirstByMedicalRecordId(Long medicalRecordId);
+
+    @Query("SELECT p FROM TreatmentPlan p WHERE p.appointment.id = :appointmentId AND p.status <> :excludeStatus ORDER BY p.createdAt DESC")
+    java.util.Optional<TreatmentPlan> findByAppointmentIdAndStatusNot(
+        @Param("appointmentId") Long appointmentId, 
+        @Param("excludeStatus") TreatmentPlanStatus excludeStatus
+    );
+
+    @Query("SELECT p FROM TreatmentPlan p WHERE p.appointment.id = :appointmentId ORDER BY p.createdAt DESC")
+    java.util.Optional<TreatmentPlan> findFirstByAppointmentIdOrderByCreatedAtDesc(@Param("appointmentId") Long appointmentId);
 }

@@ -12,6 +12,7 @@ public class QueueItem {
     private String roomName;
     private Long appointmentId;
     private Long treatmentPlanStepId;
+    private Long patientId;
 
     // Constructors
     public QueueItem() {}
@@ -61,6 +62,9 @@ public class QueueItem {
 
     public Long getTreatmentPlanStepId() { return treatmentPlanStepId; }
     public void setTreatmentPlanStepId(Long treatmentPlanStepId) { this.treatmentPlanStepId = treatmentPlanStepId; }
+
+    public Long getPatientId() { return patientId; }
+    public void setPatientId(Long patientId) { this.patientId = patientId; }
 
     // Helper methods
     public boolean isPriority() {

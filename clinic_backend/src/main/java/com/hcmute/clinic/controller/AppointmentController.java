@@ -19,6 +19,7 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -31,6 +32,7 @@ public class AppointmentController {
     private final PatientRepository patientRepository;
     private final DoctorRepository doctorRepository;
     private final ServiceRepository serviceRepository;
+    private final com.hcmute.clinic.service.AppointmentService appointmentService;
 
     @PostMapping
     public ResponseEntity<?> createAppointment(@RequestBody AppointmentRequest request, Authentication auth) {
@@ -107,6 +109,24 @@ public class AppointmentController {
                 return ResponseEntity.badRequest().body(Map.of("message", "Thời gian đặt lịch phải từ 08:00 đến 16:40"));
             }
 
+            // 5.1 Validate existing active appointments for patient
+            boolean hasActiveAppt = appointmentRepository.existsByPatientIdAndStatusIn(patient.getId(), 
+                java.util.List.of(AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS));
+            if (hasActiveAppt) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Bệnh nhân đang có một lịch khám chưa hoàn thành. Không thể đặt thêm."));
+            }
+
+            // 5.2 Validate doctor availability (assume each appointment is ~30 mins)
+            boolean doctorBusy = appointmentRepository.existsByDoctorIdAndAppointmentDatetimeBetween(
+                doctor.getId(), 
+                appointmentTime.minusMinutes(29), 
+                appointmentTime.plusMinutes(29)
+            );
+            
+            if (doctorBusy) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Bác sĩ đã có lịch hẹn trong khung giờ này. Vui lòng chọn giờ khác."));
+            }
+
             // 6. Create Appointment
             BookingType bookingType = BookingType.ONLINE;
             if (request.getBookingType() != null) {
@@ -149,41 +169,67 @@ public class AppointmentController {
             return ResponseEntity.internalServerError().body(Map.of("message", "Lỗi server: " + e.getMessage()));
         }
     }
-
-    @PostMapping("/{id}/cancel")
-    public ResponseEntity<?> cancelAppointment(@PathVariable("id") Long id, Authentication auth) {
+    @GetMapping("/available-slots")
+    public ResponseEntity<?> getAvailableSlots(
+        @RequestParam Long doctorId,
+        @RequestParam String date
+    ) {
+        try {
+            java.time.LocalDate localDate = java.time.LocalDate.parse(date);
+            List<com.hcmute.clinic.dto.TimeSlotDto> slots = appointmentService.getAvailableSlots(doctorId, localDate);
+            return ResponseEntity.ok(slots);
+        } catch (Exception e) {
+            log.error("Error getting available slots", e);
+            return ResponseEntity.badRequest().body(Map.of("message", "Lỗi: " + e.getMessage()));
+        }
+    }
+    
+    @PatchMapping("/{id}/cancel")
+    public ResponseEntity<?> cancelAppointment(
+        @PathVariable Long id,
+        @RequestBody(required = false) com.hcmute.clinic.dto.CancelRequest request,
+        Authentication auth
+    ) {
         try {
             Appointment appointment = appointmentRepository.findById(id)
-                    .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch hẹn với ID: " + id));
-
-            // Optional: Basic ownership check
-            if (auth != null) {
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch hẹn"));
+            
+            // Check ownership (patient or admin)
+            if (auth != null && !auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
                 try {
-                    Long currentUserId = Long.parseLong(auth.getName());
-                    if (!appointment.getPatient().getId().equals(currentUserId)) {
-                        // Allow doctors/admins too? For now, just owner or any auth (simpler)
+                    Long patientId = Long.parseLong(auth.getName());
+                    if (!appointment.getPatient().getId().equals(patientId)) {
+                        return ResponseEntity.status(403).body(Map.of("message", "Không có quyền hủy lịch hẹn này"));
                     }
-                } catch (NumberFormatException ignored) {}
-            }
-
-            if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Lịch hẹn này đã được hủy trước đó."));
+                } catch (NumberFormatException e) {
+                    return ResponseEntity.status(403).body(Map.of("message", "Không có quyền hủy lịch hẹn này"));
+                }
             }
             
-            if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Không thể hủy lịch hẹn đã hoàn thành."));
+            // Check if can cancel (at least 2 hours before)
+            if (appointment.getAppointmentDatetime().isBefore(LocalDateTime.now().plusHours(2))) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Không thể hủy lịch hẹn trong vòng 2 giờ trước giờ khám"
+                ));
             }
-
+            
+            // Check if already cancelled or completed
+            if (appointment.getStatus() == AppointmentStatus.CANCELLED) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Lịch hẹn đã được hủy trước đó"));
+            }
+            if (appointment.getStatus() == AppointmentStatus.COMPLETED) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Không thể hủy lịch hẹn đã hoàn thành"));
+            }
+            
             appointment.setStatus(AppointmentStatus.CANCELLED);
-            Appointment saved = appointmentRepository.save(appointment);
-
+            appointmentRepository.save(appointment);
+            
             return ResponseEntity.ok(Map.of(
-                    "id", saved.getId(),
-                    "datetime", saved.getAppointmentDatetime().toString(),
-                    "serviceName", saved.getService().getName(),
-                    "doctorName", (saved.getDoctor().getLastName() + " " + saved.getDoctor().getFirstName()).trim(),
-                    "status", saved.getStatus().name()
+                "message", "Hủy lịch hẹn thành công",
+                "appointmentId", id
             ));
+            
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         } catch (Exception e) {
@@ -191,4 +237,71 @@ public class AppointmentController {
             return ResponseEntity.internalServerError().body(Map.of("message", "Lỗi server: " + e.getMessage()));
         }
     }
+    
+    @PutMapping("/{id}/reschedule")
+    public ResponseEntity<?> rescheduleAppointment(
+        @PathVariable Long id,
+        @RequestBody com.hcmute.clinic.dto.RescheduleRequest request,
+        Authentication auth
+    ) {
+        try {
+            Appointment appointment = appointmentRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Không tìm thấy lịch hẹn"));
+            
+            // Check ownership
+            if (auth != null && !auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"))) {
+                try {
+                    Long patientId = Long.parseLong(auth.getName());
+                    if (!appointment.getPatient().getId().equals(patientId)) {
+                        return ResponseEntity.status(403).body(Map.of("message", "Không có quyền đổi lịch hẹn này"));
+                    }
+                } catch (NumberFormatException e) {
+                    return ResponseEntity.status(403).body(Map.of("message", "Không có quyền đổi lịch hẹn này"));
+                }
+            }
+            
+            // Validate new datetime
+            LocalDateTime newDatetime = request.getNewDatetime();
+            if (newDatetime.isBefore(LocalDateTime.now())) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Không thể đặt lịch trong quá khứ"));
+            }
+            
+            // Validate time range
+            java.time.LocalTime time = newDatetime.toLocalTime();
+            java.time.LocalTime start = java.time.LocalTime.of(8, 0);
+            java.time.LocalTime end = java.time.LocalTime.of(16, 40);
+            if (time.isBefore(start) || time.isAfter(end)) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Thời gian đặt lịch phải từ 08:00 đến 16:40"));
+            }
+            
+            // Check doctor availability
+            boolean doctorBusy = appointmentRepository.existsByDoctorIdAndAppointmentDatetimeBetween(
+                appointment.getDoctor().getId(),
+                newDatetime.minusMinutes(29),
+                newDatetime.plusMinutes(29)
+            );
+            if (doctorBusy) {
+                return ResponseEntity.badRequest().body(Map.of(
+                    "message", "Bác sĩ đã có lịch hẹn trong khung giờ này. Vui lòng chọn giờ khác."
+                ));
+            }
+            
+            appointment.setAppointmentDatetime(newDatetime);
+            appointmentRepository.save(appointment);
+            
+            return ResponseEntity.ok(Map.of(
+                "message", "Đổi lịch hẹn thành công",
+                "appointmentId", id,
+                "newDatetime", newDatetime.toString()
+            ));
+            
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        } catch (Exception e) {
+            log.error("Error rescheduling appointment", e);
+            return ResponseEntity.internalServerError().body(Map.of("message", "Lỗi server: " + e.getMessage()));
+        }
+    }
+
 }

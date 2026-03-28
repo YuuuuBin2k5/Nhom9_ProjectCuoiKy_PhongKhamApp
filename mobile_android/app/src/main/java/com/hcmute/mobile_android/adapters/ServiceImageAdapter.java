@@ -32,26 +32,32 @@ public class ServiceImageAdapter extends RecyclerView.Adapter<ServiceImageAdapte
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        String imageName = imageUrls.get(position);
+        String originalUrl = imageUrls.get(position);
+        String imageName = originalUrl;
         
         // Remove .png extension if present for getIdentifier
         if (imageName.endsWith(".png")) {
             imageName = imageName.substring(0, imageName.length() - 4);
+        } else if (imageName.endsWith(".jpg") || imageName.endsWith(".jpeg")) {
+            imageName = imageName.substring(0, imageName.lastIndexOf("."));
         }
         
         // Also handle the case where it might be a full URL but we want the filename part
         if (imageName.contains("/")) {
             imageName = imageName.substring(imageName.lastIndexOf("/") + 1);
-            if (imageName.endsWith(".png")) {
-                imageName = imageName.substring(0, imageName.length() - 4);
-            }
         }
 
         int resId = context.getResources().getIdentifier(imageName, "drawable", context.getPackageName());
         if (resId != 0) {
+            // Found local resource matching the seed name
             holder.ivServiceImage.setImageResource(resId);
         } else {
-            holder.ivServiceImage.setImageResource(R.drawable.ic_tooth); // Fallback
+            // Not a local resource (likely a newly uploaded image), use Glide
+            com.bumptech.glide.Glide.with(context)
+                    .load(originalUrl)
+                    .placeholder(R.drawable.ic_tooth)
+                    .error(R.drawable.ic_tooth)
+                    .into(holder.ivServiceImage);
         }
     }
 

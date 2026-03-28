@@ -1,0 +1,55 @@
+@startuml AC13
+title AC13: Bệnh nhân tự Check-in (Self Check-in)
+
+|Bệnh nhân|
+start
+:Đến phòng khám;
+:Mở ứng dụng di động;
+
+if (Quét QR tại quầy?) then (Có)
+  :Quét mã QR tại quầy check-in;
+else (Không)
+  :Nhập mã check-in thủ công\ntrên ứng dụng;
+endif
+
+:Gửi yêu cầu self check-in\n(POST /api/checkin/self-scan);
+
+|Hệ thống|
+:Xác thực bệnh nhân qua JWT;
+:Nhận và giải mã QR data;
+
+if (Mã QR hợp lệ?) then (Không)
+  |Bệnh nhân|
+  :Nhận thông báo lỗi\n"Mã QR không hợp lệ";
+  stop
+else (Có)
+endif
+
+:Tìm Appointment hôm nay\ncủa bệnh nhân;
+
+if (Có lịch hẹn hôm nay?) then (Không)
+  :Tạo Appointment mới\n(Booking Type: WALK_IN);
+  :Hệ thống tự động gán Bác sĩ\nvà Phòng khám (Service mặc định);
+  :Thiết lập mức độ ưu tiên thấp\n(đứng sau bệnh nhân đã đặt trước);
+else (Có)
+endif
+
+if (Đã check-in rồi?) then (Có)
+  :Trả về thông tin hàng đợi cũ\n(alreadyCheckedIn = true);
+  |Bệnh nhân|
+  :Hiển thị vị trí hàng đợi hiện tại;
+  stop
+else (Chưa)
+endif
+
+:Gán bệnh nhân vào phòng khám\n(dựa trên dịch vụ đã đặt);
+:Thêm vào hàng đợi phòng\n(Status: WAITING);
+:Gán số thứ tự (queueNumber);
+:Tính thời gian chờ ước tính;
+
+|Bệnh nhân|
+:Hiển thị kết quả check-in\n(Phòng, Số thứ tự, Thời gian chờ);
+:Chờ đến lượt khám\n(theo dõi realtime trên app);
+
+stop
+@enduml

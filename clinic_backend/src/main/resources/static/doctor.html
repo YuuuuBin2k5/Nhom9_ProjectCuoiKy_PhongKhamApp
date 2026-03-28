@@ -34,6 +34,7 @@
         .step-form input[type="checkbox"] { margin-right: 8px; }
         .btn-sm { padding: 6px 12px; font-size: 14px; width: auto; }
     </style>
+    <script src="https://unpkg.com/html5-qrcode" type="text/javascript"></script>
 </head>
 <body>
     <h1>Bác sĩ — Lập phác đồ điều trị</h1>
@@ -46,7 +47,8 @@
     </div>
 
     <div class="card hidden" id="mainCard">
-        <h2>1. Tra cứu bệnh nhân (nhập QR: patient:1)</h2>
+        <h2>1. Tra cứu bệnh nhân (Quét QR hoặc nhập mã)</h2>
+        <div id="qr-reader" style="width: 100%; border-radius: 8px; overflow: hidden; margin-bottom: 12px; border: 1px solid #e2e8f0;"></div>
         <div class="row">
             <input type="text" id="qrInput" placeholder="patient:1" />
             <button onclick="lookupPatient()">Tra cứu</button>
@@ -75,6 +77,64 @@
             document.getElementById('loginCard').classList.add('hidden');
             document.getElementById('mainCard').classList.remove('hidden');
             loadTemplates();
+            setTimeout(initScanner, 500);
+            // Auto-load patient from URL param (navigated from queue)
+            const urlParams = new URLSearchParams(window.location.search);
+            const urlPatientId = urlParams.get('patientId');
+            if (urlPatientId) {
+                document.getElementById('qrInput').value = 'patient:' + urlPatientId;
+                setTimeout(() => autoLoadPatient(urlPatientId), 800);
+            }
+        }
+
+        async function autoLoadPatient(patientId) {
+            // Fetch patient info directly by ID
+            try {
+                const res = await fetch(API + '/api/doctor/patient?qr=patient:' + patientId, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                currentPatientId = data.id;
+                document.getElementById('patientInfo').innerHTML = `
+                    <div class="patient-info">
+                        <p><strong>${data.lastName || ''} ${data.firstName || ''}</strong></p>
+                        <p>ID: ${data.id} | SĐT: ${data.phone || '—'} | Dịch vụ: ${data.bookedService || '—'}</p>
+                    </div>`;
+                document.getElementById('patientInfo').classList.remove('hidden');
+
+                // Fetch existing treatment plans for this patient
+                const planRes = await fetch(API + '/api/treatment-plans/patient/' + patientId, {
+                    headers: { 'Authorization': 'Bearer ' + token }
+                });
+                if (planRes.ok) {
+                    const plans = await planRes.json();
+                    // Auto-load the most recent in-progress (or first) plan
+                    const active = plans.find(p => p.status === 'IN_PROGRESS') || plans[0];
+                    if (active) {
+                        showMsg('Đã tìm thấy phác đồ đang điều trị. Đang tải...', false);
+                        setTimeout(() => loadPlanForEdit(active.id), 600);
+                    }
+                }
+            } catch (e) {
+                /* ignore auto-load errors */
+            }
+        }
+
+        let html5QrcodeScanner = null;
+        function initScanner() {
+            if (html5QrcodeScanner) return;
+            html5QrcodeScanner = new Html5QrcodeScanner(
+                "qr-reader",
+                { fps: 10, qrbox: {width: 250, height: 250} },
+                false);
+            html5QrcodeScanner.render((decodedText) => {
+                const qrInp = document.getElementById('qrInput');
+                if (qrInp.value !== decodedText) {
+                    qrInp.value = decodedText;
+                    lookupPatient();
+                }
+            }, (error) => { /* ignore frame errors */ });
         }
 
         async function login() {
@@ -93,6 +153,7 @@
                     document.getElementById('loginCard').classList.add('hidden');
                     document.getElementById('mainCard').classList.remove('hidden');
                     loadTemplates();
+                    setTimeout(initScanner, 500);
                 } else {
                     showMsg('Đăng nhập thất bại', true);
                 }

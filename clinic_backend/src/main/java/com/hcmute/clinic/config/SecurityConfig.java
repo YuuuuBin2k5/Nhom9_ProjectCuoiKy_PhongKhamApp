@@ -73,6 +73,10 @@ public class SecurityConfig {
                 .requestMatchers("/api/checkin/self-scan").hasRole("PATIENT")
                 .requestMatchers("/api/patients/me/**").hasRole("PATIENT")
                 .requestMatchers("/api/appointments/**").hasAnyRole("PATIENT", "DOCTOR", "ADMIN", "RECEPTIONIST")
+                .requestMatchers("/api/reception/**").hasRole("RECEPTIONIST")
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/doctor/**").hasRole("DOCTOR")
+
                 .anyRequest().authenticated()
             )
             .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {

@@ -21,6 +21,8 @@ public class StepImage {
     @ManyToOne
     @JoinColumn(name = "treatment_plan_step_id", nullable = false)
     @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private TreatmentPlanStep step;
 
     @Column(name = "image_url", nullable = false)

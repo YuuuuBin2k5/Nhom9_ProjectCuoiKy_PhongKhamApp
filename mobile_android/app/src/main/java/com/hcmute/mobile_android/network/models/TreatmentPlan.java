@@ -11,6 +11,7 @@ public class TreatmentPlan {
     private String updatedAt;
     private Double totalEstimatedCost;
     private Double totalActualCost;
+    private boolean isDraft;
     private List<Step> steps;
 
     // Constructors
@@ -47,6 +48,9 @@ public class TreatmentPlan {
     public Double getTotalActualCost() { return totalActualCost; }
     public void setTotalActualCost(Double totalActualCost) { this.totalActualCost = totalActualCost; }
 
+    public boolean isDraft() { return isDraft; }
+    public void setDraft(boolean draft) { isDraft = draft; }
+
     public List<Step> getSteps() { return steps; }
     public void setSteps(List<Step> steps) { this.steps = steps; }
 
@@ -71,7 +75,7 @@ public class TreatmentPlan {
         private String description;
         private Integer stepOrder;
         private String status; // PENDING, IN_PROGRESS, COMPLETED, CANCELLED
-        private Integer toothNumber;
+        private String toothNumber;
         private Double estimatedPrice;
         private Double actualPrice;
         private String doctorConclusion;
@@ -79,6 +83,15 @@ public class TreatmentPlan {
         private String completedAt;
         private String roomName;
         private String uiTemplateType;
+        private boolean editable;
+        private List<ImageItem> images;
+
+        public static class ImageItem {
+            private Long id;
+            private String imageUrl;
+            public String getImageUrl() { return imageUrl; }
+            public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
+        }
 
         // Constructors
         public Step() {}
@@ -105,8 +118,11 @@ public class TreatmentPlan {
         public String getStatus() { return status; }
         public void setStatus(String status) { this.status = status; }
 
-        public Integer getToothNumber() { return toothNumber; }
-        public void setToothNumber(Integer toothNumber) { this.toothNumber = toothNumber; }
+        public String getToothNumber() { return toothNumber; }
+        public void setToothNumber(String toothNumber) { this.toothNumber = toothNumber; }
+
+        public List<ImageItem> getImages() { return images; }
+        public void setImages(List<ImageItem> images) { this.images = images; }
 
         public Double getEstimatedPrice() { return estimatedPrice; }
         public void setEstimatedPrice(Double estimatedPrice) { this.estimatedPrice = estimatedPrice; }
@@ -131,15 +147,18 @@ public class TreatmentPlan {
 
         // Helper methods
         public boolean isCompleted() {
-            return "COMPLETED".equals(status);
+            return "COMPLETED".equalsIgnoreCase(status);
         }
 
         public boolean isInProgress() {
-            return "IN_PROGRESS".equals(status);
+            return "IN_PROGRESS".equalsIgnoreCase(status);
         }
 
         public boolean isPending() {
             return "PENDING".equals(status);
         }
+
+        public boolean isEditable() { return editable; }
+        public void setEditable(boolean editable) { this.editable = editable; }
     }
 }

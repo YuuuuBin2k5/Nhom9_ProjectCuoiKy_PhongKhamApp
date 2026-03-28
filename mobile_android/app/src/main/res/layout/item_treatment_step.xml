@@ -165,6 +165,16 @@
                 android:orientation="horizontal"
                 android:gravity="end">
 
+                <ImageButton
+                    android:id="@+id/btnRemoveStep"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@android:drawable/ic_menu_delete"
+                    android:layout_marginEnd="8dp"
+                    app:tint="#D32F2F"
+                    android:contentDescription="Xóa" />
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnEdit"
                     style="@style/Widget.Material3.Button.TonalButton"

@@ -40,13 +40,34 @@ public class DoctorListController {
         List<DoctorDto> dtos = doctorRepository.findAll().stream()
                 .filter(d -> d.isActive())
                 .filter(d -> {
+                    // Loại trừ các bác sĩ thuộc phòng chuyên biệt/kỹ thuật
+                    if (d.getClinicRoom() != null) {
+                        String roomName = d.getClinicRoom().getName().toLowerCase();
+                        if (roomName.contains("x-quang") || 
+                            roomName.contains("xét nghiệm") || 
+                            roomName.contains("siêu âm") || 
+                            roomName.contains("chẩn đoán hình ảnh")) {
+                            return false;
+                        }
+                    }
+                    
                     if (finalFilterName == null) return true;
                     String spec = d.getSpecialization();
                     if (spec == null || spec.isEmpty()) return false;
                     String lspec = spec.toLowerCase();
                     
-                    // Match if specialization is in service name OR service name is in specialization
-                    return lspec.contains(finalFilterName) || finalFilterName.contains(lspec);
+                    // Logic lọc bác sĩ theo dịch vụ:
+                    // 1. Phải khớp chuyên môn (ví dụ: Dịch vụ "Nhổ răng" -> Chuyên môn "Ngoại khoa" hoặc "Phẫu thuật")
+                    // 2. Hoặc khớp tên dịch vụ (ví dụ: Dịch vụ "Khám tổng quát" -> Chuyên môn "Tổng quát")
+                    if (lspec.contains(finalFilterName) || finalFilterName.contains(lspec)) return true;
+                    
+                    // Mở rộng logic match một số từ khóa đặc trưng
+                    if (finalFilterName.contains("khám") && (lspec.contains("tổng quát") || lspec.contains("tư vấn"))) return true;
+                    if (finalFilterName.contains("răng") && lspec.contains("nha khoa")) return true;
+                    if (finalFilterName.contains("nhổ") && (lspec.contains("phẫu thuật") || lspec.contains("ngoại"))) return true;
+                    if (finalFilterName.contains("niềng") && lspec.contains("chỉnh nha")) return true;
+
+                    return false;
                 })
                 .map(d -> new DoctorDto(
                         d.getId(),
@@ -55,19 +76,11 @@ public class DoctorListController {
                         d.getSpecialization() != null ? d.getSpecialization() : "",
                         d.getClinicRoom() != null ? d.getClinicRoom().getName() : null,
                         d.getExperienceYears(),
-                        (int) appointmentRepository.countByDoctorId(d.getId())
+                        d.isActive()
                 ))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
 
-    public record DoctorDto(
-            Long id, 
-            String firstName, 
-            String lastName, 
-            String specialization, 
-            String roomName, 
-            Integer experienceYears,
-            int appointmentCount
-    ) {}
+    public record DoctorDto(Long id, String firstName, String lastName, String specialization, String roomName, Integer experienceYears, boolean active) {}
 }

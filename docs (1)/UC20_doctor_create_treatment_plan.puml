@@ -1,0 +1,33 @@
+@startuml UC20
+title UC20: Bác sĩ lập phác đồ điều trị
+
+left to right direction
+skinparam actorStyle awesome
+
+actor "Bác sĩ" as D
+
+rectangle "Hệ thống Quản lý Phòng khám" {
+    usecase "Lập phác đồ điều trị" as UC20
+    usecase "Xem mẫu phác đồ" as ViewTemplates
+    usecase "Tạo từ mẫu" as CreateFromTemplate
+    usecase "Tạo phác đồ mới" as CreateManual
+    usecase "Tùy chỉnh bước điều trị" as CustomizeSteps
+    usecase "Kích hoạt phác đồ" as ActivatePlan
+
+    ' Xem template là tùy chọn
+    ViewTemplates ..> UC20 : <<extend>>
+
+    ' Có 2 cách tạo
+    CreateFromTemplate ..> UC20 : <<extend>>
+    CreateManual ..> UC20 : <<extend>>
+
+    ' Có thể chỉnh sửa
+    CustomizeSteps ..> UC20 : <<extend>>
+
+    ' Kích hoạt là bước sau cùng (có thể optional)
+    ActivatePlan ..> UC20 : <<extend>>
+}
+
+D --> UC20
+
+@enduml

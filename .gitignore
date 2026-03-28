@@ -1,6 +1,6 @@
-# ===================================
-# Nhom9 PhongKham App - .gitignore
-# ===================================
+# ===== PROJECT GENERAL =====
+.gradle/
+build/
 
 # ===== IDE & EDITOR FILES =====
 .idea/

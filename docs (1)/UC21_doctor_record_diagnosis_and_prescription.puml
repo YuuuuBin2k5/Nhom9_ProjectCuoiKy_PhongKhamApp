@@ -1,0 +1,31 @@
+@startuml UC21
+title UC21: Bác sĩ ghi nhận kết quả & chẩn đoán
+
+left to right direction
+skinparam actorStyle awesome
+
+actor "Bác sĩ" as D
+
+rectangle "Hệ thống Quản lý Phòng khám" {
+    usecase "Ghi nhận kết quả & chẩn đoán" as UC21
+    usecase "Nhập triệu chứng & chẩn đoán" as InputClinical
+    usecase "Tải lên hình ảnh kết quả" as UploadImage
+    usecase "Kê đơn thuốc" as CreatePrescription
+    usecase "Hoàn thành bước điều trị" as CompleteStep
+
+    ' Bắt buộc nhập kết quả
+    UC21 ..> InputClinical : <<include>>
+
+    ' Có thể upload ảnh
+    UploadImage ..> UC21 : <<extend>>
+
+    ' Có thể kê đơn
+    CreatePrescription ..> UC21 : <<extend>>
+
+    ' Sau khi có kết quả thì hoàn thành step
+    UC21 ..> CompleteStep : <<include>>
+}
+
+D --> UC21
+
+@enduml

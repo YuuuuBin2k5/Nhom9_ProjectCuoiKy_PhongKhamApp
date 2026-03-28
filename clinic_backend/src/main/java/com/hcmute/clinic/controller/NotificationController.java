@@ -18,13 +18,20 @@ public class NotificationController {
 
     private final NotificationRepository notificationRepository;
 
-    @GetMapping("/me")
-    public ResponseEntity<?> myNotifications(Authentication auth) {
+    @GetMapping("/my")
+    public ResponseEntity<?> myNotifications(
+        Authentication auth,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "20") int size
+    ) {
         if (auth == null || auth.getName() == null) {
             return ResponseEntity.status(401).build();
         }
         long patientId = Long.parseLong(auth.getName());
-        List<Notification> list = notificationRepository.findByPatientIdOrderByCreatedAtDesc(patientId, PageRequest.of(0, 50));
+        List<Notification> list = notificationRepository.findByPatientIdOrderByCreatedAtDesc(
+            patientId, 
+            PageRequest.of(page, size)
+        );
         List<Map<String, Object>> items = list.stream()
                 .map(n -> Map.<String, Object>of(
                         "id", n.getId(),
@@ -35,7 +42,12 @@ public class NotificationController {
                         "createdAt", n.getCreatedAt() != null ? n.getCreatedAt().toString() : ""
                 ))
                 .toList();
-        return ResponseEntity.ok(items);
+        return ResponseEntity.ok(Map.of(
+            "content", items,
+            "page", page,
+            "size", size,
+            "totalElements", list.size()
+        ));
     }
 
     @PatchMapping("/{id}/read")
@@ -52,5 +64,23 @@ public class NotificationController {
                     return ResponseEntity.ok(Map.of("message", "Đã đọc"));
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+    
+    @PatchMapping("/read-all")
+    public ResponseEntity<?> markAllAsRead(Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        long patientId = Long.parseLong(auth.getName());
+        List<Notification> unreadNotifications = notificationRepository
+            .findByPatientIdAndIsReadOrderByCreatedAtDesc(patientId, false);
+        
+        unreadNotifications.forEach(n -> n.setRead(true));
+        notificationRepository.saveAll(unreadNotifications);
+        
+        return ResponseEntity.ok(Map.of(
+            "message", "Đã đánh dấu tất cả là đã đọc",
+            "count", unreadNotifications.size()
+        ));
     }
 }

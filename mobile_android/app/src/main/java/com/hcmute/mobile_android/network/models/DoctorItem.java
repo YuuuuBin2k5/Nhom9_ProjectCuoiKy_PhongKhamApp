@@ -19,12 +19,12 @@ public class DoctorItem {
     private Integer experienceYears;
     @SerializedName("appointmentCount")
     private int appointmentCount;
+    @SerializedName("active")
+    private boolean active;
     @SerializedName("isSpecialist")
     private boolean specialist;
     @SerializedName("avatarUrl")
     private String avatarUrl;
-    @SerializedName("active")
-    private boolean active;
 
     public Long getId() { return id; }
     public String getFirstName() { return firstName; }
@@ -34,10 +34,12 @@ public class DoctorItem {
     public String getRoomName() { return roomName; }
     public Integer getExperienceYears() { return experienceYears; }
     public int getAppointmentCount() { return appointmentCount; }
-    public boolean isSpecialist() { return specialist; }
-    public String getAvatarUrl() { return avatarUrl; }
     public boolean isActive() { return active; }
     public void setActive(boolean active) { this.active = active; }
+    public boolean isSpecialist() { return specialist; }
+    public String getAvatarUrl() { return avatarUrl; }
+    public void setAvatarUrl(String avatarUrl) { this.avatarUrl = avatarUrl; }
+
 
     public String getSpecialty() { return specialization; }
 

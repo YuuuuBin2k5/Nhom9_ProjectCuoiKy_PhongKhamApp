@@ -65,4 +65,14 @@ public class QueueController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+
+    @PostMapping("/{id}/delay")
+    public ResponseEntity<?> delayPatient(@PathVariable Long id) {
+        try {
+            checkInQueueService.delayPatient(id);
+            return ResponseEntity.ok(Map.of("message", "Đã đẩy lùi bệnh nhân xuống 1 vị trí"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
 }

@@ -77,6 +77,9 @@
             android:name=".ui.activities.AdminServiceActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activities.AdminServiceDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activities.AdminRoomActivity"
             android:exported="false" />
         <activity
@@ -96,7 +99,13 @@
             android:exported="false" />
         <activity
             android:name=".ui.activities.staff.DoctorWorkflowActivity"
-            android:exported="false" />
+            android:exported="true" />
+            
+        <!-- Prescription -->
+        <activity
+            android:name=".ui.activities.staff.PrescriptionActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize"/>
         <activity
             android:name=".ui.activities.QRTestActivity"
             android:exported="false" />

@@ -54,4 +54,9 @@ public class MedicalRecord {
 
     @OneToOne(mappedBy = "medicalRecord", cascade = CascadeType.ALL)
     private Prescription prescription;
+
+    @OneToOne(mappedBy = "medicalRecord", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private TreatmentPlan treatmentPlan;
 }

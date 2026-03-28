@@ -22,6 +22,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
 
     public interface OnQueueActionListener {
         void onCallPatient(QueueItem item);
+        void onExaminePatient(QueueItem item);
         void onTransferToXRay(QueueItem item);
         void onCompletePatient(QueueItem item);
     }
@@ -59,6 +60,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
         private TextView tvStatus;
         private TextView tvAppointmentTime;
         private MaterialButton btnCall;
+        private MaterialButton btnExamine;
         private MaterialButton btnXRay;
         private MaterialButton btnComplete;
 
@@ -72,18 +74,31 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
             tvStatus = itemView.findViewById(R.id.tvStatus);
             tvAppointmentTime = itemView.findViewById(R.id.tvAppointmentTime);
             btnCall = itemView.findViewById(R.id.btnCall);
+            btnExamine = itemView.findViewById(R.id.btnExamine);
             btnXRay = itemView.findViewById(R.id.btnXRay);
             btnComplete = itemView.findViewById(R.id.btnComplete);
         }
 
         public void bind(QueueItem item, OnQueueActionListener listener) {
-            // Set basic info
-            tvQueueNumber.setText(String.valueOf(item.getQueueNumber()));
+            tvQueueNumber.setText(String.format("%02d", item.getQueueNumber()));
             tvPatientName.setText(item.getPatientName());
             tvPatientPhone.setText(item.getPatientPhone());
             tvServiceName.setText(item.getServiceName());
-            tvStatus.setText(item.getStatusDisplayText());
             tvAppointmentTime.setText(item.getAppointmentTime());
+            tvStatus.setText(item.getStatusDisplayText());
+
+            // Handle card click to examine
+            cardQueue.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onExaminePatient(item);
+                }
+            });
+
+            tvPatientName.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onExaminePatient(item);
+                }
+            });
 
             // Set card style based on status and priority
             if (item.isPriority() || item.isReturnedPriority()) {
@@ -116,22 +131,38 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
         private void configureButtons(QueueItem item, OnQueueActionListener listener) {
             // Reset button visibility
             btnCall.setVisibility(View.GONE);
+            btnExamine.setVisibility(View.GONE);
             btnXRay.setVisibility(View.GONE);
             btnComplete.setVisibility(View.GONE);
 
             switch (item.getStatus()) {
                 case "WAITING":
+                    // Can call patient
+                    btnCall.setVisibility(View.VISIBLE);
+                    btnCall.setOnClickListener(v -> listener.onCallPatient(item));
+                    
+                    // Also allow direct examination
+                    btnExamine.setVisibility(View.VISIBLE);
+                    btnExamine.setOnClickListener(v -> listener.onExaminePatient(item));
+                    break;
+
                 case "RETURNED_PRIORITY":
                     // Can call patient
                     btnCall.setVisibility(View.VISIBLE);
                     btnCall.setOnClickListener(v -> listener.onCallPatient(item));
+                    
+                    // For returned priority, MUST show examine
+                    btnExamine.setVisibility(View.VISIBLE);
+                    btnExamine.setOnClickListener(v -> listener.onExaminePatient(item));
                     break;
 
                 case "IN_PROGRESS":
-                    // Can transfer to X-Ray or complete
+                    // Can examine, transfer to X-Ray or complete
+                    btnExamine.setVisibility(View.VISIBLE);
                     btnXRay.setVisibility(View.VISIBLE);
                     btnComplete.setVisibility(View.VISIBLE);
                     
+                    btnExamine.setOnClickListener(v -> listener.onExaminePatient(item));
                     btnXRay.setOnClickListener(v -> listener.onTransferToXRay(item));
                     btnComplete.setOnClickListener(v -> listener.onCompletePatient(item));
                     break;

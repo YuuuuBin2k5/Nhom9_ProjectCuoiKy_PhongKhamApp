@@ -23,6 +23,8 @@ public class TreatmentPlanStep {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id", nullable = false)
     @JsonIgnore
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private TreatmentPlan plan;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -52,7 +54,17 @@ public class TreatmentPlanStep {
     @Column(name = "tooth_number")
     private String toothNumber; // FDI notation, e.g. "38" for SURGERY/ODONTOGRAM
 
+    @Column(name = "completed_at")
+    private java.time.LocalDateTime completedAt;
+
     @OneToMany(mappedBy = "step", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private List<StepImage> images;
+
+    @OneToOne(mappedBy = "step", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private Prescription prescription;
 
 }
