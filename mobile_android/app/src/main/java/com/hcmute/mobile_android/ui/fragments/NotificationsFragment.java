@@ -66,6 +66,7 @@ public class NotificationsFragment extends Fragment {
         api.getMyNotifications().enqueue(new Callback<List<NotificationItem>>() {
             @Override
             public void onResponse(Call<List<NotificationItem>> call, Response<List<NotificationItem>> response) {
+                if (!isAdded()) return;
                 progress.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null) {
                     List<NotificationItem> items = response.body();
@@ -80,10 +81,11 @@ public class NotificationsFragment extends Fragment {
 
             @Override
             public void onFailure(Call<List<NotificationItem>> call, Throwable t) {
+                if (!isAdded()) return;
                 progress.setVisibility(View.GONE);
                 tvEmpty.setVisibility(View.VISIBLE);
                 tvEmpty.setText(t.getMessage() != null ? t.getMessage() : "Không tải được");
-                Toast.makeText(requireContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
             }
         });
     }

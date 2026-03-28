@@ -4,17 +4,17 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="16dp"
-    app:cardCornerRadius="20dp"
-    app:cardElevation="2dp"
-    app:strokeColor="#F1F5F9"
-    app:strokeWidth="1dp"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="0dp"
+    app:strokeColor="#EEF2F6"
+    app:strokeWidth="1.5dp"
     app:cardBackgroundColor="@android:color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="20dp">
 
         <!-- Top Header -->
         <RelativeLayout
@@ -23,12 +23,12 @@
 
             <ImageView
                 android:id="@+id/ivDocIcon"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
-                android:padding="10dp"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:padding="12dp"
                 android:src="@drawable/ic_medical_services"
-                android:background="@drawable/bg_circle_soft_blue"
-                app:tint="#0D9488"
+                android:background="@drawable/bg_circle_icon"
+                app:tint="@color/primary_trust_blue"
                 android:layout_centerVertical="true"/>
 
             <LinearLayout
@@ -37,7 +37,7 @@
                 android:layout_toEndOf="@id/ivDocIcon"
                 android:layout_toStartOf="@id/tvDate"
                 android:layout_centerVertical="true"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="14dp"
                 android:orientation="vertical">
 
                 <TextView
@@ -45,8 +45,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="BS. Lê Minh Tâm"
-                    android:textColor="#0F172A"
-                    android:textSize="16sp"
+                    android:textColor="#1E293B"
+                    android:textSize="17sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -54,7 +54,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
-                    android:text="Chuyên khoa Nội tiết"
+                    android:text="General Dentist"
                     android:textColor="#64748B"
                     android:textSize="13sp" />
             </LinearLayout>
@@ -63,30 +63,33 @@
                 android:id="@+id/tvDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="14/10/2023"
-                android:textColor="#64748B"
+                android:text="Oct 14, 2023"
+                android:textColor="#94A3B8"
                 android:textSize="12sp"
+                android:textStyle="bold"
                 android:layout_alignParentEnd="true"
                 android:layout_centerVertical="true"/>
         </RelativeLayout>
 
-        <!-- Middle: Clinical Diagnosis -->
+        <!-- Middle: Clinical Diagnosis (Glass Pod) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="18dp"
             android:background="#F8FAFC"
             android:orientation="vertical"
-            android:padding="12dp">
+            android:padding="16dp"
+            android:backgroundTint="#F1F5F9"
+            android:gravity="start">
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="KẾT LUẬN CHẨN ĐOÁN"
+                android:text="DIAGNOSIS"
                 android:textColor="#94A3B8"
                 android:textSize="10sp"
                 android:textStyle="bold"
-                android:letterSpacing="0.05" />
+                android:letterSpacing="0.1" />
 
             <TextView
                 android:id="@+id/tvDiagnosis"

@@ -5,6 +5,9 @@
         <item name="android:windowLightStatusBar">true</item>
         <item name="colorPrimary">@color/toothly_teal</item>
         <item name="colorSurface">@color/toothly_pearl</item>
+        
+        <!-- Bottom Nav Customization -->
+        <item name="bottomNavigationStyle">@style/Widget.App.BottomNavigation</item>
     </style>
 
     <style name="Theme.Mobile_android" parent="Base.Theme.Toothly" />
@@ -25,5 +28,29 @@
     <style name="ToothlyLink">
         <item name="android:textColor">@color/toothly_link</item>
         <item name="android:textSize">15sp</item>
+    </style>
+
+    <style name="CircleAppearance">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSize">50%</item>
+    </style>
+
+    <style name="RoundedAppearance16">
+        <item name="cornerSize">16dp</item>
+        <item name="cornerFamily">rounded</item>
+    </style>
+
+    <!-- Premium Bottom Navigation Style -->
+    <style name="Widget.App.BottomNavigation" parent="Widget.Material3.BottomNavigationView">
+        <item name="itemIconTint">@color/nav_selector_color</item>
+        <item name="itemTextColor">@color/nav_selector_color</item>
+        <item name="itemActiveIndicatorStyle">@style/Widget.App.BottomNavigation.ActiveIndicator</item>
+        <item name="itemRippleColor">#0D3B82F6</item> <!-- Very subtle blue ripple -->
+    </style>
+
+    <style name="Widget.App.BottomNavigation.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
+        <item name="android:color">#1A4B91F7</item> <!-- Soft primary blue for indicator -->
+        <item name="marginHorizontal">16dp</item>
+        <item name="android:height">40dp</item>
     </style>
 </resources>

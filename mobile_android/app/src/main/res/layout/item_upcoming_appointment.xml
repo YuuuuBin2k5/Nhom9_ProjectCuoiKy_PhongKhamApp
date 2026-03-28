@@ -1,91 +1,103 @@
 <?xml version="1.0" encoding="utf-8"?>
-<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/cardAppointment"
-    android:layout_width="200dp"
+    android:layout_width="280dp"
     android:layout_height="wrap_content"
-    android:layout_marginEnd="12dp"
-    app:cardCornerRadius="12dp"
-    app:cardElevation="2dp"
-    android:clickable="true"
-    android:focusable="true"
-    android:foreground="?attr/selectableItemBackground">
+    android:layout_marginEnd="16dp"
+    app:cardCornerRadius="24dp"
+    app:cardElevation="1dp"
+    app:cardBackgroundColor="@color/white">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="horizontal"
+        android:padding="16dp"
+        android:gravity="center_vertical">
 
-        <!-- Date & Time -->
+        <!-- Date Calendar Chip -->
         <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical"
-            android:layout_marginBottom="8dp">
-
+            android:layout_width="56dp"
+            android:layout_height="64dp"
+            android:orientation="vertical"
+            android:background="@drawable/bg_premium_gradient_blue"
+            android:gravity="center"
+            android:padding="4dp">
+            
             <TextView
                 android:id="@+id/tvDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="25/03"
-                android:textSize="18sp"
+                android:text="28"
+                android:textSize="20sp"
                 android:textStyle="bold"
-                android:textColor="@color/primary_trust_blue" />
+                android:textColor="@color/white"/>
+                
+            <TextView
+                android:id="@+id/tvMonth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="MAR"
+                android:textSize="10sp"
+                android:textStyle="bold"
+                android:textColor="#E0F2FE"/>
+        </LinearLayout>
 
-            <View
-                android:layout_width="0dp"
-                android:layout_height="1dp"
-                android:layout_weight="1" />
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:layout_marginStart="16dp">
 
             <TextView
                 android:id="@+id/tvTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="09:30"
-                android:textSize="14sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary" />
+                android:text="09:30 AM"
+                android:textSize="12sp"
+                android:textColor="@color/primary_trust_blue"
+                android:textStyle="bold"/>
 
+            <TextView
+                android:id="@+id/tvDoctor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dr. Sarah Williams"
+                android:textStyle="bold"
+                android:textSize="14sp"
+                android:textColor="@color/text_primary"
+                android:layout_marginTop="2dp"
+                android:maxLines="1"
+                android:ellipsize="end"/>
+
+            <TextView
+                android:id="@+id/tvService"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Consultation"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                android:layout_marginTop="2dp"
+                android:maxLines="1"
+                android:ellipsize="end"/>
         </LinearLayout>
 
-        <!-- Doctor -->
-        <TextView
-            android:id="@+id/tvDoctor"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="BS. Nguyễn Thị B"
-            android:textSize="14sp"
-            android:textColor="@color/text_primary"
-            android:layout_marginBottom="4dp"
-            android:maxLines="1"
-            android:ellipsize="end" />
-
-        <!-- Service -->
-        <TextView
-            android:id="@+id/tvService"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Khám tổng quát"
-            android:textSize="12sp"
-            android:textColor="@color/text_secondary"
-            android:layout_marginBottom="8dp"
-            android:maxLines="2"
-            android:ellipsize="end" />
-
-        <!-- Status -->
         <TextView
             android:id="@+id/tvStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Đã xác nhận"
-            android:textSize="12sp"
+            android:text="Done"
+            android:textSize="10sp"
             android:textStyle="bold"
-            android:background="@drawable/status_badge_background"
+            android:textColor="@color/success_green"
+            android:background="@drawable/bg_pill_search"
             android:paddingHorizontal="8dp"
-            android:paddingVertical="4dp" />
+            android:paddingVertical="4dp"
+            android:layout_gravity="top"
+            android:visibility="gone"/>
 
     </LinearLayout>
-
 </com.google.android.material.card.MaterialCardView>

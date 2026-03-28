@@ -2,113 +2,149 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="300dp"
-    android:layout_height="wrap_content"
-    android:layout_marginEnd="16dp"
-    android:layout_marginTop="8dp"
-    android:layout_marginBottom="8dp"
-    app:cardCornerRadius="24dp"
-    app:cardElevation="0dp"
-    app:strokeWidth="1dp"
-    app:strokeColor="#F1F5F9"
-    app:cardBackgroundColor="#FFFFFF"
-    android:clickable="true"
-    android:focusable="true">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/card_doctor"
+    android:layout_width="match_parent"
+    android:layout_height="340dp"
+    android:layout_marginHorizontal="20dp"
+    android:layout_marginBottom="24dp"
+    app:cardCornerRadius="32dp"
+    app:cardElevation="8dp">
 
-    <LinearLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="20dp">
-        
-        <LinearLayout
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/img_doctor"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-            
-            <com.google.android.material.imageview.ShapeableImageView
-                android:layout_width="52dp"
-                android:layout_height="52dp"
-                android:src="@drawable/ic_doctor"
-                app:shapeAppearanceOverlay="@style/Widget.MaterialComponents.ShapeableImageView"
-                app:cornerSize="50%"
-                android:padding="8dp"
-                android:background="#EFF6FF"/>
-                
-            <LinearLayout
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:orientation="vertical"
-                android:layout_marginStart="16dp">
-                
-                <TextView
-                    android:id="@+id/tvDoctorName"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="BS. Olivia Grant"
-                    android:textColor="#0F172A"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
-                    
-                <TextView
-                    android:id="@+id/tvSpecialization"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="Bác sĩ Gia đình"
-                    android:textColor="#64748B"
-                    android:textSize="12sp"
-                    android:layout_marginTop="4dp" />
-            </LinearLayout>
-            
-            <LinearLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:background="@drawable/bg_pill_gray_premium"
-                android:backgroundTint="#FFFFFF"
-                android:paddingStart="6dp"
-                android:paddingEnd="8dp"
-                android:paddingTop="2dp"
-                android:paddingBottom="2dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical">
-                
-                <ImageView
-                    android:layout_width="14dp"
-                    android:layout_height="14dp"
-                    android:src="@android:drawable/star_on"
-                    app:tint="#FFC107" />
-                <TextView
-                    android:id="@+id/tvRating"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:text="4.8"
-                    android:textColor="#333"
-                    android:textSize="12sp"
-                    android:textStyle="bold"
-                    android:layout_marginStart="2dp"/>
-            </LinearLayout>
-            
-        </LinearLayout>
-        
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/ic_doctor"
+            tools:src="@tools:sample/avatars" />
+
+        <!-- Top Scrim for Text Legibility -->
         <View
             android:layout_width="match_parent"
-            android:layout_height="1dp"
-            android:background="#F1F5F9"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp" />
-            
-        <LinearLayout
+            android:layout_height="160dp"
+            android:background="@drawable/scrim_doctor_top"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <View
+            android:id="@+id/view_glass_overlay"
             android:layout_width="match_parent"
+            android:layout_height="140dp"
+            android:background="@drawable/glass_overlay"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_doctor_name"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal">
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="24dp"
+            android:text="Dr. Sarah\nWilliams, DMD"
+            android:textColor="#FFFFFF"
+            android:textSize="22sp"
+            android:textStyle="bold"
+            android:lineSpacingExtra="2dp"
+            android:shadowColor="#80000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="4"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tv_specialty"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="24dp"
+            android:layout_marginTop="6dp"
+            android:text="📍 Cosmetic Specialist"
+            android:textColor="#E0E0E0"
+            android:textSize="14sp"
+            android:shadowColor="#80000000"
+            android:shadowDx="1"
+            android:shadowDy="1"
+            android:shadowRadius="2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_doctor_name" />
+
+        <androidx.constraintlayout.widget.ConstraintLayout
+            android:id="@+id/cl_info_overlay"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:layout_marginEnd="20dp"
+            android:background="@drawable/bg_info_overlay"
+            android:paddingHorizontal="16dp"
+            android:paddingVertical="10dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent">
+
+            <ImageView
+                android:id="@+id/img_location"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:src="@android:drawable/ic_menu_mylocation"
+                app:tint="@color/white"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+
             <TextView
+                android:id="@+id/tv_location"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Giờ khám: 08:00 - 17:00"
-                android:textColor="#64748B"
-                android:textSize="12sp" />
-        </LinearLayout>
-    </LinearLayout>
+                android:layout_marginStart="8dp"
+                android:text="Chicago, IL"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="@+id/img_location"
+                app:layout_constraintStart_toEndOf="@+id/img_location"
+                app:layout_constraintTop_toTopOf="@+id/img_location" />
+
+            <ImageView
+                android:id="@+id/img_trusted"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
+                android:layout_marginTop="12dp"
+                android:src="@android:drawable/btn_star_big_on"
+                app:tint="@color/white"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toBottomOf="@+id/img_location" />
+
+            <TextView
+                android:id="@+id/tv_trusted"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:text="4.9k Reviews"
+                android:textColor="#FFFFFF"
+                android:textSize="12sp"
+                app:layout_constraintBottom_toBottomOf="@+id/img_trusted"
+                app:layout_constraintStart_toEndOf="@+id/img_trusted"
+                app:layout_constraintTop_toTopOf="@+id/img_trusted" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btn_swipe_to_book"
+            style="@style/Widget.MaterialComponents.Button.UnelevatedButton"
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginHorizontal="24dp"
+            android:layout_marginBottom="20dp"
+            android:backgroundTint="@android:color/transparent"
+            android:background="@drawable/bg_swipe_button"
+            android:text="Book Appointment"
+            android:textAllCaps="false"
+            android:textColor="#FFFFFF"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            app:cornerRadius="32dp"
+            app:icon="@android:drawable/ic_input_add"
+            app:iconGravity="end"
+            app:layout_constraintBottom_toBottomOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>

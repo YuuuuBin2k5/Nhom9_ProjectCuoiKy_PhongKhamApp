@@ -25,6 +25,8 @@ import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
 import com.hcmute.mobile_android.network.models.PatientMeResponse;
+import com.hcmute.mobile_android.ui.activities.LoginActivity;
+import com.hcmute.mobile_android.util.TokenManager;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -69,6 +71,12 @@ public class MedicalRecordActivity extends AppCompatActivity {
         toolbar.setOnMenuItemClickListener(item -> {
             if (item.getItemId() == R.id.action_settings) {
                 startActivity(new Intent(this, SettingsActivity.class));
+                return true;
+            } else if (item.getItemId() == R.id.action_logout) {
+                new TokenManager(this).clearToken();
+                startActivity(new Intent(this, LoginActivity.class)
+                        .setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK));
+                finish();
                 return true;
             }
             return false;
@@ -128,14 +136,14 @@ public class MedicalRecordActivity extends AppCompatActivity {
     private void setupMedicalHistory(PatientMeResponse p) {
         List<HistoryItem> list = new ArrayList<>();
         
-        String blood = (p.getBloodType() != null && !p.getBloodType().isEmpty()) ? p.getBloodType() : "Chưa xác định";
-        list.add(new HistoryItem("NHÓM MÁU", blood, android.R.drawable.ic_dialog_info, "#F0FDFA", "#0D9488"));
+        String blood = (p.getBloodType() != null && !p.getBloodType().isEmpty()) ? p.getBloodType() : "N/A";
+        list.add(new HistoryItem("BLOOD TYPE", blood, R.drawable.ic_emergency, "#FFF1F2", "#E11D48"));
 
-        String allergies = (p.getAllergies() != null && !p.getAllergies().isEmpty()) ? p.getAllergies() : "Không có";
-        list.add(new HistoryItem("DỊ ỨNG", allergies, android.R.drawable.ic_dialog_alert, "#FEF2F2", "#EF4444"));
+        String allergies = (p.getAllergies() != null && !p.getAllergies().isEmpty()) ? p.getAllergies() : "None";
+        list.add(new HistoryItem("ALLERGIES", allergies, R.drawable.ic_error_circle, "#FEFCE8", "#CA8A04"));
         
-        String conditions = (p.getUnderlyingConditions() != null && !p.getUnderlyingConditions().isEmpty()) ? p.getUnderlyingConditions() : "Không có";
-        list.add(new HistoryItem("BỆNH LÝ NỀN", conditions, android.R.drawable.ic_menu_agenda, "#EFF6FF", "#3B82F6"));
+        String conditions = (p.getUnderlyingConditions() != null && !p.getUnderlyingConditions().isEmpty()) ? p.getUnderlyingConditions() : "None";
+        list.add(new HistoryItem("CONDITIONS", conditions, R.drawable.ic_medical_services, "#F0F9FF", "#0284C7"));
         
         rvMedicalHistory.setAdapter(new HistoryAdapter(list));
     }

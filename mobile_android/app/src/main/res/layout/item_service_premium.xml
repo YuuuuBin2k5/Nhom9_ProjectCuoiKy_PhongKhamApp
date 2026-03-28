@@ -2,77 +2,41 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/cvServiceCard"
-    android:layout_width="164dp"
+    android:layout_width="match_parent"
     android:layout_height="180dp"
-    android:layout_marginEnd="14dp"
-    android:layout_marginTop="4dp"
-    android:layout_marginBottom="8dp"
+    android:layout_margin="10dp"
     app:cardCornerRadius="24dp"
-    app:cardElevation="4dp"
+    app:cardElevation="0dp"
     app:strokeWidth="1dp"
-    app:strokeColor="#EFF6FF"
-    app:cardBackgroundColor="@android:color/white"
-    android:clickable="true"
-    android:focusable="true">
+    app:strokeColor="#F1F5F9"
+    app:cardBackgroundColor="@color/white">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
         android:padding="16dp">
 
-        <FrameLayout
-            android:id="@+id/flIcon"
-            android:layout_width="46dp"
-            android:layout_height="46dp"
-            android:background="@drawable/bg_icon_circle_blue_soft"
-            app:layout_constraintTop_toTopOf="parent"
-            app:layout_constraintStart_toStartOf="parent">
-            
-            <ImageView
-                android:layout_width="22dp"
-                android:layout_height="22dp"
-                android:src="@drawable/ic_treatment_step"
-                app:tint="#3B82F6"
-                android:layout_gravity="center"/>
-        </FrameLayout>
-
-        <TextView
-            android:id="@+id/tvDuration"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="30 phút •"
-            android:textSize="11sp"
-            android:textColor="#94A3B8"
-            app:layout_constraintBottom_toTopOf="@id/tvServiceName"
-            app:layout_constraintStart_toStartOf="parent"
-            android:layout_marginBottom="4dp"/>
+        <ImageView
+            android:id="@+id/ivServiceIcon"
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:src="@drawable/ic_tooth"
+            android:scaleType="centerInside"
+            android:layout_marginBottom="12dp"/>
 
         <TextView
             android:id="@+id/tvServiceName"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Nhổ răng"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            android:fontFamily="sans-serif-medium"
-            android:textColor="#0F172A"
-            android:maxLines="2"
-            android:ellipsize="end"
-            app:layout_constraintBottom_toTopOf="@id/tvServicePrice"
-            app:layout_constraintStart_toStartOf="parent" 
-            android:layout_marginBottom="6dp"/>
-
-        <TextView
-            android:id="@+id/tvServicePrice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="500.000đ"
-            android:textSize="13sp"
-            android:textColor="#3B82F6"
+            android:text="Bọc sứ"
             android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintStart_toStartOf="parent" />
-            
-    </androidx.constraintlayout.widget.ConstraintLayout>
+            android:textSize="15sp"
+            android:textColor="@color/text_primary"
+            android:gravity="center"
+            android:maxLines="2"
+            android:ellipsize="end"/>
+
+    </LinearLayout>
 </com.google.android.material.card.MaterialCardView>

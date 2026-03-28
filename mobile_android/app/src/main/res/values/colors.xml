@@ -6,6 +6,7 @@
     
     <!-- Design System Colors -->
     <color name="primary_trust_blue">#1A56DB</color>
+    <color name="primary_trust_blue_light_trans">#261A56DB</color>
     <color name="secondary_calm_teal">#0E9F6E</color>
     <color name="alert_coral">#F05252</color>
     <color name="warning_amber">#FF5A1F</color>

@@ -86,8 +86,5 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onNavigateToNotifications() {
         bottomNav.setSelectedItemId(R.id.nav_notifications);
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragmentContainer, new NotificationsFragment())
-                .commit();
     }
 }

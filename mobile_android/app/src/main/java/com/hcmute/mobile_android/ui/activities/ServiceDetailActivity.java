@@ -222,9 +222,9 @@ public class ServiceDetailActivity extends AppCompatActivity {
                 return;
             }
 
-            // Update ISO format for Backend
+            // Update ISO format for Backend (Using 'T' for strict compatibility)
             selectedDatetime = String.format(Locale.getDefault(),
-                    "%04d-%02d-%02d %02d:%02d:00",
+                    "%04d-%02d-%02dT%02d:%02d:00",
                     year, month + 1, day, hour, minute);
             // Format for display
             String display = String.format(Locale.getDefault(),
@@ -267,9 +267,20 @@ public class ServiceDetailActivity extends AppCompatActivity {
                             "✅ Đặt lịch thành công!", Toast.LENGTH_LONG).show();
                     finish(); // Về Home → onResume reload upcoming appointments
                 } else {
-                    Toast.makeText(ServiceDetailActivity.this,
-                            "Đặt lịch thất bại (lỗi " + response.code() + "). Vui lòng thử lại.",
-                            Toast.LENGTH_LONG).show();
+                    // Improved Error Parsing: Extract message from backend JSON body
+                    String errorMsg = "Đặt lịch thất bại (lỗi " + response.code() + ")";
+                    if (response.errorBody() != null) {
+                        try {
+                            String errorJson = response.errorBody().string();
+                            com.google.gson.reflect.TypeToken<java.util.Map<String, String>> mapType = 
+                                    new com.google.gson.reflect.TypeToken<java.util.Map<String, String>>() {};
+                            java.util.Map<String, String> errorMap = new com.google.gson.Gson().fromJson(errorJson, mapType.getType());
+                            if (errorMap != null && errorMap.containsKey("message")) {
+                                errorMsg = errorMap.get("message");
+                            }
+                        } catch (Exception ignored) {}
+                    }
+                    Toast.makeText(ServiceDetailActivity.this, errorMsg, Toast.LENGTH_LONG).show();
                 }
             }
             @Override

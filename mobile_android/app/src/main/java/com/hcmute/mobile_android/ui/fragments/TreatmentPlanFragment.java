@@ -34,7 +34,7 @@ public class TreatmentPlanFragment extends Fragment {
     private ProgressBar progress;
     private TextView tvError;
     private RecyclerView recyclerPlans;
-    private TextView tvEmpty;
+    private View tvEmpty;
     private PlansAdapter adapter;
 
     @Nullable

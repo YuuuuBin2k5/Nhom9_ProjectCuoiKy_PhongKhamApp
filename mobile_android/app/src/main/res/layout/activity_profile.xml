@@ -36,53 +36,52 @@
             <!-- Premium Header with Gradient -->
             <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="180dp">
+                android:layout_height="200dp">
 
                 <View
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@drawable/bg_header_gradient_premium" />
+                    android:background="@drawable/bg_premium_gradient_blue" />
 
                 <!-- Avatar Container -->
                 <FrameLayout
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="center"
-                    android:layout_marginTop="20dp">
+                    android:layout_marginTop="10dp">
 
                     <com.google.android.material.imageview.ShapeableImageView
                         android:id="@+id/ivProfile"
-                        android:layout_width="120dp"
-                        android:layout_height="120dp"
-                        android:padding="3dp"
+                        android:layout_width="110dp"
+                        android:layout_height="110dp"
+                        android:padding="2dp"
                         android:scaleType="centerCrop"
                         android:src="@drawable/ic_doctor"
                         app:shapeAppearanceOverlay="@style/CircleAppearance"
                         app:strokeColor="@android:color/white"
                         app:strokeWidth="4dp" />
 
+                    <ImageView
+                        android:id="@+id/ivWarningProfile"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="top|end"
+                        android:layout_marginTop="4dp"
+                        android:layout_marginEnd="4dp"
+                        android:src="@drawable/ic_error_circle"
+                        android:visibility="gone"
+                        app:tint="#EF4444" />
+
                     <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/fabAvatarEdit"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="bottom|end"
-                        android:layout_margin="4dp"
-                        app:fabCustomSize="38dp"
+                        app:fabCustomSize="36dp"
                         app:srcCompat="@drawable/ic_camera"
                         app:tint="@android:color/white"
-                        app:backgroundTint="#0D9488"
-                        app:elevation="4dp"
-                        tools:ignore="ContentDescription" />
-
-                    <ImageView
-                        android:id="@+id/ivWarningProfile"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="top|end"
-                        android:src="@android:drawable/stat_notify_error"
-                        app:tint="#EF4444"
-                        android:visibility="gone"
-                        tools:ignore="ContentDescription" />
+                        app:backgroundTint="@color/primary_trust_blue"
+                        app:elevation="4sp" />
                 </FrameLayout>
             </FrameLayout>
 
@@ -91,35 +90,35 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:padding="20dp"
-                android:layout_marginTop="-24dp">
+                android:layout_marginTop="-40dp">
 
                 <!-- Section 1: Thông tin cá nhân -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginBottom="8dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginBottom="12dp"
                     android:text="THÔNG TIN CÁ NHÂN"
-                    android:textColor="#64748B"
-                    android:textSize="12sp"
+                    android:textColor="#FFFFFF"
+                    android:textSize="11sp"
                     android:textStyle="bold"
-                    android:letterSpacing="0.05" />
+                    android:letterSpacing="0.1" />
 
-                <com.google.android.material.card.MaterialCardView
+                <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="24dp"
-                    app:cardBackgroundColor="@android:color/white"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="2dp"
-                    app:strokeColor="#F1F5F9"
-                    app:strokeWidth="1dp">
+                    android:layout_marginBottom="24dp">
+                    
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_glass_card" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="20dp">
 
                         <com.google.android.material.textfield.TextInputLayout
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -127,108 +126,111 @@
                             android:layout_height="wrap_content"
                             android:hint="Mã bệnh nhân"
                             app:startIconDrawable="@drawable/ic_qr_code"
-                            app:startIconTint="#64748B"
-                            app:boxCornerRadiusBottomEnd="14dp"
-                            app:boxCornerRadiusBottomStart="14dp"
-                            app:boxCornerRadiusTopEnd="14dp"
-                            app:boxCornerRadiusTopStart="14dp">
+                            app:startIconTint="#6B7280"
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusTopStart="16dp"
+                            app:boxStrokeColor="@color/primary_trust_blue">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etQrCode"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:enabled="false"
-                                android:textColor="#94A3B8" />
+                                android:textColor="#9CA3AF" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
+                            android:layout_marginTop="16dp"
                             android:hint="Họ và tên"
                             app:startIconDrawable="@drawable/ic_person"
-                            app:startIconTint="#0D9488"
-                            app:boxCornerRadiusBottomEnd="14dp"
-                            app:boxCornerRadiusBottomStart="14dp"
-                            app:boxCornerRadiusTopEnd="14dp"
-                            app:boxCornerRadiusTopStart="14dp">
+                            app:startIconTint="@color/primary_trust_blue"
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusTopStart="16dp"
+                            app:boxStrokeColor="@color/primary_trust_blue">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etName"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="textPersonName"
-                                android:textColor="#0F172A" />
+                                android:textColor="#1F2937" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:hint="Email"
+                            android:layout_marginTop="16dp"
+                            android:hint="Email liên hệ"
                             app:startIconDrawable="@drawable/ic_bell"
-                            app:startIconTint="#64748B"
-                            app:boxCornerRadiusBottomEnd="14dp"
-                            app:boxCornerRadiusBottomStart="14dp"
-                            app:boxCornerRadiusTopEnd="14dp"
-                            app:boxCornerRadiusTopStart="14dp">
+                            app:startIconTint="#6B7280"
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusTopStart="16dp">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etEmail"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:enabled="false"
-                                android:textColor="#94A3B8" />
+                                android:textColor="#9CA3AF" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
+                            android:layout_marginTop="16dp"
                             android:hint="Số điện thoại"
                             app:startIconDrawable="@drawable/ic_phone"
-                            app:startIconTint="#0D9488"
-                            app:boxCornerRadiusBottomEnd="14dp"
-                            app:boxCornerRadiusBottomStart="14dp"
-                            app:boxCornerRadiusTopEnd="14dp"
-                            app:boxCornerRadiusTopStart="14dp">
+                            app:startIconTint="@color/primary_trust_blue"
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusTopStart="16dp"
+                            app:boxStrokeColor="@color/primary_trust_blue">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etPhone"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:inputType="phone"
-                                android:textColor="#0F172A" />
+                                android:textColor="#1F2937" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:hint="Địa chỉ"
+                            android:layout_marginTop="16dp"
+                            android:hint="Địa chỉ thường trú"
                             app:startIconDrawable="@drawable/ic_location_pin"
-                            app:startIconTint="#0D9488"
-                            app:boxCornerRadiusBottomEnd="14dp"
-                            app:boxCornerRadiusBottomStart="14dp"
-                            app:boxCornerRadiusTopEnd="14dp"
-                            app:boxCornerRadiusTopStart="14dp">
+                            app:startIconTint="@color/primary_trust_blue"
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusTopStart="16dp"
+                            app:boxStrokeColor="@color/primary_trust_blue">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etAddress"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:minLines="1"
-                                android:textColor="#0F172A" />
+                                android:textColor="#1F2937" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
+                            android:layout_marginTop="16dp"
                             android:orientation="horizontal">
 
                             <com.google.android.material.textfield.TextInputLayout
@@ -236,14 +238,14 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:layout_marginEnd="6dp"
+                                android:layout_marginEnd="8dp"
                                 android:hint="Giới tính"
                                 app:startIconDrawable="@drawable/ic_user"
-                                app:startIconTint="#0D9488"
-                                app:boxCornerRadiusBottomEnd="14dp"
-                                app:boxCornerRadiusBottomStart="14dp"
-                                app:boxCornerRadiusTopEnd="14dp"
-                                app:boxCornerRadiusTopStart="14dp">
+                                app:startIconTint="@color/primary_trust_blue"
+                                app:boxCornerRadiusBottomEnd="16dp"
+                                app:boxCornerRadiusBottomStart="16dp"
+                                app:boxCornerRadiusTopEnd="16dp"
+                                app:boxCornerRadiusTopStart="16dp">
 
                                 <AutoCompleteTextView
                                     android:id="@+id/actvGender"
@@ -251,7 +253,7 @@
                                     android:layout_height="wrap_content"
                                     android:inputType="none"
                                     android:padding="16dp"
-                                    android:textColor="#0F172A" />
+                                    android:textColor="#1F2937" />
                             </com.google.android.material.textfield.TextInputLayout>
 
                             <com.google.android.material.textfield.TextInputLayout
@@ -259,14 +261,14 @@
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
                                 android:layout_weight="1"
-                                android:layout_marginStart="6dp"
+                                android:layout_marginStart="8dp"
                                 android:hint="Ngày sinh"
                                 app:startIconDrawable="@drawable/ic_calendar"
-                                app:startIconTint="#0D9488"
-                                app:boxCornerRadiusBottomEnd="14dp"
-                                app:boxCornerRadiusBottomStart="14dp"
-                                app:boxCornerRadiusTopEnd="14dp"
-                                app:boxCornerRadiusTopStart="14dp">
+                                app:startIconTint="@color/primary_trust_blue"
+                                app:boxCornerRadiusBottomEnd="16dp"
+                                app:boxCornerRadiusBottomStart="16dp"
+                                app:boxCornerRadiusTopEnd="16dp"
+                                app:boxCornerRadiusTopStart="16dp">
 
                                 <com.google.android.material.textfield.TextInputEditText
                                     android:id="@+id/etDob"
@@ -274,39 +276,39 @@
                                     android:layout_height="wrap_content"
                                     android:clickable="true"
                                     android:focusable="false"
-                                    android:textColor="#0F172A" />
+                                    android:textColor="#1F2937" />
                             </com.google.android.material.textfield.TextInputLayout>
                         </LinearLayout>
                     </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+                </FrameLayout>
 
                 <!-- Section 2: Thông tin y khoa -->
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginBottom="8dp"
+                    android:layout_marginStart="12dp"
+                    android:layout_marginBottom="12dp"
                     android:text="HỒ SƠ Y TẾ"
-                    android:textColor="#64748B"
-                    android:textSize="12sp"
+                    android:textColor="#6B7280"
+                    android:textSize="11sp"
                     android:textStyle="bold"
-                    android:letterSpacing="0.05" />
+                    android:letterSpacing="0.1" />
 
-                <com.google.android.material.card.MaterialCardView
+                <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="32dp"
-                    app:cardBackgroundColor="@android:color/white"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="2dp"
-                    app:strokeColor="#F1F5F9"
-                    app:strokeWidth="1dp">
+                    android:layout_marginBottom="120dp">
+                    
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_glass_card" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="20dp">
 
                         <com.google.android.material.textfield.TextInputLayout
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -314,93 +316,105 @@
                             android:layout_height="wrap_content"
                             android:hint="Nhóm máu"
                             app:startIconDrawable="@drawable/ic_tooth"
-                            app:startIconTint="#0D9488"
-                            app:boxCornerRadiusBottomEnd="14dp"
-                            app:boxCornerRadiusBottomStart="14dp"
-                            app:boxCornerRadiusTopEnd="14dp"
-                            app:boxCornerRadiusTopStart="14dp">
+                            app:startIconTint="@color/primary_trust_blue"
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusTopStart="16dp">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etBloodType"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:textColor="#0F172A" />
+                                android:textColor="#1F2937" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:hint="Dị ứng"
+                            android:layout_marginTop="16dp"
+                            android:hint="Tiền sử dị ứng"
                             app:startIconDrawable="@drawable/ic_emergency"
                             app:startIconTint="#EF4444"
-                            app:boxCornerRadiusBottomEnd="14dp"
-                            app:boxCornerRadiusBottomStart="14dp"
-                            app:boxCornerRadiusTopEnd="14dp"
-                            app:boxCornerRadiusTopStart="14dp">
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusTopStart="16dp">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etAllergies"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:textColor="#0F172A" />
+                                android:textColor="#1F2937" />
                         </com.google.android.material.textfield.TextInputLayout>
 
                         <com.google.android.material.textfield.TextInputLayout
                             style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
+                            android:layout_marginTop="16dp"
                             android:hint="Bệnh lý nền"
                             app:startIconDrawable="@drawable/ic_medical_services"
-                            app:startIconTint="#0D9488"
-                            app:boxCornerRadiusBottomEnd="14dp"
-                            app:boxCornerRadiusBottomStart="14dp"
-                            app:boxCornerRadiusTopEnd="14dp"
-                            app:boxCornerRadiusTopStart="14dp">
+                            app:startIconTint="@color/primary_trust_blue"
+                            app:boxCornerRadiusBottomEnd="16dp"
+                            app:boxCornerRadiusBottomStart="16dp"
+                            app:boxCornerRadiusTopEnd="16dp"
+                            app:boxCornerRadiusTopStart="16dp">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etUnderlyingConditions"
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:textColor="#0F172A" />
+                                android:textColor="#1F2937" />
                         </com.google.android.material.textfield.TextInputLayout>
                     </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
+                </FrameLayout>
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
+    <!-- Floating Action Buttons Container -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:orientation="vertical"
-        android:padding="20dp">
+        android:padding="20dp"
+        android:background="@drawable/bg_glass_card"
+        android:elevation="8dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSave"
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginBottom="12dp"
-            android:text="Lưu thay đổi"
+            android:text="Lưu thay đổi hồ sơ"
+            android:textAllCaps="false"
             android:textColor="@android:color/white"
+            android:textSize="16sp"
             android:textStyle="bold"
-            app:backgroundTint="#0D9488"
-            app:cornerRadius="16dp"
-            app:elevation="4dp" />
+            app:backgroundTint="@color/primary_trust_blue"
+            app:cornerRadius="28dp"
+            app:elevation="4dp"
+            app:icon="@drawable/ic_check"
+            app:iconGravity="textStart" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnLogout"
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="56dp"
-            android:text="Đăng xuất"
+            android:text="Đăng xuất tài khoản"
+            android:textAllCaps="false"
             android:textColor="#EF4444"
+            android:textSize="15sp"
             app:strokeColor="#EF4444"
-            app:cornerRadius="16dp" />
+            app:strokeWidth="1.5dp"
+            app:cornerRadius="28dp"
+            app:icon="@drawable/ic_logout"
+            app:iconGravity="textStart"
+            app:iconTint="#EF4444" />
     </LinearLayout>
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>
