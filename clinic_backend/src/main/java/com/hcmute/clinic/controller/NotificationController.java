@@ -18,20 +18,19 @@ public class NotificationController {
 
     private final NotificationRepository notificationRepository;
 
-    @GetMapping("/my")
-    public ResponseEntity<?> myNotifications(
-        Authentication auth,
-        @RequestParam(defaultValue = "0") int page,
-        @RequestParam(defaultValue = "20") int size
-    ) {
+    @GetMapping("/me")
+    public ResponseEntity<?> myNotifications(Authentication auth) {
         if (auth == null || auth.getName() == null) {
             return ResponseEntity.status(401).build();
         }
-        long patientId = Long.parseLong(auth.getName());
-        List<Notification> list = notificationRepository.findByPatientIdOrderByCreatedAtDesc(
-            patientId, 
-            PageRequest.of(page, size)
-        );
+        long patientId;
+        try {
+            patientId = Long.parseLong(auth.getName());
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(401).build();
+        }
+
+        List<Notification> list = notificationRepository.findByPatientIdOrderByCreatedAtDesc(patientId);
         List<Map<String, Object>> items = list.stream()
                 .map(n -> Map.<String, Object>of(
                         "id", n.getId(),
@@ -42,12 +41,7 @@ public class NotificationController {
                         "createdAt", n.getCreatedAt() != null ? n.getCreatedAt().toString() : ""
                 ))
                 .toList();
-        return ResponseEntity.ok(Map.of(
-            "content", items,
-            "page", page,
-            "size", size,
-            "totalElements", list.size()
-        ));
+        return ResponseEntity.ok(items);
     }
 
     @PatchMapping("/{id}/read")

@@ -1,0 +1,165 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="420dp"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="12dp"
+    app:cardCornerRadius="28dp"
+    app:cardElevation="4dp"
+    app:strokeWidth="0dp">
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ImageView
+            android:id="@+id/img_doctor"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:scaleType="centerCrop"
+            android:src="@drawable/doctor_avatar_1" />
+
+        <!-- Gradient Scrim for Top Info -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="120dp"
+            android:background="@drawable/scrim_gradient_top" />
+
+        <!-- Bottom Info Container (Glassmorphism Overlay) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="bottom"
+            android:orientation="vertical"
+            android:padding="20dp">
+
+            <TextView
+                android:id="@+id/tv_doctor_name"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Dr. Nguyễn Văn A, DMD"
+                android:textColor="@android:color/white"
+                android:textSize="22sp"
+                android:textStyle="bold"
+                android:shadowColor="#80000000"
+                android:shadowDx="1"
+                android:shadowDy="1"
+                android:shadowRadius="2" />
+
+            <TextView
+                android:id="@+id/tv_specialty"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:text="Khám nội quát"
+                android:textColor="#E2E8F0"
+                android:textSize="14sp" />
+
+            <!-- Overlays: Rating & Location -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:orientation="horizontal">
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="12dp">
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_glass_tag" />
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:gravity="center_vertical">
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_location_pin"
+                            app:tint="@android:color/white" />
+                        <TextView
+                            android:id="@+id/tv_location"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:text="Hà Nội, Việt Nam"
+                            android:textColor="@android:color/white"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </FrameLayout>
+
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_glass_tag" />
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="12dp"
+                        android:paddingVertical="6dp"
+                        android:gravity="center_vertical">
+                        <ImageView
+                            android:layout_width="14dp"
+                            android:layout_height="14dp"
+                            android:src="@drawable/ic_check_circle"
+                            app:tint="#FACC15" />
+                        <TextView
+                            android:id="@+id/tv_trusted"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:text="4.9k Đánh giá"
+                            android:textColor="@android:color/white"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+                </FrameLayout>
+            </LinearLayout>
+
+            <!-- Swipe to Book Button (Mocked with specialized style) -->
+            <FrameLayout
+                android:id="@+id/btn_swipe_to_book"
+                android:layout_width="match_parent"
+                android:layout_height="60dp"
+                android:layout_marginTop="20dp"
+                android:background="@drawable/bg_swipe_button">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:text="Vuốt để Đặt lịch"
+                    android:textColor="@android:color/white"
+                    android:textStyle="bold"
+                    android:textSize="14sp"
+                    android:alpha="0.8" />
+
+                <View
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:layout_gravity="center_vertical|start"
+                    android:layout_marginStart="4dp"
+                    android:background="@drawable/bg_glass_fab" />
+                
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center_vertical|start"
+                    android:layout_marginStart="18dp"
+                    android:src="@drawable/ic_arrow_forward"
+                    app:tint="#3B82F6" />
+            </FrameLayout>
+
+        </LinearLayout>
+    </FrameLayout>
+
+</com.google.android.material.card.MaterialCardView>

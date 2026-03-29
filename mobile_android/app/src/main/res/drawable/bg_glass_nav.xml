@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Main Glass Body -->
+    <item>
+        <shape android:shape="rectangle">
+            <corners android:radius="40dp" /> <!-- Pill shape -->
+            <solid android:color="#D9FFFFFF" /> <!-- 85% White for clearer glass -->
+            <stroke
+                android:width="1.5dp"
+                android:color="#4DFFFFFF" /> <!-- Precise refined border -->
+        </shape>
+    </item>
+
+    <!-- Inner Glow effect -->
+    <item android:top="1dp" android:left="1dp" android:right="1dp" android:bottom="1dp">
+        <shape android:shape="rectangle">
+            <corners android:radius="40dp" />
+            <stroke
+                android:width="1dp"
+                android:color="#1AFFFFFF" />
+        </shape>
+    </item>
+</layer-list>

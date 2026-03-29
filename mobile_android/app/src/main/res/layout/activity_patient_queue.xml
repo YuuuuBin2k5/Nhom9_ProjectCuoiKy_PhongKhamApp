@@ -7,51 +7,60 @@
     android:orientation="vertical"
     android:background="@color/background_gray">
 
-    <!-- Header -->
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:background="@color/primary_trust_blue"
-        android:gravity="center_vertical">
+        android:layout_height="200dp">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_premium_gradient_blue" />
 
         <ImageButton
             android:id="@+id/btnBack"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:layout_margin="16dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:src="@drawable/ic_arrow_back"
-            android:contentDescription="Quay lại"
             app:tint="@android:color/white" />
 
         <TextView
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="32dp"
             android:text="Trạng thái hàng đợi"
             android:textColor="@android:color/white"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginStart="16dp" />
+            android:textSize="22sp"
+            android:textStyle="bold" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnRefresh"
             style="@style/Widget.Material3.Button.IconButton"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:layout_alignParentEnd="true"
+            android:layout_margin="16dp"
             app:icon="@drawable/ic_refresh"
             app:iconTint="@android:color/white"
-            app:backgroundTint="@android:color/transparent"
-            android:contentDescription="Làm mới" />
-
-    </LinearLayout>
+            app:backgroundTint="@android:color/transparent" />
+            
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_centerHorizontal="true"
+            android:layout_marginTop="75dp"
+            android:text="Theo dõi số thứ tự của bạn trực tuyến"
+            android:textColor="#CCFFFFFF"
+            android:textSize="13sp" />
+    </RelativeLayout>
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout
         android:id="@+id/swipeRefresh"
         android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1">
+        android:layout_height="match_parent"
+        android:layout_marginTop="-60dp">
 
         <ScrollView
             android:layout_width="match_parent"
@@ -62,18 +71,24 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="20dp">
 
-                <!-- Queue Status Card -->
+                <!-- Queue Status Card (Glassmorphism) -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardQueueStatus"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="24dp"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="8dp"
+                    app:cardElevation="0dp"
+                    app:cardCornerRadius="24dp"
+                    app:cardBackgroundColor="@android:color/transparent"
                     app:strokeWidth="1dp"
-                    app:strokeColor="@color/border_gray">
+                    app:strokeColor="#1AFFFFFF">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_glass_card" />
 
                     <LinearLayout
                         android:id="@+id/layoutQueueInfo"
@@ -84,106 +99,110 @@
                         android:gravity="center"
                         android:visibility="gone">
 
-                        <!-- Queue Number (Large) -->
                         <TextView
                             android:id="@+id/tvQueueNumber"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="15"
-                            android:textSize="72sp"
+                            android:textSize="84sp"
                             android:textStyle="bold"
                             android:textColor="@color/primary_trust_blue"
-                            android:layout_marginBottom="8dp" />
+                            android:shadowColor="#33000000"
+                            android:shadowDx="2"
+                            android:shadowDy="2"
+                            android:shadowRadius="4" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Số thứ tự của bạn"
-                            android:textSize="16sp"
-                            android:textColor="@color/text_secondary"
-                            android:layout_marginBottom="24dp" />
+                            android:text="SỐ THỨ TỰ CỦA BẠN"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.1"
+                            android:textColor="#6B7280"
+                            android:layout_marginBottom="20dp" />
 
-                        <!-- Status -->
                         <TextView
                             android:id="@+id/tvStatus"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
+                            android:background="@drawable/bg_pill_search"
+                            android:backgroundTint="#F0FDF4"
                             android:text="Đang chờ khám"
-                            android:textSize="20sp"
+                            android:paddingHorizontal="16dp"
+                            android:paddingVertical="4dp"
+                            android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="@color/text_primary"
-                            android:layout_marginBottom="16dp" />
+                            android:textColor="#16A34A"
+                            android:layout_marginBottom="24dp" />
 
-                        <!-- Queue Info -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:background="@color/background_gray"
-                            android:padding="16dp"
-                            android:layout_marginTop="16dp">
+                            android:background="@drawable/bg_glass_card"
+                            android:alpha="0.8"
+                            android:padding="20dp">
 
                             <TextView
                                 android:id="@+id/tvQueuePosition"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Vị trí: 5"
-                                android:textSize="16sp"
-                                android:textColor="@color/text_primary"
-                                android:layout_marginBottom="8dp"
+                                android:text="Vị trí hiện tại: 5"
+                                android:textSize="15sp"
+                                android:textColor="#374151"
+                                android:layout_marginBottom="12dp"
                                 android:drawableStart="@drawable/ic_queue"
-                                android:drawablePadding="8dp"
-                                app:drawableTint="@color/text_secondary" />
+                                android:drawablePadding="12dp"
+                                app:drawableTint="@color/primary_trust_blue" />
 
                             <TextView
                                 android:id="@+id/tvEstimatedTime"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Ước tính: 30 phút"
-                                android:textSize="16sp"
-                                android:textColor="@color/text_primary"
-                                android:layout_marginBottom="8dp"
+                                android:text="Ước tính: ~30 phút"
+                                android:textSize="15sp"
+                                android:textColor="#374151"
+                                android:layout_marginBottom="12dp"
                                 android:drawableStart="@drawable/ic_schedule"
-                                android:drawablePadding="8dp"
-                                app:drawableTint="@color/text_secondary" />
+                                android:drawablePadding="12dp"
+                                app:drawableTint="@color/primary_trust_blue" />
 
                             <TextView
                                 android:id="@+id/tvRoomName"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Phòng khám 1"
-                                android:textSize="16sp"
-                                android:textColor="@color/text_primary"
+                                android:text="Phòng 01 — Tầng G"
+                                android:textSize="15sp"
+                                android:textColor="#374151"
                                 android:drawableStart="@drawable/ic_clinic"
-                                android:drawablePadding="8dp"
-                                app:drawableTint="@color/text_secondary" />
-
+                                android:drawablePadding="12dp"
+                                app:drawableTint="@color/primary_trust_blue" />
                         </LinearLayout>
-
                     </LinearLayout>
 
-                    <!-- Not Checked In Layout -->
+                    <!-- Not Checked In (Glassmorphism Lite) -->
                     <LinearLayout
                         android:id="@+id/layoutNotCheckedIn"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="32dp"
+                        android:padding="40dp"
                         android:gravity="center"
                         android:visibility="visible">
 
                         <ImageView
-                            android:layout_width="80dp"
-                            android:layout_height="80dp"
-                            android:src="@drawable/ic_qr_code"
-                            app:tint="@color/text_secondary"
-                            android:layout_marginBottom="16dp" />
+                            android:layout_width="100dp"
+                            android:layout_height="100dp"
+                            android:src="@drawable/ic_3d_root_canal_premium"
+                            android:layout_marginBottom="20dp"
+                            android:alpha="0.8"/>
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Chưa check-in"
-                            android:textSize="20sp"
+                            android:textSize="22sp"
                             android:textStyle="bold"
                             android:textColor="@color/text_primary"
                             android:layout_marginBottom="8dp" />
@@ -191,63 +210,56 @@
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Vui lòng check-in để xem trạng thái hàng đợi"
+                            android:text="Vui lòng quét mã QR tại quầy lễ tân để nhận số thứ tự khám"
                             android:textSize="14sp"
-                            android:textColor="@color/text_secondary"
+                            android:textColor="#6B7280"
                             android:textAlignment="center"
-                            android:layout_marginBottom="24dp" />
+                            android:layout_marginBottom="32dp" />
 
                         <com.google.android.material.button.MaterialButton
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Đi check-in"
-                            app:backgroundTint="@color/secondary_calm_teal"
+                            android:layout_width="match_parent"
+                            android:layout_height="56dp"
+                            android:text="Đến trang Check-in"
+                            android:textAllCaps="false"
+                            app:backgroundTint="@color/primary_trust_blue"
+                            app:cornerRadius="28dp"
                             app:icon="@drawable/ic_qr_code"
-                            app:iconSize="18dp"
+                            app:iconGravity="textStart"
                             android:onClick="finish" />
-
                     </LinearLayout>
-
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Instructions Card -->
-                <com.google.android.material.card.MaterialCardView
+                <!-- Instructions -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="4dp">
+                    android:orientation="vertical"
+                    android:padding="20dp"
+                    android:background="@drawable/bg_glass_card">
 
-                    <LinearLayout
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Hướng dẫn hàng đợi"
+                        android:textSize="16sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"
+                        android:layout_marginBottom="12dp" />
+
+                    <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="20dp">
+                        android:text="• Cập nhật tự động mỗi 30 giây\n• Kéo xuống để làm mới ngay\n• Thông báo sẽ rung khi đến lượt\n• Có mặt tại cửa phòng trước 5 phút"
+                        android:textSize="14sp"
+                        android:textColor="#6B7280"
+                        android:lineSpacingExtra="6dp" />
+                </LinearLayout>
 
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Hướng dẫn"
-                            android:textSize="18sp"
-                            android:textStyle="bold"
-                            android:textColor="@color/text_primary"
-                            android:layout_marginBottom="12dp" />
-
-                        <TextView
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="• Màn hình sẽ tự động cập nhật mỗi 30 giây\n• Kéo xuống để làm mới thủ công\n• Khi đến lượt, bạn sẽ nhận được thông báo\n• Vui lòng có mặt tại phòng khám đúng giờ"
-                            android:textSize="14sp"
-                            android:textColor="@color/text_secondary"
-                            android:lineSpacingExtra="4dp" />
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="100dp" />
 
             </LinearLayout>
-
         </ScrollView>
-
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
 </LinearLayout>

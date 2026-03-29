@@ -199,7 +199,7 @@ public class CheckInQueueService {
         return appointmentRepository.save(walkInAppt);
     }
 
-    private int calculateEstimatedWaitTime(CheckInQueue current) {
+    public int calculateEstimatedWaitTime(CheckInQueue current) {
         if (current == null || current.getClinicRoom() == null) return 0;
         
         LocalDate today = LocalDate.now();
@@ -655,10 +655,9 @@ public class CheckInQueueService {
             
             // Find today's appointment for this patient
             List<Appointment> todayAppointments = appointmentRepository.findTodayByPatientId(patient.getId());
-            if (todayAppointments.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bệnh nhân không có lịch hẹn hôm nay");
+            if (!todayAppointments.isEmpty()) {
+                appointment = todayAppointments.get(0);
             }
-            appointment = todayAppointments.get(0);
         }
         // Find patient by phone
         else if (request.getPatientPhone() != null && !request.getPatientPhone().isBlank()) {
@@ -666,25 +665,39 @@ public class CheckInQueueService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bệnh nhân với số điện thoại này"));
             
             List<Appointment> todayAppointments = appointmentRepository.findTodayByPatientId(patient.getId());
-            if (todayAppointments.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bệnh nhân không có lịch hẹn hôm nay");
+            if (!todayAppointments.isEmpty()) {
+                appointment = todayAppointments.get(0);
             }
-            appointment = todayAppointments.get(0);
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cần cung cấp appointmentId, patientId hoặc patientPhone");
         }
 
         // Generate QR data
-        String qrData = "CHECKIN:" + appointment.getId();
-        String displayCode = String.valueOf(appointment.getId());
+        String qrData;
+        String displayCode;
+        String expiresAt;
+        Long apptId = null;
+
+        if (appointment != null) {
+            qrData = "CHECKIN:" + appointment.getId();
+            displayCode = String.valueOf(appointment.getId());
+            expiresAt = appointment.getAppointmentDatetime().toLocalDate().plusDays(1).toString();
+            apptId = appointment.getId();
+        } else {
+            // Fallback for new users / walk-in
+            qrData = "patient:" + patient.getId();
+            displayCode = "PATIENT-" + patient.getId();
+            expiresAt = LocalDate.now().plusDays(365).toString(); // Long-lived static QR
+        }
+
         String patientName = (patient.getLastName() + " " + patient.getFirstName()).trim();
 
         return com.hcmute.clinic.dto.GenerateCheckInQRResponse.builder()
                 .qrData(qrData)
                 .displayCode(displayCode)
                 .patientName(patientName)
-                .appointmentId(appointment.getId())
-                .expiresAt(appointment.getAppointmentDatetime().toLocalDate().plusDays(1).toString())
+                .appointmentId(apptId)
+                .expiresAt(expiresAt)
                 .build();
     }
 }

@@ -10,16 +10,18 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.hcmute.mobile_android.util.ToastUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.google.android.material.tabs.TabLayout;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.hcmute.mobile_android.R;
@@ -32,9 +34,12 @@ import com.hcmute.mobile_android.network.models.PatientMeResponse;
 import com.hcmute.mobile_android.network.models.ServiceItem;
 import com.hcmute.mobile_android.network.models.UpcomingAppointment;
 import com.hcmute.mobile_android.ui.activities.GenericListActivity;
+import com.hcmute.mobile_android.ui.activities.MainActivity;
 import com.hcmute.mobile_android.ui.activities.PatientQueueActivity;
 import com.hcmute.mobile_android.ui.activities.QRCheckInActivity;
 import com.hcmute.mobile_android.ui.activities.ServiceDetailActivity;
+
+import com.bumptech.glide.Glide;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -52,12 +57,9 @@ public class PatientDashboardFragment extends Fragment {
     private TextView tvPatientName;
     private ImageView ivAvatar;
 
-    // Header Actions
-    private MaterialButton btnEmergency;
-
     // Grid / Slide lists
-    private RecyclerView rvCategories, rvServices, rvDoctors;
-    private CategoryAdapter categoryAdapterPremium;
+    private RecyclerView rvServices, rvDoctors;
+    private TabLayout tabsCategories;
     private ServiceAdapter serviceAdapter;
     private DoctorAdapter doctorAdapter;
     private List<ServiceItem> allServices = new ArrayList<>();
@@ -97,10 +99,7 @@ public class PatientDashboardFragment extends Fragment {
         tvPatientName = view.findViewById(R.id.tvPatientName);
         ivAvatar = view.findViewById(R.id.ivAvatar);
         
-        btnEmergency = view.findViewById(R.id.btnEmergency); 
-        
-        
-        rvCategories = view.findViewById(R.id.rvCategories);
+        tabsCategories = view.findViewById(R.id.tabs_categories);
         rvServices = view.findViewById(R.id.rv_services);
         rvDoctors = view.findViewById(R.id.rv_doctors);
         
@@ -113,7 +112,6 @@ public class PatientDashboardFragment extends Fragment {
         
         swipeRefresh.setOnRefreshListener(this::loadPatientData);
         btnViewQueue.setOnClickListener(v -> openQueueStatus());
-        btnEmergency.setOnClickListener(v -> Toast.makeText(requireContext(), "Call Emergency", Toast.LENGTH_SHORT).show());
         
         View btnAllDv = view.findViewById(R.id.all_dv);
         if (btnAllDv != null) btnAllDv.setOnClickListener(v -> openList(GenericListActivity.MODE_SERVICES));
@@ -121,13 +119,52 @@ public class PatientDashboardFragment extends Fragment {
         View btnAllBs = view.findViewById(R.id.all_bs);
         if (btnAllBs != null) btnAllBs.setOnClickListener(v -> openList(GenericListActivity.MODE_DOCTORS));
 
-        View ivLogout = view.findViewById(R.id.iv_logout);
-        if (ivLogout != null) ivLogout.setOnClickListener(v -> logout());
+        View ivNotifications = view.findViewById(R.id.iv_notifications);
+        if (ivNotifications != null) {
+            ivNotifications.setOnClickListener(v -> {
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).onNavigateToNotifications();
+                }
+            });
+        }
 
-        // Setup Avatar click
-        View avatarContainer = view.findViewById(R.id.rlAvatarContainer);
-        if (avatarContainer != null) {
-            avatarContainer.setOnClickListener(v -> {
+        View btnBanner = view.findViewById(R.id.btnBannerAction);
+        if (btnBanner != null) {
+            btnBanner.setOnClickListener(v -> {
+                // Open Dental Scaling or similar service
+                // Attempt to find a service with "Scaling" in name from loaded list
+                ServiceItem scalingService = null;
+                for (ServiceItem s : allServices) {
+                    if (s.getName() != null && s.getName().toLowerCase().contains("scaling")) {
+                        scalingService = s;
+                        break;
+                    }
+                }
+                
+                if (scalingService != null) {
+                    Intent intent = new Intent(requireContext(), ServiceDetailActivity.class);
+                    intent.putExtra("id", scalingService.getId());
+                    intent.putExtra("name", scalingService.getName());
+                    intent.putExtra("price", scalingService.getPrice());
+                    intent.putExtra("description", scalingService.getDescription());
+                    startActivity(intent);
+                } else {
+                    // Fallback: search for all services
+                    openList(GenericListActivity.MODE_SERVICES);
+                }
+            });
+        }
+
+        View headerQr = view.findViewById(R.id.ivHeaderQrScan);
+        if (headerQr != null) {
+            headerQr.setOnClickListener(v -> {
+                startActivity(new Intent(requireContext(), QRCheckInActivity.class));
+            });
+        }
+
+        View avatar = view.findViewById(R.id.ivAvatar);
+        if (avatar != null) {
+            avatar.setOnClickListener(v -> {
                 startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.MedicalRecordActivity.class));
             });
         }
@@ -136,18 +173,13 @@ public class PatientDashboardFragment extends Fragment {
     private void setupAdapters() {
         if (!isAdded()) return;
 
-        // Categories
-        rvCategories.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
-        categoryAdapterPremium = new CategoryAdapter();
-        rvCategories.setAdapter(categoryAdapterPremium);
-        
-        // Services
-        rvServices.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        // Services (2-column grid)
+        rvServices.setLayoutManager(new GridLayoutManager(requireContext(), 2));
         serviceAdapter = new ServiceAdapter();
         rvServices.setAdapter(serviceAdapter);
         
-        // Doctors
-        rvDoctors.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
+        // Doctors (Vertical)
+        rvDoctors.setLayoutManager(new LinearLayoutManager(requireContext()));
         doctorAdapter = new DoctorAdapter();
         rvDoctors.setAdapter(doctorAdapter);
 
@@ -160,7 +192,6 @@ public class PatientDashboardFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        // Load data on resume to ensure it's fresh after returning from other activities
         if (apiService != null) {
             loadPatientData();
         }
@@ -182,17 +213,14 @@ public class PatientDashboardFragment extends Fragment {
             public void onResponse(Call<PatientMeResponse> call, Response<PatientMeResponse> response) {
                 if (!isAdded()) return;
 
-                if (!isAdded()) return;
-
                 if (response.isSuccessful() && response.body() != null) {
                     currentPatient = response.body();
                     if (currentPatient.getId() != null) {
                         new TokenManager(requireContext()).savePatientId(currentPatient.getId());
                     }
                     String fullName = (currentPatient.getLastName() + " " + currentPatient.getFirstName()).trim();
-                    tvPatientName.setText("Hi " + fullName + " \uD83D\uDC4B");
+                    tvPatientName.setText(fullName);
                     
-                    // Check missing profile info
                     boolean isMissingInfo = currentPatient.getPhone() == null || currentPatient.getPhone().isEmpty() ||
                             currentPatient.getEmail() == null || currentPatient.getEmail().isEmpty() ||
                             currentPatient.getAddress() == null || currentPatient.getAddress().isEmpty();
@@ -202,8 +230,7 @@ public class PatientDashboardFragment extends Fragment {
                         warningIcon.setVisibility(isMissingInfo ? View.VISIBLE : View.GONE);
                     }
                 } else if (response.code() == 404 || response.code() == 401) {
-                    // Patient not found in this database instance
-                    Toast.makeText(requireContext(), "Phiên làm việc hết hạn. Vui lòng đăng nhập lại.", Toast.LENGTH_LONG).show();
+                    ToastUtils.showCenteredToastLong(requireContext(), "Phiên làm việc hết hạn. Vui lòng đăng nhập lại.");
                     logout();
                 }
                 swipeRefresh.setRefreshing(false);
@@ -212,8 +239,7 @@ public class PatientDashboardFragment extends Fragment {
             @Override
             public void onFailure(Call<PatientMeResponse> call, Throwable t) {
                 if (!isAdded()) return;
-                if (!isAdded()) return;
-                Toast.makeText(requireContext(), "Lỗi tải thông tin bệnh nhân", Toast.LENGTH_SHORT).show();
+                ToastUtils.showCenteredToast(requireContext(), "Lỗi tải thông tin bệnh nhân");
                 swipeRefresh.setRefreshing(false);
             }
         });
@@ -302,8 +328,6 @@ public class PatientDashboardFragment extends Fragment {
         });
     }
 
-
-
     private void openQueueStatus() {
         if (isAdded()) {
             startActivity(new Intent(requireContext(), PatientQueueActivity.class));
@@ -330,6 +354,10 @@ public class PatientDashboardFragment extends Fragment {
     }
 
     private void openList(String mode) {
+        if (GenericListActivity.MODE_DOCTORS.equals(mode)) {
+            startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.DoctorListActivity.class));
+            return;
+        }
         Intent i = new Intent(requireContext(), GenericListActivity.class);
         i.putExtra(GenericListActivity.EXTRA_MODE, mode);
         startActivity(i);
@@ -350,16 +378,31 @@ public class PatientDashboardFragment extends Fragment {
     }
 
     private void extractCategories(List<ServiceItem> list) {
+        if (tabsCategories == null) return;
         List<String> cats = new ArrayList<>();
+        cats.add("All");
         for (ServiceItem s : list) {
             String c = s.getCategoryName();
             if (c != null && !c.isEmpty() && !cats.contains(c)) {
                 cats.add(c);
             }
         }
-        if (categoryAdapterPremium != null) {
-            categoryAdapterPremium.updateItems(cats);
+        
+        tabsCategories.removeAllTabs();
+        for (String cat : cats) {
+            tabsCategories.addTab(tabsCategories.newTab().setText(cat.equals("All") ? "Tất cả" : cat).setTag(cat));
         }
+
+        tabsCategories.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                if (tab.getTag() != null) {
+                    filterServices((String) tab.getTag());
+                }
+            }
+            @Override public void onTabUnselected(TabLayout.Tab tab) {}
+            @Override public void onTabReselected(TabLayout.Tab tab) {}
+        });
     }
 
     private static class ServiceAdapter extends RecyclerView.Adapter<ServiceAdapter.Holder> {
@@ -383,10 +426,25 @@ public class PatientDashboardFragment extends Fragment {
         public void onBindViewHolder(@NonNull Holder holder, int position) {
             ServiceItem s = items.get(position);
             holder.tvName.setText(s.getName() != null ? s.getName() : "Dịch vụ");
-            holder.tvPrice.setText(formatPrice(s.getPrice()));
-            int dur = s.getDurationMinutes() != null ? s.getDurationMinutes() : 0;
-            holder.tvDuration.setText(dur + " phút •");
             
+            // Map Premium 3D Icons
+            String name = s.getName().toLowerCase();
+            if (name.contains("niềng") || name.contains("braces")) {
+                holder.ivIcon.setImageResource(R.drawable.ic_3d_braces_premium);
+            } else if (name.contains("sứ") || name.contains("crown")) {
+                holder.ivIcon.setImageResource(R.drawable.ic_3d_crown);
+            } else if (name.contains("cao răng") || name.contains("scaling") || name.contains("quang")) {
+                holder.ivIcon.setImageResource(R.drawable.ic_3d_xray_premium);
+            } else if (name.contains("tủy") || name.contains("root canal")) {
+                holder.ivIcon.setImageResource(R.drawable.ic_3d_root_canal_premium);
+            } else if (name.contains("implant")) {
+                holder.ivIcon.setImageResource(R.drawable.ic_3d_implant_premium);
+            } else if (name.contains("phẫu thuật") || name.contains("nhổ")) {
+                holder.ivIcon.setImageResource(R.drawable.ic_3d_scaling_tools);
+            } else {
+                holder.ivIcon.setImageResource(R.drawable.ic_3d_whitening_premium);
+            }
+
             holder.itemView.setOnClickListener(v -> {
                 Intent intent = new Intent(v.getContext(), ServiceDetailActivity.class);
                 intent.putExtra("id", s.getId());
@@ -407,18 +465,14 @@ public class PatientDashboardFragment extends Fragment {
             return items.size();
         }
 
-        private String formatPrice(double p) {
-            return NumberFormat.getNumberInstance(new Locale("vi", "VN")).format((long) p) + "đ";
-        }
-
         static class Holder extends RecyclerView.ViewHolder {
-            TextView tvName, tvPrice, tvDuration;
+            TextView tvName;
+            ImageView ivIcon;
 
             Holder(View v) {
                 super(v);
                 tvName = v.findViewById(R.id.tvServiceName);
-                tvPrice = v.findViewById(R.id.tvServicePrice);
-                tvDuration = v.findViewById(R.id.tvDuration);
+                ivIcon = v.findViewById(R.id.ivServiceIcon);
             }
         }
     }
@@ -443,19 +497,50 @@ public class PatientDashboardFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull Holder holder, int position) {
             DoctorItem d = items.get(position);
-            holder.tvName.setText("BS. " + d.getFullName());
-            holder.tvSpecialization.setText(d.getSpecialization() != null && !d.getSpecialization().isEmpty()
-                    ? d.getSpecialization() : "Bác sĩ Gia đình");
-            holder.tvRating.setText("4." + (8 - (position % 4))); // Mock rating
+            String rawName = d.getFullName();
+            String displayName = rawName.startsWith("BS.") ? rawName : "BS. " + rawName;
+            holder.tvName.setText(displayName);
 
-            holder.itemView.setOnClickListener(v -> {
+            String spec = d.getSpecialization();
+            holder.tvSpecialty.setText(spec != null && !spec.isEmpty() ? spec : "Nha khoa đa khoa");
+
+            String room = d.getRoomName();
+            holder.tvLocation.setText(room != null && !room.isEmpty() ? room : "Phòng khám");
+
+            Integer years = d.getExperienceYears();
+            if (years != null && years > 0) {
+                holder.tvTrusted.setText(years + " năm KN");
+            } else if (d.getAppointmentCount() > 0) {
+                holder.tvTrusted.setText(d.getAppointmentCount() + "+ lượt khám");
+            } else {
+                holder.tvTrusted.setText("Đội ngũ giàu kinh nghiệm");
+            }
+
+            if (d.getAvatarUrl() != null && !d.getAvatarUrl().isEmpty()) {
+                Glide.with(holder.imgDoctor.getContext())
+                        .load(d.getAvatarUrl())
+                        .centerCrop()
+                        .placeholder(R.drawable.ic_doctor)
+                        .error(R.drawable.ic_doctor)
+                        .into(holder.imgDoctor);
+            } else {
+                holder.imgDoctor.setImageResource(R.drawable.ic_doctor);
+            }
+
+            // Handle Clicks
+            View.OnClickListener bookingAction = v -> {
                 Intent intent = new Intent(v.getContext(), com.hcmute.mobile_android.ui.activities.DoctorDetailActivity.class);
                 intent.putExtra("doctorId", d.getId());
-                intent.putExtra("doctorName", "BS. " + d.getFullName());
+                intent.putExtra("doctorName", (d.getFullName().startsWith("BS.") ? "" : "BS. ") + d.getFullName());
                 intent.putExtra("specialization", d.getSpecialization() != null && !d.getSpecialization().isEmpty()
-                        ? d.getSpecialization() : "Bác sĩ Gia đình");
+                        ? d.getSpecialization() : "General Dentist");
                 v.getContext().startActivity(intent);
-            });
+            };
+
+            holder.itemView.setOnClickListener(bookingAction);
+            if (holder.btnBook != null) {
+                holder.btnBook.setOnClickListener(bookingAction);
+            }
         }
 
         @Override
@@ -464,76 +549,18 @@ public class PatientDashboardFragment extends Fragment {
         }
 
         static class Holder extends RecyclerView.ViewHolder {
-            TextView tvName, tvSpecialization, tvRating;
+            TextView tvName, tvSpecialty, tvLocation, tvTrusted;
+            ImageView imgDoctor;
+            View btnBook;
 
             Holder(View v) {
                 super(v);
-                tvName = v.findViewById(R.id.tvDoctorName);
-                tvSpecialization = v.findViewById(R.id.tvSpecialization);
-                tvRating = v.findViewById(R.id.tvRating);
-            }
-        }
-    }
-    
-    private class CategoryAdapter extends RecyclerView.Adapter<CategoryAdapter.Holder> {
-        private List<String> items = new ArrayList<>();
-        private int selectedPosition = 0;
-
-        CategoryAdapter() {}
-
-        void updateItems(List<String> list) {
-            items = new ArrayList<>(list != null ? list : new ArrayList<>());
-            if (!items.contains("All")) {
-                items.add(0, "All");
-            }
-            notifyDataSetChanged();
-        }
-
-        @NonNull
-        @Override
-        public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_category_premium, parent, false);
-            return new Holder(v);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull Holder holder, int position) {
-            String cat = items.get(position);
-            holder.tvName.setText(cat.equals("All") ? "Tất cả" : cat);
-
-            if (position == selectedPosition) {
-                holder.flBg.setBackgroundResource(R.drawable.bg_category_icon_premium);
-                holder.tvName.setTextColor(android.graphics.Color.parseColor("#1CB1A6"));
-            } else {
-                holder.flBg.setBackgroundColor(android.graphics.Color.TRANSPARENT);
-                holder.tvName.setTextColor(android.graphics.Color.parseColor("#757575"));
-            }
-
-            holder.itemView.setOnClickListener(v -> {
-                int currentPos = holder.getAdapterPosition();
-                if (currentPos == RecyclerView.NO_POSITION) return;
-                
-                int oldPos = selectedPosition;
-                selectedPosition = currentPos;
-                notifyItemChanged(oldPos);
-                notifyItemChanged(selectedPosition);
-                filterServices(items.get(currentPos));
-            });
-        }
-
-        @Override
-        public int getItemCount() {
-            return items.size();
-        }
-
-        class Holder extends RecyclerView.ViewHolder {
-            TextView tvName;
-            View flBg;
-
-            Holder(View v) {
-                super(v);
-                tvName = v.findViewById(R.id.tvCategoryName);
-                flBg = v.findViewById(R.id.flCategoryBg);
+                tvName = v.findViewById(R.id.tv_doctor_name);
+                tvSpecialty = v.findViewById(R.id.tv_specialty);
+                tvLocation = v.findViewById(R.id.tv_location);
+                tvTrusted = v.findViewById(R.id.tv_trusted);
+                imgDoctor = v.findViewById(R.id.img_doctor);
+                btnBook = v.findViewById(R.id.btn_swipe_to_book);
             }
         }
     }

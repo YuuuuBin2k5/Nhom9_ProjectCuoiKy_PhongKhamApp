@@ -14,6 +14,7 @@ import java.util.Optional;
 
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
+    List<Appointment> findByPatientIdAndStatus(Long patientId, AppointmentStatus status);
 
     List<Appointment> findByPatientIdAndAppointmentDatetimeBetweenOrderByAppointmentDatetimeAsc(
             Long patientId, java.time.LocalDateTime start, java.time.LocalDateTime end);
@@ -42,7 +43,7 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     }
 
     default List<Appointment> findUpcomingByPatientId(Long patientId, int daysAhead) {
-        LocalDateTime from = LocalDateTime.now();
+        LocalDateTime from = LocalDate.now().atStartOfDay();
         LocalDateTime to = LocalDate.now().plusDays(daysAhead).atTime(23, 59, 59);
         return findByPatientIdAndAppointmentDatetimeBetweenOrderByAppointmentDatetimeAsc(
                 patientId, from, to);

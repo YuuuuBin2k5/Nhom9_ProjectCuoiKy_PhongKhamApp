@@ -56,7 +56,10 @@ public class QRCheckInActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
+        androidx.appcompat.widget.Toolbar toolbar = findViewById(R.id.toolbar);
+        if (toolbar != null) {
+            toolbar.setNavigationOnClickListener(v -> finish());
+        }
         
         cardQRCode = findViewById(R.id.cardQRCode);
         ivQRCode = findViewById(R.id.ivQRCode);

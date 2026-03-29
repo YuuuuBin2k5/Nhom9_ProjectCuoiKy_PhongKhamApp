@@ -27,7 +27,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
         // Determine role at startup
@@ -79,11 +78,7 @@ public class MainActivity extends AppCompatActivity
             bottomNav.getMenu().findItem(R.id.nav_qr).setVisible(false);
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        // Padding handled by layout margins
     }
 
     // ─── HomeFragment.HomeCallbacks ─────────────────────────────────────────────
@@ -92,8 +87,5 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onNavigateToNotifications() {
         bottomNav.setSelectedItemId(R.id.nav_notifications);
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragmentContainer, new NotificationsFragment())
-                .commit();
     }
 }

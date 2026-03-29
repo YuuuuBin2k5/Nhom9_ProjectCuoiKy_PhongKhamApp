@@ -71,6 +71,12 @@ public interface ApiService {
     @GET("api/notifications/me")
     Call<List<com.hcmute.mobile_android.network.models.NotificationItem>> getMyNotifications();
 
+    @PATCH("api/notifications/{id}/read")
+    Call<MessageResponse> markNotificationAsRead(@Path("id") long id);
+
+    @PATCH("api/notifications/read-all")
+    Call<MessageResponse> markAllNotificationsAsRead();
+
     @GET("api/patients/me/appointments/upcoming")
     Call<List<com.hcmute.mobile_android.network.models.UpcomingAppointment>> getUpcomingAppointments();
 
@@ -88,6 +94,9 @@ public interface ApiService {
 
     @POST("api/appointments")
     Call<com.hcmute.mobile_android.network.models.UpcomingAppointment> createAppointment(@Body CreateAppointmentRequest request);
+
+    @POST("api/appointments/{id}/cancel")
+    Call<com.hcmute.mobile_android.network.models.UpcomingAppointment> cancelAppointment(@Path("id") Long id);
 
     @POST("api/auth/otp/request")
     Call<MessageResponse> requestOtp(@Body OtpRequest request);

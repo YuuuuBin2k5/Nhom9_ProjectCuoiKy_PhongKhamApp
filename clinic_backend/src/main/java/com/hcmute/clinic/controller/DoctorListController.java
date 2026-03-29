@@ -40,8 +40,8 @@ public class DoctorListController {
         List<DoctorDto> dtos = doctorRepository.findAll().stream()
                 .filter(d -> d.isActive())
                 .filter(d -> {
-                    // Loại trừ các bác sĩ thuộc phòng chuyên biệt/kỹ thuật
-                    if (d.getClinicRoom() != null) {
+                    // Loại trừ các bác sĩ thuộc phòng chuyên biệt/kỹ thuật khi liệt kê danh sách chung
+                    if (finalFilterName == null && d.getClinicRoom() != null) {
                         String roomName = d.getClinicRoom().getName().toLowerCase();
                         if (roomName.contains("x-quang") || 
                             roomName.contains("xét nghiệm") || 
@@ -54,20 +54,9 @@ public class DoctorListController {
                     if (finalFilterName == null) return true;
                     String spec = d.getSpecialization();
                     if (spec == null || spec.isEmpty()) return false;
-                    String lspec = spec.toLowerCase();
+                    String lspec = spec.toLowerCase().trim();
                     
-                    // Logic lọc bác sĩ theo dịch vụ:
-                    // 1. Phải khớp chuyên môn (ví dụ: Dịch vụ "Nhổ răng" -> Chuyên môn "Ngoại khoa" hoặc "Phẫu thuật")
-                    // 2. Hoặc khớp tên dịch vụ (ví dụ: Dịch vụ "Khám tổng quát" -> Chuyên môn "Tổng quát")
-                    if (lspec.contains(finalFilterName) || finalFilterName.contains(lspec)) return true;
-                    
-                    // Mở rộng logic match một số từ khóa đặc trưng
-                    if (finalFilterName.contains("khám") && (lspec.contains("tổng quát") || lspec.contains("tư vấn"))) return true;
-                    if (finalFilterName.contains("răng") && lspec.contains("nha khoa")) return true;
-                    if (finalFilterName.contains("nhổ") && (lspec.contains("phẫu thuật") || lspec.contains("ngoại"))) return true;
-                    if (finalFilterName.contains("niềng") && lspec.contains("chỉnh nha")) return true;
-
-                    return false;
+                    return lspec.contains(finalFilterName.trim());
                 })
                 .map(d -> new DoctorDto(
                         d.getId(),

@@ -57,8 +57,8 @@ public class SecurityConfig {
                         "/api/checkin/scan",
                         "/api/upload",
                         "/api/treatment-templates",
-                        "/api/services",
-                        "/api/doctors",
+                        "/api/services/**",
+                        "/api/doctors/**",
                         "/uploads/**",
                         "/doctor.html",
                         "/scanner.html",
@@ -72,11 +72,16 @@ public class SecurityConfig {
                 .requestMatchers("/api/checkin/qr-token").hasRole("PATIENT")
                 .requestMatchers("/api/checkin/self-scan").hasRole("PATIENT")
                 .requestMatchers("/api/patients/me/**").hasRole("PATIENT")
+                .requestMatchers("/api/appointments/**").hasAnyRole("PATIENT", "DOCTOR", "ADMIN", "RECEPTIONIST")
                 .requestMatchers("/api/reception/**").hasRole("RECEPTIONIST")
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/doctor/**").hasRole("DOCTOR")
+
                 .anyRequest().authenticated()
             )
+            .exceptionHandling(ex -> ex.authenticationEntryPoint((request, response, authException) -> {
+                response.sendError(jakarta.servlet.http.HttpServletResponse.SC_UNAUTHORIZED, "Unauthorized");
+            }))
             .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();

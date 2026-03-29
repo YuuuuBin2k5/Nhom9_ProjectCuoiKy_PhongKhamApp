@@ -26,5 +26,6 @@ public class NotificationItem {
     public String getMessage() { return message; }
     public String getType() { return type; }
     public boolean isRead() { return isRead; }
+    public void setRead(boolean read) { isRead = read; }
     public String getCreatedAt() { return createdAt; }
 }

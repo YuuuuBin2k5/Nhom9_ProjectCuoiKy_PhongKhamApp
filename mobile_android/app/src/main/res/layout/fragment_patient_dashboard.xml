@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8F9FA">
+    android:background="@color/screen_background_soft">
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout 
         android:id="@+id/swipeRefresh"
@@ -20,403 +20,305 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="24dp">
+                android:paddingHorizontal="16dp"
+                android:paddingTop="24dp">
 
-                <!-- 1. Header (Avatar, Name, Actions) -->
+                <!-- 1. Header: Modern Profile and Notification -->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="24dp">
                     
-                    <RelativeLayout
-                        android:id="@+id/rlAvatarContainer"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/ivAvatar"
+                        android:layout_width="52dp"
+                        android:layout_height="52dp"
+                        android:src="@drawable/ic_user"
+                        android:scaleType="centerCrop"
+                        app:shapeAppearanceOverlay="@style/CircleAppearance" 
                         android:layout_alignParentStart="true"
-                        android:layout_centerVertical="true">
+                        android:layout_centerVertical="true"/>
 
-                        <com.google.android.material.imageview.ShapeableImageView
-                            android:id="@+id/ivAvatar"
-                            android:layout_width="52dp"
-                            android:layout_height="52dp"
-                            android:src="@drawable/ic_user"
-                            android:scaleType="centerCrop"
-                            app:shapeAppearanceOverlay="@style/CircleAppearance" />
-
-                        <ImageView
-                            android:id="@+id/ivWarningProfile"
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:layout_alignEnd="@id/ivAvatar"
-                            android:layout_alignTop="@id/ivAvatar"
-                            android:src="@android:drawable/stat_notify_error"
-                            app:tint="@color/warning_amber"
-                            android:visibility="gone"/>
-                    </RelativeLayout>
+                    <ImageView
+                        android:id="@+id/ivWarningProfile"
+                        android:layout_width="16dp"
+                        android:layout_height="16dp"
+                        android:layout_alignTop="@id/ivAvatar"
+                        android:layout_alignEnd="@id/ivAvatar"
+                        android:src="@drawable/ic_error_circle"
+                        android:visibility="gone"
+                        app:tint="#EF4444" />
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:layout_toEndOf="@id/rlAvatarContainer"
+                        android:layout_toEndOf="@id/ivAvatar"
                         android:layout_centerVertical="true"
                         android:layout_marginStart="16dp">
                         
                         <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="How is your smile today? ✨"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            android:textColor="@color/text_secondary"/>
+
+                        <TextView
                             android:id="@+id/tvPatientName"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Hi Patient 👋"
+                            android:text="Nguyễn Văn A"
                             android:textStyle="bold"
-                            android:textSize="20sp"
+                            android:textSize="22sp"
                             android:fontFamily="sans-serif-medium"
                             android:textColor="@color/text_primary"/>
-                            
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="How is your smile today?"
-                            android:textSize="13sp"
-                            android:textColor="@color/text_secondary"
-                            android:layout_marginTop="2dp"/>
                     </LinearLayout>
 
-                    <LinearLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                    <ImageView
+                        android:id="@+id/iv_notifications"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:padding="12dp"
+                        android:src="@drawable/ic_bell"
+                        android:background="@drawable/bg_circle_icon"
+                        app:tint="@color/text_primary"
                         android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true">
-
-                        <!-- Notification Icon -->
-                        <ImageView
-                            android:id="@+id/iv_notification"
-                            android:layout_width="42dp"
-                            android:layout_height="42dp"
-                            android:padding="10dp"
-                            android:src="@android:drawable/ic_popup_reminder"
-                            android:background="@drawable/bg_circle_soft_blue"
-                            app:tint="@color/primary_trust_blue"
-                            android:layout_marginEnd="12dp" />
-
-                        <!-- Search Icon -->
-                        <ImageView
-                            android:layout_width="42dp"
-                            android:layout_height="42dp"
-                            android:padding="10dp"
-                            android:src="@android:drawable/ic_menu_search"
-                            android:background="@drawable/bg_circle_soft_blue"
-                            app:tint="@color/text_primary"
-                            android:layout_marginEnd="12dp" />
-
-                        <!-- Logout Icon -->
-                        <ImageView
-                            android:id="@+id/iv_logout"
-                            android:layout_width="42dp"
-                            android:layout_height="42dp"
-                            android:padding="10dp"
-                            android:src="@drawable/ic_door"
-                            android:background="@drawable/bg_circle_soft_blue"
-                            app:tint="@color/alert_coral" />
-                    </LinearLayout>
+                        android:layout_centerVertical="true" />
                 </RelativeLayout>
 
-                <!-- 2. Hero Banner for Booking (Replaces generic bottom button) -->
-                <!-- 2. Hero Banner for QR Check-in / Booking -->
+                <!-- 2. Search & Filter Section -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:layout_marginBottom="28dp">
+                    
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="16dp">
+                        
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="52dp"
+                            android:background="@drawable/bg_pill_search"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical"
+                            android:paddingHorizontal="16dp"
+                            android:layout_toStartOf="@+id/ivHeaderQrScan"
+                            android:layout_marginEnd="12dp">
+                            
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:src="@android:drawable/ic_menu_search"
+                                app:tint="@color/text_secondary"/>
+                                
+                            <EditText
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="@null"
+                                android:hint="Tìm kiếm dịch vụ hoặc bác sĩ"
+                                android:textSize="15sp"
+                                android:layout_marginStart="12dp"
+                                android:textColorHint="#94A3B8"/>
+                        </LinearLayout>
 
-                <!-- 3. Active Check In Tracker (Only shows if checked in) -->
+                        <ImageView
+                            android:id="@+id/ivHeaderQrScan"
+                            android:layout_width="52dp"
+                            android:layout_height="52dp"
+                            android:src="@drawable/ic_qr_scan"
+                            android:background="@drawable/bg_circle_premium"
+                            app:tint="@color/white"
+                            android:padding="14dp"
+                            android:layout_alignParentEnd="true"/>
+                    </RelativeLayout>
+                </LinearLayout>
+
+                <!-- 3. Special Offer Banner -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="158dp"
+                    android:layout_marginBottom="28dp"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="0dp">
+                    
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_premium_gradient_blue"
+                        android:paddingHorizontal="20dp"
+                        android:paddingVertical="20dp">
+                        
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_centerVertical="true">
+                            
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="SPECIAL OFFER"
+                                android:textColor="#BBDEFB"
+                                android:textSize="12sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.1"/>
+                                
+                            <TextView
+                                android:layout_width="150dp"
+                                android:layout_height="wrap_content"
+                                android:text="Get 40% Off on Dental Scaling!"
+                                android:textColor="@color/white"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:layout_marginTop="6dp"/>
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnBannerAction"
+                                android:layout_width="wrap_content"
+                                android:layout_height="44dp"
+                                android:layout_marginTop="14dp"
+                                android:text="Đặt lịch ưu đãi"
+                                android:textAllCaps="false"
+                                android:textSize="13sp"
+                                app:cornerRadius="20dp"
+                                app:backgroundTint="@color/white"
+                                android:textColor="@color/primary_trust_blue"
+                                app:icon="@android:drawable/ic_menu_call"
+                                app:iconSize="14dp"
+                                app:iconTint="@color/primary_trust_blue"
+                                android:paddingHorizontal="20dp"/>
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="160dp"
+                            android:layout_height="200dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentBottom="true"
+                            android:src="@drawable/ic_3d_offer_tooth"
+                            android:scaleType="centerInside"
+                            android:translationY="20dp"/>
+                    </RelativeLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- 4. Active Check In Tracker -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardCheckInStatus"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="32dp"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="2dp"
-                    app:cardBackgroundColor="@color/white"
+                    android:layout_marginBottom="24dp"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="1dp"
                     android:visibility="gone">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:padding="20dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical">
-                            <ImageView
-                                android:layout_width="44dp"
-                                android:layout_height="44dp"
-                                android:padding="10dp"
-                                android:src="@drawable/ic_schedule"
-                                android:background="@drawable/bg_circle_soft_blue"
-                                app:tint="@color/warning_amber" />
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical"
-                                android:layout_marginStart="16dp">
-                                <TextView
-                                    android:id="@+id/tvCheckInStatus"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Đã Check-in"
-                                    android:textSize="16sp"
-                                    android:textStyle="bold"
-                                    android:textColor="@color/text_primary" />
-                                <TextView
-                                    android:id="@+id/tvQueuePosition"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Vị trí: Đang tính toán..."
-                                    android:textColor="@color/text_secondary"
-                                    android:textSize="13sp" />
-                            </LinearLayout>
-                        </LinearLayout>
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnViewQueue"
-                            style="@style/Widget.Material3.Button.TonalButton"
-                            android:layout_width="match_parent"
-                            android:layout_height="50dp"
-                            android:layout_marginTop="16dp"
-                            app:cornerRadius="16dp"
-                            android:text="Xem trực tiếp Hàng Đợi" />
+                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
+                        <TextView android:id="@+id/tvCheckInStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Đã Check-in" android:textStyle="bold" android:textColor="@color/primary_trust_blue" />
+                        <TextView android:id="@+id/tvQueuePosition" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Vị trí: 1" android:layout_marginTop="4dp" />
+                        <com.google.android.material.button.MaterialButton android:id="@+id/btnViewQueue" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Xem hàng đợi" android:layout_marginTop="12dp" app:cornerRadius="12dp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- 4. Categories Section (Icons) -->
+                <!-- 4. Unified Dental Services Section -->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Dịch vụ nổi bật"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary"/>
                     
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Danh mục"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:fontFamily="sans-serif-medium"
-                        android:textColor="@color/text_primary"
-                        android:layout_centerVertical="true"/>
-                </RelativeLayout>
-
-                <!-- Quick Actions for Patient -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="16dp"
-                    android:weightSum="2">
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardMyInvoices"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="8dp"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="2dp"
-                        app:cardBackgroundColor="@color/white">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp"
-                            android:gravity="center">
-
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:src="@drawable/ic_payment"
-                                android:padding="8dp"
-                                android:background="@drawable/bg_circle_soft_blue"
-                                app:tint="@color/primary_trust_blue" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:text="Hóa đơn"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/text_primary" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="Xem &amp; thanh toán"
-                                android:textSize="11sp"
-                                android:textColor="@color/text_secondary" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardMyAppointments"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="8dp"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="2dp"
-                        app:cardBackgroundColor="@color/white">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp"
-                            android:gravity="center">
-
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:src="@drawable/ic_calendar"
-                                android:padding="8dp"
-                                android:background="@drawable/bg_circle_soft_blue"
-                                app:tint="#4CAF50" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:text="Lịch hẹn"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                android:textColor="@color/text_primary" />
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="2dp"
-                                android:text="Quản lý lịch"
-                                android:textSize="11sp"
-                                android:textColor="@color/text_secondary" />
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvCategories"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="24dp"
-                    android:clipToPadding="false"/>
-
-                <!-- Services Section -->
-                <RelativeLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Our Services"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:fontFamily="sans-serif-medium"
-                        android:textColor="@color/text_primary"
-                        android:layout_centerVertical="true"/>
-
                     <TextView
                         android:id="@+id/all_dv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="See All"
+                        android:text="Xem thêm"
+                        android:textColor="@color/primary_trust_blue"
                         android:textSize="14sp"
-                        android:textColor="@color/text_secondary"
+                        android:textStyle="bold"
                         android:layout_alignParentEnd="true"
                         android:layout_centerVertical="true"
-                        android:padding="8dp"/>
+                        android:padding="4dp"/>
                 </RelativeLayout>
+
+                <com.google.android.material.tabs.TabLayout
+                    android:id="@+id/tabs_categories"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginBottom="20dp"
+                    app:tabMode="scrollable"
+                    app:tabIndicatorHeight="0dp"
+                    app:tabRippleColor="@android:color/transparent"
+                    app:tabBackground="@drawable/bg_tab_selector"
+                    app:tabSelectedTextColor="@color/white"
+                    app:tabTextColor="@color/text_secondary"
+                    android:background="@android:color/transparent"/>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_services"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="24dp"
+                    android:layout_marginBottom="32dp"
                     android:clipToPadding="false"/>
 
-                <!-- 5. Upcoming Appointments -->
-                <RelativeLayout
-                    android:layout_width="match_parent"
+                <!-- 6. Upcoming Appointments -->
+                <TextView
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp">
-                    
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Upcoming Appointments"
-                        android:textSize="18sp"
-                        android:textStyle="bold"
-                        android:fontFamily="sans-serif-medium"
-                        android:textColor="@color/text_primary"
-                        android:layout_centerVertical="true"/>
-                </RelativeLayout>
-
+                    android:text="Lịch hẹn sắp tới"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="14dp"/>
+                
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvUpcomingAppointments"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="24dp"
+                    android:layout_marginBottom="32dp"
                     android:clipToPadding="false"/>
 
-                <!-- Suggested Doctors -->
+                <!-- 7. Premium Available Doctors -->
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp">
-
+                    android:layout_marginBottom="16dp">
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Suggested Doctors"
-                        android:textSize="18sp"
+                        android:text="Bác sĩ"
+                        android:textSize="20sp"
                         android:textStyle="bold"
-                        android:fontFamily="sans-serif-medium"
-                        android:textColor="@color/text_primary"
-                        android:layout_centerVertical="true"/>
-
-                    <TextView
+                        android:textColor="@color/text_primary"/>
+                    
+                    <ImageView
                         android:id="@+id/all_bs"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="See All"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_secondary"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
                         android:layout_alignParentEnd="true"
-                        android:layout_centerVertical="true"
-                        android:padding="8dp"/>
+                        android:background="@drawable/bg_circle_soft_blue"
+                        android:padding="8dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/primary_trust_blue"/>
                 </RelativeLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rv_doctors"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="80dp"
+                    android:layout_marginBottom="110dp"
                     android:clipToPadding="false"/>
+
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
-    <!-- Floating Action Button for Emergency -->
-    <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
-        android:id="@+id/btnEmergency"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="24dp"
-        android:text="Cấp cứu"
-        android:textColor="@color/white"
-        app:icon="@android:drawable/ic_menu_call"
-        app:iconTint="@color/white"
-        app:backgroundTint="@color/alert_coral"
-        app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

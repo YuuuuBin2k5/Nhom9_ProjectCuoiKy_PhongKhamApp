@@ -1,107 +1,112 @@
-<?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="@color/background_gray">
+    android:background="#F8FAFC">
 
-    <!-- Header -->
-    <LinearLayout
+    <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        android:background="@color/secondary_calm_teal"
-        android:gravity="center_vertical">
+        android:background="@android:color/transparent"
+        app:elevation="0dp">
 
-        <ImageButton
-            android:id="@+id/btnBack"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@drawable/ic_arrow_back"
-            android:contentDescription="Quay lại"
-            app:tint="@android:color/white" />
-
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="QR Check-in"
-            android:textColor="@android:color/white"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginStart="16dp" />
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnRefreshQR"
-            style="@style/Widget.Material3.Button.IconButton"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            app:icon="@drawable/ic_refresh"
-            app:iconTint="@android:color/white"
-            app:backgroundTint="@android:color/transparent"
-            android:contentDescription="Làm mới QR" />
-
-    </LinearLayout>
-
-    <ScrollView
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:fillViewport="true">
-
-        <LinearLayout
+        <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="24dp"
-            android:gravity="center">
+            android:layout_height="260dp">
 
-            <!-- Loading Layout -->
-            <LinearLayout
-                android:id="@+id/layoutLoading"
+            <View
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:gravity="center"
-                android:visibility="gone">
+                android:layout_height="match_parent"
+                android:background="@drawable/bg_premium_gradient_blue" />
 
-                <ProgressBar
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_marginBottom="16dp" />
+            <androidx.appcompat.widget.Toolbar
+                android:id="@+id/toolbar"
+                android:layout_width="match_parent"
+                android:layout_height="?attr/actionBarSize"
+                app:navigationIcon="@drawable/ic_back"
+                app:navigationIconTint="@color/white" />
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="56dp"
+                android:gravity="center"
+                android:orientation="vertical">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Đang tạo mã QR..."
-                    android:textSize="16sp"
-                    android:textColor="@color/text_secondary" />
+                    android:text="QR Check-in"
+                    android:textColor="@android:color/white"
+                    android:textSize="28sp"
+                    android:textStyle="bold" />
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="Quét mã QR để điểm danh nhanh chóng"
+                    android:textColor="#CCFFFFFF"
+                    android:textSize="14sp" />
             </LinearLayout>
 
-            <!-- QR Display Layout -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRefreshQR"
+                style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="top|end"
+                android:layout_marginTop="8dp"
+                android:layout_marginEnd="8dp"
+                app:icon="@drawable/ic_refresh"
+                app:iconTint="@android:color/white"
+                app:backgroundTint="#33FFFFFF" />
+        </FrameLayout>
+    </com.google.android.material.appbar.AppBarLayout>
+
+    <FrameLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_marginTop="-80dp">
+
+        <LinearLayout
+            android:id="@+id/layoutLoading"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+            <ProgressBar
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:indeterminateTint="@color/primary_trust_blue" />
+        </LinearLayout>
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/layoutQRDisplay"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fillViewport="true">
+
             <LinearLayout
-                android:id="@+id/layoutQRDisplay"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:gravity="center"
-                android:visibility="visible">
+                android:paddingHorizontal="24dp"
+                android:gravity="center_horizontal">
 
-                <!-- QR Code Card -->
+                <!-- QR Card (Glassmorphism) -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardQRCode"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="24dp"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="8dp"
-                    app:strokeWidth="2dp"
-                    app:strokeColor="@color/secondary_calm_teal">
+                    app:cardElevation="12dp"
+                    app:cardCornerRadius="32dp"
+                    app:cardBackgroundColor="@android:color/white">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -110,41 +115,41 @@
                         android:padding="32dp"
                         android:gravity="center">
 
-                        <!-- QR Code Image -->
-                        <ImageView
-                            android:id="@+id/ivQRCode"
-                            android:layout_width="280dp"
-                            android:layout_height="280dp"
-                            android:layout_marginBottom="16dp"
-                            android:background="@android:color/white"
-                            android:padding="8dp"
-                            android:scaleType="fitCenter"
-                            android:contentDescription="Mã QR check-in" />
+                        <!-- Technical Scanner Frame -->
+                        <FrameLayout
+                            android:layout_width="260dp"
+                            android:layout_height="260dp"
+                            android:padding="12dp"
+                            android:background="@drawable/bg_scanner_frame">
 
-                        <!-- QR Token Text (backup) -->
+                            <ImageView
+                                android:id="@+id/ivQRCode"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:scaleType="fitCenter"
+                                android:src="@drawable/ic_qr_code" />
+                        </FrameLayout>
+
                         <TextView
                             android:id="@+id/tvQRToken"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Token: QR_TOKEN_HERE"
-                            android:textSize="12sp"
-                            android:textColor="@color/text_secondary"
-                            android:fontFamily="monospace"
-                            android:layout_marginBottom="8dp"
-                            android:visibility="gone" />
+                            android:layout_marginTop="24dp"
+                            android:text="Token: CHECKIN:1"
+                            android:textColor="#1E293B"
+                            android:textSize="17sp"
+                            android:textStyle="bold" />
 
-                        <!-- Expiry Time -->
                         <TextView
                             android:id="@+id/tvTokenExpiry"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Hết hạn: 15:30"
-                            android:textSize="12sp"
-                            android:textColor="@color/warning_amber"
-                            android:visibility="gone" />
-
+                            android:layout_marginTop="6dp"
+                            android:text="Hết hạn: 2026-03-29"
+                            android:textColor="#EF4444"
+                            android:textSize="13sp"
+                            android:textStyle="normal" />
                     </LinearLayout>
-
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Instructions -->
@@ -152,77 +157,127 @@
                     android:id="@+id/tvInstructions"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Đưa mã QR này cho nhân viên lễ tân để check-in"
-                    android:textSize="16sp"
-                    android:textColor="@color/text_primary"
+                    android:text="Đưa mã QR này cho nhân viên lễ tân để thực hiện check-in nhanh."
+                    android:textSize="14sp"
+                    android:textColor="#64748B"
                     android:textAlignment="center"
-                    android:layout_marginBottom="24dp" />
+                    android:lineSpacingExtra="4dp"
+                    android:layout_marginBottom="24dp"/>
 
-                <!-- Action Button -->
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnViewQueue"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="64dp"
                     android:text="Xem trạng thái hàng đợi"
-                    android:layout_marginBottom="16dp"
+                    android:textAllCaps="false"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
                     app:backgroundTint="@color/primary_trust_blue"
+                    app:cornerRadius="20dp"
                     app:icon="@drawable/ic_queue"
-                    app:iconSize="18dp" />
+                    app:iconGravity="textStart"
+                    app:iconPadding="16dp"
+                    app:elevation="4dp"
+                    android:layout_marginBottom="32dp"/>
 
-            </LinearLayout>
-
-            <!-- Tips Card -->
-            <com.google.android.material.card.MaterialCardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="24dp"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="4dp">
-
+                <!-- Important Notes Container -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="20dp"
+                    android:background="@drawable/bg_glass_card"
+                    app:backgroundTint="#F0F9FF">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="12dp">
+                        android:layout_marginBottom="16dp">
 
                         <ImageView
                             android:layout_width="24dp"
                             android:layout_height="24dp"
                             android:src="@drawable/ic_info"
-                            app:tint="@color/primary_trust_blue"
-                            android:layout_marginEnd="8dp" />
+                            app:tint="#3B82F6"
+                            android:layout_marginEnd="12dp" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Lưu ý"
+                            android:text="Lưu ý quan trọng"
                             android:textSize="16sp"
                             android:textStyle="bold"
-                            android:textColor="@color/text_primary" />
-
+                            android:textColor="#1E293B" />
                     </LinearLayout>
 
-                    <TextView
+                    <!-- Row 1 -->
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:text="• Mã QR có thời hạn 15 phút\n• Tăng độ sáng màn hình để dễ quét\n• Đảm bảo kết nối internet ổn định\n• Liên hệ lễ tân nếu gặp khó khăn"
-                        android:textSize="14sp"
-                        android:textColor="@color/text_secondary"
-                        android:lineSpacingExtra="4dp" />
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="• "
+                            android:textColor="#3B82F6"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Mã QR có thời hạn hiệu lực trong 15 phút."
+                            android:textSize="14sp"
+                            android:textColor="#475569" />
+                    </LinearLayout>
 
+                    <!-- Row 2 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="• "
+                            android:textColor="#3B82F6"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Tăng độ sáng màn hình để máy quét dễ nhận diện."
+                            android:textSize="14sp"
+                            android:textColor="#475569" />
+                    </LinearLayout>
+
+                    <!-- Row 3 -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content">
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="• "
+                            android:textColor="#3B82F6"
+                            android:textSize="14sp"
+                            android:textStyle="bold" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Đảm bảo kết nối mạng của bạn luôn ổn định."
+                            android:textSize="14sp"
+                            android:textColor="#475569" />
+                    </LinearLayout>
                 </LinearLayout>
 
-            </com.google.android.material.card.MaterialCardView>
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="120dp" />
 
-        </LinearLayout>
-
-    </ScrollView>
-
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+    </FrameLayout>
 </LinearLayout>

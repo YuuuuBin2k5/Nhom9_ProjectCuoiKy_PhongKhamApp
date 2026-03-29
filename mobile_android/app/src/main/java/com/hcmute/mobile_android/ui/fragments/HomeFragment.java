@@ -8,7 +8,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
+import com.hcmute.mobile_android.util.ToastUtils;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -130,7 +130,7 @@ public class HomeFragment extends Fragment {
             startActivity(intent);
         });
         view.findViewById(R.id.btn_tooth_chart).setOnClickListener(v -> {
-            Toast.makeText(requireContext(), "Sơ đồ răng nhanh - Đang phát triển", Toast.LENGTH_SHORT).show();
+            ToastUtils.showCenteredToast(requireContext(), "Sơ đồ răng nhanh - Đang phát triển");
         });
 
         // Notification click
@@ -343,8 +343,7 @@ public class HomeFragment extends Fragment {
                             "patient:" + q.getPatientId());
                     startActivity(intent);
                 } else {
-                    Toast.makeText(requireContext(),
-                            "Không tìm thấy thông tin bệnh nhân", Toast.LENGTH_SHORT).show();
+                    ToastUtils.showCenteredToast(requireContext(), "Không tìm thấy thông tin bệnh nhân");
                 }
             });
 
@@ -378,13 +377,13 @@ public class HomeFragment extends Fragment {
                     api.callPatientToRoom(q.getId()).enqueue(new Callback<Void>() {
                         @Override
                         public void onResponse(Call<Void> call, Response<Void> res) {
-                            Toast.makeText(holder.itemView.getContext(),
-                                    res.isSuccessful() ? "Đã gọi: " + name : "Lỗi khi gọi", Toast.LENGTH_SHORT).show();
+                            ToastUtils.showCenteredToast(holder.itemView.getContext(),
+                                    res.isSuccessful() ? "Đã gọi: " + name : "Lỗi khi gọi");
                             if (res.isSuccessful() && isAdded()) loadData();
                         }
                         @Override
                         public void onFailure(Call<Void> call, Throwable t) {
-                            Toast.makeText(holder.itemView.getContext(), "Lỗi mạng", Toast.LENGTH_SHORT).show();
+                            ToastUtils.showCenteredToast(holder.itemView.getContext(), "Lỗi mạng");
                         }
                     });
                 });
@@ -393,13 +392,13 @@ public class HomeFragment extends Fragment {
                     api.delayPatient(q.getId()).enqueue(new Callback<Void>() {
                         @Override
                         public void onResponse(Call<Void> call, Response<Void> res) {
-                            Toast.makeText(holder.itemView.getContext(),
-                                    res.isSuccessful() ? "Đã lùi lượt " + name : "Lỗi khi lùi", Toast.LENGTH_SHORT).show();
+                            ToastUtils.showCenteredToast(holder.itemView.getContext(),
+                                    res.isSuccessful() ? "Đã lùi lượt " + name : "Lỗi khi lùi");
                             if (res.isSuccessful() && isAdded()) loadData();
                         }
                         @Override
                         public void onFailure(Call<Void> call, Throwable t) {
-                            Toast.makeText(holder.itemView.getContext(), "Lỗi mạng", Toast.LENGTH_SHORT).show();
+                            ToastUtils.showCenteredToast(holder.itemView.getContext(), "Lỗi mạng");
                         }
                     });
                 });
