@@ -39,6 +39,8 @@ import com.hcmute.mobile_android.ui.activities.PatientQueueActivity;
 import com.hcmute.mobile_android.ui.activities.QRCheckInActivity;
 import com.hcmute.mobile_android.ui.activities.ServiceDetailActivity;
 
+import com.bumptech.glide.Glide;
+
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.List;
@@ -495,15 +497,35 @@ public class PatientDashboardFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull Holder holder, int position) {
             DoctorItem d = items.get(position);
-            holder.tvName.setText(d.getFullName().startsWith("BS.") ? d.getFullName() : "Dr. " + d.getFullName());
-            holder.tvSpecialty.setText("📍 " + (d.getSpecialization() != null && !d.getSpecialization().isEmpty()
-                    ? d.getSpecialization() : "General Dentist"));
-            holder.tvLocation.setText("Chicago, IL"); // Mock
-            holder.tvTrusted.setText("4." + (9 - (position % 5)) + "k Reviews");
+            String rawName = d.getFullName();
+            String displayName = rawName.startsWith("BS.") ? rawName : "BS. " + rawName;
+            holder.tvName.setText(displayName);
 
-            // Load Premium Avatars
-            int avatarRes = (position % 2 == 0) ? R.drawable.doctor_avatar_1 : R.drawable.doctor_avatar_2;
-            holder.imgDoctor.setImageResource(avatarRes);
+            String spec = d.getSpecialization();
+            holder.tvSpecialty.setText(spec != null && !spec.isEmpty() ? spec : "Nha khoa đa khoa");
+
+            String room = d.getRoomName();
+            holder.tvLocation.setText(room != null && !room.isEmpty() ? room : "Phòng khám");
+
+            Integer years = d.getExperienceYears();
+            if (years != null && years > 0) {
+                holder.tvTrusted.setText(years + " năm KN");
+            } else if (d.getAppointmentCount() > 0) {
+                holder.tvTrusted.setText(d.getAppointmentCount() + "+ lượt khám");
+            } else {
+                holder.tvTrusted.setText("Đội ngũ giàu kinh nghiệm");
+            }
+
+            if (d.getAvatarUrl() != null && !d.getAvatarUrl().isEmpty()) {
+                Glide.with(holder.imgDoctor.getContext())
+                        .load(d.getAvatarUrl())
+                        .centerCrop()
+                        .placeholder(R.drawable.ic_doctor)
+                        .error(R.drawable.ic_doctor)
+                        .into(holder.imgDoctor);
+            } else {
+                holder.imgDoctor.setImageResource(R.drawable.ic_doctor);
+            }
 
             // Handle Clicks
             View.OnClickListener bookingAction = v -> {

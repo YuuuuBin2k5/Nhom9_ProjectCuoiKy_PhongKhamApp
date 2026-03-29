@@ -14,6 +14,7 @@ import java.util.Optional;
 
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
+    List<Appointment> findByPatientIdAndStatus(Long patientId, AppointmentStatus status);
 
     List<Appointment> findByPatientIdAndAppointmentDatetimeBetweenOrderByAppointmentDatetimeAsc(
             Long patientId, java.time.LocalDateTime start, java.time.LocalDateTime end);

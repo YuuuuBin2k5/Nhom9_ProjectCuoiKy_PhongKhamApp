@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8FAFC">
+    android:background="@color/premium_bg">
 
     <com.google.android.material.appbar.AppBarLayout
         android:id="@+id/appBarLayout"
@@ -16,14 +16,16 @@
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:id="@+id/collapsing_toolbar"
             android:layout_width="match_parent"
-            android:layout_height="240dp"
+            android:layout_height="320dp"
             app:titleEnabled="false"
             app:layout_scrollFlags="scroll|exitUntilCollapsed">
 
+            <!-- Premium Gradient Background -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/bg_premium_gradient_blue" />
+                android:background="@drawable/bg_medical_header_gradient"
+                app:layout_collapseMode="parallax" />
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/toolbar"
@@ -31,85 +33,96 @@
                 android:layout_height="?attr/actionBarSize"
                 app:layout_collapseMode="pin"
                 app:navigationIcon="@drawable/ic_back"
+                app:navigationIconTint="#1A237E"
                 app:title="Hồ sơ sức khỏe"
                 app:titleCentered="true"
                 app:titleTextAppearance="@style/TextAppearance.Material3.TitleMedium"
-                app:titleTextColor="@color/white" />
+                app:titleTextColor="#1A237E" />
 
-            <!-- Profile Pod (Glassmorphism) -->
-            <com.google.android.material.card.MaterialCardView
+            <!-- Centralized Profile Section -->
+            <androidx.constraintlayout.widget.ConstraintLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_gravity="bottom"
-                android:layout_marginHorizontal="20dp"
-                android:layout_marginBottom="24dp"
-                app:cardBackgroundColor="#1AFFFFFF"
-                app:cardCornerRadius="28dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="1dp"
-                app:strokeColor="#4DFFFFFF">
+                android:layout_height="match_parent"
+                android:paddingTop="?attr/actionBarSize">
 
-                <LinearLayout
-                    android:layout_width="match_parent"
+                <FrameLayout
+                    android:id="@+id/avatarContainer"
+                    android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:padding="20dp"
-                    android:gravity="center_vertical">
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent"
+                    android:layout_marginTop="24dp">
 
-                    <FrameLayout
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content">
-                        <com.google.android.material.imageview.ShapeableImageView
-                            android:id="@+id/ivAvatar"
-                            android:layout_width="72dp"
-                            android:layout_height="72dp"
-                            android:scaleType="centerCrop"
-                            android:src="@drawable/ic_user"
-                            app:shapeAppearanceOverlay="@style/CircleAppearance"
-                            app:strokeColor="#FFFFFF"
-                            app:strokeWidth="2dp" />
-                        
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnEditProfile"
-                            style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:layout_gravity="bottom|end"
-                            android:padding="0dp"
-                            app:icon="@drawable/ic_edit"
-                            app:iconSize="14dp"
-                            app:iconTint="#3B82F6"
-                            app:backgroundTint="#FFFFFF"
-                            app:shapeAppearanceOverlay="@style/CircleAppearance" />
-                    </FrameLayout>
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/ivAvatar"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/ic_user"
+                        app:elevation="4sp"
+                        app:shapeAppearanceOverlay="@style/CircleAppearance"
+                        app:strokeColor="#FFFFFF"
+                        app:strokeWidth="2dp" />
 
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:orientation="vertical"
-                        android:layout_marginStart="20dp">
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEditProfile"
+                        style="@style/Widget.Material3.Button.IconButton.Filled.Tonal"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="bottom|end"
+                        android:padding="0dp"
+                        app:icon="@drawable/ic_edit"
+                        app:iconSize="14dp"
+                        app:iconTint="#3B82F6"
+                        app:backgroundTint="#FFFFFF"
+                        app:shapeAppearanceOverlay="@style/CircleAppearance"
+                        app:elevation="6dp" />
+                </FrameLayout>
 
-                        <TextView
-                            android:id="@+id/tvPatientName"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Floyd Miles"
-                            android:textColor="@color/white"
-                            android:textSize="22sp"
-                            android:textStyle="bold" />
+                <TextView
+                    android:id="@+id/tvPatientName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Floyd Miles"
+                    android:textColor="#1A237E"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    app:layout_constraintTop_toBottomOf="@id/avatarContainer"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
 
-                        <TextView
-                            android:id="@+id/tvPatientInfo"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:text="Male • 28 years"
-                            android:textColor="#E0F2FE"
-                            android:textSize="14sp" />
-                    </LinearLayout>
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                <TextView
+                    android:id="@+id/tvBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:background="@drawable/bg_pill_grey"
+                    android:paddingHorizontal="12dp"
+                    android:paddingVertical="4dp"
+                    android:text="MEMBER"
+                    android:textColor="#64748B"
+                    android:textSize="10sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.1"
+                    app:layout_constraintTop_toBottomOf="@id/tvPatientName"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+                <TextView
+                    android:id="@+id/tvPatientInfo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:text="Male • 28 years"
+                    android:textColor="#64748B"
+                    android:textSize="14sp"
+                    app:layout_constraintTop_toBottomOf="@id/tvBadge"
+                    app:layout_constraintStart_toStartOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
@@ -141,24 +154,250 @@
                 android:textSize="12sp"
                 android:textStyle="bold" />
 
-            <com.google.android.material.card.MaterialCardView
+            <!-- Premium Health Indicators Vertical Stack -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="16dp"
-                app:cardBackgroundColor="@android:color/white"
-                app:cardCornerRadius="20dp"
-                app:cardElevation="1dp"
-                app:strokeColor="#F1F5F9"
-                app:strokeWidth="1dp">
+                android:orientation="vertical"
+                android:layout_marginTop="8dp">
 
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/rvMedicalHistory"
+                <!-- Blood Type Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardBloodType"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:clipToPadding="false"
-                    android:nestedScrollingEnabled="false"
-                    android:paddingVertical="12dp" />
-            </com.google.android.material.card.MaterialCardView>
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginVertical="8dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="4dp"
+                    app:strokeWidth="0dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp">
+
+                        <View
+                            android:id="@+id/iconBgBlood"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_circle_icon_light"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent" />
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_emergency"
+                            app:tint="#E11D48"
+                            app:layout_constraintStart_toStartOf="@id/iconBgBlood"
+                            app:layout_constraintEnd_toEndOf="@id/iconBgBlood"
+                            app:layout_constraintTop_toTopOf="@id/iconBgBlood"
+                            app:layout_constraintBottom_toBottomOf="@id/iconBgBlood" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginStart="16dp"
+                            app:layout_constraintStart_toEndOf="@id/iconBgBlood"
+                            app:layout_constraintEnd_toStartOf="@id/ivChevronBlood"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="NHÓM MÁU"
+                                android:textColor="#64748B"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.05" />
+
+                            <TextView
+                                android:id="@+id/tvBloodVal"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="--"
+                                android:textColor="#1A237E"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:id="@+id/ivChevronBlood"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:alpha="0.2"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="#64748B"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Allergies Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardAllergies"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginVertical="8dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="4dp"
+                    app:strokeWidth="0dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp">
+
+                        <View
+                            android:id="@+id/iconBgAllergy"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_circle_icon_light"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent" />
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_error_circle"
+                            app:tint="#CA8A04"
+                            app:layout_constraintStart_toStartOf="@id/iconBgAllergy"
+                            app:layout_constraintEnd_toEndOf="@id/iconBgAllergy"
+                            app:layout_constraintTop_toTopOf="@id/iconBgAllergy"
+                            app:layout_constraintBottom_toBottomOf="@id/iconBgAllergy" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginStart="16dp"
+                            app:layout_constraintStart_toEndOf="@id/iconBgAllergy"
+                            app:layout_constraintEnd_toStartOf="@id/ivChevronAllergy"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="DỊ ỨNG"
+                                android:textColor="#64748B"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.05" />
+
+                            <TextView
+                                android:id="@+id/tvAllergyVal"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="--"
+                                android:textColor="#1A237E"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:id="@+id/ivChevronAllergy"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:alpha="0.2"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="#64748B"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Underlying Conditions Card -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardConditions"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="20dp"
+                    android:layout_marginVertical="8dp"
+                    app:cardCornerRadius="20dp"
+                    app:cardElevation="4dp"
+                    app:strokeWidth="0dp">
+
+                    <androidx.constraintlayout.widget.ConstraintLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:padding="16dp">
+
+                        <View
+                            android:id="@+id/iconBgConditions"
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            android:background="@drawable/bg_circle_icon_light"
+                            app:layout_constraintStart_toStartOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent" />
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_medical_services"
+                            app:tint="#0284C7"
+                            app:layout_constraintStart_toStartOf="@id/iconBgConditions"
+                            app:layout_constraintEnd_toEndOf="@id/iconBgConditions"
+                            app:layout_constraintTop_toTopOf="@id/iconBgConditions"
+                            app:layout_constraintBottom_toBottomOf="@id/iconBgConditions" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginStart="16dp"
+                            app:layout_constraintStart_toEndOf="@id/iconBgConditions"
+                            app:layout_constraintEnd_toStartOf="@id/ivChevronConditions"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="BỆNH LÝ NỀN"
+                                android:textColor="#64748B"
+                                android:textSize="11sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.05" />
+
+                            <TextView
+                                android:id="@+id/tvConditionVal"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:text="--"
+                                android:textColor="#1A237E"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:id="@+id/ivChevronConditions"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:alpha="0.2"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="#64748B"
+                            app:layout_constraintEnd_toEndOf="parent"
+                            app:layout_constraintTop_toTopOf="parent"
+                            app:layout_constraintBottom_toBottomOf="parent" />
+
+                    </androidx.constraintlayout.widget.ConstraintLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
 
             <!-- Lịch sử khám gần đây Section -->
             <RelativeLayout
@@ -192,6 +431,40 @@
                     android:textSize="13sp"
                     android:textStyle="bold" />
             </RelativeLayout>
+
+            <LinearLayout
+                android:id="@+id/layoutEmptyHistory"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <ImageView
+                    android:layout_width="80dp"
+                    android:layout_height="80dp"
+                    android:src="@drawable/ic_list"
+                    app:tint="#CBD5E1" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:text="Chưa có lịch sử khám"
+                    android:textColor="#64748B"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Lịch sử khám của bạn sẽ xuất hiện tại đây"
+                    android:textColor="#94A3B8"
+                    android:textSize="14sp" />
+            </LinearLayout>
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvPastAppointments"

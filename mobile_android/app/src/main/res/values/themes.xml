@@ -3,8 +3,14 @@
         <item name="android:statusBarColor">@color/toothly_pearl</item>
         <item name="android:navigationBarColor">@color/toothly_pearl</item>
         <item name="android:windowLightStatusBar">true</item>
-        <item name="colorPrimary">@color/toothly_teal</item>
+        <!-- Tránh phủ màu primary (teal) lên surface/card khi có elevation → hết card “xanh mint” -->
+        <item name="elevationOverlayEnabled">false</item>
+        <item name="colorPrimary">@color/primary_trust_blue</item>
         <item name="colorSurface">@color/white</item>
+        <item name="colorSurfaceContainerLowest">@color/white</item>
+        <item name="colorSurfaceContainerLow">@color/white</item>
+        <item name="colorSurfaceContainer">@color/white</item>
+        <item name="colorSurfaceContainerHigh">@color/white</item>
     </style>
 
     <style name="Theme.Mobile_android" parent="Base.Theme.Toothly" />
@@ -42,10 +48,10 @@
         <item name="itemIconTint">@color/nav_selector_color</item>
         <item name="itemTextColor">@color/nav_selector_color</item>
         <item name="itemActiveIndicatorStyle">@style/Widget.App.BottomNavigation.ActiveIndicator</item>
-        <item name="itemRippleColor">#264B91F7</item>
+        <item name="itemRippleColor">@color/primary_trust_blue_light_trans</item>
     </style>
 
     <style name="Widget.App.BottomNavigation.ActiveIndicator" parent="Widget.Material3.BottomNavigationView.ActiveIndicator">
-        <item name="android:color">#264B91F7</item> <!-- Slight blue indicator -->
+        <item name="android:color">@color/primary_trust_blue_light_trans</item>
     </style>
 </resources>

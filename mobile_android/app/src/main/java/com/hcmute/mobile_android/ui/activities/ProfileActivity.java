@@ -7,13 +7,13 @@ import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
-import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
@@ -22,7 +22,10 @@ import com.hcmute.mobile_android.network.models.PatientMeResponse;
 import com.hcmute.mobile_android.network.models.UpdatePatientRequest;
 import com.hcmute.mobile_android.util.TokenManager;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Calendar;
+import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -31,8 +34,11 @@ import retrofit2.Response;
 public class ProfileActivity extends AppCompatActivity {
 
     private EditText etName, etPhone, etAddress, etDob, etEmail, etQrCode;
-    private EditText etBloodType, etAllergies, etUnderlyingConditions;
+    private EditText etAllergies, etConditions;
+    private TextView tvUserNameDisplay, tvUserEmailDisplay;
     private AutoCompleteTextView actvGender;
+    private AutoCompleteTextView actvBloodType;
+    private ArrayAdapter<String> bloodTypeAdapter;
     private ShapeableImageView ivProfile;
     private String currentAvatarUrl = "";
     private androidx.activity.result.ActivityResultLauncher<Intent> galleryLauncher;
@@ -41,10 +47,13 @@ public class ProfileActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         EdgeToEdge.enable(this);
-        setContentView(R.layout.activity_profile);
+        setContentView(R.layout.activity_user_profile_premium);
 
-        MaterialToolbar toolbar = findViewById(R.id.toolbar);
-        toolbar.setNavigationOnClickListener(v -> finish());
+        // Header Icons
+        findViewById(R.id.ivSettings).setOnClickListener(v -> {
+            // Settings logic
+        });
+        findViewById(R.id.ivLogoutHeader).setOnClickListener(v -> logout());
 
         // Bind views
         etQrCode = findViewById(R.id.etQrCode);
@@ -54,10 +63,21 @@ public class ProfileActivity extends AppCompatActivity {
         etAddress = findViewById(R.id.etAddress);
         etDob = findViewById(R.id.etDob);
         actvGender = findViewById(R.id.actvGender);
-        ivProfile = findViewById(R.id.ivProfile);
-        etBloodType = findViewById(R.id.etBloodType);
+        ivProfile = findViewById(R.id.ivUserProfile);
+        
+        tvUserNameDisplay = findViewById(R.id.tvUserNameDisplay);
+        tvUserEmailDisplay = findViewById(R.id.tvUserEmailDisplay);
+
+        actvBloodType = findViewById(R.id.actvBloodType);
         etAllergies = findViewById(R.id.etAllergies);
-        etUnderlyingConditions = findViewById(R.id.etUnderlyingConditions);
+        etConditions = findViewById(R.id.etConditions);
+
+        List<String> bloodOpts = new ArrayList<>(Arrays.asList(
+                "A+", "A-", "B+", "B-", "AB+", "AB-", "O+", "O-", "Không rõ"));
+        bloodTypeAdapter = new ArrayAdapter<>(this, android.R.layout.simple_dropdown_item_1line, bloodOpts);
+        actvBloodType.setAdapter(bloodTypeAdapter);
+        actvBloodType.setThreshold(1);
+        actvBloodType.setOnClickListener(v -> actvBloodType.showDropDown());
 
         // Setup Gallery Launcher
         galleryLauncher = registerForActivityResult(
@@ -137,10 +157,14 @@ public class ProfileActivity extends AppCompatActivity {
                     etDob.setText(p.getDob() != null ? p.getDob() : "");
                     actvGender.setText(p.getGender() != null ? p.getGender() : "", false);
                     currentAvatarUrl = p.getAvatarUrl() != null ? p.getAvatarUrl() : "";
-                    
-                    etBloodType.setText(p.getBloodType() != null ? p.getBloodType() : "");
+
+                    // Update Display Info
+                    tvUserNameDisplay.setText(fullName.isEmpty() ? "Bệnh nhân" : fullName);
+                    tvUserEmailDisplay.setText(p.getEmail() != null ? p.getEmail() : "Chưa có email");
+
+                    applyBloodTypeToField(p.getBloodType());
                     etAllergies.setText(p.getAllergies() != null ? p.getAllergies() : "");
-                    etUnderlyingConditions.setText(p.getUnderlyingConditions() != null ? p.getUnderlyingConditions() : "");
+                    etConditions.setText(p.getUnderlyingConditions() != null ? p.getUnderlyingConditions() : "");
 
                     if (!currentAvatarUrl.isEmpty()) {
                         Glide.with(ProfileActivity.this).load(currentAvatarUrl).placeholder(R.drawable.ic_doctor).into(ivProfile);
@@ -158,6 +182,26 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             public void onFailure(Call<PatientMeResponse> call, Throwable t) {}
         });
+    }
+
+    private void applyBloodTypeToField(String blood) {
+        if (blood == null || blood.trim().isEmpty() || "N/A".equalsIgnoreCase(blood.trim())) {
+            actvBloodType.setText("", false);
+            return;
+        }
+        String b = blood.trim();
+        boolean inList = false;
+        for (int i = 0; i < bloodTypeAdapter.getCount(); i++) {
+            if (b.equalsIgnoreCase(bloodTypeAdapter.getItem(i))) {
+                inList = true;
+                break;
+            }
+        }
+        if (!inList) {
+            bloodTypeAdapter.add(b);
+            bloodTypeAdapter.notifyDataSetChanged();
+        }
+        actvBloodType.setText(b, false);
     }
 
     private void saveProfile() {
@@ -183,8 +227,8 @@ public class ProfileActivity extends AppCompatActivity {
                 etDob.getText().toString().trim(),
                 currentAvatarUrl,
                 etAllergies.getText().toString().trim(),
-                etUnderlyingConditions.getText().toString().trim(),
-                etBloodType.getText().toString().trim()
+                etConditions.getText().toString().trim(),
+                actvBloodType.getText().toString().trim()
         );
 
         ApiService api = RetrofitClient.getApiService(this);

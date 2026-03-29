@@ -4,7 +4,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F9FAFB">
+    android:background="@color/screen_background_soft">
 
     <androidx.swiperefreshlayout.widget.SwipeRefreshLayout 
         android:id="@+id/swipeRefresh"
@@ -20,7 +20,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingHorizontal="20dp"
+                android:paddingHorizontal="16dp"
                 android:paddingTop="24dp">
 
                 <!-- 1. Header: Modern Profile and Notification -->
@@ -61,16 +61,17 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="How is your smile today? ✨"
-                            android:textSize="12sp"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
                             android:textColor="@color/text_secondary"/>
 
                         <TextView
                             android:id="@+id/tvPatientName"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Floyd Miles"
+                            android:text="Nguyễn Văn A"
                             android:textStyle="bold"
-                            android:textSize="20sp"
+                            android:textSize="22sp"
                             android:fontFamily="sans-serif-medium"
                             android:textColor="@color/text_primary"/>
                     </LinearLayout>
@@ -101,7 +102,7 @@
                         
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="56dp"
+                            android:layout_height="52dp"
                             android:background="@drawable/bg_pill_search"
                             android:orientation="horizontal"
                             android:gravity="center_vertical"
@@ -119,7 +120,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
                                 android:background="@null"
-                                android:hint="Search your oral..."
+                                android:hint="Tìm kiếm dịch vụ hoặc bác sĩ"
                                 android:textSize="15sp"
                                 android:layout_marginStart="12dp"
                                 android:textColorHint="#94A3B8"/>
@@ -127,8 +128,8 @@
 
                         <ImageView
                             android:id="@+id/ivHeaderQrScan"
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
+                            android:layout_width="52dp"
+                            android:layout_height="52dp"
                             android:src="@drawable/ic_qr_scan"
                             android:background="@drawable/bg_circle_premium"
                             app:tint="@color/white"
@@ -140,16 +141,18 @@
                 <!-- 3. Special Offer Banner -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
-                    android:layout_height="170dp"
-                    android:layout_marginBottom="32dp"
-                    app:cardCornerRadius="32dp"
-                    app:cardElevation="0dp">
+                    android:layout_height="158dp"
+                    android:layout_marginBottom="28dp"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="0dp">
                     
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:background="@drawable/bg_premium_gradient_blue"
-                        android:padding="24dp">
+                        android:paddingHorizontal="20dp"
+                        android:paddingVertical="20dp">
                         
                         <LinearLayout
                             android:layout_width="wrap_content"
@@ -161,7 +164,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="SPECIAL OFFER"
-                                android:textColor="#E0F2FE"
+                                android:textColor="#BBDEFB"
                                 android:textSize="12sp"
                                 android:textStyle="bold"
                                 android:letterSpacing="0.1"/>
@@ -178,9 +181,9 @@
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnBannerAction"
                                 android:layout_width="wrap_content"
-                                android:layout_height="40dp"
-                                android:layout_marginTop="16dp"
-                                android:text="Call Now"
+                                android:layout_height="44dp"
+                                android:layout_marginTop="14dp"
+                                android:text="Đặt lịch ưu đãi"
                                 android:textAllCaps="false"
                                 android:textSize="13sp"
                                 app:cornerRadius="20dp"
@@ -227,16 +230,16 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Dental Services" 
-                        android:textSize="20sp" 
-                        android:textStyle="bold" 
+                        android:text="Dịch vụ nổi bật"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
                         android:textColor="@color/text_primary"/>
                     
                     <TextView
                         android:id="@+id/all_dv"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="See All"
+                        android:text="Xem thêm"
                         android:textColor="@color/primary_trust_blue"
                         android:textSize="14sp"
                         android:textStyle="bold"
@@ -269,11 +272,11 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Upcoming Appointments" 
-                    android:textSize="18sp" 
-                    android:textStyle="bold" 
-                    android:textColor="@color/text_primary" 
-                    android:layout_marginBottom="16dp"/>
+                    android:text="Lịch hẹn sắp tới"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="14dp"/>
                 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvUpcomingAppointments"
@@ -290,19 +293,21 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Available Doctors" 
-                        android:textSize="20sp" 
-                        android:textStyle="bold" 
+                        android:text="Bác sĩ"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
                         android:textColor="@color/text_primary"/>
                     
                     <ImageView
                         android:id="@+id/all_bs"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="32dp"
+                        android:layout_height="32dp"
                         android:layout_alignParentEnd="true"
-                        android:src="@android:drawable/ic_menu_send"
-                        android:rotation="180"
-                        app:tint="@color/text_primary"/>
+                        android:background="@drawable/bg_circle_soft_blue"
+                        android:padding="8dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/primary_trust_blue"/>
                 </RelativeLayout>
 
                 <androidx.recyclerview.widget.RecyclerView

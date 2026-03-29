@@ -40,8 +40,8 @@ public class DoctorListController {
         List<DoctorDto> dtos = doctorRepository.findAll().stream()
                 .filter(d -> d.isActive())
                 .filter(d -> {
-                    // Loại trừ các bác sĩ thuộc phòng chuyên biệt/kỹ thuật
-                    if (d.getClinicRoom() != null) {
+                    // Loại trừ các bác sĩ thuộc phòng chuyên biệt/kỹ thuật khi liệt kê danh sách chung
+                    if (finalFilterName == null && d.getClinicRoom() != null) {
                         String roomName = d.getClinicRoom().getName().toLowerCase();
                         if (roomName.contains("x-quang") || 
                             roomName.contains("xét nghiệm") || 
@@ -56,7 +56,7 @@ public class DoctorListController {
                     if (spec == null || spec.isEmpty()) return false;
                     String lspec = spec.toLowerCase().trim();
                     
-                    return lspec.equals(finalFilterName.trim());
+                    return lspec.contains(finalFilterName.trim());
                 })
                 .map(d -> new DoctorDto(
                         d.getId(),

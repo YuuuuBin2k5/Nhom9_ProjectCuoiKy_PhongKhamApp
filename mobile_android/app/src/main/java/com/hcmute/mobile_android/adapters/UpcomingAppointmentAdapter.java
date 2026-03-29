@@ -89,7 +89,8 @@ public class UpcomingAppointmentAdapter extends RecyclerView.Adapter<UpcomingApp
                 tvMonth.setText(month);
             }
             
-            tvTime.setText(dateTime[1] + " AM"); // Append AM/PM if needed
+            // 24h clock — avoids wrong labels like "15:20 AM" (VN clinics commonly use HH:mm)
+            tvTime.setText(dateTime[1]);
             
             tvDoctor.setText(appointment.getDoctorName().startsWith("BS.") ? appointment.getDoctorName() : "BS. " + appointment.getDoctorName());
             tvService.setText(appointment.getServiceName());

@@ -38,7 +38,8 @@ import retrofit2.Response;
 
 public class MedicalRecordActivity extends AppCompatActivity {
 
-    private RecyclerView rvMedicalHistory;
+    private TextView tvBloodVal, tvAllergyVal, tvConditionVal;
+    private View layoutEmptyHistory;
     private RecyclerView rvPastAppointments;
 
     @Override
@@ -56,10 +57,12 @@ public class MedicalRecordActivity extends AppCompatActivity {
             return insets;
         });
 
-        rvMedicalHistory = findViewById(R.id.rvMedicalHistory);
+        tvBloodVal = findViewById(R.id.tvBloodVal);
+        tvAllergyVal = findViewById(R.id.tvAllergyVal);
+        tvConditionVal = findViewById(R.id.tvConditionVal);
+        layoutEmptyHistory = findViewById(R.id.layoutEmptyHistory);
         rvPastAppointments = findViewById(R.id.rvPastAppointments);
 
-        rvMedicalHistory.setLayoutManager(new LinearLayoutManager(this));
         rvPastAppointments.setLayoutManager(new LinearLayoutManager(this));
 
         // Setup Actions
@@ -134,18 +137,13 @@ public class MedicalRecordActivity extends AppCompatActivity {
     }
 
     private void setupMedicalHistory(PatientMeResponse p) {
-        List<HistoryItem> list = new ArrayList<>();
-        
-        String blood = (p.getBloodType() != null && !p.getBloodType().isEmpty()) ? p.getBloodType() : "N/A";
-        list.add(new HistoryItem("BLOOD TYPE", blood, R.drawable.ic_emergency, "#FFF1F2", "#E11D48"));
+        String blood = (p.getBloodType() != null && !p.getBloodType().isEmpty()) ? p.getBloodType() : "--";
+        String allergies = (p.getAllergies() != null && !p.getAllergies().isEmpty()) ? p.getAllergies() : "Không";
+        String conditions = (p.getUnderlyingConditions() != null && !p.getUnderlyingConditions().isEmpty()) ? p.getUnderlyingConditions() : "Không";
 
-        String allergies = (p.getAllergies() != null && !p.getAllergies().isEmpty()) ? p.getAllergies() : "None";
-        list.add(new HistoryItem("ALLERGIES", allergies, R.drawable.ic_error_circle, "#FEFCE8", "#CA8A04"));
-        
-        String conditions = (p.getUnderlyingConditions() != null && !p.getUnderlyingConditions().isEmpty()) ? p.getUnderlyingConditions() : "None";
-        list.add(new HistoryItem("CONDITIONS", conditions, R.drawable.ic_medical_services, "#F0F9FF", "#0284C7"));
-        
-        rvMedicalHistory.setAdapter(new HistoryAdapter(list));
+        tvBloodVal.setText(blood);
+        tvAllergyVal.setText(allergies);
+        tvConditionVal.setText(conditions);
     }
 
     private void setupPastAppointments() {
@@ -155,99 +153,53 @@ public class MedicalRecordActivity extends AppCompatActivity {
             public void onResponse(Call<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> call, Response<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     List<com.hcmute.mobile_android.network.models.MedicalRecordResponse> records = response.body();
-                    List<PastApptItem> list = new ArrayList<>();
                     
-                    for (com.hcmute.mobile_android.network.models.MedicalRecordResponse r : records) {
-                        list.add(new PastApptItem(
-                                r.getId(),
-                                r.getDoctorName() != null ? r.getDoctorName() : "Bác sĩ",
-                                r.getDoctorSpecialty() != null ? r.getDoctorSpecialty() : "Nha sĩ",
-                                r.getDate() != null ? r.getDate().split("T")[0] : "",
-                                r.getDiagnosis() != null ? r.getDiagnosis() : "Chưa có chẩn đoán"
-                        ));
-                    }
-                    
-                    rvPastAppointments.setAdapter(new PastApptAdapter(list, new PastApptAdapter.OnItemClickListener() {
-                        @Override
-                        public void onDetailClick(PastApptItem appt) {
-                            Intent intent = new Intent(MedicalRecordActivity.this, MedicalRecordDetailActivity.class);
-                            intent.putExtra("recordId", appt.id);
-                            startActivity(intent);
+                    if (records.isEmpty()) {
+                        if (layoutEmptyHistory != null) layoutEmptyHistory.setVisibility(View.VISIBLE);
+                        rvPastAppointments.setVisibility(View.GONE);
+                    } else {
+                        if (layoutEmptyHistory != null) layoutEmptyHistory.setVisibility(View.GONE);
+                        rvPastAppointments.setVisibility(View.VISIBLE);
+
+                        List<PastApptItem> list = new ArrayList<>();
+                        for (com.hcmute.mobile_android.network.models.MedicalRecordResponse r : records) {
+                            list.add(new PastApptItem(
+                                    r.getId(),
+                                    r.getDoctorName() != null ? r.getDoctorName() : "Bác sĩ",
+                                    r.getDoctorSpecialty() != null ? r.getDoctorSpecialty() : "Nha sĩ",
+                                    r.getDate() != null ? r.getDate().split("T")[0] : "",
+                                    r.getDiagnosis() != null ? r.getDiagnosis() : "Chưa có chẩn đoán"
+                            ));
                         }
 
-                        @Override
-                        public void onPrescriptionClick(PastApptItem appt) {
-                            Intent intent = new Intent(MedicalRecordActivity.this, PrescriptionDetailActivity.class);
-                            intent.putExtra("recordId", appt.id);
-                            intent.putExtra("doctorName", appt.doctorName);
-                            intent.putExtra("date", appt.date);
-                            startActivity(intent);
-                        }
-                    }));
+                        rvPastAppointments.setAdapter(new PastApptAdapter(list, new PastApptAdapter.OnItemClickListener() {
+                            @Override
+                            public void onDetailClick(PastApptItem appt) {
+                                Intent intent = new Intent(MedicalRecordActivity.this, MedicalRecordDetailActivity.class);
+                                intent.putExtra("recordId", appt.id);
+                                startActivity(intent);
+                            }
+
+                            @Override
+                            public void onPrescriptionClick(PastApptItem appt) {
+                                Intent intent = new Intent(MedicalRecordActivity.this, PrescriptionDetailActivity.class);
+                                intent.putExtra("recordId", appt.id);
+                                intent.putExtra("doctorName", appt.doctorName);
+                                intent.putExtra("date", appt.date);
+                                startActivity(intent);
+                            }
+                        }));
+                    }
                 }
             }
 
             @Override
             public void onFailure(Call<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> call, Throwable t) {
-                // Handle failure
             }
         });
     }
 
     // --- Inner Models and Adapters ---
-
-    private static class HistoryItem {
-        String title, value, bgColor, iconColor;
-        int iconRes;
-        HistoryItem(String t, String v, int ir, String bgC, String icC) {
-            title = t; value = v; iconRes = ir; bgColor = bgC; iconColor = icC;
-        }
-    }
-
-    private static class HistoryAdapter extends RecyclerView.Adapter<HistoryAdapter.Holder> {
-        private final List<HistoryItem> items;
-        HistoryAdapter(List<HistoryItem> items) { this.items = items; }
-
-        @NonNull
-        @Override
-        public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            return new Holder(LayoutInflater.from(parent.getContext()).inflate(R.layout.item_medical_history, parent, false));
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull Holder holder, int position) {
-            HistoryItem item = items.get(position);
-            holder.tvTitle.setText(item.title);
-            holder.tvValue.setText(item.value);
-            
-            try { 
-                holder.ivIcon.setImageResource(item.iconRes);
-                holder.ivIcon.setBackground(createIconBg(item.bgColor));
-                holder.ivIcon.setColorFilter(Color.parseColor(item.iconColor)); 
-            } catch (Exception ignored) {}
-        }
-
-        private android.graphics.drawable.Drawable createIconBg(String color) {
-            android.graphics.drawable.GradientDrawable gd = new android.graphics.drawable.GradientDrawable();
-            gd.setColor(Color.parseColor(color));
-            gd.setCornerRadius(100f); // Circle
-            return gd;
-        }
-
-        @Override
-        public int getItemCount() { return items.size(); }
-
-        static class Holder extends RecyclerView.ViewHolder {
-            TextView tvTitle, tvValue;
-            ImageView ivIcon;
-            Holder(View v) {
-                super(v);
-                tvTitle = v.findViewById(R.id.tvHistoryTitle);
-                tvValue = v.findViewById(R.id.tvHistoryValue);
-                ivIcon = v.findViewById(R.id.ivHistoryIcon);
-            }
-        }
-    }
 
     private static class PastApptItem {
         Long id;
