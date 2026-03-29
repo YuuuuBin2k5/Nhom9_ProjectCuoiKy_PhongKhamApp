@@ -168,6 +168,20 @@ public class PatientDashboardFragment extends Fragment {
                 startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.MedicalRecordActivity.class));
             });
         }
+        
+        View btnInvoices = view.findViewById(R.id.btnInvoices);
+        if (btnInvoices != null) {
+            btnInvoices.setOnClickListener(v -> {
+                startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.InvoiceListActivity.class));
+            });
+        }
+        
+        View btnMedicalRecords = view.findViewById(R.id.btnMedicalRecords);
+        if (btnMedicalRecords != null) {
+            btnMedicalRecords.setOnClickListener(v -> {
+                startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.MedicalRecordActivity.class));
+            });
+        }
     }
 
     private void setupAdapters() {

@@ -441,42 +441,35 @@
                                 app:strokeWidth="1dp" />
                         </LinearLayout>
                         
-                        <LinearLayout
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCancelStep"
                             android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="horizontal"
+                            android:layout_height="48dp"
+                            android:text="Hủy Bước"
+                            android:textSize="12sp"
+                            android:textAllCaps="false"
+                            android:textColor="#D32F2F"
+                            app:cornerRadius="8dp"
+                            app:backgroundTint="@android:color/white"
+                            app:strokeColor="#D32F2F"
+                            app:strokeWidth="1dp"
                             android:layout_marginTop="8dp"
-                            android:weightSum="2">
+                            android:visibility="gone" />
 
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnCancelStep"
-                                android:layout_width="0dp"
-                                android:layout_height="48dp"
-                                android:layout_weight="1"
-                                android:text="Hủy Bước"
-                                android:textSize="12sp"
-                                android:textAllCaps="false"
-                                android:textColor="#D32F2F"
-                                app:cornerRadius="8dp"
-                                app:backgroundTint="@android:color/white"
-                                app:strokeColor="#D32F2F"
-                                app:strokeWidth="1dp"
-                                android:layout_marginEnd="4dp"
-                                android:visibility="gone" />
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCompleteTreatment"
+                            android:layout_width="match_parent"
+                            android:layout_height="54dp"
+                            android:text="Hoàn thành Điều trị &amp; Ký Hóa đơn"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textAllCaps="false"
+                            app:cornerRadius="8dp"
+                            app:backgroundTint="#FF9800"
+                            android:layout_marginTop="16dp"
+                            android:enabled="false"
+                            android:visibility="gone" />
 
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnPayment"
-                                android:layout_width="0dp"
-                                android:layout_height="48dp"
-                                android:layout_weight="1"
-                                android:text="Thanh Toán"
-                                android:textSize="12sp"
-                                android:textAllCaps="false"
-                                app:cornerRadius="8dp"
-                                app:backgroundTint="#4CAF50"
-                                android:visibility="gone" />
-                        </LinearLayout>
-                        
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnPrintPlan"
                             android:layout_width="match_parent"

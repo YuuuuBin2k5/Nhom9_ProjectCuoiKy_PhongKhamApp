@@ -63,7 +63,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     private EditText etQrInput;
     private TextView tvPatientHeader, tvDoctorGreeting, tvTotalEstimate;
     private ImageButton btnScanQr;
-    private MaterialButton btnActivatePlan, btnSelectTemplate, btnAddService, btnPrescribe, btnPrintPlan, btnCompleteStep, btnCancelStep, btnLookup, btnPayment;
+    private MaterialButton btnActivatePlan, btnSelectTemplate, btnAddService, btnPrescribe, btnPrintPlan, btnCompleteStep, btnCancelStep, btnLookup, btnCompleteTreatment;
     private MaterialCardView cardLookup, cardTreatmentPlan;
     private com.google.android.material.textfield.TextInputEditText etDoctorConclusion;
     private View btnViewHistory;
@@ -410,7 +410,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         btnPrintPlan = findViewById(R.id.btnPrintPlan);
         btnCompleteStep = findViewById(R.id.btnCompleteStep);
         btnCancelStep = findViewById(R.id.btnCancelStep);
-        btnPayment = findViewById(R.id.btnPayment);
+        btnCompleteTreatment = findViewById(R.id.btnCompleteTreatment);
         
         // CRITICAL FIX: Setup upload image button
         MaterialButton btnUploadImage = findViewById(R.id.btnUploadImage);
@@ -438,31 +438,18 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         
         btnLookup.setOnClickListener(v -> lookupPatient());
         btnActivatePlan.setOnClickListener(v -> activatePlan());
-        btnPayment.setOnClickListener(v -> {
+        btnCompleteTreatment.setOnClickListener(v -> {
             if (currentPatient == null || currentTreatmentPlanId == null) {
                 Toast.makeText(this, "Vui lòng chọn bệnh nhân và tạo phác đồ điều trị", Toast.LENGTH_SHORT).show();
                 return;
             }
             
-            // Validate: Check if all steps are completed
-            boolean hasIncompleteSteps = treatmentSteps.stream()
-                .anyMatch(s -> !"COMPLETED".equals(s.getStatus()) && !"SKIPPED".equals(s.getStatus()));
-            
-            if (hasIncompleteSteps) {
-                new androidx.appcompat.app.AlertDialog.Builder(this)
-                    .setTitle("Chưa thể thanh toán")
-                    .setMessage("Vui lòng hoàn thành tất cả các bước điều trị trước khi thanh toán.")
-                    .setPositiveButton("OK", null)
-                    .show();
-                return;
-            }
-            
             // Show confirmation dialog
             new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Xác nhận hoàn tất")
-                .setMessage("Bạn có chắc muốn hoàn tất phác đồ điều trị và tạo hóa đơn thanh toán?\n\n" +
-                           "Tổng tiền: " + tvTotalEstimate.getText())
-                .setPositiveButton("Xác nhận", (dialog, which) -> completeAndGenerateInvoice())
+                .setTitle("Kết thúc Điều trị")
+                .setMessage("Tất cả các bước đã hoàn tất.\nBạn có chắc muốn kết thúc phác đồ và lập hóa đơn cho bệnh nhân?\n\n" +
+                           "Tổng chi phí dự kiến: " + tvTotalEstimate.getText())
+                .setPositiveButton("Xác nhận & Lập Hóa đơn", (dialog, which) -> completeAndGenerateInvoice())
                 .setNegativeButton("Hủy", null)
                 .show();
         });
@@ -1950,6 +1937,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         // Filter steps that should be counted
         List<TreatmentPlan.Step> countedSteps = new ArrayList<>();
         double total = 0;
+        boolean allCompleted = true;
         
         for (TreatmentPlan.Step step : treatmentSteps) {
             String status = step.getStatus() != null ? step.getStatus().toUpperCase() : "PENDING";
@@ -1959,6 +1947,9 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                     total += price;
                     countedSteps.add(step);
                 }
+            }
+            if (!status.equals("COMPLETED") && !status.equals("SKIPPED") && !status.equals("CANCELLED")) {
+                allCompleted = false;
             }
         }
         
@@ -1970,6 +1961,22 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         // Update price breakdown list
         if (priceBreakdownAdapter != null) {
             priceBreakdownAdapter.updateSteps(countedSteps);
+        }
+        
+        // Update logic for Complete Treatment Button
+        if (btnCompleteTreatment != null) {
+            if (!treatmentSteps.isEmpty()) {
+                btnCompleteTreatment.setVisibility(View.VISIBLE);
+                if (allCompleted) {
+                    btnCompleteTreatment.setEnabled(true);
+                    btnCompleteTreatment.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#4CAF50")));
+                } else {
+                    btnCompleteTreatment.setEnabled(false);
+                    btnCompleteTreatment.setBackgroundTintList(android.content.res.ColorStateList.valueOf(android.graphics.Color.parseColor("#BDBDBD")));
+                }
+            } else {
+                btnCompleteTreatment.setVisibility(View.GONE);
+            }
         }
     }
     
@@ -1990,14 +1997,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                     
                     // Show success message
                     Toast.makeText(DoctorWorkflowActivity.this, 
-                        "Đã tạo hóa đơn thành công!", Toast.LENGTH_SHORT).show();
-                    
-                    // Navigate to payment activity
-                    Intent intent = new Intent(DoctorWorkflowActivity.this, PaymentActivity.class);
-                    intent.putExtra("invoiceId", invoice.getId());
-                    intent.putExtra("amount", invoice.getTotalAmount().doubleValue());
-                    intent.putExtra("PATIENT_NAME", currentPatient.getFullName());
-                    startActivity(intent);
+                        "Đã lập hóa đơn và kết thúc hồ sơ khám thành công!", Toast.LENGTH_LONG).show();
                     
                     // Close this activity
                     finish();
