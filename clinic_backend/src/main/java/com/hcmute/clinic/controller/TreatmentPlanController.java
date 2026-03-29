@@ -263,7 +263,25 @@ public class TreatmentPlanController {
             return ResponseEntity.status(401).build();
         }
         try {
-            treatmentPlanService.startStep(stepId);
+            String authName = auth.getName();
+            boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
+            
+            Long docRoomId = null;
+            if (!isAdmin) {
+                com.hcmute.clinic.entity.Doctor doc = null;
+                try {
+                    Long docId = Long.parseLong(authName);
+                    doc = doctorRepository.findById(docId).orElse(null);
+                } catch (Exception e) {}
+
+                if (doc == null) {
+                    doc = doctorRepository.findByEmailIgnoreCase(authName)
+                            .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin bác sĩ"));
+                }
+                docRoomId = doc.getClinicRoom() != null ? doc.getClinicRoom().getId() : null;
+            }
+            
+            treatmentPlanService.startStep(stepId, docRoomId);
             return ResponseEntity.ok(Map.of("message", "Đã bắt đầu bước điều trị"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));

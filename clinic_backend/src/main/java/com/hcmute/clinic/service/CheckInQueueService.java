@@ -65,19 +65,32 @@ public class CheckInQueueService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản không hoạt động");
         }
 
+        LocalDate today = LocalDate.now();
+        List<CheckInQueue> existingQueues = checkInQueueRepository.findTodayForPatient(patientId, today.atStartOfDay(), today.plusDays(1).atStartOfDay());
+        
+        var activeQueue = existingQueues.stream()
+                .filter(q -> q.getStatus() == QueueStatus.WAITING || 
+                             q.getStatus() == QueueStatus.IN_PROGRESS || 
+                             q.getStatus() == QueueStatus.PAUSED_FOR_TEST ||
+                             q.getStatus() == QueueStatus.RETURNED_PRIORITY)
+                .findFirst();
+                
+        if (activeQueue.isPresent()) {
+            CheckInQueue q = activeQueue.get();
+            int waitTime = calculateEstimatedWaitTime(q);
+            int pos = calculateQueuePosition(q);
+            return CheckInResult.alreadyCheckedIn(q.getQueueNumber(), pos, getRoomName(q), waitTime);
+        }
+
         List<Appointment> todayAppointments = appointmentRepository.findTodayByPatientId(patientId);
         Appointment appointment;
         if (todayAppointments.isEmpty()) {
             appointment = createWalkInAppointment(patient);
         } else {
-            appointment = todayAppointments.get(0);
-        }
-        var existing = checkInQueueRepository.findByAppointmentId(appointment.getId());
-        if (existing.isPresent()) {
-            CheckInQueue q = existing.get();
-            int waitTime = calculateEstimatedWaitTime(q);
-            int pos = calculateQueuePosition(q);
-            return CheckInResult.alreadyCheckedIn(q.getQueueNumber(), pos, getRoomName(q), waitTime);
+            appointment = todayAppointments.stream()
+                .filter(a -> a.getStatus() == AppointmentStatus.SCHEDULED || a.getStatus() == AppointmentStatus.CONFIRMED)
+                .findFirst()
+                .orElse(todayAppointments.get(0));
         }
 
         ClinicRoom room = appointment.getDoctor() != null ? appointment.getDoctor().getClinicRoom() : null;

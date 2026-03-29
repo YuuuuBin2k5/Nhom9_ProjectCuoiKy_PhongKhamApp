@@ -30,6 +30,7 @@ public class TreatmentPlanService {
     private final NotificationRepository notificationRepository;
     private final FcmService fcmService;
     private final com.hcmute.clinic.repository.AppointmentRepository appointmentRepository;
+    private final com.hcmute.clinic.repository.InvoiceRepository invoiceRepository;
 
     public List<TreatmentPlanTemplate> listActiveTemplates() {
         return templateRepository.findByActiveTrueOrderByNameAsc();
@@ -265,7 +266,7 @@ public class TreatmentPlanService {
         }
     }
     @Transactional
-    public void startStep(Long stepId) {
+    public void startStep(Long stepId, Long doctorRoomId) {
         TreatmentPlanStep step = stepRepository.findById(stepId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bước điều trị không tồn tại"));
         
@@ -275,6 +276,14 @@ public class TreatmentPlanService {
 
         if (step.getStatus() != StepStatus.PENDING) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bước này không ở trạng thái chờ");
+        }
+        
+        // Kiểm tra quyền: Bác sĩ phải ở đúng phòng (nếu step có chỉ định phòng)
+        if (doctorRoomId != null && step.getClinicRoom() != null) {
+            if (!doctorRoomId.equals(step.getClinicRoom().getId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                    "Bạn không có quyền bắt đầu bước này. Bước này thuộc về phòng khác.");
+            }
         }
         
         // VALIDATION: Kiểm tra các bước trước đó đã hoàn thành chưa
@@ -303,11 +312,21 @@ public class TreatmentPlanService {
         // This is different from canceling an IN_PROGRESS step
         
         if (step.getStatus() == StepStatus.COMPLETED) {
+            TreatmentPlan plan = step.getPlan();
+            
+            // Check for Invoice before allowing edit
+            if (plan != null) {
+                java.util.Optional<com.hcmute.clinic.entity.Invoice> invoice = invoiceRepository.findByTreatmentPlanId(plan.getId());
+                if (invoice.isPresent()) {
+                    throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                        "Không thể chỉnh sửa bước điều trị vì Phác đồ này đã xuất Hóa đơn. Vui lòng Hủy Hóa đơn tại Quầy Kế Toán trước.");
+                }
+            }
+            
             // Reopening a COMPLETED step for editing
             // This is allowed even if the plan is COMPLETED
             // because we want to allow doctors to fix mistakes or add more details
             
-            TreatmentPlan plan = step.getPlan();
             if (plan != null && plan.getStatus() == TreatmentPlanStatus.COMPLETED) {
                 // Reopen the plan to IN_PROGRESS to allow updates
                 plan.setStatus(TreatmentPlanStatus.IN_PROGRESS);
@@ -471,6 +490,26 @@ public class TreatmentPlanService {
                 plan.setStatus(TreatmentPlanStatus.COMPLETED);
                 planRepository.save(plan);
 
+                // Dọn rác Hàng đợi khi Hoàn thành Phác đồ
+                java.util.List<com.hcmute.clinic.entity.CheckInQueue> queuesForSweep = queueRepo.findTodayForPatient(
+                    plan.getPatient().getId(), 
+                    java.time.LocalDate.now().atStartOfDay(), 
+                    java.time.LocalDate.now().plusDays(1).atStartOfDay()
+                );
+                for (com.hcmute.clinic.entity.CheckInQueue q : queuesForSweep) {
+                    if (q.getStatus() == com.hcmute.clinic.enums.QueueStatus.IN_PROGRESS || 
+                        q.getStatus() == com.hcmute.clinic.enums.QueueStatus.WAITING ||
+                        q.getStatus() == com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY) {
+                        q.setStatus(com.hcmute.clinic.enums.QueueStatus.COMPLETED);
+                        queueRepo.save(q);
+                        try {
+                            if (q.getClinicRoom() != null) {
+                                queueEventService.broadcastQueueUpdated(q.getClinicRoom().getId());
+                            }
+                        } catch (Exception e) {}
+                    }
+                }
+
                 com.hcmute.clinic.entity.Notification notif = com.hcmute.clinic.entity.Notification.builder()
                         .patient(plan.getPatient())
                         .title("Phác đồ hoàn tất")
@@ -578,6 +617,51 @@ public class TreatmentPlanService {
                 } catch (Exception e) {}
 
                 return nextRoom.getName();
+            }
+        } else if (!isNextStepFirst) {
+            // Trả bệnh nhân về phòng khám gốc sau khi làm xong dịch vụ nhánh (dangling queue fix)
+            java.util.List<com.hcmute.clinic.entity.CheckInQueue> queuesReturn = queueRepo.findTodayForPatient(
+                plan.getPatient().getId(), 
+                java.time.LocalDate.now().atStartOfDay(), 
+                java.time.LocalDate.now().plusDays(1).atStartOfDay()
+            );
+            com.hcmute.clinic.entity.CheckInQueue activeQueue = queuesReturn.stream()
+                .filter(q -> q.getStatus() == com.hcmute.clinic.enums.QueueStatus.IN_PROGRESS 
+                          || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.WAITING)
+                .findFirst()
+                .orElse(null);
+                
+            if (activeQueue != null && activeQueue.getOriginalRoomId() != null && 
+                !activeQueue.getOriginalRoomId().equals(activeQueue.getClinicRoom().getId())) {
+                
+                Long oldRoomId = activeQueue.getClinicRoom().getId();
+                ClinicRoom origRoom = clinicRoomRepository.findById(activeQueue.getOriginalRoomId()).orElse(null);
+                
+                if (origRoom != null) {
+                    activeQueue.setClinicRoom(origRoom);
+                    activeQueue.setStatus(com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY);
+                    activeQueue.setPriorityLevel(activeQueue.getPriorityLevel() + 10);
+                    queueRepo.save(activeQueue);
+                    
+                    com.hcmute.clinic.entity.Notification notifRet = com.hcmute.clinic.entity.Notification.builder()
+                            .patient(plan.getPatient())
+                            .title("🏥 Trở lại phòng khám ban đầu")
+                            .message("Vui lòng quay lại: " + origRoom.getName() + " để tiếp tục điều trị. Bạn được ưu tiên gọi vào phòng.")
+                            .type("ROOM_TRANSFER")
+                            .build();
+                    notifRepo.save(notifRet);
+                    
+                    if (plan.getPatient().getFcmToken() != null && !plan.getPatient().getFcmToken().isBlank()) {
+                        fcmService.sendNotification(plan.getPatient().getFcmToken(), notifRet.getTitle(), notifRet.getMessage());
+                    }
+
+                    try {
+                        queueEventService.broadcastQueueUpdated(oldRoomId);
+                        queueEventService.broadcastQueueUpdated(origRoom.getId());
+                    } catch (Exception e) {}
+                    
+                    return origRoom.getName();
+                }
             }
         }
         
