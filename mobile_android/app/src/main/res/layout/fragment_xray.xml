@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:background="@android:color/white"
+    android:padding="16dp">
+
+    <!-- Edit Button (Hidden by default, shown when in read-only mode) -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnEditMode"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Chỉnh sửa"
+        android:textSize="14sp"
+        app:icon="@android:drawable/ic_menu_edit"
+        app:iconSize="20dp"
+        app:iconGravity="textStart"
+        style="@style/Widget.Material3.Button"
+        android:visibility="gone"
+        android:layout_marginBottom="16dp"/>
+
+    <TextView 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:text="Hồ sơ Chẩn đoán Hình ảnh" 
+        android:textSize="16sp" 
+        android:textColor="#0D1B2A"
+        android:textStyle="bold" 
+        android:layout_marginBottom="8dp"/>
+        
+    <TextView 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:text="Nhập kết quả đọc phim X-quang và chẩn đoán hình ảnh" 
+        android:textColor="#546E7A"
+        android:textSize="14sp"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Image Type Selection -->
+    <TextView 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:text="Loại hình ảnh" 
+        android:textSize="14sp" 
+        android:textColor="#0D1B2A"
+        android:textStyle="bold" 
+        android:layout_marginBottom="8dp"/>
+
+    <RadioGroup
+        android:id="@+id/rgImageType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:layout_marginBottom="16dp">
+        
+        <RadioButton
+            android:id="@+id/rbPanoramic"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="X-quang Panoramic (Toàn cảnh)"
+            android:textColor="#333333"
+            android:buttonTint="#1565C0"
+            android:checked="true"/>
+            
+        <RadioButton
+            android:id="@+id/rbPeriapical"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="X-quang Periapical (Chóp răng)"
+            android:textColor="#333333"
+            android:buttonTint="#1565C0"/>
+            
+        <RadioButton
+            android:id="@+id/rbCephalometric"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="X-quang Cephalometric (Đo sọ)"
+            android:textColor="#333333"
+            android:buttonTint="#1565C0"/>
+            
+        <RadioButton
+            android:id="@+id/rbCTScan"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="CT Scan / CBCT"
+            android:textColor="#333333"
+            android:buttonTint="#1565C0"/>
+            
+        <RadioButton
+            android:id="@+id/rbOther"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Khác"
+            android:textColor="#333333"
+            android:buttonTint="#1565C0"/>
+    </RadioGroup>
+
+    <!-- Other Type Input (Hidden by default) -->
+    <LinearLayout
+        android:id="@+id/layoutOtherType"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_marginBottom="16dp">
+        
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nhập loại X-quang khác"
+            android:textSize="12sp"
+            android:textColor="#757575"
+            android:layout_marginBottom="4dp"/>
+            
+        <EditText
+            android:id="@+id/etOtherType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="VD: MRI, Siêu âm..."
+            android:background="@drawable/bg_card_white_rounded"
+            android:padding="12dp"
+            android:textSize="14sp"/>
+    </LinearLayout>
+
+
+
+    <!-- Findings Section -->
+    <TextView 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:text="Kết quả đọc phim" 
+        android:textSize="14sp" 
+        android:textColor="#0D1B2A"
+        android:textStyle="bold" 
+        android:layout_marginBottom="8dp"/>
+
+    <EditText 
+        android:id="@+id/etXrayFindings" 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" 
+        android:hint="Mô tả chi tiết kết quả đọc phim X-quang, vị trí tổn thương, mức độ nghiêm trọng..." 
+        android:minLines="5" 
+        android:gravity="top" 
+        android:background="@drawable/bg_card_white_rounded"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Diagnosis Section -->
+    <TextView 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:text="Chẩn đoán hình ảnh" 
+        android:textSize="14sp" 
+        android:textColor="#0D1B2A"
+        android:textStyle="bold" 
+        android:layout_marginBottom="8dp"/>
+
+    <EditText 
+        android:id="@+id/etXrayDiagnosis" 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" 
+        android:hint="Kết luận chẩn đoán dựa trên hình ảnh X-quang" 
+        android:minLines="3" 
+        android:gravity="top" 
+        android:background="@drawable/bg_card_white_rounded"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Recommendations -->
+    <TextView 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:text="Khuyến nghị điều trị" 
+        android:textSize="14sp" 
+        android:textColor="#0D1B2A"
+        android:textStyle="bold" 
+        android:layout_marginBottom="8dp"/>
+
+    <EditText 
+        android:id="@+id/etXrayRecommendations" 
+        android:layout_width="match_parent" 
+        android:layout_height="wrap_content" 
+        android:hint="Đề xuất phương pháp điều trị hoặc các bước tiếp theo" 
+        android:minLines="3" 
+        android:gravity="top" 
+        android:background="@drawable/bg_card_white_rounded"
+        android:padding="12dp"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- X-ray Images Section -->
+    <TextView 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:text="Hình ảnh X-quang" 
+        android:textSize="14sp" 
+        android:textColor="#0D1B2A"
+        android:textStyle="bold" 
+        android:layout_marginBottom="8dp"/>
+
+    <TextView 
+        android:layout_width="wrap_content" 
+        android:layout_height="wrap_content" 
+        android:text="Tải lên ảnh X-quang, CT Scan hoặc hình ảnh chẩn đoán khác" 
+        android:textColor="#757575"
+        android:textSize="12sp"
+        android:layout_marginBottom="12dp"/>
+
+    <!-- Upload Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnUploadXrayImage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Tải ảnh X-quang"
+        android:textSize="14sp"
+        app:icon="@drawable/ic_camera"
+        app:iconSize="20dp"
+        app:iconGravity="textStart"
+        style="@style/Widget.Material3.Button.OutlinedButton"
+        android:layout_marginBottom="12dp"/>
+
+    <!-- Image Preview Section -->
+    <LinearLayout
+        android:id="@+id/layoutImagePreview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:background="@drawable/bg_card_white_rounded"
+        android:padding="12dp"
+        android:layout_marginBottom="8dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/tvImageCount"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="0 ảnh"
+                android:textSize="13sp"
+                android:textColor="#546E7A"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Bấm vào ảnh để xem/xóa"
+                android:textSize="11sp"
+                android:textColor="#90A4AE"/>
+        </LinearLayout>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvXrayImages"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:clipToPadding="false"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"/>
+    </LinearLayout>
+
+    <!-- Info Note -->
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="💡 Lưu ý: Ảnh sẽ được lưu khi bạn hoàn tất bước khám này"
+        android:textSize="11sp"
+        android:textColor="#FF6F00"
+        android:background="#FFF3E0"
+        android:padding="8dp"
+        android:drawablePadding="4dp"/>
+</LinearLayout>

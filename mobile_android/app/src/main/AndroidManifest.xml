@@ -68,6 +68,15 @@
             android:name=".ui.activities.ReviewActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activities.PaymentActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.InvoiceListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.InvoiceDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activities.AdminMainActivity"
             android:exported="false" />
         <activity
@@ -134,6 +143,11 @@
         <activity
             android:name=".ui.activities.AdminServiceDetailActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.activities.ImageViewerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:screenOrientation="unspecified" />
     </application>
 
 </manifest>

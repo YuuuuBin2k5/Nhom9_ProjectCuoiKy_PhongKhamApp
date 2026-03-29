@@ -1,5 +1,6 @@
 package com.hcmute.clinic.controller;
 
+import com.hcmute.clinic.dto.RoomRequest;
 import com.hcmute.clinic.entity.ClinicRoom;
 import com.hcmute.clinic.repository.ClinicRoomRepository;
 import lombok.RequiredArgsConstructor;
@@ -7,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -50,6 +52,54 @@ public class AdminRoomController {
                     room.setActive(active);
                     clinicRoomRepository.save(room);
                     return ResponseEntity.ok(Map.of("message", "Cập nhật thành công"));
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+    
+    @PostMapping
+    public ResponseEntity<?> createRoom(@Valid @RequestBody RoomRequest request) {
+        ClinicRoom room = new ClinicRoom();
+        room.setName(request.getName());
+        room.setDescription(request.getDescription());
+        room.setActive(true);
+        room = clinicRoomRepository.save(room);
+        
+        Map<String, Object> response = new java.util.HashMap<>();
+        response.put("id", room.getId());
+        response.put("name", room.getName());
+        response.put("description", room.getDescription());
+        response.put("active", room.isActive());
+        
+        return ResponseEntity.ok(response);
+    }
+    
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateRoom(@PathVariable Long id, @Valid @RequestBody RoomRequest request) {
+        return clinicRoomRepository.findById(id)
+                .map(room -> {
+                    room.setName(request.getName());
+                    room.setDescription(request.getDescription());
+                    clinicRoomRepository.save(room);
+                    
+                    Map<String, Object> response = new java.util.HashMap<>();
+                    response.put("id", room.getId());
+                    response.put("name", room.getName());
+                    response.put("description", room.getDescription());
+                    response.put("active", room.isActive());
+                    
+                    return ResponseEntity.ok(response);
+                })
+                .orElse(ResponseEntity.notFound().build());
+    }
+    
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteRoom(@PathVariable Long id) {
+        return clinicRoomRepository.findById(id)
+                .map(room -> {
+                    // Soft delete
+                    room.setActive(false);
+                    clinicRoomRepository.save(room);
+                    return ResponseEntity.ok(Map.of("message", "Đã xóa phòng"));
                 })
                 .orElse(ResponseEntity.notFound().build());
     }

@@ -35,6 +35,9 @@ public class FragmentGeneralDental extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         
+        android.util.Log.d("FragmentGeneralDental", "=== onViewCreated ===");
+        android.util.Log.d("FragmentGeneralDental", "Fragment instance: " + this.hashCode());
+        
         odontogramView = view.findViewById(R.id.odontogramView);
         tvToothNotes = view.findViewById(R.id.tvToothNotes);
         etReason = view.findViewById(R.id.etReason);
@@ -94,6 +97,15 @@ public class FragmentGeneralDental extends Fragment {
             } else {
                 toothCustomNotesMap.put(toothNumber, statusText + (customNote.isEmpty() ? "" : " - " + customNote));
             }
+            
+            android.util.Log.d("FragmentGeneralDental", "=== Saved tooth note ===");
+            android.util.Log.d("FragmentGeneralDental", "Fragment instance: " + FragmentGeneralDental.this.hashCode());
+            android.util.Log.d("FragmentGeneralDental", "Tooth: " + toothNumber);
+            android.util.Log.d("FragmentGeneralDental", "Status: " + statusText);
+            android.util.Log.d("FragmentGeneralDental", "Custom note: '" + customNote + "'");
+            android.util.Log.d("FragmentGeneralDental", "toothCustomNotesMap size after save: " + toothCustomNotesMap.size());
+            android.util.Log.d("FragmentGeneralDental", "toothCustomNotesMap content: " + toothCustomNotesMap.toString());
+            
             updateToothNotesDisplay();
             dialog.dismiss();
         });
@@ -133,9 +145,18 @@ public class FragmentGeneralDental extends Fragment {
     }
 
     public String getFormDataNotes() {
+        android.util.Log.d("FragmentGeneralDental", "=== getFormDataNotes() called ===");
+        android.util.Log.d("FragmentGeneralDental", "Fragment instance: " + this.hashCode());
+        android.util.Log.d("FragmentGeneralDental", "toothCustomNotesMap size: " + toothCustomNotesMap.size());
+        android.util.Log.d("FragmentGeneralDental", "toothCustomNotesMap content: " + toothCustomNotesMap.toString());
+        
         StringBuilder sb = new StringBuilder();
         String reason = etReason.getText().toString().trim();
         String diagnosis = etDiagnosis.getText().toString().trim();
+        
+        android.util.Log.d("FragmentGeneralDental", "reason: '" + reason + "'");
+        android.util.Log.d("FragmentGeneralDental", "diagnosis: '" + diagnosis + "'");
+        
         if (!reason.isEmpty()) sb.append("Lý do: ").append(reason).append("\n");
         if (!diagnosis.isEmpty()) sb.append("Chẩn đoán: ").append(diagnosis).append("\n");
         if (!toothCustomNotesMap.isEmpty()) {
@@ -144,6 +165,95 @@ public class FragmentGeneralDental extends Fragment {
                 sb.append("- R").append(entry.getKey()).append(": ").append(entry.getValue()).append("\n");
             }
         }
-        return sb.toString().trim();
+        
+        String result = sb.toString().trim();
+        android.util.Log.d("FragmentGeneralDental", "Final result: '" + result + "'");
+        android.util.Log.d("FragmentGeneralDental", "=== getFormDataNotes() end ===");
+        return result;
+    }
+
+    public void setData(String doctorConclusion) {
+        if (doctorConclusion == null || doctorConclusion.isEmpty()) {
+            return;
+        }
+        
+        android.util.Log.d("FragmentGeneralDental", "=== setData() called ===");
+        android.util.Log.d("FragmentGeneralDental", "Fragment instance: " + this.hashCode());
+        android.util.Log.d("FragmentGeneralDental", "doctorConclusion: " + doctorConclusion);
+        
+        // Clear existing data first
+        toothCustomNotesMap.clear();
+        
+        // Parse the conclusion and populate fields
+        String[] lines = doctorConclusion.split("\n");
+        boolean inToothSection = false;
+        
+        for (String line : lines) {
+            if (line.startsWith("Lý do: ")) {
+                if (etReason != null) {
+                    etReason.setText(line.substring(7).trim());
+                }
+            } else if (line.startsWith("Chẩn đoán: ")) {
+                if (etDiagnosis != null) {
+                    etDiagnosis.setText(line.substring(11).trim());
+                }
+            } else if (line.startsWith("Tình trạng răng:")) {
+                inToothSection = true;
+            } else if (inToothSection && line.trim().startsWith("- R")) {
+                // Parse tooth data: "- R12: Sâu răng - note text"
+                try {
+                    String toothData = line.trim().substring(2); // Remove "- "
+                    int colonIndex = toothData.indexOf(":");
+                    if (colonIndex > 0) {
+                        String toothNumStr = toothData.substring(1, colonIndex).trim(); // Remove "R"
+                        String toothNote = toothData.substring(colonIndex + 1).trim();
+                        
+                        int toothNumber = Integer.parseInt(toothNumStr);
+                        toothCustomNotesMap.put(toothNumber, toothNote);
+                        
+                        // Parse status from note to update odontogram visual
+                        String status = "healthy";
+                        if (toothNote.contains("Sâu răng")) {
+                            status = "caries";
+                        } else if (toothNote.contains("Đã trám")) {
+                            status = "filled";
+                        } else if (toothNote.contains("BN yêu cầu")) {
+                            status = "requested";
+                        } else if (toothNote.contains("Cần chữa tủy")) {
+                            status = "rct";
+                        }
+                        
+                        if (odontogramView != null) {
+                            odontogramView.setToothStatus(toothNumber, status);
+                        }
+                        
+                        android.util.Log.d("FragmentGeneralDental", "Loaded tooth R" + toothNumber + ": " + toothNote + " (status: " + status + ")");
+                    }
+                } catch (Exception e) {
+                    android.util.Log.e("FragmentGeneralDental", "Error parsing tooth line: " + line, e);
+                }
+            }
+        }
+        
+        // Update display
+        updateToothNotesDisplay();
+        
+        android.util.Log.d("FragmentGeneralDental", "toothCustomNotesMap size after setData: " + toothCustomNotesMap.size());
+        android.util.Log.d("FragmentGeneralDental", "toothCustomNotesMap content: " + toothCustomNotesMap.toString());
+        android.util.Log.d("FragmentGeneralDental", "=== setData() end ===");
+    }
+
+    public void setReadOnlyMode(boolean readOnly) {
+        if (etReason != null) {
+            etReason.setEnabled(!readOnly);
+            etReason.setFocusable(!readOnly);
+        }
+        if (etDiagnosis != null) {
+            etDiagnosis.setEnabled(!readOnly);
+            etDiagnosis.setFocusable(!readOnly);
+        }
+        if (odontogramView != null) {
+            odontogramView.setEnabled(!readOnly);
+        }
     }
 }

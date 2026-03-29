@@ -31,8 +31,18 @@ public class TokenManager {
                     EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
                     EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
             );
+            android.util.Log.d("TokenManager", "EncryptedSharedPreferences initialized successfully");
         } catch (GeneralSecurityException | IOException e) {
+            android.util.Log.e("TokenManager", "Failed to initialize EncryptedSharedPreferences", e);
             e.printStackTrace();
+            
+            // Fallback to regular SharedPreferences if encryption fails
+            try {
+                android.util.Log.w("TokenManager", "Falling back to regular SharedPreferences");
+                sharedPreferences = context.getSharedPreferences(PREF_NAME + "_fallback", Context.MODE_PRIVATE);
+            } catch (Exception ex) {
+                android.util.Log.e("TokenManager", "Failed to initialize fallback SharedPreferences", ex);
+            }
         }
     }
 
@@ -68,12 +78,23 @@ public class TokenManager {
     }
 
     public void saveUserRole(String role) {
-        if (sharedPreferences == null || role == null) return;
-        sharedPreferences.edit().putString(KEY_USER_ROLE, role).commit();
+        if (sharedPreferences == null || role == null) {
+            android.util.Log.e("TokenManager", "Cannot save role - sharedPreferences or role is null");
+            return;
+        }
+        android.util.Log.d("TokenManager", "Saving role: " + role);
+        boolean success = sharedPreferences.edit().putString(KEY_USER_ROLE, role).commit();
+        android.util.Log.d("TokenManager", "Save role commit result: " + success);
     }
 
     public String getUserRole() {
-        return sharedPreferences == null ? null : sharedPreferences.getString(KEY_USER_ROLE, null);
+        if (sharedPreferences == null) {
+            android.util.Log.e("TokenManager", "Cannot get role - sharedPreferences is null");
+            return null;
+        }
+        String role = sharedPreferences.getString(KEY_USER_ROLE, null);
+        android.util.Log.d("TokenManager", "Retrieved role: " + role);
+        return role;
     }
 
     public void saveUserName(String name) {

@@ -175,6 +175,9 @@ public interface ApiService {
     @PATCH("api/treatment-plans/steps/{stepId}/start")
     Call<MessageResponse> startTreatmentStep(@Path("stepId") Long stepId);
 
+    @PATCH("api/treatment-plans/steps/{stepId}/cancel")
+    Call<MessageResponse> cancelTreatmentStep(@Path("stepId") Long stepId);
+
     @PATCH("api/treatment-plans/steps/{stepId}/complete")
     Call<MessageResponse> completeTreatmentStep(@Path("stepId") Long stepId, @Body java.util.Map<String, Object> body);
 
@@ -224,4 +227,17 @@ public interface ApiService {
 
     @POST("api/invoices/{id}/pay")
     Call<com.hcmute.mobile_android.network.models.PaymentResponse> processPayment(@Path("id") Long id, @Body com.hcmute.mobile_android.network.models.PaymentRequest request);
+    
+    @POST("api/treatment-plans/{planId}/complete-and-generate-invoice")
+    Call<com.hcmute.mobile_android.network.models.Invoice> completeAndGenerateInvoice(@Path("planId") Long planId);
+    
+    // Admin Report APIs
+    @GET("api/admin/reports/revenue")
+    Call<com.hcmute.mobile_android.network.models.RevenueReport> getRevenueReport(@Query("startDate") String startDate, @Query("endDate") String endDate);
+    
+    @GET("api/admin/reports/services")
+    Call<List<com.hcmute.mobile_android.network.models.ServiceStats>> getTopServices(@Query("limit") int limit);
+    
+    @GET("api/admin/reports/doctors")
+    Call<List<com.hcmute.mobile_android.network.models.DoctorStats>> getDoctorPerformance(@Query("startDate") String startDate, @Query("endDate") String endDate);
 }

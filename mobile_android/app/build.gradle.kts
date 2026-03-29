@@ -125,6 +125,9 @@ dependencies {
     // Glide
     implementation(libs.glide)
     
+    // PhotoView for pinch-to-zoom images
+    implementation("com.github.chrisbanes:PhotoView:2.3.0")
+    
     // SwipeRefreshLayout
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     

@@ -7,21 +7,42 @@
     android:background="@android:color/white"
     android:padding="16dp">
 
-    <TextView 
-        android:layout_width="wrap_content" 
-        android:layout_height="wrap_content" 
-        android:text="Hồ sơ Hình ảnh Niềng răng" 
-        android:textSize="16sp" 
-        android:textColor="#0D1B2A"
-        android:textStyle="bold" 
-        android:layout_marginBottom="8dp"/>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="8dp">
+        
+        <TextView 
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="wrap_content" 
+            android:text="Hồ sơ Niềng răng" 
+            android:textSize="16sp" 
+            android:textColor="#0D1B2A"
+            android:textStyle="bold"/>
+        
+        <Button
+            android:id="@+id/btnEditMode"
+            android:layout_width="wrap_content"
+            android:layout_height="36dp"
+            android:text="Chỉnh sửa"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:visibility="gone"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"/>
+    </LinearLayout>
         
     <TextView 
         android:id="@+id/tvStepInfo"
         android:layout_width="wrap_content" 
         android:layout_height="wrap_content" 
-        android:text="Tiến độ (Auto Load theo Treatment Plan)" 
+        android:text="Ghi chú tiến độ điều trị niềng răng" 
         android:textColor="#546E7A"
+        android:textSize="13sp"
         android:layout_marginBottom="16dp"/>
     
     <LinearLayout 
@@ -35,8 +56,9 @@
             android:layout_width="0dp" 
             android:layout_weight="1" 
             android:layout_height="wrap_content" 
-            android:text="Ảnh Mặt thẳng"
+            android:text="📷 Ảnh Mặt thẳng"
             android:textAllCaps="false"
+            android:textSize="13sp"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
             
         <com.google.android.material.button.MaterialButton 
@@ -44,29 +66,51 @@
             android:layout_width="0dp" 
             android:layout_weight="1" 
             android:layout_height="wrap_content" 
-            android:text="Ảnh Cận hàm" 
+            android:text="📷 Ảnh Cận hàm" 
             android:textAllCaps="false"
+            android:textSize="13sp"
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_marginStart="8dp"/>
     </LinearLayout>
     
-    <ImageView 
-        android:id="@+id/ivPreview" 
-        android:layout_width="match_parent" 
-        android:layout_height="220dp" 
-        android:background="#FAFAFA" 
-        android:scaleType="centerInside"
-        android:src="@android:drawable/ic_menu_gallery"
-        app:tint="#BDBDBD"/>
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Ghi chú điều trị"
+        android:textSize="14sp"
+        android:textColor="#0D1B2A"
+        android:textStyle="bold"
+        android:layout_marginBottom="8dp"/>
+    
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="• Loại dây cung đang sử dụng\n• Lực kéo hiện tại (gram)\n• Tình trạng nướu và răng\n• Kế hoạch điều chỉnh tiếp theo"
+        android:textSize="12sp"
+        android:textColor="#757575"
+        android:lineSpacingExtra="2dp"
+        android:layout_marginBottom="12dp"/>
         
     <EditText 
         android:id="@+id/etOrthoNotes" 
         android:layout_width="match_parent" 
         android:layout_height="wrap_content" 
-        android:hint="Ghi chú thay đổi lực kéo, loại dây cung, tình trạng nướu..." 
-        android:minLines="4" 
-        android:gravity="top" 
-        android:layout_marginTop="16dp"
+        android:hint="VD: Thay dây cung số 3 (0.018), lực kéo 150g, nướu hồng khỏe, không viêm. Kế hoạch: Tiếp tục theo dõi 4 tuần." 
+        android:minLines="5" 
+        android:maxLines="10"
+        android:gravity="top|start" 
         android:background="@drawable/bg_card_white_rounded"
-        android:padding="12dp"/>
+        android:padding="12dp"
+        android:textSize="14sp"
+        android:inputType="textMultiLine|textCapSentences"/>
+        
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="💡 Mẹo: Ghi chú chi tiết giúp theo dõi tiến độ điều trị tốt hơn"
+        android:textSize="11sp"
+        android:textColor="#1976D2"
+        android:layout_marginTop="8dp"
+        android:paddingStart="4dp"
+        android:paddingEnd="4dp"/>
 </LinearLayout>

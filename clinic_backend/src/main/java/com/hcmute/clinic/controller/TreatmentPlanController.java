@@ -26,6 +26,7 @@ public class TreatmentPlanController {
     private final com.hcmute.clinic.repository.NotificationRepository notificationRepository;
     private final com.hcmute.clinic.repository.DoctorRepository doctorRepository;
     private final com.hcmute.clinic.repository.StepImageRepository stepImageRepository;
+    private final com.hcmute.clinic.service.InvoiceService invoiceService;
 
     @PostMapping("/from-template")
     @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
@@ -170,9 +171,15 @@ public class TreatmentPlanController {
     public ResponseEntity<?> updateSteps(@PathVariable Long id, @RequestBody UpdatePlanStepsRequest request) {
         try {
             TreatmentPlan plan = treatmentPlanService.getById(id);
-            if (plan.getStatus() == com.hcmute.clinic.enums.TreatmentPlanStatus.COMPLETED) {
+            
+            // Allow updates if plan is COMPLETED but has IN_PROGRESS steps (parallel workflow)
+            boolean hasInProgressSteps = plan.getSteps() != null && plan.getSteps().stream()
+                    .anyMatch(s -> s.getStatus() == com.hcmute.clinic.enums.StepStatus.IN_PROGRESS);
+            
+            if (plan.getStatus() == com.hcmute.clinic.enums.TreatmentPlanStatus.COMPLETED && !hasInProgressSteps) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Hồ sơ đã hoàn tất và bị khóa, không thể cập nhật"));
             }
+            
             treatmentPlanService.updateSteps(id, request);
             return ResponseEntity.ok(Map.of("message", "Đã cập nhật phác đồ"));
         } catch (Exception e) {
@@ -217,9 +224,10 @@ public class TreatmentPlanController {
                 for (TreatmentPlanDTO.StepDTO s : dto.getSteps()) {
                     boolean isEditable = false;
                     
-                    // Case 1: Doctor is the main doctor (original room) -> Can edit everything not completed
+                    // Case 1: Doctor is the main doctor (original room) -> Can edit everything
                     if (docRoomId != null && docRoomId.equals(originalRoomId)) {
-                        if (!"COMPLETED".equals(s.getStatus()) && !"CANCELLED".equals(s.getStatus())) {
+                        // Allow editing all steps except CANCELLED
+                        if (!"CANCELLED".equals(s.getStatus())) {
                             isEditable = true;
                         }
                     } 
@@ -232,7 +240,8 @@ public class TreatmentPlanController {
                                 .orElse(null);
                         
                         if (docRoomId.equals(stepRoomId) || stepRoomId == null) {
-                            if (!"COMPLETED".equals(s.getStatus()) && !"CANCELLED".equals(s.getStatus())) {
+                            // Allow editing all steps except CANCELLED
+                            if (!"CANCELLED".equals(s.getStatus())) {
                                 isEditable = true;
                             }
                         }
@@ -256,6 +265,19 @@ public class TreatmentPlanController {
         try {
             treatmentPlanService.startStep(stepId);
             return ResponseEntity.ok(Map.of("message", "Đã bắt đầu bước điều trị"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PatchMapping("/steps/{stepId}/cancel")
+    public ResponseEntity<?> cancelStep(@PathVariable Long stepId, Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        try {
+            treatmentPlanService.cancelStep(stepId);
+            return ResponseEntity.ok(Map.of("message", "Đã hủy bước điều trị"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
@@ -305,6 +327,49 @@ public class TreatmentPlanController {
             if (nextRoom != null) {
                 response.put("nextRoomName", nextRoom);
             }
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/{planId}/complete-and-generate-invoice")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('RECEPTIONIST') or hasRole('ADMIN')")
+    public ResponseEntity<?> completeAndGenerateInvoice(@PathVariable Long planId, Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        try {
+            com.hcmute.clinic.entity.Invoice invoice = invoiceService.createInvoiceFromTreatmentPlan(planId);
+            
+            // Convert to DTO
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("id", invoice.getId());
+            response.put("patientId", invoice.getPatient().getId());
+            response.put("patientName", invoice.getPatient().getFirstName() + " " + invoice.getPatient().getLastName());
+            response.put("treatmentPlanId", invoice.getTreatmentPlan() != null ? invoice.getTreatmentPlan().getId() : null);
+            response.put("totalAmount", invoice.getTotalAmount().doubleValue());
+            response.put("paymentStatus", invoice.getPaymentStatus().name());
+            response.put("createdAt", invoice.getCreatedAt().toString());
+            
+            // Add items
+            if (invoice.getItems() != null) {
+                List<Map<String, Object>> items = invoice.getItems().stream()
+                    .map(item -> {
+                        Map<String, Object> itemMap = new java.util.HashMap<>();
+                        itemMap.put("id", item.getId());
+                        itemMap.put("serviceName", item.getServiceName());
+                        itemMap.put("toothNumber", item.getToothNumber());
+                        itemMap.put("quantity", item.getQuantity());
+                        itemMap.put("unitPrice", item.getUnitPrice().doubleValue());
+                        itemMap.put("totalPrice", item.getTotalPrice().doubleValue());
+                        itemMap.put("description", item.getDescription());
+                        return itemMap;
+                    })
+                    .collect(Collectors.toList());
+                response.put("items", items);
+            }
+            
             return ResponseEntity.ok(response);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));

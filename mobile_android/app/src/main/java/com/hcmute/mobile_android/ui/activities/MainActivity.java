@@ -34,6 +34,12 @@ public class MainActivity extends AppCompatActivity
         TokenManager tm = new TokenManager(this);
         String role = tm.getUserRole();
         isDoctor = "DOCTOR".equalsIgnoreCase(role);
+        
+        // DEBUG LOG
+        android.util.Log.d("MainActivity", "=== ROLE DEBUG ===");
+        android.util.Log.d("MainActivity", "Role from TokenManager: " + role);
+        android.util.Log.d("MainActivity", "isDoctor: " + isDoctor);
+        android.util.Log.d("MainActivity", "==================");
 
         bottomNav = findViewById(R.id.bottomNav);
         bottomNav.setOnItemSelectedListener(item -> {

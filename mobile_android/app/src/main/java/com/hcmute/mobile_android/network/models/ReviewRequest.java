@@ -18,7 +18,8 @@ public class ReviewRequest {
     @SerializedName("comment")
     private String comment;
     
-    public ReviewRequest(Long appointmentId, Long doctorId, Long serviceId, Integer rating, String comment) {
+    public ReviewRequest(Long appointmentId, Long doctorId, Long serviceId, 
+                        Integer rating, String comment) {
         this.appointmentId = appointmentId;
         this.doctorId = doctorId;
         this.serviceId = serviceId;

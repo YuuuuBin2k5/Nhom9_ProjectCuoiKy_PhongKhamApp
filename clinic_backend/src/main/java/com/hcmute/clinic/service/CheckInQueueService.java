@@ -433,6 +433,12 @@ public class CheckInQueueService {
         if (xrayRoom == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chưa cấu hình phòng X-Quang");
         }
+        
+        // Lưu originalRoomId nếu chưa có (lần đầu chuyển phòng)
+        if (q.getOriginalRoomId() == null && oldRoom != null) {
+            q.setOriginalRoomId(oldRoom.getId());
+        }
+        
         q.setStatus(QueueStatus.PAUSED_FOR_TEST);
         q.setClinicRoom(xrayRoom);
         checkInQueueRepository.save(q);
@@ -446,9 +452,16 @@ public class CheckInQueueService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hàng đợi"));
         q.setStatus(QueueStatus.RETURNED_PRIORITY);
         q.setPriorityLevel((q.getPriorityLevel() != null ? q.getPriorityLevel() : 0) + 10);
-        var examRoom = q.getAppointment() != null && q.getAppointment().getDoctor() != null
-                ? q.getAppointment().getDoctor().getClinicRoom()
-                : null;
+        
+        // Ưu tiên dùng originalRoomId, fallback về doctor's room
+        ClinicRoom examRoom = null;
+        if (q.getOriginalRoomId() != null) {
+            examRoom = clinicRoomRepository.findById(q.getOriginalRoomId()).orElse(null);
+        }
+        if (examRoom == null && q.getAppointment() != null && q.getAppointment().getDoctor() != null) {
+            examRoom = q.getAppointment().getDoctor().getClinicRoom();
+        }
+        
         if (examRoom != null) {
             q.setClinicRoom(examRoom);
         }
@@ -493,13 +506,9 @@ public class CheckInQueueService {
         if (index != -1 && index < waitingList.size() - 1) {
             CheckInQueue nextQ = waitingList.get(index + 1);
             
-            // Lùi bằng cách: Hoán đổi phần tử thứ index và index + 1
-            // Swap priorityLevel
-            Integer tempPriority = q.getPriorityLevel();
-            q.setPriorityLevel(nextQ.getPriorityLevel());
-            nextQ.setPriorityLevel(tempPriority);
-
-            // Swap queueNumber
+            // Lùi bằng cách: Hoán đổi queue number với người tiếp theo
+            // CHỈ swap queueNumber, KHÔNG swap priorityLevel
+            // Vì priorityLevel có ý nghĩa riêng (X-ray return = +10, room transfer = +5)
             Integer tempQueueNum = q.getQueueNumber();
             q.setQueueNumber(nextQ.getQueueNumber());
             nextQ.setQueueNumber(tempQueueNum);
@@ -600,6 +609,7 @@ public class CheckInQueueService {
         CheckInQueue queue = CheckInQueue.builder()
                 .appointment(appointment)
                 .clinicRoom(room)
+                .originalRoomId(room.getId())
                 .queueNumber(nextNumber)
                 .checkInTime(LocalDateTime.now())
                 .status(QueueStatus.WAITING)

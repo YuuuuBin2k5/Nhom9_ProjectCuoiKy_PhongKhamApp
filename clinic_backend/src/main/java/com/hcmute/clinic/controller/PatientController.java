@@ -81,6 +81,34 @@ public class PatientController {
         if (auth == null || auth.getPrincipal() == null) {
             return ResponseEntity.status(401).build();
         }
+        
+        // Validate phone number format (Vietnam)
+        if (req.getPhone() != null && !req.getPhone().isBlank()) {
+            String phone = req.getPhone().trim();
+            if (!phone.matches("^(0|\\+84)[0-9]{9,10}$")) {
+                return ResponseEntity.badRequest().body(Map.of("message", 
+                    "Số điện thoại không hợp lệ. Định dạng: 0xxxxxxxxx hoặc +84xxxxxxxxx"));
+            }
+        }
+        
+        // Validate date of birth
+        if (req.getDob() != null && !req.getDob().isBlank()) {
+            try {
+                java.time.LocalDate dob = java.time.LocalDate.parse(req.getDob());
+                if (dob.isAfter(java.time.LocalDate.now())) {
+                    return ResponseEntity.badRequest().body(Map.of("message", 
+                        "Ngày sinh không thể là ngày trong tương lai"));
+                }
+                if (dob.isBefore(java.time.LocalDate.now().minusYears(120))) {
+                    return ResponseEntity.badRequest().body(Map.of("message", 
+                        "Ngày sinh không hợp lệ"));
+                }
+            } catch (Exception e) {
+                return ResponseEntity.badRequest().body(Map.of("message", 
+                    "Định dạng ngày sinh không hợp lệ. Sử dụng: YYYY-MM-DD"));
+            }
+        }
+        
         long patientId = Long.parseLong(auth.getName());
         return patientRepository.findById(patientId).map(p -> {
             if (req.getFirstName() != null && !req.getFirstName().isBlank()) p.setFirstName(req.getFirstName().trim());
@@ -163,13 +191,24 @@ public class PatientController {
     }
 
     @GetMapping("/me/medical-records")
-    public ResponseEntity<?> myMedicalRecords(Authentication auth) {
+    public ResponseEntity<?> myMedicalRecords(
+            Authentication auth,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size
+    ) {
         if (auth == null || auth.getName() == null) {
             return ResponseEntity.status(401).build();
         }
         long patientId = Long.parseLong(auth.getName());
-        List<MedicalRecord> list = medicalRecordRepository.findByPatientIdOrderByCreatedAtDesc(patientId);
-        List<Map<String, Object>> items = list.stream()
+        
+        org.springframework.data.domain.Pageable pageable = 
+            org.springframework.data.domain.PageRequest.of(page, size, 
+                org.springframework.data.domain.Sort.by("createdAt").descending());
+        
+        org.springframework.data.domain.Page<MedicalRecord> recordPage = 
+            medicalRecordRepository.findByPatientId(patientId, pageable);
+        
+        List<Map<String, Object>> items = recordPage.getContent().stream()
                 .map(m -> Map.<String, Object>of(
                         "id", m.getId(),
                         "date", m.getCreatedAt() != null ? m.getCreatedAt().toString() : "",
@@ -188,7 +227,16 @@ public class PatientController {
                         ) : Map.of()
                 ))
                 .collect(Collectors.toList());
-        return ResponseEntity.ok(items);
+        
+        Map<String, Object> response = new java.util.HashMap<>();
+        response.put("content", items);
+        response.put("page", recordPage.getNumber());
+        response.put("size", recordPage.getSize());
+        response.put("totalElements", recordPage.getTotalElements());
+        response.put("totalPages", recordPage.getTotalPages());
+        response.put("last", recordPage.isLast());
+        
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/me/medical-records/{id}")

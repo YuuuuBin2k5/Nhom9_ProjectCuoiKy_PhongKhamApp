@@ -100,7 +100,12 @@ public class AppointmentController {
                 return ResponseEntity.badRequest().body(Map.of("message", "Định dạng ngày giờ không hợp lệ: " + request.getAppointmentDatetime()));
             }
 
-            // 5. Validate Time Range (08:00 - 16:40)
+            // 5. Validate not in the past
+            if (appointmentTime.isBefore(LocalDateTime.now())) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Không thể đặt lịch trong quá khứ"));
+            }
+
+            // 6. Validate Time Range (08:00 - 16:40)
             java.time.LocalTime time = appointmentTime.toLocalTime();
             java.time.LocalTime start = java.time.LocalTime.of(8, 0);
             java.time.LocalTime end = java.time.LocalTime.of(16, 40);
@@ -109,7 +114,7 @@ public class AppointmentController {
                 return ResponseEntity.badRequest().body(Map.of("message", "Thời gian đặt lịch phải từ 08:00 đến 16:40"));
             }
 
-            // 5.1 Validate existing active appointments for patient
+            // 6.1 Validate existing active appointments for patient
             boolean hasActiveAppt = appointmentRepository.existsByPatientIdAndStatusIn(patient.getId(), 
                 java.util.List.of(AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS));
             if (hasActiveAppt) {

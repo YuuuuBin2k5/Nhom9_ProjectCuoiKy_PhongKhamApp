@@ -20,8 +20,19 @@ public class AdminDoctorController {
     private final com.hcmute.clinic.repository.DoctorRepository doctorRepository;
 
     @GetMapping
-    public ResponseEntity<?> getAllDoctors() {
-        return ResponseEntity.ok(doctorRepository.findAll().stream()
+    public ResponseEntity<?> getAllDoctors(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            @RequestParam(defaultValue = "lastName") String sort
+    ) {
+        org.springframework.data.domain.Pageable pageable = 
+            org.springframework.data.domain.PageRequest.of(page, size, 
+                org.springframework.data.domain.Sort.by(sort));
+        
+        org.springframework.data.domain.Page<Doctor> doctorPage = doctorRepository.findAll(pageable);
+        
+        Map<String, Object> response = new java.util.HashMap<>();
+        response.put("content", doctorPage.getContent().stream()
                 .map(d -> Map.of(
                         "id", d.getId(),
                         "firstName", d.getFirstName() != null ? d.getFirstName() : "",
@@ -34,6 +45,13 @@ public class AdminDoctorController {
                         "avatarUrl", d.getAvatarUrl() != null ? d.getAvatarUrl() : ""
                 ))
                 .toList());
+        response.put("page", doctorPage.getNumber());
+        response.put("size", doctorPage.getSize());
+        response.put("totalElements", doctorPage.getTotalElements());
+        response.put("totalPages", doctorPage.getTotalPages());
+        response.put("last", doctorPage.isLast());
+        
+        return ResponseEntity.ok(response);
     }
 
     @PostMapping

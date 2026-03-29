@@ -7,13 +7,13 @@ import com.hcmute.clinic.repository.AppointmentRepository;
 import com.hcmute.clinic.repository.CheckInQueueRepository;
 import com.hcmute.clinic.repository.PatientRepository;
 import com.hcmute.clinic.entity.CheckInQueue;
+import com.hcmute.clinic.dto.MedicalRecordResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.time.format.DateTimeFormatter;
 
 import java.util.List;
 import java.util.Map;
@@ -192,5 +192,61 @@ public class DoctorController {
         response.put("treatmentPlanStatus", treatmentPlanStatus);
         
         return ResponseEntity.ok(response);
+    }
+    
+    @GetMapping("/patients/{id}/medical-records")
+    public ResponseEntity<?> getPatientMedicalRecords(@PathVariable Long id) {
+        Optional<Patient> patientOpt = patientRepository.findById(id);
+        if (patientOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        // Get all completed appointments for this patient
+        List<Appointment> completedAppointments = appointmentRepository
+            .findByPatientIdOrderByAppointmentDatetimeDesc(id)
+            .stream()
+            .filter(a -> a.getStatus() == AppointmentStatus.COMPLETED)
+            .collect(java.util.stream.Collectors.toList());
+        
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        
+        List<MedicalRecordResponse> records = completedAppointments.stream()
+            .map(appointment -> {
+                MedicalRecordResponse.MedicalRecordResponseBuilder builder = MedicalRecordResponse.builder()
+                    .appointmentId(appointment.getId())
+                    .date(appointment.getAppointmentDatetime() != null ? 
+                        appointment.getAppointmentDatetime().format(dateFormatter) : "")
+                    .doctorName(appointment.getDoctor() != null ? 
+                        (appointment.getDoctor().getLastName() + " " + appointment.getDoctor().getFirstName()).trim() : "");
+                
+                // Get treatment plan for services
+                Optional<com.hcmute.clinic.entity.TreatmentPlan> planOpt = treatmentPlanRepository
+                    .findFirstByAppointmentIdOrderByCreatedAtDesc(appointment.getId());
+                
+                if (planOpt.isPresent()) {
+                    com.hcmute.clinic.entity.TreatmentPlan plan = planOpt.get();
+                    
+                    // Get services from treatment plan steps
+                    List<String> services = plan.getSteps().stream()
+                        .map(step -> step.getService() != null ? step.getService().getName() : "")
+                        .filter(s -> !s.isEmpty())
+                        .collect(java.util.stream.Collectors.toList());
+                    builder.services(services);
+                    builder.diagnosis("Đã hoàn thành " + services.size() + " dịch vụ");
+                } else {
+                    builder.diagnosis("Không có thông tin");
+                    builder.services(List.of());
+                }
+                
+                // Simplified - no prescription or invoice details
+                builder.prescription("Xem chi tiết trong hồ sơ");
+                builder.totalAmount("N/A");
+                builder.paymentStatus("N/A");
+                
+                return builder.build();
+            })
+            .collect(java.util.stream.Collectors.toList());
+        
+        return ResponseEntity.ok(records);
     }
 }

@@ -24,17 +24,33 @@
             android:gravity="center"
             android:layout_marginEnd="16dp">
 
-            <TextView
-                android:id="@+id/tvQueueNumber"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
-                android:background="@drawable/circle_background"
-                android:backgroundTint="@color/primary_trust_blue"
-                android:gravity="center"
-                android:text="01"
-                android:textColor="@android:color/white"
-                android:textSize="18sp"
-                android:textStyle="bold" />
+            <FrameLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:id="@+id/tvQueueNumber"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:background="@drawable/circle_background"
+                    android:backgroundTint="@color/primary_trust_blue"
+                    android:gravity="center"
+                    android:text="01"
+                    android:textColor="@android:color/white"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <!-- Priority Badge -->
+                <ImageView
+                    android:id="@+id/ivPriorityBadge"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:src="@drawable/ic_star"
+                    android:layout_gravity="top|end"
+                    android:visibility="gone"
+                    app:tint="@color/warning_amber" />
+
+            </FrameLayout>
 
             <TextView
                 android:layout_width="wrap_content"
@@ -122,6 +138,21 @@
                 android:drawableStart="@drawable/ic_schedule"
                 android:drawablePadding="4dp"
                 app:drawableTint="@color/text_secondary" />
+
+            <!-- Wait Time -->
+            <TextView
+                android:id="@+id/tvWaitTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="~15 phút"
+                android:textSize="14sp"
+                android:textColor="@color/warning_amber"
+                android:textStyle="bold"
+                android:layout_marginTop="4dp"
+                android:drawableStart="@drawable/ic_timer"
+                android:drawablePadding="4dp"
+                android:visibility="gone"
+                app:drawableTint="@color/warning_amber" />
 
             <!-- Action Buttons -->
             <LinearLayout

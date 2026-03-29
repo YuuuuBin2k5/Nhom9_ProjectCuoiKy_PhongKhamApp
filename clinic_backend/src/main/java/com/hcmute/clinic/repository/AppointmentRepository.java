@@ -61,4 +61,6 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     // Search by date
     @Query("SELECT a FROM Appointment a WHERE DATE(a.appointmentDatetime) = :date")
     List<Appointment> findByDate(@Param("date") LocalDate date);
+    
+    List<Appointment> findByPatientIdOrderByAppointmentDatetimeDesc(Long patientId);
 }

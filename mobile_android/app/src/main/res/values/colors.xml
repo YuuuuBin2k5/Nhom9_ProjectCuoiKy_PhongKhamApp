@@ -68,10 +68,22 @@
     <color name="status_active_bg">#DCFCE7</color>
     <color name="text_dark">#1F2937</color>
 
+    <!-- Refined Design Colors -->
+    <color name="design_dark_blue">#003366</color>
+    <color name="design_input_bg">#EDF2F7</color>
+    <color name="design_text_gray">#718096</color>
+    <color name="design_icon_color">#4A5568</color>
+
     <!-- Missing colors for Admin Detail -->
     <color name="gray_200">#E5E7EB</color>
     <color name="gray_400">#9CA3AF</color>
     <color name="gray_600">#4B5563</color>
     <color name="gray_700">#374151</color>
     <color name="secondary">#0E9F6E</color>
+    
+    <!-- Queue Status Background Colors -->
+    <color name="status_waiting_bg">#E8F5E9</color> <!-- Light green -->
+    <color name="status_in_progress_bg">#E3F2FD</color> <!-- Light blue -->
+    <color name="status_priority_bg">#FFF3E0</color> <!-- Light orange -->
+    <color name="status_paused_bg">#F3E5F5</color> <!-- Light purple -->
 </resources>

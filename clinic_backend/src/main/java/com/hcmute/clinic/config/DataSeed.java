@@ -233,9 +233,15 @@ public class DataSeed implements ApplicationRunner {
                 .appointmentDatetime(LocalDateTime.now())
                 .status(AppointmentStatus.SCHEDULED).bookingType(BookingType.WALK_IN).build());
         
+        ClinicRoom room = d.getClinicRoom();
         queueRepository.save(CheckInQueue.builder()
-                .appointment(app).clinicRoom(d.getClinicRoom())
-                .queueNumber(num).checkInTime(LocalDateTime.now())
-                .status(QueueStatus.WAITING).priorityLevel(0).build());
+                .appointment(app)
+                .clinicRoom(room)
+                .originalRoomId(room != null ? room.getId() : null)
+                .queueNumber(num)
+                .checkInTime(LocalDateTime.now())
+                .status(QueueStatus.WAITING)
+                .priorityLevel(0)
+                .build());
     }
 }

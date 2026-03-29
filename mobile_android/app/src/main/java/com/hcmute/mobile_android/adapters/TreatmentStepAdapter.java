@@ -20,12 +20,14 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
     private List<TreatmentPlan.Step> stepList;
     private OnStepActionListener listener;
     private boolean isDraftMode = false;
+    private java.util.Map<Long, Boolean> editModeMap = new java.util.HashMap<>();
 
     public interface OnStepActionListener {
         void onStepEdit(TreatmentPlan.Step step);
         void onStepComplete(TreatmentPlan.Step step);
         void onStepRemove(TreatmentPlan.Step step);
         void onToothSelected(int toothNumber);
+        void onStepSave(TreatmentPlan.Step step);
     }
 
     public TreatmentStepAdapter(List<TreatmentPlan.Step> stepList, OnStepActionListener listener) {
@@ -49,7 +51,7 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
     @Override
     public void onBindViewHolder(@NonNull StepViewHolder holder, int position) {
         TreatmentPlan.Step step = stepList.get(position);
-        holder.bind(step, position + 1, listener, isDraftMode);
+        holder.bind(step, position + 1, listener, isDraftMode, editModeMap, this);
     }
 
     @Override
@@ -87,7 +89,8 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
             btnRemoveStep = itemView.findViewById(R.id.btnRemoveStep);
         }
 
-        public void bind(TreatmentPlan.Step step, int stepNumber, OnStepActionListener listener, boolean isDraft) {
+        public void bind(TreatmentPlan.Step step, int stepNumber, OnStepActionListener listener, boolean isDraft, 
+                         java.util.Map<Long, Boolean> editModeMap, TreatmentStepAdapter adapter) {
             tvStepNumber.setText(String.valueOf(stepNumber));
             tvServiceName.setText(step.getServiceName());
             tvStepDescription.setText(step.getDescription());
@@ -113,10 +116,25 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
             // Card styling based on status
             setCardStyle(step.getStatus(), step.isEditable(), isDraft);
             
+            // Check if this step is in edit mode
+            boolean isInEditMode = editModeMap.containsKey(step.getId()) && editModeMap.get(step.getId());
+            
             // Button actions
             btnEdit.setOnClickListener(v -> {
                 if (listener != null) {
-                    listener.onStepEdit(step);
+                    if (isInEditMode) {
+                        // Save button clicked
+                        listener.onStepSave(step);
+                        editModeMap.put(step.getId(), false);
+                        adapter.notifyItemChanged(getAdapterPosition());
+                    } else {
+                        // Edit button clicked
+                        listener.onStepEdit(step);
+                        if ("COMPLETED".equals(step.getStatus())) {
+                            editModeMap.put(step.getId(), true);
+                            adapter.notifyItemChanged(getAdapterPosition());
+                        }
+                    }
                 }
             });
             
@@ -129,6 +147,9 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
             btnRemoveStep.setOnClickListener(v -> {
                 if (listener != null) {
                     listener.onStepRemove(step);
+                    if (step.getId() != null) {
+                        editModeMap.remove(step.getId());
+                    }
                 }
             });
             
@@ -148,8 +169,8 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
                 tvDoctorConclusion.setVisibility(View.GONE);
             }
 
-            // Configure buttons based on status
-            configureButtons(step.getStatus(), step.isEditable(), isDraft);
+            // Configure buttons based on status and edit mode
+            configureButtons(step.getStatus(), step.isEditable(), isDraft, isInEditMode);
         }
 
         private String getStatusDisplay(String status) {
@@ -194,7 +215,7 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
             }
         }
 
-        private void configureButtons(String status, boolean isEditable, boolean isDraft) {
+        private void configureButtons(String status, boolean isEditable, boolean isDraft, boolean isInEditMode) {
             if (status == null) status = "PENDING";
             
             if (isDraft) {
@@ -202,41 +223,37 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
                 btnEdit.setVisibility(View.VISIBLE);
                 btnEdit.setText("Tùy chỉnh");
                 btnComplete.setVisibility(View.GONE);
+                btnRemoveStep.setVisibility(View.VISIBLE);
                 return;
             }
 
-            btnEdit.setEnabled(true); // Reset
-            
             btnEdit.setEnabled(true); // Reset
 
             switch (status.toUpperCase()) {
                 case "COMPLETED":
                     btnEdit.setVisibility(View.VISIBLE);
-                    btnEdit.setText("Xem");
+                    btnEdit.setText(isInEditMode ? "Lưu" : "Chỉnh sửa");
                     btnComplete.setVisibility(View.GONE);
+                    btnRemoveStep.setVisibility(isInEditMode ? View.VISIBLE : View.GONE);
                     break;
                 case "IN_PROGRESS":
                     btnEdit.setVisibility(View.VISIBLE);
                     btnEdit.setText("Khám bệnh");
                     btnComplete.setVisibility(View.VISIBLE);
+                    btnRemoveStep.setVisibility(View.GONE);
                     break;
                 case "CANCELLED":
                     btnEdit.setVisibility(View.VISIBLE);
                     btnEdit.setText("Xem");
                     btnComplete.setVisibility(View.GONE);
+                    btnRemoveStep.setVisibility(View.GONE);
                     break;
                 default: // PENDING
                     btnEdit.setVisibility(View.VISIBLE);
                     btnEdit.setText("Bắt đầu");
                     btnComplete.setVisibility(View.GONE);
+                    btnRemoveStep.setVisibility(View.VISIBLE);
                     break;
-            }
-
-            // Remove button logic: Only allow removal if PENDING
-            if ("PENDING".equalsIgnoreCase(status)) {
-                btnRemoveStep.setVisibility(View.VISIBLE);
-            } else {
-                btnRemoveStep.setVisibility(View.GONE);
             }
         }
     }

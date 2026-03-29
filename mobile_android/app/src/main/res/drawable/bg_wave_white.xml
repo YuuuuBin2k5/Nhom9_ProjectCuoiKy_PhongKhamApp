@@ -1,0 +1,17 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="360dp"
+    android:height="100dp"
+    android:viewportWidth="1440"
+    android:viewportHeight="320">
+
+    <!-- Soft shadow glow -->
+    <path
+        android:fillColor="#151A56DB"
+        android:pathData="M0,172 C400,360 800,-40 1440,92 L1440,320 L0,320 Z" />
+
+    <!-- Main White Wave -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M0,192 C400,384 800,-32 1440,112 L1440,320 L0,320 Z" />
+
+</vector>

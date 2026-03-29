@@ -11,4 +11,5 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     List<Invoice> findByPatientIdOrderByCreatedAtDesc(Long patientId);
     List<Invoice> findByPaymentStatus(InvoiceStatus status);
     List<Invoice> findByPatientIdAndPaymentStatus(Long patientId, InvoiceStatus status);
+    java.util.Optional<Invoice> findByTreatmentPlanId(Long treatmentPlanId);
 }
