@@ -30,8 +30,8 @@ public class DoctorListController {
         String filterName = null;
         if (serviceId != null) {
             Optional<Service> serviceOpt = serviceRepository.findById(serviceId);
-            if (serviceOpt.isPresent()) {
-                filterName = serviceOpt.get().getName();
+            if (serviceOpt.isPresent() && serviceOpt.get().getCategory() != null) {
+                filterName = serviceOpt.get().getCategory().getName();
             }
         }
 

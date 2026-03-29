@@ -94,7 +94,11 @@ public class FragmentXray extends Fragment {
         
         // Setup upload button
         btnUploadXrayImage.setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Sử dụng nút 'Tải ảnh' ở trên", Toast.LENGTH_SHORT).show();
+            if (getActivity() instanceof com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) {
+                ((com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) getActivity()).launchImagePicker();
+            } else {
+                Toast.makeText(getContext(), "Tính năng tải ảnh chưa được hỗ trợ", Toast.LENGTH_SHORT).show();
+            }
         });
     }
     

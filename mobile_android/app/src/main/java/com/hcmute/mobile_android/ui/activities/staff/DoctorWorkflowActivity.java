@@ -509,7 +509,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         rvPriceBreakdown.setAdapter(priceBreakdownAdapter);
     }
 
-    private void launchImagePicker() {
+    public void launchImagePicker() {
         imagePickerLauncher.launch("image/*");
     }
     

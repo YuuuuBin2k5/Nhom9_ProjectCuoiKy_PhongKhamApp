@@ -192,7 +192,7 @@ public class CheckInQueueService {
                 .doctor(defaultDoctor)
                 .service(defaultService)
                 .appointmentDatetime(LocalDateTime.now())
-                .bookingType(BookingType.OFFLINE)
+                .bookingType(BookingType.WALK_IN)
                 .status(AppointmentStatus.SCHEDULED)
                 .build();
 

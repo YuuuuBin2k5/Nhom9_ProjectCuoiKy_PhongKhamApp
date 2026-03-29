@@ -52,8 +52,8 @@ public class HomeFragment extends Fragment {
     private RecyclerView rvTransferred;
     private View layoutTransferred;
     private RecyclerView rvUpcoming;
-    private TextView tvQueueEmpty;
-    private TextView tvUpcomingEmpty;
+    private View tvQueueEmpty;
+    private View tvUpcomingEmpty;
 
     // Adapters
     private HomeQueueAdapter queueAdapter;

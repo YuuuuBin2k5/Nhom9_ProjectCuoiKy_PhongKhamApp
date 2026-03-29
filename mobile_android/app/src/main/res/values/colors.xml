@@ -92,4 +92,16 @@
     <color name="card_stroke_subtle">#E2E8F0</color>
     <color name="profile_header_teal_soft">#E8EEF5</color>
     <color name="profile_header_fade">#F8FAFC</color>
+
+    <!-- Refined Design Colors (Login/Register) -->
+    <color name="design_dark_blue">#003366</color>
+    <color name="design_input_bg">#EDF2F7</color>
+    <color name="design_text_gray">#718096</color>
+    <color name="design_icon_color">#4A5568</color>
+
+    <!-- Queue Status Background Colors -->
+    <color name="status_waiting_bg">#E8F5E9</color>
+    <color name="status_in_progress_bg">#E3F2FD</color>
+    <color name="status_priority_bg">#FFF3E0</color>
+    <color name="status_paused_bg">#F3E5F5</color>
 </resources>

@@ -1,6 +1,6 @@
 
 > Configure project :app
-[Toothly] API_BASE_URL ΓåÆ http://10.109.58.252:8081/
+[Toothly] API_BASE_URL ΓåÆ http://10.20.1.170:8081/
 
 > Task :app:preBuild UP-TO-DATE
 > Task :app:preDebugBuild UP-TO-DATE
@@ -15,40 +15,60 @@
 > Task :app:javaPreCompileDebug UP-TO-DATE
 
 > Task :app:compileDebugJavaWithJavac FAILED
-D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\staff\PrescriptionActivity.java:78: error: cannot find symbol
-    private void addMedicineRow(PrescriptionResponse.DetailResponse detail) {
-                                                    ^
-  symbol:   class DetailResponse
-  location: class PrescriptionResponse
-D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\staff\PrescriptionActivity.java:117: error: cannot find symbol
-                        for (PrescriptionResponse.DetailResponse detail : prescription.getDetails()) {
-                                                 ^
-  symbol:   class DetailResponse
-  location: class PrescriptionResponse
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\adapters\QueueAdapter.java:113: error: cannot find symbol
+                    backgroundColor = itemView.getContext().getColor(R.color.status_waiting_bg);
+                                                                            ^
+  symbol:   variable status_waiting_bg
+  location: class color
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\adapters\QueueAdapter.java:116: error: cannot find symbol
+                    backgroundColor = itemView.getContext().getColor(R.color.status_in_progress_bg);
+                                                                            ^
+  symbol:   variable status_in_progress_bg
+  location: class color
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\adapters\QueueAdapter.java:119: error: cannot find symbol
+                    backgroundColor = itemView.getContext().getColor(R.color.status_priority_bg);
+                                                                            ^
+  symbol:   variable status_priority_bg
+  location: class color
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\adapters\QueueAdapter.java:122: error: cannot find symbol
+                    backgroundColor = itemView.getContext().getColor(R.color.status_paused_bg);
+                                                                            ^
+  symbol:   variable status_paused_bg
+  location: class color
 Note: Some input files use or override a deprecated API.
 Note: Recompile with -Xlint:deprecation for details.
-2 errors
-
+4 errors
 
 [Incubating] Problems report is available at: file:///D:/Folder_Learning_2025_2026/PhongKham/mobile_android/build/reports/problems/problems-report.html
+
 FAILURE: Build failed with an exception.
 
 * What went wrong:
 Execution failed for task ':app:compileDebugJavaWithJavac'.
 > Compilation failed; see the compiler output below.
   Note: Recompile with -Xlint:deprecation for details.
-  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\staff\PrescriptionActivity.java:78: error: cannot find symbol
-      private void addMedicineRow(PrescriptionResponse.DetailResponse detail) {
-                                                      ^
-    symbol:   class DetailResponse
-    location: class PrescriptionResponse
-  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\staff\PrescriptionActivity.java:117: error: cannot find symbol
-                          for (PrescriptionResponse.DetailResponse detail : prescription.getDetails()) {
-                                                   ^
-    symbol:   class DetailResponse
-    location: class PrescriptionResponse
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\adapters\QueueAdapter.java:113: error: cannot find symbol
+                      backgroundColor = itemView.getContext().getColor(R.color.status_waiting_bg);
+                                                                              ^
+    symbol:   variable status_waiting_bg
+    location: class color
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\adapters\QueueAdapter.java:116: error: cannot find symbol
+                      backgroundColor = itemView.getContext().getColor(R.color.status_in_progress_bg);
+                                                                              ^
+    symbol:   variable status_in_progress_bg
+    location: class color
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\adapters\QueueAdapter.java:119: error: cannot find symbol
+                      backgroundColor = itemView.getContext().getColor(R.color.status_priority_bg);
+                                                                              ^
+    symbol:   variable status_priority_bg
+    location: class color
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\adapters\QueueAdapter.java:122: error: cannot find symbol
+                      backgroundColor = itemView.getContext().getColor(R.color.status_paused_bg);
+                                                                              ^
+    symbol:   variable status_paused_bg
+    location: class color
   Note: Some input files use or override a deprecated API.
-  2 errors
+  4 errors
 
 * Try:
 > Check your code and dependencies to fix the compilation error(s)

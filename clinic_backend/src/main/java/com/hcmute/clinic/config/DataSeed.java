@@ -139,6 +139,16 @@ public class DataSeed implements ApplicationRunner {
         Patient p1 = createPatient("Nguyễn Văn An", "patient01@gmail.com", "0911111111", defaultPass);
         Patient p2 = createPatient("Trần Văn Bình", "patient02@gmail.com", "0922222222", defaultPass);
         Patient p3 = createPatient("Lê Thị Chi", "patient03@gmail.com", "0933333333", defaultPass);
+        Patient p4 = createPatient("Phạm Ngọc Anh", "patient04@gmail.com", "0944444444", defaultPass);
+        Patient p5 = createPatient("Vũ Minh Tuấn", "patient05@gmail.com", "0955555555", defaultPass);
+        Patient p6 = createPatient("Đặng Thu Thảo", "patient06@gmail.com", "0966666666", defaultPass);
+        Patient p7 = createPatient("Bùi Quốc Bảo", "patient07@gmail.com", "0977777777", defaultPass);
+        Patient p8 = createPatient("Đỗ Mỹ Linh", "patient08@gmail.com", "0988888888", defaultPass);
+        Patient p9 = createPatient("Hồ Văn Quang", "patient09@gmail.com", "0999999999", defaultPass);
+        Patient p10 = createPatient("Lý Nhã Kỳ", "patient10@gmail.com", "0900000000", defaultPass);
+        Patient p11 = createPatient("Lương Xuân Trường", "patient11@gmail.com", "0911222333", defaultPass);
+        Patient p12 = createPatient("Hoa Thanh Tùng", "patient12@gmail.com", "0922333444", defaultPass);
+        Patient p13 = createPatient("Chu Thanh Huyền", "patient13@gmail.com", "0933444555", defaultPass);
 
         // 6. Templates
         seedTemplates(svcConsult, svcXray, svcScale, svcFill, svcWisdom, svcWhite, svcBraces, d1, dx, ds, dt2);
@@ -147,6 +157,13 @@ public class DataSeed implements ApplicationRunner {
         addToQueue(p1, d1, svcConsult, 1);
         addToQueue(p2, d1, svcConsult, 2);
         addToQueue(p3, d2, svcScale, 1);
+        addToQueue(p4, d2, svcFill, 2);
+        addToQueue(p5, d1, svcConsult, 3);
+        addToQueue(p6, d3, svcBraces, 1);
+        addToQueue(p7, d1, svcConsult, 4);
+        addToQueue(p8, ds, svcWisdom, 1);
+        addToQueue(p9, dt1, svcFill, 1);
+        addToQueue(p10, dt2, svcWhite, 1);
 
         log.info("Refined DataSeed completed successfully.");
     }
