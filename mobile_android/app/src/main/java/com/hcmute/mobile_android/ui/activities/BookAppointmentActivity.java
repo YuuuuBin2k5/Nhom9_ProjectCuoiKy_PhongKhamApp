@@ -245,7 +245,8 @@ public class BookAppointmentActivity extends AppCompatActivity {
                 (timeView, hourOfDay, minute) -> {
                     int totalMinutes = hourOfDay * 60 + minute;
                     if (totalMinutes < START_MINUTES || totalMinutes > END_MINUTES) {
-                        ToastUtils.showCenteredToastLong(this, "Thời gian đặt lịch phải từ 08:00 đến 16:40");
+                        ToastUtils.showCenteredToastLong(this,
+                                "Chỉ được đặt lịch trong khung giờ làm việc: 08:00 – 16:40.");
                         clearSelectedDatetime();
                         return;
                     }
@@ -255,7 +256,8 @@ public class BookAppointmentActivity extends AppCompatActivity {
                     selectedCalend.set(Calendar.MILLISECOND, 0);
 
                     if (selectedCalend.before(now)) {
-                        ToastUtils.showCenteredToastLong(this, "Thời gian chọn không được trong quá khứ");
+                        ToastUtils.showCenteredToastLong(this,
+                                "Giờ này đã qua so với hiện tại. Vui lòng chọn giờ từ 08:00 đến 16:40, sau thời điểm hiện tại.");
                         clearSelectedDatetime();
                         return;
                     }
@@ -306,7 +308,8 @@ public class BookAppointmentActivity extends AppCompatActivity {
             int totalMinutes = hour * 60 + minute;
 
             if (totalMinutes < START_MINUTES || totalMinutes > END_MINUTES) {
-                ToastUtils.showCenteredToastLong(this, "Thời gian đặt lịch phải từ 08:00 đến 16:40");
+                ToastUtils.showCenteredToastLong(this,
+                        "Chỉ được đặt lịch trong khung giờ làm việc: 08:00 – 16:40.");
                 clearSelectedDatetime();
                 return;
             }

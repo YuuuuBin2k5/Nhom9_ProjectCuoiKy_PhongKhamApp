@@ -213,8 +213,35 @@ public class DoctorListFragment extends Fragment {
             holder.tvLocation.setText((position % 2 == 0) ? "Cơ sở 1" : "Cơ sở 2");
             holder.tvTrusted.setText("4." + (9 - (position % 3)) + "k Đánh giá");
 
-            int avatarRes = (position % 2 == 0) ? R.drawable.doctor_avatar_1 : R.drawable.doctor_avatar_2;
-            holder.imgDoctor.setImageResource(avatarRes);
+            // Gender heuristic for fallback avatars - Fix Unicode boundary issue
+            String nameL = d.getFullName() != null ? d.getFullName().toLowerCase() : "";
+            boolean isFemale = nameL.contains("hà") || nameL.contains("thu") || nameL.contains("mai") || 
+                               nameL.contains("trang") || nameL.contains("lan") || nameL.contains("thị") || 
+                               nameL.contains("hạnh") || nameL.contains("ngọc") || nameL.contains("tuyết");
+            
+            int[] maleAvatars = { R.drawable.doc1, R.drawable.doc3, R.drawable.doc5 };
+            int[] femaleAvatars = { R.drawable.doc2, R.drawable.doc4 };
+
+            // Use doctor ID to deterministically assign a fallback avatar based on gender
+            int fallbackIndex = R.drawable.ic_doctor;
+            if (d.getId() != null) {
+                fallbackIndex = isFemale 
+                    ? femaleAvatars[(int) (Math.abs(d.getId()) % femaleAvatars.length)]
+                    : maleAvatars[(int) (Math.abs(d.getId()) % maleAvatars.length)];
+            } else {
+                fallbackIndex = isFemale ? femaleAvatars[position % femaleAvatars.length] : maleAvatars[position % maleAvatars.length];
+            }
+
+            if (d.getAvatarUrl() != null && !d.getAvatarUrl().isEmpty()) {
+                com.bumptech.glide.Glide.with(holder.imgDoctor.getContext())
+                        .load(d.getAvatarUrl())
+                        .centerCrop()
+                        .placeholder(fallbackIndex)
+                        .error(fallbackIndex)
+                        .into(holder.imgDoctor);
+            } else {
+                holder.imgDoctor.setImageResource(fallbackIndex);
+            }
 
             // Hide booking button for this tab
             if (holder.btnSwipe != null) {

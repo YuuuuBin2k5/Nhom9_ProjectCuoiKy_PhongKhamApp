@@ -24,6 +24,9 @@ import com.hcmute.mobile_android.network.models.TreatmentPlan;
 import com.hcmute.mobile_android.network.models.CreateTreatmentPlanRequest;
 import com.hcmute.mobile_android.network.models.UpdatePatientRequest;
 import com.hcmute.mobile_android.network.models.UploadResponse;
+import com.hcmute.mobile_android.network.models.ChatMessagePayload;
+import com.hcmute.mobile_android.network.models.ChatSendBody;
+import com.hcmute.mobile_android.network.models.DoctorDetailResponse;
 
 import java.util.List;
 
@@ -91,6 +94,15 @@ public interface ApiService {
 
     @GET("api/doctors")
     Call<List<com.hcmute.mobile_android.network.models.DoctorItem>> getDoctorsByService(@Query("serviceId") Long serviceId);
+
+    @GET("api/doctors/{id}")
+    Call<DoctorDetailResponse> getDoctorDetail(@Path("id") Long id);
+
+    @GET("api/chat/doctor/{doctorId}/messages")
+    Call<List<ChatMessagePayload>> getChatMessages(@Path("doctorId") Long doctorId);
+
+    @POST("api/chat/doctor/{doctorId}/messages")
+    Call<ChatMessagePayload> sendChatMessage(@Path("doctorId") Long doctorId, @Body ChatSendBody body);
 
     @POST("api/appointments")
     Call<com.hcmute.mobile_android.network.models.UpcomingAppointment> createAppointment(@Body CreateAppointmentRequest request);

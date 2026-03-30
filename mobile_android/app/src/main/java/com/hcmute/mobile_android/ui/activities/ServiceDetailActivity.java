@@ -165,11 +165,40 @@ public class ServiceDetailActivity extends AppCompatActivity {
     }
 
     private void loadDoctors() {
-        apiService.getDoctorsByService(serviceId).enqueue(new Callback<List<DoctorItem>>() {
+        apiService.getDoctors().enqueue(new Callback<List<DoctorItem>>() {
             @Override
             public void onResponse(Call<List<DoctorItem>> call, Response<List<DoctorItem>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    populateDoctors(response.body());
+                    List<DoctorItem> allDoctors = response.body();
+                    List<DoctorItem> validDoctors = new ArrayList<>();
+                    
+                    for (DoctorItem d : allDoctors) {
+                        String spec = d.getSpecialization() != null ? d.getSpecialization().toLowerCase() : "";
+                        String cat = serviceCategory != null ? serviceCategory.toLowerCase() : "";
+                        String name = serviceName != null ? serviceName.toLowerCase() : "";
+                        
+                        // Bypass strict backend rules: General dentists can do anything like X-rays.
+                        if (spec.contains("tổng quát") || spec.contains("general") || spec.isEmpty()) {
+                            validDoctors.add(d);
+                            continue;
+                        }
+                        
+                        // Otherwise try soft matching
+                        if (name.contains(spec) || spec.contains(name) || cat.contains(spec) || spec.contains(cat)) {
+                            validDoctors.add(d);
+                        }
+                    }
+                    
+                    // Fail-safe: if filtering left 0 doctors, just show them all.
+                    if (validDoctors.isEmpty() && !allDoctors.isEmpty()) {
+                        validDoctors.addAll(allDoctors);
+                    }
+                    
+                    if (!validDoctors.isEmpty()) {
+                        populateDoctors(validDoctors);
+                    } else {
+                        showNoDoctors();
+                    }
                 } else {
                     showNoDoctors();
                 }
@@ -219,7 +248,7 @@ public class ServiceDetailActivity extends AppCompatActivity {
 
             if (totalMin < START_MINUTES || totalMin > END_MINUTES) {
                 ToastUtils.showCenteredToastLong(this,
-                        "Giờ khám chỉ trong khung 08:00 – 16:40. Vui lòng chọn giờ khác.");
+                        "Chỉ được đặt lịch trong khung giờ làm việc: 08:00 – 16:40.");
                 clearSelectedDatetime();
                 return;
             }
@@ -229,7 +258,8 @@ public class ServiceDetailActivity extends AppCompatActivity {
             selectedCalendar.set(Calendar.MILLISECOND, 0);
 
             if (selectedCalendar.before(now)) {
-                ToastUtils.showCenteredToastLong(this, "Thời gian chọn không được trong quá khứ");
+                ToastUtils.showCenteredToastLong(this,
+                        "Giờ này đã qua so với hiện tại. Vui lòng chọn giờ từ 08:00 đến 16:40, sau thời điểm hiện tại.");
                 clearSelectedDatetime();
                 return;
             }
@@ -273,7 +303,8 @@ public class ServiceDetailActivity extends AppCompatActivity {
             int m = Integer.parseInt(parts[1]);
             int totalMin = h * 60 + m;
             if (totalMin < START_MINUTES || totalMin > END_MINUTES) {
-                ToastUtils.showCenteredToastLong(this, "Thời gian đặt lịch phải từ 08:00 đến 16:40");
+                ToastUtils.showCenteredToastLong(this,
+                        "Chỉ được đặt lịch trong khung giờ làm việc: 08:00 – 16:40.");
                 clearSelectedDatetime();
                 return;
             }
