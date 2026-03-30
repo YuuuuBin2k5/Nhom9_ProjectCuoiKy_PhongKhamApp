@@ -1,50 +1,12 @@
-import java.net.Inet4Address
-import java.net.NetworkInterface
-import java.util.Collections
 import java.util.Properties
 
 plugins {
     alias(libs.plugins.android.application)
 }
 
-/** IPv4 private: 192.168.x, 10.x, 172.16–31.x (bỏ loopback / link-local). */
-fun collectLanIPv4(): List<String> {
-    return try {
-        Collections.list(NetworkInterface.getNetworkInterfaces())
-            .asSequence()
-            .filter { it.isUp && !it.isLoopback }
-            .flatMap { Collections.list(it.inetAddresses).asSequence() }
-            .filterIsInstance<Inet4Address>()
-            .filter { !it.isLoopbackAddress && !it.isLinkLocalAddress }
-            .map { it.hostAddress }
-            .filter { ha ->
-                when {
-                    ha.startsWith("192.168.") -> true
-                    ha.startsWith("10.") -> true
-                    ha.startsWith("172.") -> {
-                        val octet = ha.substringAfter("172.").substringBefore(".").toIntOrNull() ?: return@filter false
-                        octet in 16..31
-                    }
-                    else -> false
-                }
-            }
-            .distinct()
-            .toList()
-    } catch (_: Exception) {
-        emptyList()
-    }
-}
-
-fun pickBestLanIp(candidates: List<String>): String? {
-    if (candidates.isEmpty()) return null
-    return candidates.firstOrNull { it.startsWith("192.168.") }
-        ?: candidates.firstOrNull { it.startsWith("10.") }
-        ?: candidates.firstOrNull { it.startsWith("172.") }
-}
-
 /**
- * Mặc định: tự đoán IP LAN máy build → điện thoại thật + emulator (qua IP máy) đều dùng được.
- * Không tìm thấy LAN → fallback http://10.0.2.2 (emulator classic).
+ * Cấu hình IP thủ công.
+ * Mặc định: http://10.0.2.2:8081/ (emulator classic).
  *
  * Ghi đè (local.properties), khi cần:
  * - backend.base.url=http://x.x.x.x:8081/
@@ -71,8 +33,8 @@ fun resolveBackendBaseUrl(rootDir: java.io.File): String {
         val host = hostRaw.removePrefix("http://").removePrefix("https://").substringBefore("/").substringBefore(":")
         return "http://$host:$port/"
     }
-    val lan = pickBestLanIp(collectLanIPv4())
-    return if (lan != null) "http://$lan:$port/" else "http://10.0.2.2:$port/"
+    
+    return "http://10.0.2.2:$port/"
 }
 
 android {

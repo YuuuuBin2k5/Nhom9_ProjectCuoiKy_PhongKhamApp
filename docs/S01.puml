@@ -1,0 +1,44 @@
+@startuml
+skinparam sequenceMessageAlign center
+skinparam backgroundColor #FFFFFF
+
+actor Staff
+participant "LoanManagementPanel" as View
+participant "LoanController" as Controller
+participant "LoanService" as Service
+database "MySQL / JPA" as DB
+
+Staff -> View : Enter loan info and items
+Staff -> View : Click Create Loan
+View -> Controller : createLoan(loanDTO)
+Controller -> Service : createLoan(loanDTO)
+
+Service -> DB : Begin transaction
+Service -> DB : Find Reader
+Service -> DB : Find Staff
+Service -> DB : Validate Reader (ACTIVE?)
+
+loop For each loan item
+    Service -> DB : Find Book
+    Service -> DB : Check availableQuantity
+end
+
+alt Valid and sufficient stock
+    Service -> DB : Persist Loan
+    loop For each loan item
+        Service -> DB : Persist LoanDetail
+        Service -> DB : Update Book.availableQuantity
+    end
+    Service -> DB : Commit
+    Service --> Controller : Loan Object
+    Controller --> View : Loan created successfully
+    View --> Staff : Show Success Message
+else Validation failed or insufficient stock
+    Service -> DB : Rollback
+    Service --> Controller : throw BusinessException
+    Controller --> View : Error Message
+    View --> Staff : Show Error Dialog
+end
+
+footer 21NGUYỄN MINH ĐẠO STC-UTE OOSE-2026
+@enduml

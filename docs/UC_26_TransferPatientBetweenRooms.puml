@@ -1,0 +1,25 @@
+@startuml UC_26_TransferPatientBetweenRooms
+title UC_UC_21: Chuyển bệnh nhân giữa các phòng
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor Default
+    BorderColor Navy
+    ArrowColor Navy
+}
+
+actor "Bác sĩ" as D
+
+rectangle "Điều phối hàng đợi" {
+    usecase "Tạo liệu trình hoặc hoàn thành bước khám" as UC1
+    usecase "Thoát khỏi Hàng đợi cũ" as UC2
+    usecase "Gia nhập Hàng đợi mới" as UC3
+    
+    UC1 ..> UC2 : <<include>>
+    UC2 ..> UC3 : <<include>>
+}
+
+D --> UC1
+
+@enduml

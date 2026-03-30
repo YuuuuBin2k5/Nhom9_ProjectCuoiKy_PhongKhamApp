@@ -1,0 +1,27 @@
+@startuml UC_24_ProcessQueue
+title UC_UC_19: Xử lý hàng đợi
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor Default
+    BorderColor Navy
+    ArrowColor Navy
+}
+
+actor "Bác sĩ" as D
+
+rectangle "Điều phối hàng đợi" {
+    usecase "Xem danh sách Hàng đợi" as UC1
+    usecase "Chọn bệnh nhân đầu hàng" as UC2
+    usecase "Tạo liệu trình/ thực hiện bước khám" as UC15
+    usecase "Cập nhật trạng thái trong hàng đợi" as UC21
+    
+    UC1 ..> UC2 : <<include>>
+    UC2 ..> UC15 : <<include>>
+    UC2 ..> UC21 : <<include>>
+}
+
+D --> UC1
+
+@enduml

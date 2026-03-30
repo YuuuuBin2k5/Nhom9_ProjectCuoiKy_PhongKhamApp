@@ -1,0 +1,28 @@
+@startuml AC_13_CreateTreatmentPlan_doctor_only
+title Activity Diagram: AC_13 Tạo phác đồ điều trị
+
+|Bác sĩ|
+start
+:Khám và chẩn đoán bệnh nhân;
+:Chọn "Tạo phác đồ điều trị";
+
+if (Sử dụng mẫu liệu trình?) then (Có)
+    :Chọn mẫu liệu trình;
+else (Không)
+    :Tạo mới liệu trình điều trị;
+endif
+
+:Nhập tên liệu trình;
+
+repeat
+    :Thêm một bước điều trị;
+    :Chọn Dịch vụ (Step = Service);
+
+    :Nhập ghi chú chuyên môn (nếu có);
+repeat while (Còn bước điều trị?) is (Còn)
+
+:Review toàn bộ phác đồ;
+:Bấm "Lưu phác đồ";
+
+stop
+@enduml

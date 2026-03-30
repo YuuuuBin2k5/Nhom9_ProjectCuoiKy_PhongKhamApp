@@ -1,0 +1,145 @@
+﻿--- Admin.java ---
+CLASS: public class Admin extends User {
+--- Appointment.java ---
+CLASS: public class Appointment {
+RELATION: @ManyToOne
+FIELD: private Patient patient;
+RELATION: @ManyToOne
+FIELD: private Doctor doctor;
+RELATION: @ManyToOne
+FIELD: private Service service;
+--- CheckInQueue.java ---
+CLASS: public class CheckInQueue {
+RELATION: @OneToOne
+FIELD: private Appointment appointment;
+RELATION: @ManyToOne
+FIELD: private ClinicRoom clinicRoom;
+RELATION: @OneToOne
+FIELD: private TreatmentPlanStep treatmentPlanStep;
+--- ClinicRoom.java ---
+CLASS: public class ClinicRoom {
+--- Doctor.java ---
+CLASS: public class Doctor extends User {
+RELATION: @ManyToOne
+FIELD: private ClinicRoom clinicRoom;
+--- Invoice.java ---
+CLASS: public class Invoice {
+RELATION: @ManyToOne
+FIELD: private Patient patient;
+RELATION: @ManyToOne
+FIELD: private TreatmentPlan treatmentPlan;
+RELATION: @OneToOne
+FIELD: private MedicalRecord medicalRecord;
+RELATION: @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
+FIELD: private List<Payment> payments;
+--- MedicalRecord.java ---
+CLASS: public class MedicalRecord {
+RELATION: @OneToOne(fetch = FetchType.LAZY)
+FIELD: private Appointment appointment;
+RELATION: @ManyToOne(fetch = FetchType.LAZY)
+FIELD: private Patient patient;
+RELATION: @ManyToOne(fetch = FetchType.LAZY)
+FIELD: private Doctor doctor;
+RELATION: @OneToMany(mappedBy = "medicalRecord", cascade = CascadeType.ALL)
+FIELD: private List<MedicalRecordDetail> details;
+RELATION: @OneToOne(mappedBy = "medicalRecord", cascade = CascadeType.ALL)
+FIELD: private Prescription prescription;
+--- MedicalRecordDetail.java ---
+CLASS: public class MedicalRecordDetail {
+RELATION: @ManyToOne
+FIELD: private MedicalRecord medicalRecord;
+RELATION: @ManyToOne
+FIELD: private Service service;
+--- Notification.java ---
+CLASS: public class Notification {
+RELATION: @ManyToOne
+FIELD: private Patient patient;
+--- OtpChallenge.java ---
+CLASS: public class OtpChallenge {
+--- Patient.java ---
+CLASS: public class Patient extends User {
+RELATION: @OneToOne(mappedBy = "patient", cascade = CascadeType.ALL)
+FIELD: private PatientProfile profile;
+--- PatientProfile.java ---
+CLASS: public class PatientProfile {
+RELATION: @OneToOne
+FIELD: private Patient patient;
+--- Payment.java ---
+CLASS: public class Payment {
+RELATION: @ManyToOne
+FIELD: private Invoice invoice;
+--- Prescription.java ---
+CLASS: public class Prescription {
+RELATION: @OneToOne
+FIELD: private MedicalRecord medicalRecord;
+RELATION: @ManyToOne
+FIELD: private Doctor doctor;
+RELATION: @OneToMany(mappedBy = "prescription", cascade = CascadeType.ALL)
+FIELD: private List<PrescriptionDetail> details;
+--- PrescriptionDetail.java ---
+CLASS: public class PrescriptionDetail {
+RELATION: @ManyToOne
+FIELD: private Prescription prescription;
+--- ScanLog.java ---
+CLASS: public class ScanLog {
+--- Service.java ---
+CLASS: public class Service {
+RELATION: @ManyToOne
+FIELD: private ServiceCategory category;
+RELATION: @OneToMany(mappedBy = "service", cascade = CascadeType.ALL, orphanRemoval = true)
+--- ServiceCategory.java ---
+CLASS: public class ServiceCategory {
+RELATION: @OneToMany(mappedBy = "category", cascade = CascadeType.ALL)
+FIELD: private List<Service> services;
+--- ServiceImage.java ---
+CLASS: public class ServiceImage {
+RELATION: @ManyToOne
+FIELD: private Service service;
+--- ServiceReview.java ---
+CLASS: public class ServiceReview {
+RELATION: @ManyToOne
+FIELD: private Patient patient;
+RELATION: @ManyToOne
+FIELD: private Doctor doctor;
+RELATION: @ManyToOne
+FIELD: private MedicalRecord medicalRecord;
+RELATION: @ManyToOne
+FIELD: private Service service;
+RELATION: @OneToOne
+FIELD: private Appointment appointment;
+--- StepImage.java ---
+CLASS: public class StepImage {
+RELATION: @ManyToOne
+FIELD: private TreatmentPlanStep step;
+--- TreatmentPlan.java ---
+CLASS: public class TreatmentPlan {
+RELATION: @ManyToOne(fetch = FetchType.LAZY)
+FIELD: private Patient patient;
+RELATION: @ManyToOne(fetch = FetchType.LAZY)
+FIELD: private MedicalRecord medicalRecord;
+RELATION: @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
+FIELD: private List<TreatmentPlanStep> steps;
+--- TreatmentPlanStep.java ---
+CLASS: public class TreatmentPlanStep {
+RELATION: @ManyToOne(fetch = FetchType.LAZY)
+FIELD: private TreatmentPlan plan;
+RELATION: @ManyToOne(fetch = FetchType.LAZY)
+FIELD: private Service service;
+RELATION: @ManyToOne(fetch = FetchType.LAZY)
+FIELD: private ClinicRoom clinicRoom;
+RELATION: @OneToMany(mappedBy = "step", cascade = CascadeType.ALL)
+FIELD: private List<StepImage> images;
+--- TreatmentPlanTemplate.java ---
+CLASS: public class TreatmentPlanTemplate {
+RELATION: @OneToMany(mappedBy = "template", cascade = CascadeType.ALL, orphanRemoval = true)
+FIELD: private List<TreatmentPlanTemplateStep> steps;
+--- TreatmentPlanTemplateStep.java ---
+CLASS: public class TreatmentPlanTemplateStep {
+RELATION: @ManyToOne
+FIELD: private TreatmentPlanTemplate template;
+RELATION: @ManyToOne
+FIELD: private Service service;
+RELATION: @ManyToOne
+FIELD: private ClinicRoom clinicRoom;
+--- User.java ---
+
