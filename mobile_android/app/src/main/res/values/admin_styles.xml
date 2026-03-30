@@ -40,4 +40,8 @@
         <item name="boxCornerRadiusBottomEnd">8dp</item>
         <item name="boxStrokeColor">@color/admin_primary</item>
     </style>
+    <style name="AdminCalendarTheme" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorAccent">@color/admin_primary</item>
+        <item name="colorPrimary">@color/admin_primary</item>
+    </style>
 </resources>

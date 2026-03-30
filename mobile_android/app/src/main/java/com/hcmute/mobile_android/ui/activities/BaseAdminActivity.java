@@ -6,17 +6,45 @@ import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.Window;
 import android.view.View;
+import android.widget.ImageView;
 import android.widget.TextView;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import com.google.android.material.snackbar.Snackbar;
 import com.google.android.material.button.MaterialButton;
-import com.airbnb.lottie.LottieAnimationView;
 import com.hcmute.mobile_android.R;
+
+import android.widget.Filterable;
+import androidx.appcompat.widget.SearchView;
+import com.google.android.material.appbar.MaterialToolbar;
 
 public abstract class BaseAdminActivity extends AppCompatActivity {
 
     private Dialog loadingDialog;
+
+    public void setupSearch(MaterialToolbar toolbar, Filterable adapter) {
+        if (toolbar == null || adapter == null) return;
+        
+        toolbar.inflateMenu(R.menu.menu_admin_search);
+        android.view.MenuItem searchItem = toolbar.getMenu().findItem(R.id.action_search);
+        if (searchItem != null) {
+            SearchView searchView = (SearchView) searchItem.getActionView();
+            searchView.setQueryHint("Tìm kiếm...");
+            searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+                @Override
+                public boolean onQueryTextSubmit(String query) {
+                    adapter.getFilter().filter(query);
+                    return false;
+                }
+
+                @Override
+                public boolean onQueryTextChange(String newText) {
+                    adapter.getFilter().filter(newText);
+                    return false;
+                }
+            });
+        }
+    }
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
@@ -83,14 +111,15 @@ public abstract class BaseAdminActivity extends AppCompatActivity {
         if (isEmpty) {
             TextView tvTitle = emptyStateView.findViewById(R.id.tvEmptyTitle);
             TextView tvMessage = emptyStateView.findViewById(R.id.tvEmptyMessage);
-            LottieAnimationView lottieEmpty = emptyStateView.findViewById(R.id.lottieEmpty);
+            ImageView ivEmptyFallback = emptyStateView.findViewById(R.id.ivEmptyFallback);
             MaterialButton btnRetry = emptyStateView.findViewById(R.id.btnRetry);
 
             if (tvTitle != null && title != null) tvTitle.setText(title);
             if (tvMessage != null && message != null) tvMessage.setText(message);
             
-            if (lottieEmpty != null) {
-                lottieEmpty.playAnimation();
+            // Always show fallback icon (no Lottie animation)
+            if (ivEmptyFallback != null) {
+                ivEmptyFallback.setVisibility(View.VISIBLE);
             }
 
             if (btnRetry != null) {
@@ -100,11 +129,6 @@ public abstract class BaseAdminActivity extends AppCompatActivity {
                 } else {
                     btnRetry.setVisibility(View.GONE);
                 }
-            }
-        } else {
-            LottieAnimationView lottieEmpty = emptyStateView.findViewById(R.id.lottieEmpty);
-            if (lottieEmpty != null) {
-                lottieEmpty.cancelAnimation();
             }
         }
     }

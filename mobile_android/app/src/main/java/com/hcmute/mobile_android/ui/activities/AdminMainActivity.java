@@ -18,7 +18,8 @@ import com.hcmute.mobile_android.util.TokenManager;
 public class AdminMainActivity extends AppCompatActivity {
 
     private MaterialCardView cardServices, cardRooms, cardDoctors, cardQueue, 
-                             cardCategories, cardDashboard, cardSettings, cardLogout;
+                             cardCategories, cardDashboard, cardSettings, cardLogout,
+                             cardReceptionists, cardAuditLogs, cardSchedule;
 
 
     @Override
@@ -46,6 +47,9 @@ public class AdminMainActivity extends AppCompatActivity {
         cardDashboard = findViewById(R.id.cardDashboard);
         cardSettings = findViewById(R.id.cardSettings);
         cardLogout = findViewById(R.id.cardLogout);
+        cardReceptionists = findViewById(R.id.cardReceptionists);
+        cardAuditLogs = findViewById(R.id.cardAuditLogs);
+        cardSchedule = findViewById(R.id.cardSchedule);
     }
 
     private void setupClickListeners() {
@@ -70,10 +74,7 @@ public class AdminMainActivity extends AppCompatActivity {
         });
 
         cardDashboard.setOnClickListener(v -> {
-            // Navigate to MainActivity with Admin Dashboard tab
-            Intent intent = new Intent(this, MainActivity.class);
-            intent.putExtra("SHOW_ADMIN_DASHBOARD", true);
-            startActivity(intent);
+            startActivity(new Intent(this, AdminDashboardActivity.class));
         });
 
         cardSettings.setOnClickListener(v -> {
@@ -83,6 +84,18 @@ public class AdminMainActivity extends AppCompatActivity {
 
         cardLogout.setOnClickListener(v -> {
             logout();
+        });
+
+        cardReceptionists.setOnClickListener(v -> {
+            startActivity(new Intent(this, AdminReceptionistActivity.class));
+        });
+
+        cardAuditLogs.setOnClickListener(v -> {
+            startActivity(new Intent(this, AdminAuditLogActivity.class));
+        });
+
+        cardSchedule.setOnClickListener(v -> {
+            startActivity(new Intent(this, AdminScheduleActivity.class));
         });
     }
 

@@ -8,5 +8,6 @@ import java.util.Optional;
 @Repository
 public interface ReceptionistRepository extends JpaRepository<Receptionist, Long> {
     Optional<Receptionist> findByEmail(String email);
+    Optional<Receptionist> findByEmailIgnoreCase(String email);
     boolean existsByEmail(String email);
 }

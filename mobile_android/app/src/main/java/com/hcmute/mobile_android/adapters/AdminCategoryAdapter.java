@@ -12,9 +12,13 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.models.ServiceCategory;
 
+import android.widget.Filter;
+import android.widget.Filterable;
+
+import java.util.ArrayList;
 import java.util.List;
 
-public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdapter.ViewHolder> {
+public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdapter.ViewHolder> implements Filterable {
 
     public interface OnCategoryActionListener {
         void onEditCategory(ServiceCategory category);
@@ -22,10 +26,12 @@ public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdap
     }
 
     private List<ServiceCategory> categoryList;
+    private List<ServiceCategory> categoryListFull;
     private OnCategoryActionListener listener;
 
     public AdminCategoryAdapter(List<ServiceCategory> categoryList, OnCategoryActionListener listener) {
         this.categoryList = categoryList;
+        this.categoryListFull = new ArrayList<>(categoryList);
         this.listener = listener;
     }
 
@@ -97,5 +103,41 @@ public class AdminCategoryAdapter extends RecyclerView.Adapter<AdminCategoryAdap
             
             popup.show();
         }
+    }
+
+    public void updateList(List<ServiceCategory> newList) {
+        this.categoryListFull = new ArrayList<>(newList);
+        this.categoryList = newList;
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                List<ServiceCategory> filteredList = new ArrayList<>();
+                if (constraint == null || constraint.length() == 0) {
+                    filteredList.addAll(categoryListFull);
+                } else {
+                    String filterPattern = constraint.toString().toLowerCase().trim();
+                    for (ServiceCategory item : categoryListFull) {
+                        if (item.getName().toLowerCase().contains(filterPattern) ||
+                            (item.getDescription() != null && item.getDescription().toLowerCase().contains(filterPattern))) {
+                            filteredList.add(item);
+                        }
+                    }
+                }
+                FilterResults results = new FilterResults();
+                results.values = filteredList;
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                categoryList = (List<ServiceCategory>) results.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 }

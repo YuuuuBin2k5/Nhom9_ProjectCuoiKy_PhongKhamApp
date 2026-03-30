@@ -31,7 +31,10 @@ import com.hcmute.mobile_android.network.models.UploadResponse;
 import com.hcmute.mobile_android.network.models.ChatMessagePayload;
 import com.hcmute.mobile_android.network.models.ChatSendBody;
 import com.hcmute.mobile_android.network.models.DoctorDetailResponse;
-
+import com.hcmute.mobile_android.network.models.AuditLog;
+import com.hcmute.mobile_android.network.models.AuditLogResponse;
+import com.hcmute.mobile_android.network.models.Receptionist;
+import com.hcmute.mobile_android.network.models.ScheduleAppointment;
 import java.util.List;
 
 import retrofit2.Call;
@@ -141,7 +144,7 @@ public interface ApiService {
     Call<MessageResponse> deleteDoctor(@Path("id") Long id);
 
     @GET("api/admin/doctors")
-    Call<List<com.hcmute.mobile_android.network.models.DoctorItem>> getAdminDoctors();
+    Call<com.hcmute.mobile_android.network.models.PagedResponse<com.hcmute.mobile_android.network.models.DoctorItem>> getAdminDoctors();
 
     @GET("api/admin/rooms")
     Call<List<RoomItem>> getRooms();
@@ -173,6 +176,13 @@ public interface ApiService {
 
     @PUT("api/queue/{id}/status")
     Call<Void> completePatient(@Path("id") Long queueId);
+
+    // Queue Estimation APIs
+    @GET("api/queue/estimate/{queueId}")
+    Call<QueueItem> getQueueEstimate(@Path("queueId") Long queueId);
+
+    @GET("api/queue/estimate/appointment/{appointmentId}")
+    Call<QueueItem> getQueueEstimateByAppointment(@Path("appointmentId") Long appointmentId);
 
     // Doctor Dashboard APIs
     @GET("api/doctor/me/queue")
@@ -331,4 +341,22 @@ public interface ApiService {
     
     @GET("api/treatment-plans/{planId}/services/all")
     Call<java.util.Map<String, Object>> getAllSteps(@Path("planId") Long planId);
+
+    @GET("api/admin/audit-logs")
+    Call<AuditLogResponse> getAuditLogs(@Query("page") int page, @Query("size") int size);
+
+    @GET("api/admin/receptionists")
+    Call<List<Receptionist>> getAdminReceptionists();
+
+    @POST("api/admin/receptionists")
+    Call<Receptionist> createReceptionist(@Body java.util.Map<String, String> body);
+
+    @PATCH("api/admin/receptionists/{id}/status")
+    Call<com.hcmute.mobile_android.network.models.MessageResponse> updateReceptionistStatus(@Path("id") Long id, @Query("active") boolean active);
+
+    @retrofit2.http.DELETE("api/admin/receptionists/{id}")
+    Call<com.hcmute.mobile_android.network.models.MessageResponse> deleteReceptionist(@Path("id") Long id);
+
+    @GET("api/appointments/doctor/{doctorId}/date/{date}")
+    Call<List<ScheduleAppointment>> getDoctorSchedule(@Path("doctorId") Long doctorId, @Path("date") String date);
 }

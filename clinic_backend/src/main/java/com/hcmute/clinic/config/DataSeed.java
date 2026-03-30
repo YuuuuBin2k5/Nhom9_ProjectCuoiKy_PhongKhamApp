@@ -42,6 +42,7 @@ public class DataSeed implements ApplicationRunner {
     private final TreatmentPlanStepRepository treatmentPlanStepRepository;
     private final TreatmentPlanTemplateRepository treatmentPlanTemplateRepository;
     private final TreatmentPlanTemplateStepRepository treatmentPlanTemplateStepRepository;
+    private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
     private final DataSource dataSource;
 
@@ -168,6 +169,11 @@ public class DataSeed implements ApplicationRunner {
         addToQueue(p9, d5, svcFill, 1);
         addToQueue(p10, d_cosm, svcWhite, 1);
 
+        // 7. Add COMPLETED appointments for reports (last 60 days)
+        seedCompletedAppointments(p1, p2, p3, p4, p5, p11, p12, p13, 
+                                   d1, d2, d3, d5, ds, d_ortho, d_cosm,
+                                   svcConsult, svcXray, svcScale, svcFill, svcWisdom, svcWhite, svcBraces);
+
         log.info("Refined DataSeed completed successfully.");
     }
 
@@ -265,6 +271,75 @@ public class DataSeed implements ApplicationRunner {
                 .checkInTime(LocalDateTime.now())
                 .status(QueueStatus.WAITING)
                 .priorityLevel(0)
+                .build());
+    }
+
+    private void seedCompletedAppointments(Patient p1, Patient p2, Patient p3, Patient p4, Patient p5, 
+                                           Patient p11, Patient p12, Patient p13,
+                                           Doctor d1, Doctor d2, Doctor d3, Doctor d5, Doctor ds, 
+                                           Doctor d_ortho, Doctor d_cosm,
+                                           Service svcConsult, Service svcXray, Service svcScale, 
+                                           Service svcFill, Service svcWisdom, Service svcWhite, Service svcBraces) {
+        log.info("Seeding COMPLETED appointments for reports...");
+
+        // Current month - 8 completed appointments
+        addCompletedAppointment(p1, d1, svcConsult, 5);
+        addCompletedAppointment(p2, d2, svcScale, 7);
+        addCompletedAppointment(p3, d2, svcFill, 10);
+        addCompletedAppointment(p4, d3, svcConsult, 12);
+        addCompletedAppointment(p5, d5, svcFill, 15);
+        addCompletedAppointment(p11, ds, svcWisdom, 18);
+        addCompletedAppointment(p12, d_cosm, svcWhite, 20);
+        addCompletedAppointment(p13, d_ortho, svcBraces, 22);
+
+        // Last month - 6 completed appointments
+        addCompletedAppointment(p1, d1, svcConsult, 35);
+        addCompletedAppointment(p2, d2, svcFill, 38);
+        addCompletedAppointment(p3, d3, svcScale, 40);
+        addCompletedAppointment(p4, d5, svcFill, 42);
+        addCompletedAppointment(p5, ds, svcWisdom, 45);
+        addCompletedAppointment(p11, d_cosm, svcWhite, 48);
+
+        // 2 months ago - 4 completed appointments
+        addCompletedAppointment(p12, d1, svcConsult, 65);
+        addCompletedAppointment(p13, d2, svcScale, 68);
+        addCompletedAppointment(p1, d_ortho, svcBraces, 70);
+        addCompletedAppointment(p2, d3, svcFill, 72);
+
+        // Add reviews for completed appointments
+        addReview(p1, d1, svcConsult, 5, "Bác sĩ rất tận tâm và chuyên nghiệp", 4);
+        addReview(p2, d2, svcScale, 4, "Dịch vụ tốt, giá cả hợp lý", 6);
+        addReview(p3, d2, svcFill, 5, "Rất hài lòng với dịch vụ", 9);
+        addReview(p4, d3, svcConsult, 4, "Bác sĩ nhiệt tình", 11);
+        addReview(p5, d5, svcFill, 5, "Kết quả tốt, sẽ quay lại", 14);
+        addReview(p11, ds, svcWisdom, 5, "Nhổ răng không đau, bác sĩ giỏi", 17);
+        addReview(p12, d_cosm, svcWhite, 4, "Răng trắng hơn nhiều", 19);
+        addReview(p13, d_ortho, svcBraces, 5, "Chuyên nghiệp, tư vấn kỹ", 21);
+        addReview(p1, d1, svcConsult, 5, "Xuất sắc!", 34);
+        addReview(p2, d2, svcFill, 4, "Hài lòng", 37);
+
+        log.info("Seeded {} COMPLETED appointments with reviews", 18);
+    }
+
+    private void addCompletedAppointment(Patient p, Doctor d, Service s, int daysAgo) {
+        appointmentRepository.save(Appointment.builder()
+                .patient(p)
+                .doctor(d)
+                .service(s)
+                .appointmentDatetime(LocalDateTime.now().minusDays(daysAgo))
+                .status(AppointmentStatus.COMPLETED)
+                .bookingType(BookingType.WALK_IN)
+                .build());
+    }
+
+    private void addReview(Patient p, Doctor d, Service s, int rating, String comment, int daysAgo) {
+        reviewRepository.save(Review.builder()
+                .patient(p)
+                .doctor(d)
+                .service(s)
+                .rating(rating)
+                .comment(comment)
+                .createdAt(LocalDateTime.now().minusDays(daysAgo))
                 .build());
     }
 }

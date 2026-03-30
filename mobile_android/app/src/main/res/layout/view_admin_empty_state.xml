@@ -9,13 +9,13 @@
     android:padding="32dp"
     android:visibility="gone">
 
-    <com.airbnb.lottie.LottieAnimationView
-        android:id="@+id/lottieEmpty"
-        android:layout_width="200dp"
-        android:layout_height="200dp"
-        app:lottie_autoPlay="true"
-        app:lottie_loop="true"
-        app:lottie_url="https://assets9.lottiefiles.com/packages/lf20_glp9i8ku.json" />
+    <ImageView
+        android:id="@+id/ivEmptyFallback"
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:src="@drawable/ic_list"
+        android:alpha="0.3"
+        app:tint="@color/admin_primary" />
 
     <TextView
         android:id="@+id/tvEmptyTitle"

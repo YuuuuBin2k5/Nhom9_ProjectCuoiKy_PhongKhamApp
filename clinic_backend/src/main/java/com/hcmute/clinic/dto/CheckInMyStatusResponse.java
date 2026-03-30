@@ -18,4 +18,16 @@ public class CheckInMyStatusResponse {
     Integer estimatedWaitTime;
     /** Gợi ý ngắn (UX) */
     String hint;
+    
+    // Queue estimation fields (new)
+    String estimateDisplayType;
+    Integer estimatedMinutes;
+    Integer minMinutes;
+    Integer maxMinutes;
+    String estimateMessage;
+    String estimateConfidence;
+    Boolean showApproximateLabel;
+    String estimateTitle;
+    String estimateSubtitle;
+    Integer countdownStartSeconds; // For countdown timer (position 1 only)
 }

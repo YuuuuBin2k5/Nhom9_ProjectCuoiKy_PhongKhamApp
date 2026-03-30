@@ -47,4 +47,10 @@ public class CheckInQueue {
     @Column(name = "priority_level")
     private Integer priorityLevel = 0;
 
+    @Column(name = "started_at")
+    private LocalDateTime startedAt;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
+
 }

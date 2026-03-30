@@ -20,4 +20,6 @@ public interface ServiceRepository extends JpaRepository<Service, Long> {
            "LOWER(s.name) LIKE LOWER(CONCAT('%', :keyword, '%')) OR " +
            "LOWER(s.description) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Service> searchServices(@Param("keyword") String keyword);
+    
+    List<Service> findByCategoryId(Long categoryId);
 }

@@ -10,6 +10,18 @@ public class CheckInMyStatusResponse {
     private String status;
     private String statusLabel;
     private String hint;
+    
+    // Queue estimation fields (new)
+    private String estimateDisplayType;
+    private Integer estimatedMinutes;
+    private Integer minMinutes;
+    private Integer maxMinutes;
+    private String estimateMessage;
+    private String estimateConfidence;
+    private Boolean showApproximateLabel;
+    private String estimateTitle;
+    private String estimateSubtitle;
+    private Integer countdownStartSeconds; // For countdown timer (position 1 only)
 
     public boolean isCheckedIn() {
         return checkedIn;
@@ -46,4 +58,16 @@ public class CheckInMyStatusResponse {
     public String getHint() {
         return hint;
     }
+    
+    // Getters for estimate fields
+    public String getEstimateDisplayType() { return estimateDisplayType; }
+    public Integer getEstimatedMinutes() { return estimatedMinutes; }
+    public Integer getMinMinutes() { return minMinutes; }
+    public Integer getMaxMinutes() { return maxMinutes; }
+    public String getEstimateMessage() { return estimateMessage; }
+    public String getEstimateConfidence() { return estimateConfidence; }
+    public Boolean getShowApproximateLabel() { return showApproximateLabel; }
+    public String getEstimateTitle() { return estimateTitle; }
+    public String getEstimateSubtitle() { return estimateSubtitle; }
+    public Integer getCountdownStartSeconds() { return countdownStartSeconds; }
 }

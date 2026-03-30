@@ -25,6 +25,7 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.adapters.AdminServiceAdapter;
 import com.hcmute.mobile_android.adapters.SelectedImageAdapter;
+import com.hcmute.mobile_android.models.ImageSource;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
 import com.hcmute.mobile_android.network.models.ServiceCategory;
@@ -59,7 +60,7 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
     private ExtendedFloatingActionButton fabAddService;
     private int selectedCategoryId = -1;
 
-    private List<Uri> selectedImageUris = new ArrayList<>();
+    private List<ImageSource> selectedImageSources = new ArrayList<>();
     private SelectedImageAdapter selectedImageAdapter;
     private ActivityResultLauncher<String> pickImagesLauncher;
     private ServiceItem editingService = null;
@@ -89,7 +90,9 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
                 new ActivityResultContracts.GetMultipleContents(),
                 uris -> {
                     if (uris != null && !uris.isEmpty()) {
-                        selectedImageUris.addAll(uris);
+                        for (Uri uri : uris) {
+                            selectedImageSources.add(new ImageSource(uri));
+                        }
                         if (selectedImageAdapter != null) {
                             selectedImageAdapter.notifyDataSetChanged();
                         }
@@ -111,6 +114,8 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
         
         adapter = new AdminServiceAdapter(serviceList, this);
         rvServices.setAdapter(adapter);
+
+        setupSearch(toolbar, adapter);
 
         btnAddCategory.setOnClickListener(v -> showAddCategoryDialog());
         fabAddService.setOnClickListener(v -> showAddServiceDialog());
@@ -266,7 +271,7 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
             return;
         }
 
-        selectedImageUris.clear();
+        selectedImageSources.clear();
         
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_service, null);
@@ -280,8 +285,8 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
 
         // Setup Selected Images RecyclerView
         rvSelectedImages.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        selectedImageAdapter = new SelectedImageAdapter(selectedImageUris, position -> {
-            selectedImageUris.remove(position);
+        selectedImageAdapter = new SelectedImageAdapter(selectedImageSources, position -> {
+            selectedImageSources.remove(position);
             selectedImageAdapter.notifyItemRemoved(position);
         });
         rvSelectedImages.setAdapter(selectedImageAdapter);
@@ -308,7 +313,7 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
                 
                 showLoading(true, "Đang xử lý...");
                 
-                if (selectedImageUris.isEmpty()) {
+                if (selectedImageSources.isEmpty()) {
                     saveService(name, desc, price, duration, new ArrayList<>(), dialog);
                 } else {
                     uploadImagesAndSave(name, desc, price, duration, 0, new ArrayList<>(), dialog);
@@ -323,12 +328,20 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
     }
 
     private void uploadImagesAndSave(String name, String desc, double price, int duration, int index, List<String> imageUrls, AlertDialog dialog) {
-        if (index >= selectedImageUris.size()) {
+        // Get only new URIs (not URLs)
+        List<Uri> newUris = new ArrayList<>();
+        for (ImageSource source : selectedImageSources) {
+            if (!source.isUrl()) {
+                newUris.add(source.getUri());
+            }
+        }
+        
+        if (index >= newUris.size()) {
             saveService(name, desc, price, duration, imageUrls, dialog);
             return;
         }
 
-        Uri uri = selectedImageUris.get(index);
+        Uri uri = newUris.get(index);
         try {
             File file = createTempFileFromUri(uri);
             RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
@@ -412,7 +425,14 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
     }
 
     private void showEditServiceDialog(ServiceItem service) {
-        selectedImageUris.clear();
+        selectedImageSources.clear();
+        
+        // Load existing images as URLs
+        if (service.getImageUrls() != null && !service.getImageUrls().isEmpty()) {
+            for (String url : service.getImageUrls()) {
+                selectedImageSources.add(new ImageSource(url));
+            }
+        }
         
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_service, null);
@@ -432,8 +452,8 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
 
         // Setup Selected Images RecyclerView
         rvSelectedImages.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
-        selectedImageAdapter = new SelectedImageAdapter(selectedImageUris, position -> {
-            selectedImageUris.remove(position);
+        selectedImageAdapter = new SelectedImageAdapter(selectedImageSources, position -> {
+            selectedImageSources.remove(position);
             selectedImageAdapter.notifyItemRemoved(position);
         });
         rvSelectedImages.setAdapter(selectedImageAdapter);
@@ -460,13 +480,24 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
                 
                 showLoading(true, "Đang xử lý...");
                 
-                if (selectedImageUris.isEmpty()) {
-                    // Keep existing images
-                    List<String> existingImages = service.getImageUrls() != null ? service.getImageUrls() : new ArrayList<>();
-                    updateService(service.getId(), name, desc, price, duration, existingImages, dialog);
+                // Separate URLs and URIs
+                List<String> existingUrls = new ArrayList<>();
+                List<Uri> newUris = new ArrayList<>();
+                
+                for (ImageSource source : selectedImageSources) {
+                    if (source.isUrl()) {
+                        existingUrls.add(source.getUrl());
+                    } else {
+                        newUris.add(source.getUri());
+                    }
+                }
+                
+                if (newUris.isEmpty()) {
+                    // No new images, just update with existing URLs
+                    updateService(service.getId(), name, desc, price, duration, existingUrls, dialog);
                 } else {
-                    // Upload new images
-                    uploadImagesAndUpdate(service.getId(), name, desc, price, duration, 0, new ArrayList<>(), dialog);
+                    // Upload new images and combine with existing URLs
+                    uploadImagesAndUpdate(service.getId(), name, desc, price, duration, 0, existingUrls, newUris, dialog);
                 }
             } catch (NumberFormatException e) {
                 showError("Giá và thời lượng phải là số");
@@ -482,13 +513,13 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
         dialog.show();
     }
 
-    private void uploadImagesAndUpdate(Long serviceId, String name, String desc, double price, int duration, int index, List<String> imageUrls, AlertDialog dialog) {
-        if (index >= selectedImageUris.size()) {
-            updateService(serviceId, name, desc, price, duration, imageUrls, dialog);
+    private void uploadImagesAndUpdate(Long serviceId, String name, String desc, double price, int duration, int index, List<String> existingUrls, List<Uri> newUris, AlertDialog dialog) {
+        if (index >= newUris.size()) {
+            updateService(serviceId, name, desc, price, duration, existingUrls, dialog);
             return;
         }
 
-        Uri uri = selectedImageUris.get(index);
+        Uri uri = newUris.get(index);
         try {
             File file = createTempFileFromUri(uri);
             RequestBody requestFile = RequestBody.create(MediaType.parse("image/*"), file);
@@ -498,22 +529,22 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
                 @Override
                 public void onResponse(Call<UploadResponse> call, Response<UploadResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
-                        imageUrls.add(response.body().getFileName());
-                        uploadImagesAndUpdate(serviceId, name, desc, price, duration, index + 1, imageUrls, dialog);
+                        existingUrls.add(response.body().getFileName());
+                        uploadImagesAndUpdate(serviceId, name, desc, price, duration, index + 1, existingUrls, newUris, dialog);
                     } else {
                         showError("Lỗi khi tải ảnh " + (index + 1));
-                        updateService(serviceId, name, desc, price, duration, imageUrls, dialog);
+                        updateService(serviceId, name, desc, price, duration, existingUrls, dialog);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<UploadResponse> call, Throwable t) {
                     showError("Lỗi kết nối khi tải ảnh: " + t.getMessage());
-                    updateService(serviceId, name, desc, price, duration, imageUrls, dialog);
+                    updateService(serviceId, name, desc, price, duration, existingUrls, dialog);
                 }
             });
         } catch (Exception e) {
-            uploadImagesAndUpdate(serviceId, name, desc, price, duration, index + 1, imageUrls, dialog);
+            uploadImagesAndUpdate(serviceId, name, desc, price, duration, index + 1, existingUrls, newUris, dialog);
         }
     }
 

@@ -14,11 +14,16 @@ import com.google.android.material.card.MaterialCardView;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.models.RoomItem;
 
+import android.widget.Filter;
+import android.widget.Filterable;
+
+import java.util.ArrayList;
 import java.util.List;
 
-public class AdminRoomAdapter extends RecyclerView.Adapter<AdminRoomAdapter.ViewHolder> {
+public class AdminRoomAdapter extends RecyclerView.Adapter<AdminRoomAdapter.ViewHolder> implements Filterable {
 
     private List<RoomItem> roomList;
+    private List<RoomItem> roomListFull;
     private OnRoomActionListener listener;
 
     public interface OnRoomActionListener {
@@ -30,6 +35,7 @@ public class AdminRoomAdapter extends RecyclerView.Adapter<AdminRoomAdapter.View
 
     public AdminRoomAdapter(List<RoomItem> roomList, OnRoomActionListener listener) {
         this.roomList = roomList;
+        this.roomListFull = new ArrayList<>(roomList);
         this.listener = listener;
     }
 
@@ -129,5 +135,40 @@ public class AdminRoomAdapter extends RecyclerView.Adapter<AdminRoomAdapter.View
             
             popup.show();
         }
+    }
+
+    public void updateList(List<RoomItem> newList) {
+        this.roomListFull = new ArrayList<>(newList);
+        this.roomList = newList;
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                List<RoomItem> filteredList = new ArrayList<>();
+                if (constraint == null || constraint.length() == 0) {
+                    filteredList.addAll(roomListFull);
+                } else {
+                    String filterPattern = constraint.toString().toLowerCase().trim();
+                    for (RoomItem item : roomListFull) {
+                        if (item.getName().toLowerCase().contains(filterPattern)) {
+                            filteredList.add(item);
+                        }
+                    }
+                }
+                FilterResults results = new FilterResults();
+                results.values = filteredList;
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                roomList = (List<RoomItem>) results.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 }

@@ -53,6 +53,8 @@ public class CheckInQueueService {
     private final ServiceRepository serviceRepository;
     private final DoctorRepository doctorRepository;
     private final TreatmentPlanStepRepository treatmentPlanStepRepository;
+    private final ServiceDurationTracker durationTracker;
+    private final QueueEstimationService estimationService;
 
     @Transactional
     public CheckInResult processScan(String qrData) {
@@ -321,6 +323,35 @@ public class CheckInQueueService {
         String roomName = room != null ? room.getName() : "";
         String roomLoc = room != null && room.getDescription() != null ? room.getDescription() : "";
         QueueStatus st = q.getStatus() != null ? q.getStatus() : QueueStatus.WAITING;
+        
+        // Calculate queue estimate (new feature)
+        String estimateDisplayType = null;
+        Integer estimatedMinutes = null;
+        Integer minMinutes = null;
+        Integer maxMinutes = null;
+        String estimateMessage = null;
+        String estimateConfidence = null;
+        Boolean showApproximateLabel = null;
+        String estimateTitle = null;
+        String estimateSubtitle = null;
+        Integer countdownStartSeconds = null;
+        
+        try {
+            com.hcmute.clinic.dto.queue.QueueEstimateDTO estimate = estimationService.calculateEstimate(q);
+            estimateDisplayType = estimate.getDisplayType();
+            estimatedMinutes = estimate.getEstimatedMinutes();
+            minMinutes = estimate.getMinMinutes();
+            maxMinutes = estimate.getMaxMinutes();
+            estimateMessage = estimate.getMessage();
+            estimateConfidence = estimate.getConfidence();
+            showApproximateLabel = estimate.getShowApproximateLabel();
+            estimateTitle = estimate.getTitle();
+            estimateSubtitle = estimate.getSubtitle();
+            countdownStartSeconds = estimate.getCountdownStartSeconds();
+        } catch (Exception e) {
+            log.error("Failed to calculate estimate for patient {}", patientId, e);
+        }
+        
         return CheckInMyStatusResponse.builder()
                 .checkedIn(true)
                 .queueNumber(q.getQueueNumber())
@@ -331,6 +362,16 @@ public class CheckInQueueService {
                 .queuePosition(q != null ? calculateQueuePosition(q) : 0)
                 .estimatedWaitTime(q != null ? calculateEstimatedWaitTime(q) : 0)
                 .hint(patientQueueHint(st))
+                .estimateDisplayType(estimateDisplayType)
+                .estimatedMinutes(estimatedMinutes)
+                .minMinutes(minMinutes)
+                .maxMinutes(maxMinutes)
+                .estimateMessage(estimateMessage)
+                .estimateConfidence(estimateConfidence)
+                .showApproximateLabel(showApproximateLabel)
+                .estimateTitle(estimateTitle)
+                .estimateSubtitle(estimateSubtitle)
+                .countdownStartSeconds(countdownStartSeconds)
                 .build();
     }
 
@@ -400,6 +441,33 @@ public class CheckInQueueService {
             }
         }
 
+        // Calculate queue estimate
+        String estimateDisplayType = null;
+        Integer estimatedMinutes = null;
+        Integer minMinutes = null;
+        Integer maxMinutes = null;
+        String estimateMessage = null;
+        String estimateConfidence = null;
+        Boolean showApproximateLabel = null;
+        String estimateTitle = null;
+        String estimateSubtitle = null;
+
+        try {
+            com.hcmute.clinic.dto.queue.QueueEstimateDTO estimate = estimationService.calculateEstimate(q);
+            estimateDisplayType = estimate.getDisplayType();
+            estimatedMinutes = estimate.getEstimatedMinutes();
+            minMinutes = estimate.getMinMinutes();
+            maxMinutes = estimate.getMaxMinutes();
+            estimateMessage = estimate.getMessage();
+            estimateConfidence = estimate.getConfidence();
+            showApproximateLabel = estimate.getShowApproximateLabel();
+            estimateTitle = estimate.getTitle();
+            estimateSubtitle = estimate.getSubtitle();
+        } catch (Exception e) {
+            log.error("Failed to calculate estimate for queue {}", q.getId(), e);
+            // Graceful degradation: continue without estimate
+        }
+
         return new QueueItemDto(
                 q.getId(),
                 q.getQueueNumber(),
@@ -409,7 +477,16 @@ public class CheckInQueueService {
                 patientPhone,
                 serviceName,
                 appTime,
-                patientId
+                patientId,
+                estimateDisplayType,
+                estimatedMinutes,
+                minMinutes,
+                maxMinutes,
+                estimateMessage,
+                estimateConfidence,
+                showApproximateLabel,
+                estimateTitle,
+                estimateSubtitle
         );
     }
 
@@ -428,6 +505,7 @@ public class CheckInQueueService {
         CheckInQueue q = checkInQueueRepository.findById(queueId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hàng đợi"));
         q.setStatus(QueueStatus.IN_PROGRESS);
+        durationTracker.markStarted(q); // Track start time
         checkInQueueRepository.save(q);
         ClinicRoom r = q.getClinicRoom();
         if (r != null) {
@@ -563,7 +641,27 @@ public class CheckInQueueService {
         }
     }
 
-    public record QueueItemDto(Long id, Integer queueNumber, String status, Integer priority, String patientName, String patientPhone, String serviceName, String appointmentTime, Long patientId) {}
+    public record QueueItemDto(
+        Long id, 
+        Integer queueNumber, 
+        String status, 
+        Integer priority, 
+        String patientName, 
+        String patientPhone, 
+        String serviceName, 
+        String appointmentTime, 
+        Long patientId,
+        // Queue estimation fields
+        String estimateDisplayType,
+        Integer estimatedMinutes,
+        Integer minMinutes,
+        Integer maxMinutes,
+        String estimateMessage,
+        String estimateConfidence,
+        Boolean showApproximateLabel,
+        String estimateTitle,
+        String estimateSubtitle
+    ) {}
 
     @Transactional
     public CheckInResult processSelfScan(long authenticatedPatientId, String qrData) {

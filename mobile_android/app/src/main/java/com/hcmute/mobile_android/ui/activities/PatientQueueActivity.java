@@ -37,6 +37,12 @@ public class PatientQueueActivity extends AppCompatActivity {
     private Handler refreshHandler;
     private Runnable refreshRunnable;
     private static final int AUTO_REFRESH_INTERVAL = 30000; // 30 seconds
+    
+    // Countdown timer
+    private Handler countdownHandler;
+    private Runnable countdownRunnable;
+    private long countdownEndTimeMillis = 0;
+    private boolean isCountdownActive = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,19 +122,67 @@ public class PatientQueueActivity extends AppCompatActivity {
             layoutNotCheckedIn.setVisibility(View.GONE);
             layoutQueueInfo.setVisibility(View.VISIBLE);
             
-            // Update queue info
+            // Update basic info
             tvQueueNumber.setText(String.valueOf(status.getQueueNumber()));
-            tvQueuePosition.setText("Vị trí: " + status.getQueuePosition());
-            tvEstimatedTime.setText("Ước tính: " + status.getEstimatedWaitTime() + " phút");
             tvRoomName.setText(status.getRoomName() != null ? status.getRoomName() : "Phòng khám");
-            tvStatus.setText(getStatusDisplay(status.getStatus()));
             
-            // Set card color based on status
-            setCardColor(status.getStatus());
+            // Display queue estimate based on type
+            String displayType = status.getEstimateDisplayType();
+            
+            if ("IN_PROGRESS".equals(displayType)) {
+                // Currently being served
+                stopCountdown(); // Stop countdown if being served
+                tvQueuePosition.setText(status.getEstimateTitle() != null ? status.getEstimateTitle() : "Đang khám");
+                tvEstimatedTime.setText(status.getEstimateSubtitle() != null ? status.getEstimateSubtitle() : "");
+                tvStatus.setText(status.getEstimateMessage() != null ? status.getEstimateMessage() : "");
+                setCardColor("IN_PROGRESS");
+                
+            } else if ("SOFT_COUNTDOWN".equals(displayType)) {
+                // Next in line - start or sync countdown
+                Integer countdownSeconds = status.getCountdownStartSeconds();
+                if (countdownSeconds != null && countdownSeconds > 0) {
+                    if (!isCountdownActive) {
+                        startCountdown(countdownSeconds);
+                    } else {
+                        syncCountdownWithServer(countdownSeconds);
+                    }
+                } else {
+                    // Fallback if no countdown data
+                    stopCountdown();
+                    tvEstimatedTime.setText(status.getEstimateSubtitle() != null ? status.getEstimateSubtitle() : "~5 phút");
+                }
+                
+                tvQueuePosition.setText(status.getEstimateTitle() != null ? status.getEstimateTitle() : "Bạn kế tiếp");
+                tvStatus.setText(status.getEstimateMessage() != null ? status.getEstimateMessage() : "Vui lòng ở gần");
+                setCardColor("RETURNED_PRIORITY");
+                
+            } else if ("RANGE".equals(displayType)) {
+                // Waiting - range estimate
+                stopCountdown(); // Stop countdown for range estimates
+                tvQueuePosition.setText(status.getEstimateTitle() != null ? status.getEstimateTitle() : "Vị trí: " + status.getQueuePosition());
+                tvEstimatedTime.setText(status.getEstimateSubtitle() != null ? status.getEstimateSubtitle() : status.getEstimatedWaitTime() + " phút");
+                String message = status.getEstimateMessage() != null ? status.getEstimateMessage() : "";
+                String confidence = status.getEstimateConfidence() != null ? " (Độ tin cậy: " + status.getEstimateConfidence() + ")" : "";
+                tvStatus.setText(message + confidence);
+                setCardColor(status.getStatus());
+                
+            } else {
+                // Fallback to old display
+                stopCountdown();
+                tvQueuePosition.setText("Vị trí: " + status.getQueuePosition());
+                tvEstimatedTime.setText("Ước tính: " + status.getEstimatedWaitTime() + " phút");
+                tvStatus.setText(getStatusDisplay(status.getStatus()));
+                setCardColor(status.getStatus());
+            }
             
         } else {
+            stopCountdown();
             showNotCheckedIn();
         }
+    }
+    
+    private void loadQueueEstimate() {
+        // This method is no longer needed - estimate comes from getMyCheckInStatus
     }
 
     private void showNotCheckedIn() {
@@ -180,12 +234,73 @@ public class PatientQueueActivity extends AppCompatActivity {
                 break;
         }
     }
+    
+    // Countdown timer methods
+    private void startCountdown(int seconds) {
+        stopCountdown(); // Stop any existing countdown
+        
+        countdownEndTimeMillis = System.currentTimeMillis() + (seconds * 1000L);
+        isCountdownActive = true;
+        
+        countdownHandler = new Handler(Looper.getMainLooper());
+        countdownRunnable = new Runnable() {
+            @Override
+            public void run() {
+                updateCountdownDisplay();
+                if (isCountdownActive) {
+                    countdownHandler.postDelayed(this, 1000); // Update every second
+                }
+            }
+        };
+        
+        countdownHandler.post(countdownRunnable);
+    }
+    
+    private void updateCountdownDisplay() {
+        long remainingMillis = countdownEndTimeMillis - System.currentTimeMillis();
+        
+        if (remainingMillis <= 0) {
+            // Countdown finished
+            tvEstimatedTime.setText("~0 phút");
+            stopCountdown();
+            // Trigger refresh to get latest status
+            loadQueueStatus();
+            return;
+        }
+        
+        int remainingSeconds = (int) (remainingMillis / 1000);
+        int minutes = remainingSeconds / 60;
+        int seconds = remainingSeconds % 60;
+        
+        // Always show ~ to indicate approximate
+        tvEstimatedTime.setText(String.format("~%d:%02d", minutes, seconds));
+    }
+    
+    private void stopCountdown() {
+        isCountdownActive = false;
+        if (countdownHandler != null && countdownRunnable != null) {
+            countdownHandler.removeCallbacks(countdownRunnable);
+        }
+    }
+    
+    private void syncCountdownWithServer(int newSeconds) {
+        if (!isCountdownActive) return;
+        
+        long currentRemaining = (countdownEndTimeMillis - System.currentTimeMillis()) / 1000;
+        long diff = Math.abs(currentRemaining - newSeconds);
+        
+        // Only adjust if difference > 30 seconds (avoid jitter)
+        if (diff > 30) {
+            countdownEndTimeMillis = System.currentTimeMillis() + (newSeconds * 1000L);
+        }
+    }
 
     @Override
     protected void onResume() {
         super.onResume();
         // Start auto refresh when activity is visible
         refreshHandler.postDelayed(refreshRunnable, AUTO_REFRESH_INTERVAL);
+        // Countdown will restart from server data on next refresh
     }
 
     @Override
@@ -193,6 +308,8 @@ public class PatientQueueActivity extends AppCompatActivity {
         super.onPause();
         // Stop auto refresh when activity is not visible
         refreshHandler.removeCallbacks(refreshRunnable);
+        // Pause countdown when not visible
+        stopCountdown();
     }
 
     @Override
@@ -201,5 +318,6 @@ public class PatientQueueActivity extends AppCompatActivity {
         if (refreshHandler != null) {
             refreshHandler.removeCallbacks(refreshRunnable);
         }
+        stopCountdown();
     }
 }

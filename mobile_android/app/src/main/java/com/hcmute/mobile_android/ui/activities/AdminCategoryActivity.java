@@ -72,6 +72,8 @@ public class AdminCategoryActivity extends BaseAdminActivity implements AdminCat
         adapter = new AdminCategoryAdapter(categoryList, this);
         rvCategories.setAdapter(adapter);
 
+        setupSearch(toolbar, adapter);
+
         FloatingActionButton fabAdd = findViewById(R.id.fabAdd);
         fabAdd.setOnClickListener(v -> showAddCategoryDialog());
 

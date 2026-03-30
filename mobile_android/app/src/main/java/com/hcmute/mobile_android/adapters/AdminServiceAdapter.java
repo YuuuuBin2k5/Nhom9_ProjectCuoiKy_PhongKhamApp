@@ -16,7 +16,11 @@ import com.hcmute.mobile_android.network.RetrofitClient;
 import com.hcmute.mobile_android.network.models.MessageResponse;
 import com.hcmute.mobile_android.network.models.ServiceItem;
 
+import android.widget.Filter;
+import android.widget.Filterable;
+
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -24,7 +28,7 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class AdminServiceAdapter extends RecyclerView.Adapter<AdminServiceAdapter.ViewHolder> {
+public class AdminServiceAdapter extends RecyclerView.Adapter<AdminServiceAdapter.ViewHolder> implements Filterable {
 
     public interface OnServiceActionListener {
         void onEditService(ServiceItem service);
@@ -32,18 +36,15 @@ public class AdminServiceAdapter extends RecyclerView.Adapter<AdminServiceAdapte
     }
 
     private List<ServiceItem> serviceList;
+    private List<ServiceItem> serviceListFull;
     private OnServiceActionListener listener;
 
     public AdminServiceAdapter(List<ServiceItem> serviceList, OnServiceActionListener listener) {
-        this.serviceList = new java.util.ArrayList<>(serviceList);
+        this.serviceList = serviceList;
+        this.serviceListFull = new ArrayList<>(serviceList);
         this.listener = listener;
     }
 
-    public void updateServices(List<ServiceItem> newServices) {
-        this.serviceList.clear();
-        this.serviceList.addAll(newServices);
-        notifyDataSetChanged();
-    }
 
     @NonNull
     @Override
@@ -188,5 +189,41 @@ public class AdminServiceAdapter extends RecyclerView.Adapter<AdminServiceAdapte
             switchActive.setChecked(targetState);
             setupSwitchListener(service);
         }
+    }
+
+    public void updateServices(List<ServiceItem> newServices) {
+        this.serviceListFull = new ArrayList<>(newServices);
+        this.serviceList = newServices;
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                List<ServiceItem> filteredList = new ArrayList<>();
+                if (constraint == null || constraint.length() == 0) {
+                    filteredList.addAll(serviceListFull);
+                } else {
+                    String filterPattern = constraint.toString().toLowerCase().trim();
+                    for (ServiceItem item : serviceListFull) {
+                        if (item.getName().toLowerCase().contains(filterPattern) || 
+                            (item.getCategoryName() != null && item.getCategoryName().toLowerCase().contains(filterPattern))) {
+                            filteredList.add(item);
+                        }
+                    }
+                }
+                FilterResults results = new FilterResults();
+                results.values = filteredList;
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                serviceList = (List<ServiceItem>) results.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 }

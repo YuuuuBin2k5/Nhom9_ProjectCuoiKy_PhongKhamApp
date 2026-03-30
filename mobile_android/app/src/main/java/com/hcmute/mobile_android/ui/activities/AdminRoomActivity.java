@@ -79,6 +79,8 @@ public class AdminRoomActivity extends BaseAdminActivity implements AdminRoomAda
         adapter = new AdminRoomAdapter(roomList, this);
         rvRooms.setAdapter(adapter);
         
+        setupSearch(toolbar, adapter);
+        
         // Setup listeners
         fabAddRoom.setOnClickListener(v -> showAddRoomDialog());
         swipeRefreshLayout.setOnRefreshListener(this::loadRooms);

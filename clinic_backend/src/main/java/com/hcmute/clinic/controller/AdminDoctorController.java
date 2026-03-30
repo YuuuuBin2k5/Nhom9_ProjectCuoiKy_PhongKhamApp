@@ -29,6 +29,7 @@ public class AdminDoctorController {
             org.springframework.data.domain.PageRequest.of(page, size, 
                 org.springframework.data.domain.Sort.by(sort));
         
+        // @EntityGraph trong repository sẽ tự động fetch clinicRoom, tránh N+1 query
         org.springframework.data.domain.Page<Doctor> doctorPage = doctorRepository.findAll(pageable);
         
         Map<String, Object> response = new java.util.HashMap<>();
@@ -73,6 +74,30 @@ public class AdminDoctorController {
         try {
             adminDoctorService.updateDoctorStatus(id, active);
             return ResponseEntity.ok(Map.of("message", "Doctor status updated successfully"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateDoctor(@PathVariable("id") Long id, @RequestBody CreateDoctorRequest request) {
+        try {
+            Doctor doctor = adminDoctorService.updateDoctor(id, request);
+            return ResponseEntity.ok(Map.of(
+                    "id", doctor.getId(),
+                    "email", doctor.getEmail(),
+                    "message", "Doctor updated successfully"
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteDoctor(@PathVariable("id") Long id) {
+        try {
+            adminDoctorService.deleteDoctor(id);
+            return ResponseEntity.ok(Map.of("message", "Doctor deleted successfully"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }

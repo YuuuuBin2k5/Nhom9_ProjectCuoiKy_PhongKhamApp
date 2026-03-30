@@ -309,4 +309,30 @@ public class AppointmentController {
             return ResponseEntity.internalServerError().body(Map.of("message", "Lỗi server: " + e.getMessage()));
         }
     }
+
+    @GetMapping("/doctor/{doctorId}/date/{date}")
+    public ResponseEntity<?> getAppointmentsByDoctorAndDate(
+            @PathVariable Long doctorId,
+            @PathVariable String date
+    ) {
+        try {
+            java.time.LocalDate localDate = java.time.LocalDate.parse(date);
+            java.time.LocalDateTime start = localDate.atStartOfDay();
+            java.time.LocalDateTime end = localDate.plusDays(1).atStartOfDay();
+            
+            List<Appointment> appts = appointmentRepository.findByDoctorIdAndAppointmentDatetimeBetweenOrderByAppointmentDatetimeAsc(
+                    doctorId, start, end);
+            
+            return ResponseEntity.ok(appts.stream().map(a -> Map.of(
+                    "id", a.getId(),
+                    "patientName", (a.getPatient().getLastName() + " " + a.getPatient().getFirstName()).trim(),
+                    "patientPhone", a.getPatient().getPhone() != null ? a.getPatient().getPhone() : "",
+                    "serviceName", a.getService().getName(),
+                    "datetime", a.getAppointmentDatetime().toString(),
+                    "status", a.getStatus().name()
+            )).toList());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Lỗi: " + e.getMessage()));
+        }
+    }
 }

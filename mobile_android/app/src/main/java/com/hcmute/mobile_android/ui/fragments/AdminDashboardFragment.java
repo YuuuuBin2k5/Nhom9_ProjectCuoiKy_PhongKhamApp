@@ -19,6 +19,7 @@ import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.models.DoctorStats;
 import com.hcmute.mobile_android.network.models.RevenueReport;
 import com.hcmute.mobile_android.network.models.ServiceStats;
+import com.hcmute.mobile_android.utils.AdminReportExporter;
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
@@ -50,6 +51,10 @@ public class AdminDashboardFragment extends Fragment {
     private BarChart barChartRevenue;
     private PieChart pieChartServices;
     private MaterialButton btnExportExcel, btnExportPdf;
+
+    private RevenueReport currentRevenue;
+    private List<ServiceStats> currentServices;
+    private List<DoctorStats> currentDoctors;
     
     private Calendar startDate, endDate;
     private SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.getDefault());
@@ -171,7 +176,8 @@ public class AdminDashboardFragment extends Fragment {
             @Override
             public void onResponse(Call<RevenueReport> call, Response<RevenueReport> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    displayRevenueReport(response.body());
+                    currentRevenue = response.body();
+                    displayRevenueReport(currentRevenue);
                 } else {
                     Toast.makeText(getContext(), "Lỗi tải báo cáo doanh thu", Toast.LENGTH_SHORT).show();
                 }
@@ -194,7 +200,8 @@ public class AdminDashboardFragment extends Fragment {
             @Override
             public void onResponse(Call<List<ServiceStats>> call, Response<List<ServiceStats>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    displayTopServices(response.body());
+                    currentServices = response.body();
+                    displayTopServices(currentServices);
                 } else {
                     Toast.makeText(getContext(), "Lỗi tải top dịch vụ", Toast.LENGTH_SHORT).show();
                 }
@@ -217,7 +224,8 @@ public class AdminDashboardFragment extends Fragment {
                 progressBar.setVisibility(View.GONE);
                 
                 if (response.isSuccessful() && response.body() != null) {
-                    displayDoctorPerformance(response.body());
+                    currentDoctors = response.body();
+                    displayDoctorPerformance(currentDoctors);
                 } else {
                     Toast.makeText(getContext(), "Lỗi tải hiệu suất bác sĩ", Toast.LENGTH_SHORT).show();
                 }
@@ -288,13 +296,19 @@ public class AdminDashboardFragment extends Fragment {
     }
 
     private void exportToExcel() {
-        Toast.makeText(getContext(), "Đang chuẩn bị xuất file Excel...", Toast.LENGTH_SHORT).show();
-        // Sẽ triển khai trong Phase 4.2
+        if (currentRevenue == null || currentServices == null || currentDoctors == null) {
+            Toast.makeText(getContext(), "Vui lòng đợi dữ liệu tải xong", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        AdminReportExporter.exportDashboardToExcel(requireContext(), currentRevenue, currentServices, currentDoctors);
     }
 
     private void exportToPdf() {
-        Toast.makeText(getContext(), "Đang chuẩn bị xuất file PDF...", Toast.LENGTH_SHORT).show();
-        // Sẽ triển khai trong Phase 4.2
+        if (currentRevenue == null || currentServices == null || currentDoctors == null) {
+            Toast.makeText(getContext(), "Vui lòng đợi dữ liệu tải xong", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        AdminReportExporter.exportDashboardToPdf(requireContext(), currentRevenue, currentServices, currentDoctors);
     }
     
     private void displayDoctorPerformance(List<DoctorStats> doctors) {

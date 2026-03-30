@@ -18,13 +18,17 @@ import com.hcmute.mobile_android.network.RetrofitClient;
 import com.hcmute.mobile_android.network.models.DoctorItem;
 import com.hcmute.mobile_android.network.models.MessageResponse;
 
+import android.widget.Filter;
+import android.widget.Filterable;
+
+import java.util.ArrayList;
 import java.util.List;
 
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class AdminDoctorAdapter extends RecyclerView.Adapter<AdminDoctorAdapter.ViewHolder> {
+public class AdminDoctorAdapter extends RecyclerView.Adapter<AdminDoctorAdapter.ViewHolder> implements Filterable {
 
     public interface OnDoctorActionListener {
         void onEditDoctor(DoctorItem doctor);
@@ -32,11 +36,13 @@ public class AdminDoctorAdapter extends RecyclerView.Adapter<AdminDoctorAdapter.
     }
 
     private List<DoctorItem> doctorList;
+    private List<DoctorItem> doctorListFull;
     private ApiService apiService;
     private OnDoctorActionListener listener;
 
     public AdminDoctorAdapter(List<DoctorItem> doctorList, OnDoctorActionListener listener) {
         this.doctorList = doctorList;
+        this.doctorListFull = new ArrayList<>(doctorList);
         this.listener = listener;
     }
 
@@ -163,5 +169,41 @@ public class AdminDoctorAdapter extends RecyclerView.Adapter<AdminDoctorAdapter.
                 }
             });
         }
+    }
+
+    public void updateList(List<DoctorItem> newList) {
+        this.doctorListFull = new ArrayList<>(newList);
+        this.doctorList = newList;
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                List<DoctorItem> filteredList = new ArrayList<>();
+                if (constraint == null || constraint.length() == 0) {
+                    filteredList.addAll(doctorListFull);
+                } else {
+                    String filterPattern = constraint.toString().toLowerCase().trim();
+                    for (DoctorItem item : doctorListFull) {
+                        if (item.getFullName().toLowerCase().contains(filterPattern) || 
+                            (item.getSpecialization() != null && item.getSpecialization().toLowerCase().contains(filterPattern))) {
+                            filteredList.add(item);
+                        }
+                    }
+                }
+                FilterResults results = new FilterResults();
+                results.values = filteredList;
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                doctorList = (List<DoctorItem>) results.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 }

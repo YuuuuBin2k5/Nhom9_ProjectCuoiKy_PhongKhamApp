@@ -77,4 +77,76 @@ public class AdminServiceManagementService {
     public List<com.hcmute.clinic.entity.Service> getAllServices() {
         return serviceRepository.findAllByOrderByNameAsc();
     }
+
+    @Transactional
+    public com.hcmute.clinic.entity.Service updateService(
+            Long id,
+            Long categoryId,
+            String name,
+            String description,
+            Double price,
+            Integer duration
+    ) {
+        com.hcmute.clinic.entity.Service service = serviceRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Service not found"));
+
+        if (categoryId != null) {
+            ServiceCategory category = categoryRepository.findById(categoryId)
+                    .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+            service.setCategory(category);
+        }
+
+        if (name != null) {
+            service.setName(name);
+        }
+        if (description != null) {
+            service.setDescription(description);
+        }
+        if (price != null) {
+            service.setPrice(BigDecimal.valueOf(price));
+        }
+        if (duration != null) {
+            service.setDurationMinutes(duration);
+        }
+
+        return serviceRepository.save(service);
+    }
+
+    @Transactional
+    public void deleteService(Long id) {
+        com.hcmute.clinic.entity.Service service = serviceRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Service not found"));
+        // Soft delete
+        service.setActive(false);
+        serviceRepository.save(service);
+    }
+
+    @Transactional
+    public ServiceCategory updateCategory(Long id, String name, String description) {
+        ServiceCategory category = categoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+        
+        if (name != null) {
+            category.setName(name);
+        }
+        if (description != null) {
+            category.setDescription(description);
+        }
+        
+        return categoryRepository.save(category);
+    }
+
+    @Transactional
+    public void deleteCategory(Long id) {
+        ServiceCategory category = categoryRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+        
+        // Check if category has services
+        List<com.hcmute.clinic.entity.Service> services = serviceRepository.findByCategoryId(id);
+        if (!services.isEmpty()) {
+            throw new IllegalArgumentException("Cannot delete category with existing services");
+        }
+        
+        categoryRepository.delete(category);
+    }
 }

@@ -69,6 +69,8 @@ public class AdminDoctorActivity extends BaseAdminActivity implements AdminDocto
         adapter = new AdminDoctorAdapter(doctorList, this);
         rvDoctors.setAdapter(adapter);
 
+        setupSearch(toolbar, adapter);
+
         FloatingActionButton fabAddDoctor = findViewById(R.id.fabAddDoctor);
         fabAddDoctor.setOnClickListener(v -> showAddDoctorDialog());
     }
@@ -92,20 +94,20 @@ public class AdminDoctorActivity extends BaseAdminActivity implements AdminDocto
 
     private void loadDoctors() {
         showLoading(true);
-        apiService.getAdminDoctors().enqueue(new Callback<List<DoctorItem>>() {
+        apiService.getAdminDoctors().enqueue(new Callback<com.hcmute.mobile_android.network.models.PagedResponse<DoctorItem>>() {
             @Override
-            public void onResponse(Call<List<DoctorItem>> call, Response<List<DoctorItem>> response) {
+            public void onResponse(Call<com.hcmute.mobile_android.network.models.PagedResponse<DoctorItem>> call, Response<com.hcmute.mobile_android.network.models.PagedResponse<DoctorItem>> response) {
                 showLoading(false);
-                if (response.isSuccessful() && response.body() != null) {
+                if (response.isSuccessful() && response.body() != null && response.body().getContent() != null) {
                     doctorList.clear();
-                    doctorList.addAll(response.body());
+                    doctorList.addAll(response.body().getContent());
                     adapter.notifyDataSetChanged();
                     updateEmptyState(doctorList.isEmpty(), "Chưa có bác sĩ", "Nhấn nút + để thêm mới");
                 }
             }
 
             @Override
-            public void onFailure(Call<List<DoctorItem>> call, Throwable t) {
+            public void onFailure(Call<com.hcmute.mobile_android.network.models.PagedResponse<DoctorItem>> call, Throwable t) {
                 showLoading(false);
                 showError("Lỗi tải danh sách bác sĩ: " + t.getMessage());
                 updateEmptyState(doctorList.isEmpty(), "Lỗi kết nối", "Vui lòng kiểm tra mạng và thử lại", AdminDoctorActivity.this::loadDoctors);

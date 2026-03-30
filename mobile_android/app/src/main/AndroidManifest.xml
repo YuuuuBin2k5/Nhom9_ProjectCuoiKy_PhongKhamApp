@@ -101,6 +101,22 @@
             android:theme="@style/Theme.AdminPanel"
             android:exported="false" />
         <activity
+            android:name=".ui.activities.AdminAuditLogActivity"
+            android:theme="@style/Theme.AdminPanel"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.AdminReceptionistActivity"
+            android:theme="@style/Theme.AdminPanel"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.AdminScheduleActivity"
+            android:theme="@style/Theme.AdminPanel"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.AdminDashboardActivity"
+            android:theme="@style/Theme.AdminPanel"
+            android:exported="false" />
+        <activity
             android:name=".ui.activities.QRCheckInActivity"
             android:exported="false" />
         <activity

@@ -210,8 +210,8 @@
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
-
-                <!-- Row 3: Queue & Dashboard -->
+                
+                <!-- Row 3: Queue & Schedule -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -251,9 +251,9 @@
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
-                    <!-- Dashboard Card -->
+                    <!-- Schedule Card -->
                     <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardDashboard"
+                        android:id="@+id/cardSchedule"
                         style="@style/AdminCardStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
@@ -272,13 +272,13 @@
                             <ImageView
                                 android:layout_width="48dp"
                                 android:layout_height="48dp"
-                                android:src="@drawable/ic_person"
-                                app:tint="@color/admin_info"
+                                android:src="@drawable/ic_calendar"
+                                app:tint="@color/admin_primary"
                                 android:layout_marginBottom="12dp"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Dashboard"
+                                android:text="Lịch trình"
                                 android:textColor="@android:color/black"
                                 android:textStyle="bold"
                                 android:textSize="16sp"/>
@@ -286,7 +286,111 @@
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
 
-                <!-- Row 4: Settings (Full Width) -->
+                <!-- Row 4: Receptionists & Audit Log -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <!-- Receptionists Card -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardReceptionists"
+                        style="@style/AdminCardStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_margin="8dp"
+                        app:strokeWidth="0dp">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="140dp"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:background="@android:color/white"
+                            android:padding="16dp">
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:src="@drawable/ic_user"
+                                app:tint="@color/admin_primary"
+                                android:layout_marginBottom="12dp"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Lễ tân"
+                                android:textColor="@android:color/black"
+                                android:textStyle="bold"
+                                android:textSize="16sp"/>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+
+                    <!-- Audit Log Card -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardAuditLogs"
+                        style="@style/AdminCardStyle"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_margin="8dp"
+                        app:strokeWidth="0dp">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="140dp"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:background="@android:color/white"
+                            android:padding="16dp">
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:src="@drawable/ic_list"
+                                app:tint="@color/admin_text_secondary"
+                                android:layout_marginBottom="12dp"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Nhật ký"
+                                android:textColor="@android:color/black"
+                                android:textStyle="bold"
+                                android:textSize="16sp"/>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+                <!-- Row 5: Dashboard (Full Width) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardDashboard"
+                    style="@style/AdminCardStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="8dp"
+                    app:strokeWidth="0dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="80dp"
+                        android:orientation="horizontal"
+                        android:gravity="center"
+                        android:background="@android:color/white"
+                        android:padding="16dp">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:src="@drawable/ic_chart"
+                            app:tint="@color/admin_info"
+                            android:layout_marginEnd="12dp"/>
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Báo cáo &amp; Phân tích"
+                            android:textColor="@android:color/black"
+                            android:textStyle="bold"
+                            android:textSize="18sp"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Row 6: Settings (Full Width) -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardSettings"
                     style="@style/AdminCardStyle"
