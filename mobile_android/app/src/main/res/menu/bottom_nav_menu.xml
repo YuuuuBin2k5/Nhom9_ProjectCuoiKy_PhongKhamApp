@@ -5,9 +5,9 @@
         android:icon="@drawable/ic_clinic"
         android:title="Trang chủ" />
     <item
-        android:id="@+id/nav_qr"
-        android:icon="@drawable/ic_qr_code"
-        android:title="Phòng Chờ" />
+        android:id="@+id/nav_doctors"
+        android:icon="@drawable/ic_doctor"
+        android:title="Bác sĩ" />
     <item
         android:id="@+id/nav_plan"
         android:icon="@drawable/ic_treatment_plan"

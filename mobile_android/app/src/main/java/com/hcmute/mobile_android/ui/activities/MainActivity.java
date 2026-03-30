@@ -4,10 +4,10 @@ import android.os.Bundle;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.hcmute.mobile_android.R;
+import com.hcmute.mobile_android.ui.fragments.DoctorListFragment;
 import com.hcmute.mobile_android.ui.fragments.HomeFragment;
 import com.hcmute.mobile_android.ui.fragments.PatientDashboardFragment;
 import com.hcmute.mobile_android.ui.fragments.NotificationsFragment;
-import com.hcmute.mobile_android.ui.fragments.QrCheckInFragment;
 import com.hcmute.mobile_android.ui.fragments.TreatmentPlanFragment;
 import com.hcmute.mobile_android.util.TokenManager;
 
@@ -47,8 +47,8 @@ public class MainActivity extends AppCompatActivity
             if (id == R.id.nav_home) {
                 // Route by role
                 f = isDoctor ? new HomeFragment() : new PatientDashboardFragment();
-            } else if (id == R.id.nav_qr) {
-                f = new QrCheckInFragment();
+            } else if (id == R.id.nav_doctors) {
+                f = new DoctorListFragment();
             } else if (id == R.id.nav_plan) {
                 f = new TreatmentPlanFragment();
             } else if (id == R.id.nav_notifications) {
@@ -75,7 +75,9 @@ public class MainActivity extends AppCompatActivity
 
         if (isDoctor) {
             bottomNav.getMenu().findItem(R.id.nav_plan).setVisible(false);
-            bottomNav.getMenu().findItem(R.id.nav_qr).setVisible(false);
+            if (bottomNav.getMenu().findItem(R.id.nav_doctors) != null) {
+                bottomNav.getMenu().findItem(R.id.nav_doctors).setVisible(false);
+            }
         }
 
         // Padding handled by layout margins

@@ -330,7 +330,13 @@ public class PatientDashboardFragment extends Fragment {
             public void onResponse(Call<List<DoctorItem>> call, Response<List<DoctorItem>> response) {
                 if (!isAdded()) return;
                 if (response.isSuccessful() && response.body() != null) {
-                    doctorAdapter.updateItems(response.body());
+                    List<DoctorItem> generalDoctors = new ArrayList<>();
+                    for (DoctorItem d : response.body()) {
+                        if (!d.isSpecialist() || "Khám tổng quát".equalsIgnoreCase(d.getSpecialization()) || "Nha khoa tổng quát".equalsIgnoreCase(d.getSpecialization())) {
+                            generalDoctors.add(d);
+                        }
+                    }
+                    doctorAdapter.updateItems(generalDoctors);
                 }
             }
 

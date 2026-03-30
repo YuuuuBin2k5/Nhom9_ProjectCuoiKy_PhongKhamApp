@@ -137,13 +137,12 @@
                         android:layout_gravity="center"
                         android:padding="8dp"
                         android:visibility="gone"/>
-                    <Spinner
-                        android:id="@+id/spinner_doctor"
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_doctors"
                         android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:paddingStart="12dp"
-                        android:paddingEnd="12dp"
-                        android:enabled="false"/>
+                        android:layout_height="wrap_content"
+                        android:clipToPadding="false"
+                        android:paddingHorizontal="4dp"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

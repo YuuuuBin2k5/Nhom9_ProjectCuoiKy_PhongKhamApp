@@ -50,7 +50,7 @@ public class InvoiceListActivity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(Bundle);
+        super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_invoice_list);
 
         apiService = RetrofitClient.getApiService(this);

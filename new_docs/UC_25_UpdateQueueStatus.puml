@@ -1,0 +1,27 @@
+@startuml UC_25_UpdateQueueStatus
+title UC_UC_20: Cập nhật trạng thái hàng đợi
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor Default
+    BorderColor Navy
+    ArrowColor Navy
+}
+
+actor "Bác sĩ" as D
+
+rectangle "Điều phối hàng đợi" {
+    usecase "Kích hoạt cập nhật trạng thái" as UC1
+    usecase "Chọn trạng thái đích\n(Đợi/Xong/Bỏ qua)" as UC2
+    usecase "Cập nhật CSDL" as UC3
+    usecase "Đồng bộ Hàng đợi thời gian thực" as UC4
+    
+    UC1 ..> UC2 : <<include>>
+    UC2 ..> UC3 : <<include>>
+    UC3 ..> UC4 : <<include>>
+}
+
+D --> UC1
+
+@enduml

@@ -146,9 +146,6 @@
             android:name=".ui.activities.ChatActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.activities.AdminServiceDetailActivity"
-            android:exported="false" />
-        <activity
             android:name=".ui.activities.ImageViewerActivity"
             android:exported="false"
             android:theme="@style/Theme.AppCompat.NoActionBar"

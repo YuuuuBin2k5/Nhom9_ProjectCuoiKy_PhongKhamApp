@@ -18,6 +18,11 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import android.view.LayoutInflater;
+import android.view.ViewGroup;
+import android.widget.ImageView;
 
 import com.google.android.material.button.MaterialButton;
 import com.hcmute.mobile_android.R;
@@ -43,7 +48,8 @@ public class BookAppointmentActivity extends AppCompatActivity {
     public static final String EXTRA_CATEGORY = "categoryName";
 
     // UI
-    private Spinner spinnerService, spinnerDoctor;
+    private Spinner spinnerService;
+    private RecyclerView rvDoctors;
     private ProgressBar pbServices, pbDoctors;
     private TextView tvSelectedCategory, tvDatetime;
     private MaterialButton btnBook;
@@ -72,7 +78,7 @@ public class BookAppointmentActivity extends AppCompatActivity {
 
         tvSelectedCategory = findViewById(R.id.tv_selected_category);
         spinnerService = findViewById(R.id.spinner_service);
-        spinnerDoctor = findViewById(R.id.spinner_doctor);
+        rvDoctors = findViewById(R.id.rv_doctors);
         pbServices = findViewById(R.id.pb_services);
         pbDoctors = findViewById(R.id.pb_doctors);
         tvDatetime = findViewById(R.id.tv_datetime);
@@ -166,20 +172,26 @@ public class BookAppointmentActivity extends AppCompatActivity {
 
     private void loadDoctors(Long serviceId) {
         pbDoctors.setVisibility(View.VISIBLE);
-        spinnerDoctor.setEnabled(false);
+        rvDoctors.setVisibility(View.GONE);
 
         api.getDoctorsByService(serviceId).enqueue(new Callback<List<DoctorItem>>() {
             @Override
             public void onResponse(Call<List<DoctorItem>> call, Response<List<DoctorItem>> response) {
                 pbDoctors.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null) {
-                    doctorList = new ArrayList<>(response.body());
+                    List<DoctorItem> generalDoctors = new ArrayList<>();
+                    for (DoctorItem d : response.body()) {
+                        if (!d.isSpecialist() || "Khám tổng quát".equalsIgnoreCase(d.getSpecialization()) || "Nha khoa tổng quát".equalsIgnoreCase(d.getSpecialization())) {
+                            generalDoctors.add(d);
+                        }
+                    }
+                    doctorList = generalDoctors;
                     Collections.sort(doctorList,
                             (a, b) -> Integer.compare(a.getAppointmentCount(), b.getAppointmentCount()));
-                    populateDoctorSpinner();
+                    populateDoctorRecyclerView();
                 } else {
                     doctorList = new ArrayList<>();
-                    populateDoctorSpinner();
+                    populateDoctorRecyclerView();
                 }
             }
 
@@ -187,55 +199,29 @@ public class BookAppointmentActivity extends AppCompatActivity {
             public void onFailure(Call<List<DoctorItem>> call, Throwable t) {
                 pbDoctors.setVisibility(View.GONE);
                 doctorList = new ArrayList<>();
-                populateDoctorSpinner();
+                populateDoctorRecyclerView();
                 ToastUtils.showCenteredToast(BookAppointmentActivity.this, "Lỗi tải bác sĩ: " + t.getMessage());
             }
         });
     }
 
 
-    private void populateDoctorSpinner() {
+    private DoctorMiniCardAdapter doctorAdapter;
+
+    private void populateDoctorRecyclerView() {
         if (doctorList.isEmpty()) {
             ToastUtils.showCenteredToast(this, "Không có bác sĩ phù hợp");
+            rvDoctors.setVisibility(View.GONE);
             return;
         }
 
-        List<String> names = new ArrayList<>();
-        // Leader Addition: Professional Auto-assign option
-        names.add("Hệ thống tự sắp xếp Bác sĩ (Khuyên dùng)");
-        
-        for (DoctorItem d : doctorList) {
-            String label = "BS. " + d.getFullName();
-            if (d.isSpecialist()) {
-                label = "⭐ [Chuyên khoa] " + label;
-            }
-            if (d.getSpecialization() != null && !d.getSpecialization().isEmpty()) {
-                label += "  •  " + d.getSpecialization();
-            }
-            names.add(label);
-        }
-
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,
-                android.R.layout.simple_spinner_item, names);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerDoctor.setAdapter(adapter);
-        spinnerDoctor.setEnabled(true);
-
-        selectedDoctor = doctorList.get(0);
-
-        spinnerDoctor.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                if (position == 0) {
-                    selectedDoctor = null; // Auto-assign
-                } else {
-                    selectedDoctor = doctorList.get(position - 1);
-                }
-            }
-
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {}
+        rvDoctors.setVisibility(View.VISIBLE);
+        rvDoctors.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+        doctorAdapter = new DoctorMiniCardAdapter(doctorList, doctor -> {
+            selectedDoctor = doctor;
         });
+        rvDoctors.setAdapter(doctorAdapter);
+        selectedDoctor = null; // Auto-assign is default selected
     }
 
     private void pickDate() {
@@ -371,5 +357,73 @@ public class BookAppointmentActivity extends AppCompatActivity {
                 ToastUtils.showCenteredToast(BookAppointmentActivity.this, "Kiểm tra kết nối mạng");
             }
         });
+    }
+    private static class DoctorMiniCardAdapter extends RecyclerView.Adapter<DoctorMiniCardAdapter.Holder> {
+        private final List<DoctorItem> items;
+        private final OnDoctorClickListener listener;
+        private int selectedPos = 0; // Default to Auto-assign
+
+        interface OnDoctorClickListener { void onDoctorClick(DoctorItem d); }
+
+        DoctorMiniCardAdapter(List<DoctorItem> list, OnDoctorClickListener l) {
+            this.items = list;
+            this.listener = l;
+        }
+
+        @androidx.annotation.NonNull
+        @Override
+        public Holder onCreateViewHolder(@androidx.annotation.NonNull ViewGroup parent, int viewType) {
+            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_doctor_mini_card, parent, false);
+            return new Holder(v);
+        }
+
+        @Override
+        public void onBindViewHolder(@androidx.annotation.NonNull Holder holder, int position) {
+            if (position == 0) {
+                holder.tvName.setText("Hệ thống chọn");
+                holder.tvSpecialty.setText("Khuyên dùng");
+                holder.ivAvatar.setImageResource(R.drawable.ic_clinic);
+                holder.ivSelectedTick.setVisibility(selectedPos == 0 ? View.VISIBLE : View.GONE);
+                holder.itemView.setAlpha(selectedPos == 0 ? 1.0f : 0.6f);
+                holder.itemView.setOnClickListener(v -> {
+                    int old = selectedPos;
+                    selectedPos = position;
+                    notifyItemChanged(old);
+                    notifyItemChanged(selectedPos);
+                    listener.onDoctorClick(null);
+                });
+                return;
+            }
+
+            DoctorItem d = items.get(position - 1);
+            holder.tvName.setText("BS. " + d.getFullName());
+            holder.tvSpecialty.setText(d.getSpecialization() != null && !d.getSpecialization().isEmpty() ? d.getSpecialization() : "Khám tổng quát");
+            holder.ivAvatar.setImageResource(R.drawable.ic_doctor);
+
+            holder.ivSelectedTick.setVisibility(selectedPos == position ? View.VISIBLE : View.GONE);
+            holder.itemView.setAlpha(selectedPos == position ? 1.0f : 0.6f);
+
+            holder.itemView.setOnClickListener(v -> {
+                int old = selectedPos;
+                selectedPos = position;
+                notifyItemChanged(old);
+                notifyItemChanged(selectedPos);
+                listener.onDoctorClick(d);
+            });
+        }
+
+        @Override public int getItemCount() { return items.size() + 1; } // +1 for auto-assign
+
+        class Holder extends RecyclerView.ViewHolder {
+            TextView tvName, tvSpecialty;
+            ImageView ivAvatar, ivSelectedTick;
+            Holder(View v) {
+                super(v);
+                tvName = v.findViewById(R.id.tv_name);
+                tvSpecialty = v.findViewById(R.id.tv_specialty);
+                ivAvatar = v.findViewById(R.id.iv_avatar);
+                ivSelectedTick = v.findViewById(R.id.iv_selected_tick);
+            }
+        }
     }
 }
