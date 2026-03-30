@@ -75,9 +75,6 @@ public class DoctorListFragment extends Fragment {
         rvFilters.setLayoutManager(new LinearLayoutManager(requireContext(), LinearLayoutManager.HORIZONTAL, false));
         List<String> categories = new ArrayList<>();
         categories.add("Tất cả");
-        categories.add("Khám tổng quát");
-        categories.add("Phẫu thuật");
-        categories.add("Chỉnh nha");
         filterAdapter = new FilterAdapter(categories, this::onFilterSelected);
         rvFilters.setAdapter(filterAdapter);
 
@@ -94,6 +91,7 @@ public class DoctorListFragment extends Fragment {
                 if (response.isSuccessful() && response.body() != null) {
                     allDoctors = response.body();
                     doctorAdapter.updateItems(allDoctors);
+                    extractCategories(allDoctors);
                 }
             }
             @Override
@@ -102,6 +100,18 @@ public class DoctorListFragment extends Fragment {
                 Toast.makeText(requireContext(), "Lỗi tải danh sách bác sĩ", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    private void extractCategories(List<DoctorItem> list) {
+        List<String> cats = new ArrayList<>();
+        cats.add("Tất cả");
+        for (DoctorItem d : list) {
+            String spec = d.getSpecialization();
+            if (spec != null && !spec.isEmpty() && !cats.contains(spec)) {
+                cats.add(spec);
+            }
+        }
+        filterAdapter.updateData(cats);
     }
 
     private void filterDoctors(String query) {
@@ -123,8 +133,8 @@ public class DoctorListFragment extends Fragment {
         }
         List<DoctorItem> filtered = new ArrayList<>();
         for (DoctorItem d : allDoctors) {
-            String spec = d.getSpecialization() != null ? d.getSpecialization().toLowerCase() : "";
-            if (spec.contains(category.toLowerCase().substring(0, 3))) {
+            String spec = d.getSpecialization() != null ? d.getSpecialization() : "";
+            if (spec.equalsIgnoreCase(category)) {
                 filtered.add(d);
             }
         }
@@ -134,15 +144,21 @@ public class DoctorListFragment extends Fragment {
     // --- Adapters ---
 
     private static class FilterAdapter extends RecyclerView.Adapter<FilterAdapter.Holder> {
-        private final List<String> items;
+        private List<String> items;
         private final OnFilterClickListener listener;
         private int selectedPos = 0;
 
         interface OnFilterClickListener { void onFilterClick(String cat); }
 
         FilterAdapter(List<String> list, OnFilterClickListener l) {
-            this.items = list;
+            this.items = new ArrayList<>(list);
             this.listener = l;
+        }
+
+        void updateData(List<String> list) {
+            this.items = new ArrayList<>(list);
+            this.selectedPos = 0;
+            notifyDataSetChanged();
         }
 
         @NonNull

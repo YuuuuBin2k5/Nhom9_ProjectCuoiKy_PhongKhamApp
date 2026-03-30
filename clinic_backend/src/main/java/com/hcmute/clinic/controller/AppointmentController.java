@@ -65,16 +65,17 @@ public class AppointmentController {
             // 3. Resolve Doctor
             Doctor doctor = null;
             if (request.getDoctorId() == null) {
-                log.info("Doctor ID is null, attempting to auto-assign based on service category: {}", service.getCategory().getName());
-                // Simple auto-assign: first active doctor with matching specialization
+                log.info("Doctor ID is null, attempting to auto-assign a General Practitioner");
+                // Auto-assign: first active General Practitioner
                 doctor = doctorRepository.findAll().stream()
                         .filter(d -> d.isActive() && d.getSpecialization() != null && 
-                                d.getSpecialization().toLowerCase().contains(service.getCategory().getName().toLowerCase()))
+                                (d.getSpecialization().equalsIgnoreCase("Khám tổng quát") || 
+                                 d.getSpecialization().equalsIgnoreCase("Nha khoa tổng quát")))
                         .findFirst()
                         .orElse(null);
                 
                 if (doctor == null) {
-                    // Fallback: any active doctor if no specialty match found (though unlikely with good seeding)
+                    // Fallback: any active doctor
                     doctor = doctorRepository.findAll().stream().filter(d -> d.isActive()).findFirst().orElse(null);
                 }
 

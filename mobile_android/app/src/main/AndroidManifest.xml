@@ -134,10 +134,7 @@
             android:name=".ui.activities.BookAppointmentActivity"
             android:exported="false"
             android:windowSoftInputMode="stateHidden|adjustResize"/>
-        <activity
-            android:name=".ui.activities.DoctorListActivity"
-            android:exported="false"
-            android:theme="@style/Theme.Mobile_android" />
+
 
         <activity
             android:name=".ui.activities.DoctorDetailActivity"

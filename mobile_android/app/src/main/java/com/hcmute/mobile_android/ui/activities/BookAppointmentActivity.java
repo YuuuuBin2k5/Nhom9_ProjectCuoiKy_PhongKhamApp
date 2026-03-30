@@ -174,7 +174,7 @@ public class BookAppointmentActivity extends AppCompatActivity {
         pbDoctors.setVisibility(View.VISIBLE);
         rvDoctors.setVisibility(View.GONE);
 
-        api.getDoctorsByService(serviceId).enqueue(new Callback<List<DoctorItem>>() {
+        api.getDoctors().enqueue(new Callback<List<DoctorItem>>() {
             @Override
             public void onResponse(Call<List<DoctorItem>> call, Response<List<DoctorItem>> response) {
                 pbDoctors.setVisibility(View.GONE);

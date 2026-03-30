@@ -375,7 +375,9 @@ public class PatientDashboardFragment extends Fragment {
 
     private void openList(String mode) {
         if (GenericListActivity.MODE_DOCTORS.equals(mode)) {
-            startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.DoctorListActivity.class));
+            if (getActivity() instanceof MainActivity) {
+                ((MainActivity) getActivity()).onNavigateToDoctors();
+            }
             return;
         }
         Intent i = new Intent(requireContext(), GenericListActivity.class);

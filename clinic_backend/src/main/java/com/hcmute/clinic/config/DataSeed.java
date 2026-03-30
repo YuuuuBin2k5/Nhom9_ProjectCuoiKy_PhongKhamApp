@@ -124,13 +124,16 @@ public class DataSeed implements ApplicationRunner {
                 "niengrang_anh1.png", "niengrang_anh2.png", "niengrang_anh3.png", "niengrang_anh4.png");
 
         // 3. Rooms & Doctors
-        Doctor d1 = createRoomAndDoc("Phòng khám 01", "Tầng G — Sảnh chính", "Nguyễn Văn A", "doc01@gmail.com", "Khám & Chẩn đoán", defaultPass);
-        Doctor d2 = createRoomAndDoc("Phòng khám 02", "Tầng 1 — Hành lang trái", "Trần Thị B", "doc02@gmail.com", "Nha khoa Tổng quát", defaultPass);
-        Doctor d3 = createRoomAndDoc("Phòng khám 03", "Tầng 1 — Hành lang phải", "Lê Văn C", "doc03@gmail.com", "Chỉnh nha", defaultPass);
-        Doctor dx = createRoomAndDoc("Phòng X-quang", "Tầng 1 — Khu kỹ thuật", "Phạm Văn D", "doc_xray@gmail.com", "Chẩn đoán hình ảnh", defaultPass);
-        Doctor ds = createRoomAndDoc("Phòng tiểu phẫu", "Tầng 2 — Khu Phẫu thuật", "Hoàng Thị E", "doc_surg@gmail.com", "Tiểu phẫu", defaultPass);
-        Doctor dt1 = createRoomAndDoc("Phòng điều trị 01", "Tầng 2 — Khu Điều trị", "Ngô Văn F", "doc_treat01@gmail.com", "Nha khoa Tổng quát", defaultPass);
-        Doctor dt2 = createRoomAndDoc("Phòng điều trị 02", "Tầng 2 — Khu Điều trị", "Đỗ Thị G", "doc_treat02@gmail.com", "Thẩm mỹ", defaultPass);
+        Doctor d1 = createRoomAndDoc("Phòng khám 01", "Tầng G — Sảnh chính", "Trần Đình Trọng", "doc_tongquat1@gmail.com", "Khám tổng quát", defaultPass);
+        Doctor d2 = createRoomAndDoc("Phòng khám 02", "Tầng 1 — Hành lang trái", "Nguyễn Thu Hà", "doc_tongquat2@gmail.com", "Nha khoa Tổng quát", defaultPass);
+        Doctor d3 = createRoomAndDoc("Phòng khám 03", "Tầng 1 — Hành lang phải", "Lê Gia Khiêm", "doc_tongquat3@gmail.com", "Khám tổng quát", defaultPass);
+        Doctor d4 = createRoomAndDoc("Phòng khám 04", "Tầng G — Hành lang phải", "Ngô Quốc Bảo", "doc_tongquat4@gmail.com", "Khám tổng quát", defaultPass);
+        Doctor d5 = createRoomAndDoc("Phòng khám 05", "Tầng G — Hành lang trái", "Trịnh Thăng Bình", "doc_tongquat5@gmail.com", "Nha khoa Tổng quát", defaultPass);
+
+        Doctor dx = createRoomAndDoc("Phòng X-quang", "Tầng 1 — Khu kỹ thuật", "Phạm Văn Dũng", "doc_xray@gmail.com", "Chẩn đoán hình ảnh", defaultPass);
+        Doctor ds = createRoomAndDoc("Phòng tiểu phẫu", "Tầng 2 — Khu Phẫu thuật", "Hoàng Thị Giang", "doc_surg@gmail.com", "Tiểu phẫu", defaultPass);
+        Doctor d_ortho = createRoomAndDoc("Phòng chuyên khoa 01", "Tầng 2 — Khu Điều trị", "Vũ Cát Tường", "doc_ortho@gmail.com", "Chỉnh nha", defaultPass);
+        Doctor d_cosm = createRoomAndDoc("Phòng chuyên khoa 02", "Tầng 2 — Khu Điều trị", "Đỗ Thị Quỳnh", "doc_cosm@gmail.com", "Thẩm mỹ", defaultPass);
 
         // 4. Admin
         adminRepository.save(Admin.builder().email("admin@gmail.com").passwordHash(defaultPass).firstName("Admin").lastName("System").isActive(true).build());
@@ -151,24 +154,24 @@ public class DataSeed implements ApplicationRunner {
         Patient p13 = createPatient("Chu Thanh Huyền", "patient13@gmail.com", "0933444555", defaultPass);
 
         // 6. Templates
-        seedTemplates(svcConsult, svcXray, svcScale, svcFill, svcWisdom, svcWhite, svcBraces, d1, dx, ds, dt2);
+        seedTemplates(svcConsult, svcXray, svcScale, svcFill, svcWisdom, svcWhite, svcBraces, d1, dx, ds, d_cosm);
 
         // Add some queue entries
         addToQueue(p1, d1, svcConsult, 1);
-        addToQueue(p2, d1, svcConsult, 2);
+        addToQueue(p2, d2, svcConsult, 2);
         addToQueue(p3, d2, svcScale, 1);
         addToQueue(p4, d2, svcFill, 2);
-        addToQueue(p5, d1, svcConsult, 3);
-        addToQueue(p6, d3, svcBraces, 1);
-        addToQueue(p7, d1, svcConsult, 4);
+        addToQueue(p5, d3, svcConsult, 3);
+        addToQueue(p6, d_ortho, svcBraces, 1);
+        addToQueue(p7, d4, svcConsult, 4);
         addToQueue(p8, ds, svcWisdom, 1);
-        addToQueue(p9, dt1, svcFill, 1);
-        addToQueue(p10, dt2, svcWhite, 1);
+        addToQueue(p9, d5, svcFill, 1);
+        addToQueue(p10, d_cosm, svcWhite, 1);
 
         log.info("Refined DataSeed completed successfully.");
     }
 
-    private void seedTemplates(Service svcConsult, Service svcXray, Service svcScale, Service svcFill, Service svcWisdom, Service svcWhite, Service svcBraces, Doctor d1, Doctor dx, Doctor ds, Doctor dt2) {
+    private void seedTemplates(Service svcConsult, Service svcXray, Service svcScale, Service svcFill, Service svcWisdom, Service svcWhite, Service svcBraces, Doctor d1, Doctor dx, Doctor ds, Doctor d_cosm) {
         log.info("Seeding Treatment Plan Templates...");
 
         // 1. Nhổ răng khôn
@@ -200,7 +203,7 @@ public class DataSeed implements ApplicationRunner {
 
         treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWhite, svcConsult, d1.getClinicRoom(), 1));
         treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWhite, svcScale, d1.getClinicRoom(), 2));
-        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWhite, svcWhite, dt2.getClinicRoom(), 3));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWhite, svcWhite, d_cosm.getClinicRoom(), 3));
 
         // 4. Trám răng sâu
         TreatmentPlanTemplate tplFill = treatmentPlanTemplateRepository.save(TreatmentPlanTemplate.builder()

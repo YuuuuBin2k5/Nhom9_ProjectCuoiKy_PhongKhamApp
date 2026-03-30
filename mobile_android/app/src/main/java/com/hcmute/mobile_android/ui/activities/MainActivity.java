@@ -90,4 +90,10 @@ public class MainActivity extends AppCompatActivity
     public void onNavigateToNotifications() {
         bottomNav.setSelectedItemId(R.id.nav_notifications);
     }
+
+    public void onNavigateToDoctors() {
+        if (bottomNav != null) {
+            bottomNav.setSelectedItemId(R.id.nav_doctors);
+        }
+    }
 }
