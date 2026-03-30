@@ -1,5 +1,6 @@
 package com.hcmute.clinic.controller;
 
+import com.hcmute.clinic.dto.DoctorDetailDto;
 import com.hcmute.clinic.entity.Doctor;
 import com.hcmute.clinic.entity.Service;
 import com.hcmute.clinic.repository.AppointmentRepository;
@@ -8,6 +9,7 @@ import com.hcmute.clinic.repository.ServiceRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -24,6 +26,34 @@ public class DoctorListController {
     private final DoctorRepository doctorRepository;
     private final ServiceRepository serviceRepository;
     private final AppointmentRepository appointmentRepository;
+
+    @GetMapping("/{id}")
+    public ResponseEntity<DoctorDetailDto> getById(@PathVariable Long id) {
+        return doctorRepository.findById(id)
+                .filter(Doctor::isActive)
+                .map(d -> {
+                    long apptCount = appointmentRepository.countByDoctorId(d.getId());
+                    String bio = d.getBiography();
+                    if (bio == null || bio.isBlank()) {
+                        String spec = d.getSpecialization() != null ? d.getSpecialization() : "răng hàm mặt";
+                        bio = "Bác sĩ có nhiều kinh nghiệm trong lĩnh vực " + spec
+                                + ". Đồng hành cùng bệnh nhân với phong cách tận tình, chu đáo.";
+                    }
+                    return DoctorDetailDto.builder()
+                            .id(d.getId())
+                            .firstName(d.getFirstName())
+                            .lastName(d.getLastName())
+                            .specialization(d.getSpecialization())
+                            .roomName(d.getClinicRoom() != null ? d.getClinicRoom().getName() : null)
+                            .experienceYears(d.getExperienceYears())
+                            .biography(bio)
+                            .avatarUrl(d.getAvatarUrl())
+                            .appointmentCount(apptCount)
+                            .build();
+                })
+                .map(ResponseEntity::ok)
+                .orElse(ResponseEntity.notFound().build());
+    }
 
     @GetMapping
     public ResponseEntity<?> listActive(@RequestParam(required = false) Long serviceId) {

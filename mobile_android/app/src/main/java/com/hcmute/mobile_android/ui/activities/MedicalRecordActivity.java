@@ -72,7 +72,10 @@ public class MedicalRecordActivity extends AppCompatActivity {
 
         toolbar.inflateMenu(R.menu.menu_medical_record);
         toolbar.setOnMenuItemClickListener(item -> {
-            if (item.getItemId() == R.id.action_settings) {
+            if (item.getItemId() == R.id.action_my_qr) {
+                startActivity(new Intent(this, QRCheckInActivity.class));
+                return true;
+            } else if (item.getItemId() == R.id.action_settings) {
                 startActivity(new Intent(this, SettingsActivity.class));
                 return true;
             } else if (item.getItemId() == R.id.action_logout) {

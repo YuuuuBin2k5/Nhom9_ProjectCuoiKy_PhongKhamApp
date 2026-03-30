@@ -101,18 +101,18 @@ public class AppointmentController {
                 return ResponseEntity.badRequest().body(Map.of("message", "Định dạng ngày giờ không hợp lệ: " + request.getAppointmentDatetime()));
             }
 
-            // 5. Validate not in the past
-            if (appointmentTime.isBefore(LocalDateTime.now())) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Không thể đặt lịch trong quá khứ"));
-            }
-
-            // 6. Validate Time Range (08:00 - 16:40)
+            // 5. Validate time range (08:00 - 16:40) TRƯỚC kiểm tra quá khứ — tránh báo "quá khứ" khi giờ thực chất ngoài giờ làm việc (vd. 07:00 hôm nay).
             java.time.LocalTime time = appointmentTime.toLocalTime();
             java.time.LocalTime start = java.time.LocalTime.of(8, 0);
             java.time.LocalTime end = java.time.LocalTime.of(16, 40);
-            
             if (time.isBefore(start) || time.isAfter(end)) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Thời gian đặt lịch phải từ 08:00 đến 16:40"));
+            }
+
+            // 6. Validate not in the past (sau khi đã nằm trong khung giờ)
+            if (appointmentTime.isBefore(LocalDateTime.now())) {
+                return ResponseEntity.badRequest().body(Map.of("message",
+                        "Không thể đặt lịch trong quá khứ. Vui lòng chọn giờ sau thời điểm hiện tại, trong khung 08:00–16:40."));
             }
 
             // 6.1 Validate existing active appointments for patient
@@ -270,16 +270,15 @@ public class AppointmentController {
             
             // Validate new datetime
             LocalDateTime newDatetime = request.getNewDatetime();
-            if (newDatetime.isBefore(LocalDateTime.now())) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Không thể đặt lịch trong quá khứ"));
-            }
-            
-            // Validate time range
             java.time.LocalTime time = newDatetime.toLocalTime();
             java.time.LocalTime start = java.time.LocalTime.of(8, 0);
             java.time.LocalTime end = java.time.LocalTime.of(16, 40);
             if (time.isBefore(start) || time.isAfter(end)) {
                 return ResponseEntity.badRequest().body(Map.of("message", "Thời gian đặt lịch phải từ 08:00 đến 16:40"));
+            }
+            if (newDatetime.isBefore(LocalDateTime.now())) {
+                return ResponseEntity.badRequest().body(Map.of("message",
+                        "Không thể đặt lịch trong quá khứ. Vui lòng chọn giờ sau thời điểm hiện tại, trong khung 08:00–16:40."));
             }
             
             // Check doctor availability

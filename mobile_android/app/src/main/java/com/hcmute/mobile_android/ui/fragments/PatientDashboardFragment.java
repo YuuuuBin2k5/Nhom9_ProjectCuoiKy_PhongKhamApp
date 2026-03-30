@@ -36,7 +36,7 @@ import com.hcmute.mobile_android.network.models.UpcomingAppointment;
 import com.hcmute.mobile_android.ui.activities.GenericListActivity;
 import com.hcmute.mobile_android.ui.activities.MainActivity;
 import com.hcmute.mobile_android.ui.activities.PatientQueueActivity;
-import com.hcmute.mobile_android.ui.activities.QRCheckInActivity;
+import com.hcmute.mobile_android.ui.activities.PatientQRScannerActivity;
 import com.hcmute.mobile_android.ui.activities.ServiceDetailActivity;
 
 import com.bumptech.glide.Glide;
@@ -158,7 +158,7 @@ public class PatientDashboardFragment extends Fragment {
         View headerQr = view.findViewById(R.id.ivHeaderQrScan);
         if (headerQr != null) {
             headerQr.setOnClickListener(v -> {
-                startActivity(new Intent(requireContext(), QRCheckInActivity.class));
+                startActivity(new Intent(requireContext(), PatientQRScannerActivity.class));
             });
         }
 
@@ -540,15 +540,34 @@ public class PatientDashboardFragment extends Fragment {
                 holder.tvTrusted.setText("Đội ngũ giàu kinh nghiệm");
             }
 
+            // Gender heuristic for fallback avatars - Fix Unicode boundary issue
+            String nameL = d.getFullName() != null ? d.getFullName().toLowerCase() : "";
+            boolean isFemale = nameL.contains("hà") || nameL.contains("thu") || nameL.contains("mai") || 
+                               nameL.contains("trang") || nameL.contains("lan") || nameL.contains("thị") || 
+                               nameL.contains("hạnh") || nameL.contains("ngọc") || nameL.contains("tuyết");
+            
+            int[] maleAvatars = { R.drawable.doc1, R.drawable.doc3, R.drawable.doc5 };
+            int[] femaleAvatars = { R.drawable.doc2, R.drawable.doc4 };
+
+            // Use doctor ID to deterministically assign a fallback avatar based on gender
+            int fallbackIndex = R.drawable.ic_doctor;
+            if (d.getId() != null) {
+                fallbackIndex = isFemale 
+                    ? femaleAvatars[(int) (Math.abs(d.getId()) % femaleAvatars.length)]
+                    : maleAvatars[(int) (Math.abs(d.getId()) % maleAvatars.length)];
+            } else {
+                fallbackIndex = isFemale ? femaleAvatars[position % femaleAvatars.length] : maleAvatars[position % maleAvatars.length];
+            }
+
             if (d.getAvatarUrl() != null && !d.getAvatarUrl().isEmpty()) {
                 Glide.with(holder.imgDoctor.getContext())
                         .load(d.getAvatarUrl())
                         .centerCrop()
-                        .placeholder(R.drawable.ic_doctor)
-                        .error(R.drawable.ic_doctor)
+                        .placeholder(fallbackIndex)
+                        .error(fallbackIndex)
                         .into(holder.imgDoctor);
             } else {
-                holder.imgDoctor.setImageResource(R.drawable.ic_doctor);
+                holder.imgDoctor.setImageResource(fallbackIndex);
             }
 
             // Handle Clicks

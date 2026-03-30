@@ -59,6 +59,7 @@ public class SecurityConfig {
                         "/api/treatment-templates",
                         "/api/services/**",
                         "/api/doctors/**",
+                        "/ws/**",
                         "/uploads/**",
                         "/doctor.html",
                         "/scanner.html",

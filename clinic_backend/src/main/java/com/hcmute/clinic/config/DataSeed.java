@@ -230,9 +230,12 @@ public class DataSeed implements ApplicationRunner {
         String[] parts = docName.split(" ");
         String lastName = parts[parts.length - 1];
         String firstName = docName.substring(0, docName.length() - lastName.length()).trim();
+        String bio = "Bác sĩ có hơn 10 năm kinh nghiệm trong lĩnh vực răng hàm mặt, chuyên sâu về "
+                + spec + ". Tốt nghiệp loại giỏi Đại học Y Dược TP.HCM.";
         return doctorRepository.save(Doctor.builder()
                 .email(email).passwordHash(pass).firstName(firstName).lastName(lastName)
                 .specialization(spec).licenseNumber("BS-" + email.split("@")[0].toUpperCase())
+                .biography(bio)
                 .clinicRoom(room).experienceYears(5).isActive(true).build());
     }
 

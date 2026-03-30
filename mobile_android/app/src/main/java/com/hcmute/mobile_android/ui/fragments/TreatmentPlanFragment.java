@@ -150,15 +150,28 @@ public class TreatmentPlanFragment extends Fragment {
         public void onBindViewHolder(@NonNull PlanHolder h, int position) {
             TreatmentPlanSummary plan = plans.get(position);
             h.tvStatus.setText(formatStatus(plan.getStatus()));
-            h.tvDate.setText(formatDate(plan.getCreatedAt()));
+            h.tvDate.setText("Ngày lập: " + formatDate(plan.getCreatedAt()));
 
             // Show progress and next step if available
-            String progressText = "Tiến độ: " + plan.getCompletedSteps() + "/" + plan.getTotalSteps() + " bước";
+            String progressText = plan.getCompletedSteps() + "/" + plan.getTotalSteps() + " bước";
             TextView tvProgress = h.itemView.findViewById(R.id.tvPlanProgress);
             if (tvProgress != null) {
                 tvProgress.setText(progressText);
-                tvProgress.setVisibility(View.VISIBLE);
             }
+
+            com.google.android.material.progressindicator.LinearProgressIndicator progressIndicator = h.itemView.findViewById(R.id.progressIndicatorHorizontal);
+            if (progressIndicator != null && plan.getTotalSteps() > 0) {
+                int percentage = (int) ((plan.getCompletedSteps() * 100.0) / plan.getTotalSteps());
+                progressIndicator.setProgress(percentage);
+            }
+            
+            h.itemView.setOnClickListener(v -> {
+                String fallbackJson = new com.google.gson.Gson().toJson(plan);
+                android.content.Intent intent = new android.content.Intent(v.getContext(), com.hcmute.mobile_android.ui.activities.TreatmentPlanDetailActivity.class);
+                intent.putExtra("planId", plan.getId());
+                intent.putExtra("planFallbackJson", fallbackJson);
+                v.getContext().startActivity(intent);
+            });
 
             TextView tvNextStep = h.itemView.findViewById(R.id.tvNextStep);
             if (tvNextStep != null) {
