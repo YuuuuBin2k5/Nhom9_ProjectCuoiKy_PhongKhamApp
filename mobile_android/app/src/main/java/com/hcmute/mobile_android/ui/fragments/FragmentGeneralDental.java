@@ -13,14 +13,12 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
 import com.hcmute.mobile_android.R;
-import com.hcmute.mobile_android.ui.views.OdontogramView;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class FragmentGeneralDental extends Fragment {
 
-    private OdontogramView odontogramView;
     private TextView tvToothNotes;
     public EditText etReason, etDiagnosis;
     private Map<Integer, String> toothCustomNotesMap = new HashMap<>();
@@ -38,12 +36,9 @@ public class FragmentGeneralDental extends Fragment {
         android.util.Log.d("FragmentGeneralDental", "=== onViewCreated ===");
         android.util.Log.d("FragmentGeneralDental", "Fragment instance: " + this.hashCode());
         
-        odontogramView = view.findViewById(R.id.odontogramView);
         tvToothNotes = view.findViewById(R.id.tvToothNotes);
         etReason = view.findViewById(R.id.etReason);
         etDiagnosis = view.findViewById(R.id.etDiagnosis);
-        
-        odontogramView.setOnToothSelectedListener(this::showToothNoteDialog);
     }
 
     public void onToothSelected(int toothNumber) {
@@ -62,21 +57,19 @@ public class FragmentGeneralDental extends Fragment {
         android.widget.RadioGroup rgStatus = view.findViewById(R.id.rgToothStatus);
         EditText etNote = view.findViewById(R.id.etToothNote);
         
-        String existingStatus = odontogramView.getToothStatus(toothNumber);
-        if (existingStatus != null) {
-            switch (existingStatus) {
-                case "caries": rgStatus.check(R.id.rbCaries); break;
-                case "filled": rgStatus.check(R.id.rbFilled); break;
-                case "requested": rgStatus.check(R.id.rbRequested); break;
-                case "rct": rgStatus.check(R.id.rbRct); break;
-                default: rgStatus.check(R.id.rbHealthy); break;
-            }
+        // Get existing note from map
+        if (toothCustomNotesMap.containsKey(toothNumber)) {
+            String note = toothCustomNotesMap.get(toothNumber);
+            // Parse status from note
+            if (note.contains("Sâu răng")) rgStatus.check(R.id.rbCaries);
+            else if (note.contains("Đã trám")) rgStatus.check(R.id.rbFilled);
+            else if (note.contains("BN yêu cầu")) rgStatus.check(R.id.rbRequested);
+            else if (note.contains("Cần chữa tủy")) rgStatus.check(R.id.rbRct);
+            else rgStatus.check(R.id.rbHealthy);
+            
+            etNote.setText(note);
         } else {
             rgStatus.check(R.id.rbHealthy);
-        }
-        
-        if (toothCustomNotesMap.containsKey(toothNumber)) {
-            etNote.setText(toothCustomNotesMap.get(toothNumber));
         }
         
         view.findViewById(R.id.btnCancel).setOnClickListener(v -> dialog.dismiss());
@@ -88,8 +81,6 @@ public class FragmentGeneralDental extends Fragment {
             else if (checkedId == R.id.rbFilled) { status = "filled"; statusText = "Đã trám"; }
             else if (checkedId == R.id.rbRequested) { status = "requested"; statusText = "BN yêu cầu"; }
             else if (checkedId == R.id.rbRct) { status = "rct"; statusText = "Cần chữa tủy"; }
-            
-            odontogramView.setToothStatus(toothNumber, status);
             
             String customNote = etNote.getText().toString().trim();
             if (status.equals("healthy") && customNote.isEmpty()) {
@@ -211,23 +202,7 @@ public class FragmentGeneralDental extends Fragment {
                         int toothNumber = Integer.parseInt(toothNumStr);
                         toothCustomNotesMap.put(toothNumber, toothNote);
                         
-                        // Parse status from note to update odontogram visual
-                        String status = "healthy";
-                        if (toothNote.contains("Sâu răng")) {
-                            status = "caries";
-                        } else if (toothNote.contains("Đã trám")) {
-                            status = "filled";
-                        } else if (toothNote.contains("BN yêu cầu")) {
-                            status = "requested";
-                        } else if (toothNote.contains("Cần chữa tủy")) {
-                            status = "rct";
-                        }
-                        
-                        if (odontogramView != null) {
-                            odontogramView.setToothStatus(toothNumber, status);
-                        }
-                        
-                        android.util.Log.d("FragmentGeneralDental", "Loaded tooth R" + toothNumber + ": " + toothNote + " (status: " + status + ")");
+                        android.util.Log.d("FragmentGeneralDental", "Loaded tooth R" + toothNumber + ": " + toothNote);
                     }
                 } catch (Exception e) {
                     android.util.Log.e("FragmentGeneralDental", "Error parsing tooth line: " + line, e);
@@ -251,9 +226,6 @@ public class FragmentGeneralDental extends Fragment {
         if (etDiagnosis != null) {
             etDiagnosis.setEnabled(!readOnly);
             etDiagnosis.setFocusable(!readOnly);
-        }
-        if (odontogramView != null) {
-            odontogramView.setEnabled(!readOnly);
         }
     }
 }

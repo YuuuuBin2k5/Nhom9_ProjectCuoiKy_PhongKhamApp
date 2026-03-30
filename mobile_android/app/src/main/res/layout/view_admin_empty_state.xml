@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/emptyStateView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:gravity="center"
+    android:orientation="vertical"
+    android:padding="32dp"
+    android:visibility="gone">
+
+    <com.airbnb.lottie.LottieAnimationView
+        android:id="@+id/lottieEmpty"
+        android:layout_width="200dp"
+        android:layout_height="200dp"
+        app:lottie_autoPlay="true"
+        app:lottie_loop="true"
+        app:lottie_url="https://assets9.lottiefiles.com/packages/lf20_glp9i8ku.json" />
+
+    <TextView
+        android:id="@+id/tvEmptyTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Chưa có dữ liệu"
+        android:textAppearance="?attr/textAppearanceHeadlineSmall"
+        android:textColor="@color/admin_primary"
+        android:textStyle="bold" />
+
+    <TextView
+        android:id="@+id/tvEmptyMessage"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:gravity="center"
+        android:text="Danh sách hiện đang trống. Hãy nhấn nút '+' để thêm mới."
+        android:textAppearance="?attr/textAppearanceBodyMedium"
+        android:textColor="@color/admin_text_secondary" />
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnRetry"
+        style="@style/Widget.Material3.Button.TextButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:text="Thử lại"
+        app:icon="@drawable/ic_refresh"
+        android:visibility="gone" />
+
+</LinearLayout>

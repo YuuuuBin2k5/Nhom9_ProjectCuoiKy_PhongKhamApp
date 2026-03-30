@@ -114,10 +114,14 @@ public class TreatmentPlanController {
                                     b.getSequenceOrder() != null ? b.getSequenceOrder() : 0))
                             .collect(Collectors.toList()) : List.of();
 
-                    int total = steps.size();
-                    int completed = (int) steps.stream().filter(s -> "COMPLETED".equals(s.getStatus().name())).count();
+                    // Count only meaningful steps (exclude SKIPPED)
+                    int total = (int) steps.stream()
+                            .filter(s -> s.getStatus() != com.hcmute.clinic.enums.StepStatus.SKIPPED)
+                            .count();
+                    int completed = (int) steps.stream().filter(s -> s.getStatus() == com.hcmute.clinic.enums.StepStatus.COMPLETED).count();
                     String nextStep = steps.stream()
-                            .filter(s -> !"COMPLETED".equals(s.getStatus().name()) && !"CANCELLED".equals(s.getStatus().name()))
+                            .filter(s -> s.getStatus() == com.hcmute.clinic.enums.StepStatus.PENDING
+                                      || s.getStatus() == com.hcmute.clinic.enums.StepStatus.IN_PROGRESS)
                             .findFirst()
                             .map(s -> s.getService() != null ? s.getService().getName() : "")
                             .orElse("");

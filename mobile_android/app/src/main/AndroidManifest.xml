@@ -78,18 +78,27 @@
             android:exported="false" />
         <activity
             android:name=".ui.activities.AdminMainActivity"
+            android:theme="@style/Theme.AdminPanel"
             android:exported="false" />
         <activity
             android:name=".ui.activities.AdminDoctorActivity"
+            android:theme="@style/Theme.AdminPanel"
             android:exported="false" />
         <activity
             android:name=".ui.activities.AdminServiceActivity"
+            android:theme="@style/Theme.AdminPanel"
             android:exported="false" />
         <activity
             android:name=".ui.activities.AdminServiceDetailActivity"
+            android:theme="@style/Theme.AdminPanel"
             android:exported="false" />
         <activity
             android:name=".ui.activities.AdminRoomActivity"
+            android:theme="@style/Theme.AdminPanel"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.AdminCategoryActivity"
+            android:theme="@style/Theme.AdminPanel"
             android:exported="false" />
         <activity
             android:name=".ui.activities.QRCheckInActivity"

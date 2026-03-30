@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Admin Primary Colors -->
+    <color name="admin_primary">#0F3460</color>
+    <color name="admin_primary_light">#1A56DB</color>
+    <color name="admin_primary_dark">#0B2447</color>
+    <color name="admin_accent">#E94560</color>
+
+    <!-- Admin Backgrounds -->
+    <color name="admin_bg_default">#F1F5F9</color>
+    <color name="admin_bg_card">#FFFFFF</color>
+    <color name="admin_bg_header">#E2E8F0</color>
+
+    <!-- Admin Texts -->
+    <color name="admin_text_primary">#1E293B</color>
+    <color name="admin_text_secondary">#64748B</color>
+
+    <!-- Admin Status -->
+    <color name="admin_success">#10B981</color>
+    <color name="admin_warning">#F59E0B</color>
+    <color name="admin_error">#EF4444</color>
+    <color name="admin_info">#3B82F6</color>
+</resources>

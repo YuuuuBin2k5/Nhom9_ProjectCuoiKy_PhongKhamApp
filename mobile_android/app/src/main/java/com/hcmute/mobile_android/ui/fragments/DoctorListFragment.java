@@ -213,7 +213,7 @@ public class DoctorListFragment extends Fragment {
             holder.tvLocation.setText((position % 2 == 0) ? "Cơ sở 1" : "Cơ sở 2");
             holder.tvTrusted.setText("4." + (9 - (position % 3)) + "k Đánh giá");
 
-            int avatarRes = (position % 2 == 0) ? R.drawable.doctor_avatar_1 : R.drawable.doctor_avatar_2;
+            int avatarRes = R.drawable.ic_person;
             holder.imgDoctor.setImageResource(avatarRes);
 
             // Hide booking button for this tab

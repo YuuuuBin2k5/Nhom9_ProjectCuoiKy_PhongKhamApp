@@ -57,6 +57,12 @@ public class TreatmentPlanStep {
     @Column(name = "completed_at")
     private java.time.LocalDateTime completedAt;
 
+    @Builder.Default
+    @Column(name = "is_general_service")
+    private boolean isGeneralService = false;
+    // true = dịch vụ tổng quát (toothNumber = null)
+    // false = dịch vụ cụ thể cho một răng (toothNumber != null)
+
     @OneToMany(mappedBy = "step", cascade = CascadeType.ALL)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude

@@ -81,6 +81,8 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     private List<TreatmentPlan.Step> treatmentSteps = new ArrayList<>();
     private PatientInfo currentPatient;
     private Long currentTreatmentPlanId;
+    // Current room context – passed from QueueManagementActivity to detect X-Ray room
+    private String currentRoomName = "";
     
     private ActivityResultLauncher<Intent> qrScannerLauncher;
     
@@ -257,6 +259,13 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             }
         );
         
+        // Read room context to detect X-Ray room and prevent transfer loops
+        String roomNameExtra = getIntent().getStringExtra("EXTRA_ROOM_NAME");
+        if (roomNameExtra != null) {
+            currentRoomName = roomNameExtra;
+            android.util.Log.d("DoctorWorkflow", "Current room: " + currentRoomName);
+        }
+
         // Handle initial QR from Intent
         String initialQr = getIntent().getStringExtra(EXTRA_INITIAL_QR);
         if (initialQr != null && !initialQr.isEmpty()) {
@@ -402,6 +411,30 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         rvTreatmentSteps = findViewById(R.id.rvTreatmentSteps);
         rvPriceBreakdown = findViewById(R.id.rvPriceBreakdown);
 
+        // Odontogram View (Integrated Tooth Service Selection)
+        com.hcmute.mobile_android.ui.views.OdontogramView odontogramView = findViewById(R.id.odontogramView);
+        if (odontogramView != null) {
+            odontogramView.setOnToothServiceListener(new com.hcmute.mobile_android.ui.views.OdontogramView.OnToothServiceListener() {
+                @Override
+                public void onToothSelected(int toothNumber, String serviceName) {
+                    // Called when service is selected for a tooth
+                    // Update odontogram display
+                    odontogramView.addServiceToTooth(toothNumber, serviceName);
+                }
+                
+                @Override
+                public void onToothClicked(int toothNumber) {
+                    // Show service selection dialog when tooth is clicked
+                    if (currentTreatmentPlanId == null) {
+                        Toast.makeText(DoctorWorkflowActivity.this, "Vui lòng tạo phác đồ điều trị trước", Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    
+                    showToothServiceSelectionDialog(toothNumber, odontogramView);
+                }
+            });
+        }
+        
         // Buttons
         btnActivatePlan = findViewById(R.id.btnActivatePlan);
         btnSelectTemplate = findViewById(R.id.btnSelectTemplate);
@@ -638,6 +671,9 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         // Hide lookup, show examination area
         cardLookup.setVisibility(View.GONE);
         layoutExamination.setVisibility(View.VISIBLE);
+        
+        // CRITICAL FIX: Always default to "Tổng quát" tab first
+        toggleFormType.check(R.id.btnFormGeneral);
         
         // Cảnh báo chỉ khi CHƯA Check-in (queueId == -1 = chưa vào hàng đợi)
         boolean notCheckedIn = (patient.getQueueId() == null || patient.getQueueId() == -1)
@@ -1064,10 +1100,24 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                          step.getServiceName().toLowerCase().contains("x quang") ||
                          step.getServiceName().toLowerCase().contains("panorama"));
                 
-                if (isXrayService && currentPatient != null && currentPatient.getQueueId() != null && currentPatient.getQueueId() > 0) {
+                // BUG FIX: If doctor is ALREADY in the X-Ray room, skip the transfer.
+                // This handles the case where the X-Ray doctor clicks 'Bắt đầu' on the
+                // patient's X-Ray step, which previously caused an infinite transfer loop.
+                boolean doctorIsInXrayRoom = currentRoomName != null && 
+                        (currentRoomName.toLowerCase().contains("x-quang") ||
+                         currentRoomName.toLowerCase().contains("xquang") ||
+                         currentRoomName.toLowerCase().contains("x quang") ||
+                         currentRoomName.toLowerCase().contains("x-ray") ||
+                         currentRoomName.toLowerCase().contains("xray") ||
+                         currentRoomName.toLowerCase().contains("panorama"));
+                
+                if (isXrayService && !doctorIsInXrayRoom && currentPatient != null && currentPatient.getQueueId() != null && currentPatient.getQueueId() > 0) {
                     // Transfer to X-ray room first, then start the step
+                    android.util.Log.d("DoctorWorkflow", "Transferring patient to X-Ray room (doctor is in: '" + currentRoomName + "')");
                     transferPatientToXRay(currentPatient.getQueueId(), step.getServiceName());
                     return; // Don't continue - patient is transferred
+                } else if (isXrayService && doctorIsInXrayRoom) {
+                    android.util.Log.d("DoctorWorkflow", "Doctor is already in X-Ray room ('" + currentRoomName + "'). Skipping transfer, starting step directly.");
                 }
                 
                 apiService.startTreatmentStep(step.getId()).enqueue(new Callback<com.hcmute.mobile_android.network.models.MessageResponse>() {
@@ -1181,6 +1231,73 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             btnCompleteStep.setVisibility(View.GONE);
             btnCancelStep.setVisibility(View.GONE);
         }
+    }
+    
+    /**
+     * Show tooth service selection dialog
+     * Displays 4 tooth-specific services for user to choose from
+     */
+    private void showToothServiceSelectionDialog(int toothNumber, com.hcmute.mobile_android.ui.views.OdontogramView odontogramView) {
+        // CRITICAL FIX: Ensure treatment plan exists before adding tooth service
+        if (currentTreatmentPlanId == null) {
+            Toast.makeText(this, "Đang tạo phác đồ điều trị...", Toast.LENGTH_SHORT).show();
+            createBlankPlanAndSave(true, () -> {
+                // After plan is created, show dialog
+                showToothServiceSelectionDialogInternal(toothNumber, odontogramView);
+            });
+            return;
+        }
+        
+        showToothServiceSelectionDialogInternal(toothNumber, odontogramView);
+    }
+    
+    private void showToothServiceSelectionDialogInternal(int toothNumber, com.hcmute.mobile_android.ui.views.OdontogramView odontogramView) {
+        // Get next sequence order
+        int nextSequence = treatmentSteps.size() + 1;
+        
+        // Show ToothServiceDialog
+        com.hcmute.mobile_android.ui.dialogs.ToothServiceDialog dialog = 
+            com.hcmute.mobile_android.ui.dialogs.ToothServiceDialog.newInstance(
+                currentTreatmentPlanId,
+                String.valueOf(toothNumber),
+                nextSequence
+            );
+        
+        dialog.setOnServiceSelectedListener(new com.hcmute.mobile_android.ui.dialogs.ToothServiceDialog.OnServiceSelectedListener() {
+            @Override
+            public void onServiceSelected(com.hcmute.mobile_android.network.models.ToothServiceResponse response) {
+                // Add to treatment steps
+                TreatmentPlan.Step step = new TreatmentPlan.Step();
+                step.setId(response.getStepId());
+                step.setServiceName(response.getServiceName());
+                step.setToothNumber(response.getToothNumber());
+                step.setActualPrice(response.getPrice() != null ? response.getPrice().doubleValue() : 0.0);
+                step.setStatus("PENDING");
+                step.setUiTemplateType("GENERAL");
+                
+                treatmentSteps.add(step);
+                stepAdapter.notifyDataSetChanged();
+                
+                // Update odontogram to show service color
+                odontogramView.addServiceToTooth(toothNumber, response.getServiceName());
+                
+                // Update total cost
+                updateTotalEstimate();
+                
+                Toast.makeText(DoctorWorkflowActivity.this,
+                    "Đã thêm: " + response.getServiceName() + " cho răng " + toothNumber,
+                    Toast.LENGTH_SHORT).show();
+            }
+            
+            @Override
+            public void onError(String message) {
+                Toast.makeText(DoctorWorkflowActivity.this,
+                    "Lỗi: " + message,
+                    Toast.LENGTH_SHORT).show();
+            }
+        });
+        
+        dialog.show(getSupportFragmentManager(), "ToothServiceDialog");
     }
     
     /**
@@ -2021,5 +2138,6 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             }
         });
     }
+
 }
       

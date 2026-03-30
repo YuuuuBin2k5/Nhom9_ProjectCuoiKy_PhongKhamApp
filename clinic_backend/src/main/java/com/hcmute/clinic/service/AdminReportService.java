@@ -8,6 +8,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.math.RoundingMode;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,8 +24,28 @@ public class AdminReportService {
         LocalDateTime startDate = LocalDateTime.of(year, month, 1, 0, 0);
         LocalDateTime endDate = startDate.plusMonths(1);
         
+        return calculateRevenueReport(startDate, endDate, year, month);
+    }
+    
+    /**
+     * Get revenue report by date range (NEW - for frontend compatibility)
+     */
+    public RevenueReportDto getRevenueReportByDateRange(LocalDate startDate, LocalDate endDate) {
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+        
+        return calculateRevenueReport(startDateTime, endDateTime, 
+                                     startDate.getYear(), startDate.getMonthValue());
+    }
+    
+    /**
+     * Common logic for calculating revenue report
+     */
+    private RevenueReportDto calculateRevenueReport(LocalDateTime startDateTime, 
+                                                     LocalDateTime endDateTime,
+                                                     int year, int month) {
         List<Appointment> allAppointments = appointmentRepository
-            .findByAppointmentDatetimeBetween(startDate, endDate);
+            .findByAppointmentDatetimeBetween(startDateTime, endDateTime);
         
         List<Appointment> completed = allAppointments.stream()
             .filter(a -> a.getStatus() == AppointmentStatus.COMPLETED)
@@ -56,11 +77,30 @@ public class AdminReportService {
         LocalDateTime startDate = LocalDateTime.of(year, month, 1, 0, 0);
         LocalDateTime endDate = startDate.plusMonths(1);
         
+        return calculateTopServices(startDate, endDate, limit);
+    }
+    
+    /**
+     * Get top services by date range (NEW - for frontend compatibility)
+     */
+    public List<ServiceStatsDto> getTopServicesByDateRange(LocalDate startDate, LocalDate endDate, int limit) {
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+        
+        return calculateTopServices(startDateTime, endDateTime, limit);
+    }
+    
+    /**
+     * Common logic for calculating top services
+     */
+    private List<ServiceStatsDto> calculateTopServices(LocalDateTime startDateTime, 
+                                                        LocalDateTime endDateTime, 
+                                                        int limit) {
         List<Appointment> completed = appointmentRepository
             .findByStatusAndAppointmentDatetimeBetween(
                 AppointmentStatus.COMPLETED, 
-                startDate, 
-                endDate
+                startDateTime, 
+                endDateTime
             );
         
         return completed.stream()
@@ -100,8 +140,26 @@ public class AdminReportService {
         LocalDateTime startDate = LocalDateTime.of(year, month, 1, 0, 0);
         LocalDateTime endDate = startDate.plusMonths(1);
         
+        return calculateDoctorPerformance(startDate, endDate);
+    }
+    
+    /**
+     * Get doctor performance by date range (NEW - for frontend compatibility)
+     */
+    public List<DoctorStatsDto> getDoctorPerformanceByDateRange(LocalDate startDate, LocalDate endDate) {
+        LocalDateTime startDateTime = startDate.atStartOfDay();
+        LocalDateTime endDateTime = endDate.atTime(23, 59, 59);
+        
+        return calculateDoctorPerformance(startDateTime, endDateTime);
+    }
+    
+    /**
+     * Common logic for calculating doctor performance
+     */
+    private List<DoctorStatsDto> calculateDoctorPerformance(LocalDateTime startDateTime, 
+                                                             LocalDateTime endDateTime) {
         List<Appointment> allAppointments = appointmentRepository
-            .findByAppointmentDatetimeBetween(startDate, endDate);
+            .findByAppointmentDatetimeBetween(startDateTime, endDateTime);
         
         return allAppointments.stream()
             .filter(a -> a.getDoctor() != null)

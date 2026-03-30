@@ -85,7 +85,7 @@ android {
 
     defaultConfig {
         applicationId = "com.hcmute.mobile_android"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -153,6 +153,17 @@ dependencies {
     // Firebase Realtime Database
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-database")
+
+    // Animations (Phase 3)
+    implementation("com.airbnb.android:lottie:6.3.0")
+    
+    // Charts (Phase 4)
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    
+    // Excel & PDF Export (Phase 4)
+    implementation("org.apache.poi:poi:5.2.3")
+    implementation("org.apache.poi:poi-ooxml:5.2.3")
+    implementation("com.itextpdf:itext7-core:7.2.5")
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

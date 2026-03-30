@@ -3,32 +3,34 @@ package com.hcmute.mobile_android.adapters;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
+import android.widget.PopupMenu;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.hcmute.mobile_android.R;
-import com.hcmute.mobile_android.network.ApiService;
-import com.hcmute.mobile_android.network.RetrofitClient;
-import com.hcmute.mobile_android.network.models.MessageResponse;
 import com.hcmute.mobile_android.network.models.RoomItem;
 
 import java.util.List;
 
-import retrofit2.Call;
-import retrofit2.Callback;
-import retrofit2.Response;
-
 public class AdminRoomAdapter extends RecyclerView.Adapter<AdminRoomAdapter.ViewHolder> {
 
     private List<RoomItem> roomList;
-    private ApiService apiService;
+    private OnRoomActionListener listener;
 
-    public AdminRoomAdapter(List<RoomItem> roomList) {
+    public interface OnRoomActionListener {
+        void onRoomClick(RoomItem room);
+        void onRoomEdit(RoomItem room);
+        void onRoomDelete(RoomItem room);
+        void onRoomToggleStatus(RoomItem room);
+    }
+
+    public AdminRoomAdapter(List<RoomItem> roomList, OnRoomActionListener listener) {
         this.roomList = roomList;
+        this.listener = listener;
     }
 
     @NonNull
@@ -51,62 +53,81 @@ public class AdminRoomAdapter extends RecyclerView.Adapter<AdminRoomAdapter.View
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        private TextView tvRoomName, tvWaitingCount;
-        private MaterialButton btnActive;
+        private MaterialCardView cardRoom;
+        private TextView tvRoomName, tvWaitingCount, tvStatus, tvDescription;
+        private ImageButton btnMenu;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
+            cardRoom = itemView.findViewById(R.id.cardRoom);
             tvRoomName = itemView.findViewById(R.id.tvRoomName);
             tvWaitingCount = itemView.findViewById(R.id.tvWaitingCount);
-            btnActive = itemView.findViewById(R.id.btnActive);
-            
-            if (apiService == null) {
-                apiService = RetrofitClient.getApiService(itemView.getContext());
-            }
+            tvStatus = itemView.findViewById(R.id.tvStatus);
+            tvDescription = itemView.findViewById(R.id.tvDescription);
+            btnMenu = itemView.findViewById(R.id.btnMenu);
         }
 
         public void bind(RoomItem room) {
             tvRoomName.setText(room.getName());
             tvWaitingCount.setText(room.getWaitingCount() + " người chờ");
             
-            updateActiveButton(room.isActive());
-
-            btnActive.setOnClickListener(v -> toggleRoomStatus(room));
-        }
-
-        private void updateActiveButton(boolean isActive) {
-            if (isActive) {
-                btnActive.setText("Hoạt động");
-                btnActive.setTextColor(itemView.getContext().getColor(android.R.color.holo_green_dark));
-            } else {
-                btnActive.setText("Chặn");
-                btnActive.setTextColor(itemView.getContext().getColor(android.R.color.holo_red_dark));
-            }
-        }
-
-        private void toggleRoomStatus(RoomItem room) {
-            boolean newStatus = !room.isActive();
-            btnActive.setEnabled(false);
+            // Hide description since it's removed from model
+            tvDescription.setVisibility(View.GONE);
             
-            apiService.updateRoomStatus(room.getId(), newStatus).enqueue(new Callback<MessageResponse>() {
-                @Override
-                public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
-                    btnActive.setEnabled(true);
-                    if (response.isSuccessful()) {
-                        room.setActive(newStatus);
-                        updateActiveButton(newStatus);
-                        Toast.makeText(itemView.getContext(), "Cập nhật thành công", Toast.LENGTH_SHORT).show();
-                    } else {
-                        Toast.makeText(itemView.getContext(), "Lỗi cập nhật", Toast.LENGTH_SHORT).show();
-                    }
-                }
+            // Set status
+            if (room.isActive()) {
+                tvStatus.setText("Hoạt động");
+                tvStatus.setTextColor(itemView.getContext().getColor(android.R.color.holo_green_dark));
+                tvStatus.setBackgroundResource(R.drawable.bg_status_active);
+            } else {
+                tvStatus.setText("Vô hiệu");
+                tvStatus.setTextColor(itemView.getContext().getColor(android.R.color.holo_red_dark));
+                tvStatus.setBackgroundResource(R.drawable.bg_status_inactive);
+            }
 
-                @Override
-                public void onFailure(Call<MessageResponse> call, Throwable t) {
-                    btnActive.setEnabled(true);
-                    Toast.makeText(itemView.getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+            // Click listeners
+            cardRoom.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onRoomClick(room);
                 }
             });
+
+            btnMenu.setOnClickListener(v -> showPopupMenu(v, room));
+        }
+
+        private void showPopupMenu(View view, RoomItem room) {
+            PopupMenu popup = new PopupMenu(view.getContext(), view);
+            popup.inflate(R.menu.menu_admin_room);
+            
+            // Update menu items based on room status
+            if (room.isActive()) {
+                popup.getMenu().findItem(R.id.action_toggle_status).setTitle("Vô hiệu hóa");
+            } else {
+                popup.getMenu().findItem(R.id.action_toggle_status).setTitle("Kích hoạt");
+            }
+            
+            popup.setOnMenuItemClickListener(item -> {
+                int id = item.getItemId();
+                if (id == R.id.action_edit) {
+                    if (listener != null) {
+                        listener.onRoomEdit(room);
+                    }
+                    return true;
+                } else if (id == R.id.action_toggle_status) {
+                    if (listener != null) {
+                        listener.onRoomToggleStatus(room);
+                    }
+                    return true;
+                } else if (id == R.id.action_delete) {
+                    if (listener != null) {
+                        listener.onRoomDelete(room);
+                    }
+                    return true;
+                }
+                return false;
+            });
+            
+            popup.show();
         }
     }
 }

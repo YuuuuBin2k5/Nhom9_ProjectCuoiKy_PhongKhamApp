@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Admin Base Theme -->
+    <style name="Theme.AdminPanel" parent="Theme.Material3.Light.NoActionBar">
+        <item name="colorPrimary">@color/admin_primary</item>
+        <item name="colorSecondary">@color/admin_accent</item>
+        <item name="android:windowBackground">@color/admin_bg_default</item>
+        <item name="android:statusBarColor">@color/admin_primary</item>
+        <item name="android:textColorPrimary">@color/admin_text_primary</item>
+        <item name="android:textColorSecondary">@color/admin_text_secondary</item>
+        <item name="colorSurface">@color/admin_bg_card</item>
+        <item name="colorOnSurface">@color/admin_text_primary</item>
+    </style>
+
+    <!-- Admin Card Style -->
+    <style name="AdminCardStyle" parent="Widget.Material3.CardView.Elevated">
+        <item name="cardBackgroundColor">@color/admin_bg_card</item>
+        <item name="cardElevation">4dp</item>
+        <item name="cardCornerRadius">12dp</item>
+        <item name="contentPadding">16dp</item>
+    </style>
+
+    <!-- Admin Button Style -->
+    <style name="AdminButtonStyle" parent="Widget.Material3.Button">
+        <item name="backgroundTint">@color/admin_primary</item>
+        <item name="cornerRadius">8dp</item>
+    </style>
+
+    <!-- Admin Floating Action Button Style -->
+    <style name="AdminFABStyle" parent="Widget.Material3.FloatingActionButton.Primary">
+        <item name="backgroundTint">@color/admin_primary</item>
+        <item name="tint">@color/white</item>
+    </style>
+
+    <!-- Admin Text Input Style -->
+    <style name="AdminTextInputLayout" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxCornerRadiusTopStart">8dp</item>
+        <item name="boxCornerRadiusTopEnd">8dp</item>
+        <item name="boxCornerRadiusBottomStart">8dp</item>
+        <item name="boxCornerRadiusBottomEnd">8dp</item>
+        <item name="boxStrokeColor">@color/admin_primary</item>
+    </style>
+</resources>

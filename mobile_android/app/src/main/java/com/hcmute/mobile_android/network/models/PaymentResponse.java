@@ -1,7 +1,6 @@
 package com.hcmute.mobile_android.network.models;
 
 import com.google.gson.annotations.SerializedName;
-import java.util.Date;
 
 public class PaymentResponse {
     @SerializedName("success")
@@ -17,7 +16,7 @@ public class PaymentResponse {
     private String paymentStatus;
     
     @SerializedName("paidAt")
-    private Date paidAt;
+    private String paidAt;
     
     // Getters and setters
     public boolean isSuccess() { return success; }
@@ -32,6 +31,6 @@ public class PaymentResponse {
     public String getPaymentStatus() { return paymentStatus; }
     public void setPaymentStatus(String paymentStatus) { this.paymentStatus = paymentStatus; }
     
-    public Date getPaidAt() { return paidAt; }
-    public void setPaidAt(Date paidAt) { this.paidAt = paidAt; }
+    public String getPaidAt() { return paidAt; }
+    public void setPaidAt(String paidAt) { this.paidAt = paidAt; }
 }

@@ -97,15 +97,20 @@
                 android:textStyle="bold"
                 android:layout_marginBottom="12dp"/>
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvServices"
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                android:paddingBottom="80dp"
-                android:clipToPadding="false"
-                tools:listitem="@layout/item_admin_service" />
+                android:layout_height="wrap_content">
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvServices"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:paddingBottom="80dp"
+                    android:clipToPadding="false"
+                    tools:listitem="@layout/item_admin_service" />
 
+                <include layout="@layout/view_admin_empty_state" />
+            </FrameLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

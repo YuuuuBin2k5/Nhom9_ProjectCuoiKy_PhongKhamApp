@@ -1,6 +1,6 @@
 
 > Configure project :app
-[Toothly] API_BASE_URL ΓåÆ http://10.20.1.170:8081/
+[Toothly] API_BASE_URL ΓåÆ http://10.109.58.252:8081/
 
 > Task :app:preBuild UP-TO-DATE
 > Task :app:preDebugBuild UP-TO-DATE
@@ -15,29 +15,307 @@
 > Task :app:javaPreCompileDebug UP-TO-DATE
 
 > Task :app:compileDebugJavaWithJavac FAILED
-D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\adapters\QueueAdapter.java:113: error: cannot find symbol
-                    backgroundColor = itemView.getContext().getColor(R.color.status_waiting_bg);
-                                                                            ^
-  symbol:   variable status_waiting_bg
-  location: class color
-D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\adapters\QueueAdapter.java:116: error: cannot find symbol
-                    backgroundColor = itemView.getContext().getColor(R.color.status_in_progress_bg);
-                                                                            ^
-  symbol:   variable status_in_progress_bg
-  location: class color
-D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\adapters\QueueAdapter.java:119: error: cannot find symbol
-                    backgroundColor = itemView.getContext().getColor(R.color.status_priority_bg);
-                                                                            ^
-  symbol:   variable status_priority_bg
-  location: class color
-D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\adapters\QueueAdapter.java:122: error: cannot find symbol
-                    backgroundColor = itemView.getContext().getColor(R.color.status_paused_bg);
-                                                                            ^
-  symbol:   variable status_paused_bg
-  location: class color
-Note: Some input files use or override a deprecated API.
-Note: Recompile with -Xlint:deprecation for details.
-4 errors
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:198: error: invalid method declaration; return type required
+                showLoading(false);
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:198: error: illegal start of type
+                showLoading(false);
+                            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:199: error: illegal start of type
+                if (response.isSuccessful()) {
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:199: error: <identifier> expected
+                if (response.isSuccessful()) {
+                                         ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:199: error: ';' expected
+                if (response.isSuccessful()) {
+                                           ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:203: error: illegal start of type
+                } else {
+                  ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:208: error: illegal start of expression
+            @Override
+            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:208: error: ')' or ',' expected
+            @Override
+                     ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:209: error: illegal start of expression
+            public void onFailure(Call<MessageResponse> call, Throwable t) {
+            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:213: error: class, interface, or enum expected
+        });
+         ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:214: error: class, interface, or enum expected
+    }
+    ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:217: error: class, interface, or enum expected
+    public void onEditDoctor(DoctorItem doctor) {
+           ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:219: error: class, interface, or enum expected
+        showEditDoctorDialog(doctor);
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:220: error: class, interface, or enum expected
+    }
+    ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:223: error: class, interface, or enum expected
+    public void onDeleteDoctor(DoctorItem doctor) {
+           ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:230: error: class, interface, or enum expected
+    }
+    ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:234: error: class, interface, or enum expected
+        View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_doctor, null);
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:236: error: class, interface, or enum expected
+        EditText etFirstName = view.findViewById(R.id.etFirstName);
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:237: error: class, interface, or enum expected
+        EditText etLastName = view.findViewById(R.id.etLastName);
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:238: error: class, interface, or enum expected
+        EditText etEmail = view.findViewById(R.id.etEmail);
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:239: error: class, interface, or enum expected
+        EditText etPassword = view.findViewById(R.id.etPassword);
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:240: error: class, interface, or enum expected
+        EditText etSpecialty = view.findViewById(R.id.etSpecialty);
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:241: error: class, interface, or enum expected
+        EditText etExperience = view.findViewById(R.id.etExperience);
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:242: error: class, interface, or enum expected
+        EditText etBio = view.findViewById(R.id.etBio);
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:243: error: class, interface, or enum expected
+        Spinner spinnerRoom = view.findViewById(R.id.spinnerRoom);
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:246: error: class, interface, or enum expected
+        String[] nameParts = doctor.getFullName().split(" ", 2);
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:247: error: class, interface, or enum expected
+        etFirstName.setText(nameParts.length > 0 ? nameParts[0] : "");
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:248: error: class, interface, or enum expected
+        etLastName.setText(nameParts.length > 1 ? nameParts[1] : "");
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:249: error: class, interface, or enum expected
+        etEmail.setText(doctor.getEmail());
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:250: error: class, interface, or enum expected
+        etSpecialty.setText(doctor.getSpecialization());
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:251: error: class, interface, or enum expected
+        etExperience.setText(String.valueOf(doctor.getExperienceYears() != null ? doctor.getExperienceYears() : 0));
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:252: error: class, interface, or enum expected
+        etBio.setText("");
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:255: error: class, interface, or enum expected
+        setupRoomSpinner(spinnerRoom, doctor.getRoomName());
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:258: error: class, interface, or enum expected
+        etPassword.setHint("─Éß╗â trß╗æng nß║┐u kh├┤ng ─æß╗òi mß║¡t khß║⌐u");
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:260: error: class, interface, or enum expected
+        builder.setView(view);
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:261: error: class, interface, or enum expected
+        AlertDialog dialog = builder.create();
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:263: error: class, interface, or enum expected
+        view.findViewById(R.id.btnSave).setOnClickListener(v -> {
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:265: error: class, interface, or enum expected
+            String lastName = etLastName.getText().toString().trim();
+            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:266: error: class, interface, or enum expected
+            String email = etEmail.getText().toString().trim();
+            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:267: error: class, interface, or enum expected
+            String password = etPassword.getText().toString().trim();
+            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:268: error: class, interface, or enum expected
+            String specialty = etSpecialty.getText().toString().trim();
+            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:269: error: class, interface, or enum expected
+            String expStr = etExperience.getText().toString().trim();
+            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:270: error: class, interface, or enum expected
+            String bio = etBio.getText().toString().trim();
+            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:272: error: class, interface, or enum expected
+            if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || 
+            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:275: error: class, interface, or enum expected
+                return;
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:276: error: class, interface, or enum expected
+            }
+            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:280: error: class, interface, or enum expected
+                Long roomId = getSelectedRoomId(spinnerRoom);
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:282: error: class, interface, or enum expected
+                CreateDoctorRequest request = new CreateDoctorRequest(
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:287: error: class, interface, or enum expected
+                updateDoctor(doctor.getId(), request, dialog);
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:288: error: class, interface, or enum expected
+            } catch (NumberFormatException e) {
+            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:290: error: class, interface, or enum expected
+            }
+            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:293: error: class, interface, or enum expected
+        view.findViewById(R.id.btnCancel).setOnClickListener(v -> {
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:295: error: class, interface, or enum expected
+            dialog.dismiss();
+            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:296: error: class, interface, or enum expected
+        });
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:298: error: class, interface, or enum expected
+        dialog.setOnDismissListener(d -> editingDoctor = null);
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:299: error: class, interface, or enum expected
+        dialog.show();
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:300: error: class, interface, or enum expected
+    }
+    ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:304: error: class, interface, or enum expected
+        apiService.updateDoctor(doctorId, request).enqueue(new Callback<MessageResponse>() {
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:306: error: class, interface, or enum expected
+            public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
+                   ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:308: error: class, interface, or enum expected
+                if (response.isSuccessful()) {
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:310: error: class, interface, or enum expected
+                    editingDoctor = null;
+                    ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:311: error: class, interface, or enum expected
+                    loadDoctors();
+                    ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:312: error: class, interface, or enum expected
+                    dialog.dismiss();
+                    ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:313: error: class, interface, or enum expected
+                } else {
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:315: error: class, interface, or enum expected
+                }
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:319: error: class, interface, or enum expected
+            public void onFailure(Call<MessageResponse> call, Throwable t) {
+                   ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:321: error: class, interface, or enum expected
+                showError("Lß╗ùi kß║┐t nß╗æi: " + t.getMessage());
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:322: error: class, interface, or enum expected
+            }
+            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:324: error: class, interface, or enum expected
+    }
+    ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:328: error: class, interface, or enum expected
+        apiService.deleteDoctor(doctor.getId()).enqueue(new Callback<MessageResponse>() {
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:330: error: class, interface, or enum expected
+            public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
+                   ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:332: error: class, interface, or enum expected
+                if (response.isSuccessful()) {
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:334: error: class, interface, or enum expected
+                    loadDoctors();
+                    ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:335: error: class, interface, or enum expected
+                } else {
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:337: error: class, interface, or enum expected
+                }
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:341: error: class, interface, or enum expected
+            public void onFailure(Call<MessageResponse> call, Throwable t) {
+                   ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:343: error: class, interface, or enum expected
+                showError("Lß╗ùi kß║┐t nß╗æi: " + t.getMessage());
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:344: error: class, interface, or enum expected
+            }
+            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:346: error: class, interface, or enum expected
+    }
+    ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:181: error: invalid method declaration; return type required
+                showLoading(false);
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:181: error: illegal start of type
+                showLoading(false);
+                            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:182: error: illegal start of type
+                if (response.isSuccessful() && response.body() != null) {
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:182: error: <identifier> expected
+                if (response.isSuccessful() && response.body() != null) {
+                                         ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:182: error: ';' expected
+                if (response.isSuccessful() && response.body() != null) {
+                                           ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:186: error: illegal start of type
+                } else {
+                  ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:191: error: illegal start of expression
+            @Override
+            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:191: error: ')' or ',' expected
+            @Override
+                     ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:192: error: illegal start of expression
+            public void onFailure(Call<RoomItem> call, Throwable t) {
+            ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:196: error: class, interface, or enum expected
+        });
+         ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:197: error: class, interface, or enum expected
+    }
+    ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:201: error: class, interface, or enum expected
+        RoomRequest request = new RoomRequest(name, description);
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:203: error: class, interface, or enum expected
+        apiService.updateRoom(id, request).enqueue(new Callback<RoomItem>() {
+        ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:205: error: class, interface, or enum expected
+            public void onResponse(Call<RoomItem> call, Response<RoomItem> response) {
+                   ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:207: error: class, interface, or enum expected
+                if (response.isSuccessful() && response.body() != null) {
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:209: error: class, interface, or enum expected
+                    loadRooms();
+                    ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:210: error: class, interface, or enum expected
+                    dialog.dismiss();
+                    ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:211: error: class, interface, or enum expected
+                } else {
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:213: error: class, interface, or enum expected
+                }
+                ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:217: error: class, interface, or enum expected
+            public void onFailure(Call<RoomItem> call, Throwable t) {
+                   ^
+D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:219: error: class, interface, or enum expected
+                showError("Lß╗ùi kß║┐t nß╗æi: " + t.getMessage());
+                ^
+100 errors
 
 [Incubating] Problems report is available at: file:///D:/Folder_Learning_2025_2026/PhongKham/mobile_android/build/reports/problems/problems-report.html
 
@@ -46,33 +324,311 @@ FAILURE: Build failed with an exception.
 * What went wrong:
 Execution failed for task ':app:compileDebugJavaWithJavac'.
 > Compilation failed; see the compiler output below.
-  Note: Recompile with -Xlint:deprecation for details.
-  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\adapters\QueueAdapter.java:113: error: cannot find symbol
-                      backgroundColor = itemView.getContext().getColor(R.color.status_waiting_bg);
-                                                                              ^
-    symbol:   variable status_waiting_bg
-    location: class color
-  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\adapters\QueueAdapter.java:116: error: cannot find symbol
-                      backgroundColor = itemView.getContext().getColor(R.color.status_in_progress_bg);
-                                                                              ^
-    symbol:   variable status_in_progress_bg
-    location: class color
-  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\adapters\QueueAdapter.java:119: error: cannot find symbol
-                      backgroundColor = itemView.getContext().getColor(R.color.status_priority_bg);
-                                                                              ^
-    symbol:   variable status_priority_bg
-    location: class color
-  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\adapters\QueueAdapter.java:122: error: cannot find symbol
-                      backgroundColor = itemView.getContext().getColor(R.color.status_paused_bg);
-                                                                              ^
-    symbol:   variable status_paused_bg
-    location: class color
-  Note: Some input files use or override a deprecated API.
-  4 errors
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:208: error: ')' or ',' expected
+              @Override
+                       ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:191: error: ')' or ',' expected
+              @Override
+                       ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:208: error: illegal start of expression
+              @Override
+              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:209: error: illegal start of expression
+              public void onFailure(Call<MessageResponse> call, Throwable t) {
+              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:191: error: illegal start of expression
+              @Override
+              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:192: error: illegal start of expression
+              public void onFailure(Call<RoomItem> call, Throwable t) {
+              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:213: error: class, interface, or enum expected
+          });
+           ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:214: error: class, interface, or enum expected
+      }
+      ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:217: error: class, interface, or enum expected
+      public void onEditDoctor(DoctorItem doctor) {
+             ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:219: error: class, interface, or enum expected
+          showEditDoctorDialog(doctor);
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:220: error: class, interface, or enum expected
+      }
+      ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:223: error: class, interface, or enum expected
+      public void onDeleteDoctor(DoctorItem doctor) {
+             ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:230: error: class, interface, or enum expected
+      }
+      ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:234: error: class, interface, or enum expected
+          View view = LayoutInflater.from(this).inflate(R.layout.dialog_add_doctor, null);
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:236: error: class, interface, or enum expected
+          EditText etFirstName = view.findViewById(R.id.etFirstName);
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:237: error: class, interface, or enum expected
+          EditText etLastName = view.findViewById(R.id.etLastName);
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:238: error: class, interface, or enum expected
+          EditText etEmail = view.findViewById(R.id.etEmail);
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:239: error: class, interface, or enum expected
+          EditText etPassword = view.findViewById(R.id.etPassword);
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:240: error: class, interface, or enum expected
+          EditText etSpecialty = view.findViewById(R.id.etSpecialty);
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:241: error: class, interface, or enum expected
+          EditText etExperience = view.findViewById(R.id.etExperience);
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:242: error: class, interface, or enum expected
+          EditText etBio = view.findViewById(R.id.etBio);
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:243: error: class, interface, or enum expected
+          Spinner spinnerRoom = view.findViewById(R.id.spinnerRoom);
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:246: error: class, interface, or enum expected
+          String[] nameParts = doctor.getFullName().split(" ", 2);
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:247: error: class, interface, or enum expected
+          etFirstName.setText(nameParts.length > 0 ? nameParts[0] : "");
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:248: error: class, interface, or enum expected
+          etLastName.setText(nameParts.length > 1 ? nameParts[1] : "");
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:249: error: class, interface, or enum expected
+          etEmail.setText(doctor.getEmail());
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:250: error: class, interface, or enum expected
+          etSpecialty.setText(doctor.getSpecialization());
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:251: error: class, interface, or enum expected
+          etExperience.setText(String.valueOf(doctor.getExperienceYears() != null ? doctor.getExperienceYears() : 0));
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:252: error: class, interface, or enum expected
+          etBio.setText("");
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:255: error: class, interface, or enum expected
+          setupRoomSpinner(spinnerRoom, doctor.getRoomName());
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:258: error: class, interface, or enum expected
+          etPassword.setHint("─Éß╗â trß╗æng nß║┐u kh├┤ng ─æß╗òi mß║¡t khß║⌐u");
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:260: error: class, interface, or enum expected
+          builder.setView(view);
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:261: error: class, interface, or enum expected
+          AlertDialog dialog = builder.create();
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:263: error: class, interface, or enum expected
+          view.findViewById(R.id.btnSave).setOnClickListener(v -> {
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:265: error: class, interface, or enum expected
+              String lastName = etLastName.getText().toString().trim();
+              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:266: error: class, interface, or enum expected
+              String email = etEmail.getText().toString().trim();
+              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:267: error: class, interface, or enum expected
+              String password = etPassword.getText().toString().trim();
+              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:268: error: class, interface, or enum expected
+              String specialty = etSpecialty.getText().toString().trim();
+              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:269: error: class, interface, or enum expected
+              String expStr = etExperience.getText().toString().trim();
+              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:270: error: class, interface, or enum expected
+              String bio = etBio.getText().toString().trim();
+              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:272: error: class, interface, or enum expected
+              if (firstName.isEmpty() || lastName.isEmpty() || email.isEmpty() || 
+              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:275: error: class, interface, or enum expected
+                  return;
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:276: error: class, interface, or enum expected
+              }
+              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:280: error: class, interface, or enum expected
+                  Long roomId = getSelectedRoomId(spinnerRoom);
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:282: error: class, interface, or enum expected
+                  CreateDoctorRequest request = new CreateDoctorRequest(
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:287: error: class, interface, or enum expected
+                  updateDoctor(doctor.getId(), request, dialog);
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:288: error: class, interface, or enum expected
+              } catch (NumberFormatException e) {
+              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:290: error: class, interface, or enum expected
+              }
+              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:293: error: class, interface, or enum expected
+          view.findViewById(R.id.btnCancel).setOnClickListener(v -> {
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:295: error: class, interface, or enum expected
+              dialog.dismiss();
+              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:296: error: class, interface, or enum expected
+          });
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:298: error: class, interface, or enum expected
+          dialog.setOnDismissListener(d -> editingDoctor = null);
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:299: error: class, interface, or enum expected
+          dialog.show();
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:300: error: class, interface, or enum expected
+      }
+      ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:304: error: class, interface, or enum expected
+          apiService.updateDoctor(doctorId, request).enqueue(new Callback<MessageResponse>() {
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:306: error: class, interface, or enum expected
+              public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
+                     ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:308: error: class, interface, or enum expected
+                  if (response.isSuccessful()) {
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:310: error: class, interface, or enum expected
+                      editingDoctor = null;
+                      ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:311: error: class, interface, or enum expected
+                      loadDoctors();
+                      ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:312: error: class, interface, or enum expected
+                      dialog.dismiss();
+                      ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:313: error: class, interface, or enum expected
+                  } else {
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:315: error: class, interface, or enum expected
+                  }
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:319: error: class, interface, or enum expected
+              public void onFailure(Call<MessageResponse> call, Throwable t) {
+                     ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:321: error: class, interface, or enum expected
+                  showError("Lß╗ùi kß║┐t nß╗æi: " + t.getMessage());
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:322: error: class, interface, or enum expected
+              }
+              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:324: error: class, interface, or enum expected
+      }
+      ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:328: error: class, interface, or enum expected
+          apiService.deleteDoctor(doctor.getId()).enqueue(new Callback<MessageResponse>() {
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:330: error: class, interface, or enum expected
+              public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
+                     ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:332: error: class, interface, or enum expected
+                  if (response.isSuccessful()) {
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:334: error: class, interface, or enum expected
+                      loadDoctors();
+                      ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:335: error: class, interface, or enum expected
+                  } else {
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:337: error: class, interface, or enum expected
+                  }
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:341: error: class, interface, or enum expected
+              public void onFailure(Call<MessageResponse> call, Throwable t) {
+                     ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:343: error: class, interface, or enum expected
+                  showError("Lß╗ùi kß║┐t nß╗æi: " + t.getMessage());
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:344: error: class, interface, or enum expected
+              }
+              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:346: error: class, interface, or enum expected
+      }
+      ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:196: error: class, interface, or enum expected
+          });
+           ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:197: error: class, interface, or enum expected
+      }
+      ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:201: error: class, interface, or enum expected
+          RoomRequest request = new RoomRequest(name, description);
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:203: error: class, interface, or enum expected
+          apiService.updateRoom(id, request).enqueue(new Callback<RoomItem>() {
+          ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:205: error: class, interface, or enum expected
+              public void onResponse(Call<RoomItem> call, Response<RoomItem> response) {
+                     ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:207: error: class, interface, or enum expected
+                  if (response.isSuccessful() && response.body() != null) {
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:209: error: class, interface, or enum expected
+                      loadRooms();
+                      ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:210: error: class, interface, or enum expected
+8 actionable tasks: 1 executed, 7 up-to-date
+                      dialog.dismiss();
+                      ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:211: error: class, interface, or enum expected
+                  } else {
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:213: error: class, interface, or enum expected
+                  }
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:217: error: class, interface, or enum expected
+              public void onFailure(Call<RoomItem> call, Throwable t) {
+                     ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:219: error: class, interface, or enum expected
+                  showError("Lß╗ùi kß║┐t nß╗æi: " + t.getMessage());
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:198: error: illegal start of type
+                  showLoading(false);
+                              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:199: error: illegal start of type
+                  if (response.isSuccessful()) {
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:203: error: illegal start of type
+                  } else {
+                    ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:181: error: illegal start of type
+                  showLoading(false);
+                              ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:182: error: illegal start of type
+                  if (response.isSuccessful() && response.body() != null) {
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:186: error: illegal start of type
+                  } else {
+                    ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:199: error: <identifier> expected
+                  if (response.isSuccessful()) {
+                                           ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:199: error: ';' expected
+                  if (response.isSuccessful()) {
+                                             ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:182: error: <identifier> expected
+                  if (response.isSuccessful() && response.body() != null) {
+                                           ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:182: error: ';' expected
+                  if (response.isSuccessful() && response.body() != null) {
+                                             ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminDoctorActivity.java:198: error: invalid method declaration; return type required
+                  showLoading(false);
+                  ^
+  D:\Folder_Learning_2025_2026\PhongKham\mobile_android\app\src\main\java\com\hcmute\mobile_android\ui\activities\AdminRoomActivity.java:181: error: invalid method declaration; return type required
+                  showLoading(false);
+                  ^
+  100 errors
 
 * Try:
 > Check your code and dependencies to fix the compilation error(s)
 > Run with --scan to generate a Build Scan (Powered by Develocity).
 
-BUILD FAILED in 3s
-8 actionable tasks: 1 executed, 7 up-to-date
+BUILD FAILED in 2s

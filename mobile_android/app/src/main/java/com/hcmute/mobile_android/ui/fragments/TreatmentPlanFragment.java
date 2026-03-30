@@ -175,12 +175,17 @@ public class TreatmentPlanFragment extends Fragment {
             List<TreatmentStepSummary> steps = plan.getSteps();
             if (steps != null) {
                 for (TreatmentStepSummary step : steps) {
+                    // Hide SKIPPED/CANCELLED steps from patient view
+                    if ("SKIPPED".equals(step.getStatus()) || "CANCELLED".equals(step.getStatus())) {
+                        continue;
+                    }
+
                     View row = LayoutInflater.from(h.itemView.getContext()).inflate(R.layout.item_treatment_step, stepsContainer, false);
                     TextView tvStepNumber = row.findViewById(R.id.tvStepNumber);
                     TextView tvServiceName = row.findViewById(R.id.tvServiceName);
                     TextView tvStepDescription = row.findViewById(R.id.tvStepDescription);
                     TextView tvStatus = row.findViewById(R.id.tvStatus);
-                    MaterialButton btnStart = row.findViewById(R.id.btnEdit); // Labelled as "Bắt đầu"
+                    MaterialButton btnStart = row.findViewById(R.id.btnEdit);
 
                     Integer order = step.getOrder();
                     tvStepNumber.setText(order != null ? String.valueOf(order) : "?");
@@ -188,38 +193,17 @@ public class TreatmentPlanFragment extends Fragment {
                     tvStepDescription.setText(step.getRoomName() != null ? "Phòng: " + step.getRoomName() : "");
                     tvStatus.setText(formatStepStatus(step.getStatus()));
 
-                    // Handle button visibility and action
-                    if ("PENDING".equals(step.getStatus())) {
-                        btnStart.setVisibility(View.VISIBLE);
-                        btnStart.setText("Bắt đầu");
-                        btnStart.setOnClickListener(v -> {
-                            ApiService api = RetrofitClient.getApiService(v.getContext());
-                            api.startTreatmentStep(step.getId()).enqueue(new Callback<com.hcmute.mobile_android.network.models.MessageResponse>() {
-                                @Override
-                                public void onResponse(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Response<com.hcmute.mobile_android.network.models.MessageResponse> response) {
-                                    if (response.isSuccessful()) {
-                                        Toast.makeText(v.getContext(), "Đã bắt đầu " + step.getServiceName(), Toast.LENGTH_SHORT).show();
-                                        // Refresh the list if this was in a fragment (need to reach back)
-                                        // For simplicity, just update UI locally or toast
-                                        btnStart.setText("Đang thực hiện");
-                                        btnStart.setEnabled(false);
-                                    } else {
-                                        Toast.makeText(v.getContext(), "Không thể bắt đầu bước này", Toast.LENGTH_SHORT).show();
-                                    }
-                                }
+                    // Patient cannot start/cancel steps — read-only view.
+                    // The 'Bắt đầu' button is a doctor-only action; hide it for all statuses.
+                    if (btnStart != null) btnStart.setVisibility(View.GONE);
 
-                                @Override
-                                public void onFailure(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Throwable t) {
-                                    Toast.makeText(v.getContext(), "Lỗi: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-                                }
-                            });
-                        });
+                    // Colour-code status text
+                    if ("COMPLETED".equals(step.getStatus())) {
+                        tvStatus.setTextColor(android.graphics.Color.parseColor("#4CAF50")); // green
                     } else if ("IN_PROGRESS".equals(step.getStatus())) {
-                        btnStart.setVisibility(View.VISIBLE);
-                        btnStart.setText("Đang thực hiện");
-                        btnStart.setEnabled(false);
+                        tvStatus.setTextColor(android.graphics.Color.parseColor("#2196F3")); // blue
                     } else {
-                        btnStart.setVisibility(View.GONE);
+                        tvStatus.setTextColor(android.graphics.Color.parseColor("#9E9E9E")); // grey for PENDING
                     }
 
                     stepsContainer.addView(row);

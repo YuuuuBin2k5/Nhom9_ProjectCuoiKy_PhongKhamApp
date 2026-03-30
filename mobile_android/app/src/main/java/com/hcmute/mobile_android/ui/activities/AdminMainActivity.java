@@ -2,6 +2,7 @@ package com.hcmute.mobile_android.ui.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -16,7 +17,8 @@ import com.hcmute.mobile_android.util.TokenManager;
 
 public class AdminMainActivity extends AppCompatActivity {
 
-    private MaterialCardView cardServices, cardRooms, cardDoctors, cardQueue, cardDoctorWorkflow, cardLogout;
+    private MaterialCardView cardServices, cardRooms, cardDoctors, cardQueue, 
+                             cardCategories, cardDashboard, cardSettings, cardLogout;
 
 
     @Override
@@ -40,9 +42,10 @@ public class AdminMainActivity extends AppCompatActivity {
         cardRooms = findViewById(R.id.cardRooms);
         cardDoctors = findViewById(R.id.cardDoctors);
         cardQueue = findViewById(R.id.cardQueue);
-        cardDoctorWorkflow = findViewById(R.id.cardDoctorWorkflow);
+        cardCategories = findViewById(R.id.cardCategories);
+        cardDashboard = findViewById(R.id.cardDashboard);
+        cardSettings = findViewById(R.id.cardSettings);
         cardLogout = findViewById(R.id.cardLogout);
-
     }
 
     private void setupClickListeners() {
@@ -62,10 +65,21 @@ public class AdminMainActivity extends AppCompatActivity {
             startActivity(new Intent(this, com.hcmute.mobile_android.ui.activities.staff.QueueManagementActivity.class));
         });
 
-        cardDoctorWorkflow.setOnClickListener(v -> {
-            startActivity(new Intent(this, com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity.class));
+        cardCategories.setOnClickListener(v -> {
+            startActivity(new Intent(this, AdminCategoryActivity.class));
         });
 
+        cardDashboard.setOnClickListener(v -> {
+            // Navigate to MainActivity with Admin Dashboard tab
+            Intent intent = new Intent(this, MainActivity.class);
+            intent.putExtra("SHOW_ADMIN_DASHBOARD", true);
+            startActivity(intent);
+        });
+
+        cardSettings.setOnClickListener(v -> {
+            // TODO: Create ClinicSettingsActivity
+            Toast.makeText(this, "Tính năng đang phát triển", Toast.LENGTH_SHORT).show();
+        });
 
         cardLogout.setOnClickListener(v -> {
             logout();

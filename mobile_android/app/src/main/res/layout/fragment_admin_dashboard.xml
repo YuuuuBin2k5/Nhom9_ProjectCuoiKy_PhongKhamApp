@@ -46,34 +46,28 @@
             </LinearLayout>
         </androidx.cardview.widget.CardView>
         
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
-            android:text="Báo cáo doanh thu"
-            android:textSize="18sp"
-            android:textStyle="bold"/>
-        
+        <!-- Revenue Summary Card -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
-            app:cardCornerRadius="8dp"
-            app:cardBackgroundColor="#2196F3"
+            app:cardCornerRadius="16dp"
+            app:cardBackgroundColor="@color/admin_primary"
             app:cardElevation="4dp">
             
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="16dp">
+                android:padding="24dp">
                 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Tổng doanh thu"
-                    android:textColor="@android:color/white"
-                    android:textSize="14sp"/>
+                    android:textColor="#E3F2FD"
+                    android:textSize="14sp"
+                    android:alpha="0.9"/>
                 
                 <TextView
                     android:id="@+id/tvTotalRevenue"
@@ -82,13 +76,18 @@
                     android:layout_marginTop="8dp"
                     android:text="0đ"
                     android:textColor="@android:color/white"
-                    android:textSize="32sp"
+                    android:textSize="36dp"
                     android:textStyle="bold"/>
                 
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:background="#40FFFFFF"
+                    android:layout_marginVertical="16dp"/>
+
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
                     android:orientation="horizontal">
                     
                     <LinearLayout
@@ -101,8 +100,9 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Tổng lượt khám"
-                            android:textColor="@android:color/white"
-                            android:textSize="12sp"/>
+                            android:textColor="#E3F2FD"
+                            android:textSize="12sp"
+                            android:alpha="0.8"/>
                         
                         <TextView
                             android:id="@+id/tvTotalAppointments"
@@ -125,8 +125,9 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="Trung bình/lượt"
-                            android:textColor="@android:color/white"
-                            android:textSize="12sp"/>
+                            android:textColor="#E3F2FD"
+                            android:textSize="12sp"
+                            android:alpha="0.8"/>
                         
                         <TextView
                             android:id="@+id/tvAvgRevenue"
@@ -141,14 +142,63 @@
                 </LinearLayout>
             </LinearLayout>
         </androidx.cardview.widget.CardView>
-        
+
+        <!-- Charts Section -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            android:text="Top dịch vụ"
+            android:text="Xu hướng doanh thu"
             android:textSize="18sp"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            android:textColor="@color/admin_text_primary"/>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp">
+            
+            <com.github.mikephil.charting.charts.BarChart
+                android:id="@+id/barChartRevenue"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="16dp"/>
+        </androidx.cardview.widget.CardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Thống kê dịch vụ"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/admin_text_primary"/>
+
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="300dp"
+            android:layout_marginTop="12dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp">
+            
+            <com.github.mikephil.charting.charts.PieChart
+                android:id="@+id/pieChartServices"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:padding="16dp"/>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Tables Section -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="Top dịch vụ phổ biến"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:textColor="@color/admin_text_primary"/>
         
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewTopServices"
@@ -163,7 +213,8 @@
             android:layout_marginTop="24dp"
             android:text="Hiệu suất bác sĩ"
             android:textSize="18sp"
-            android:textStyle="bold"/>
+            android:textStyle="bold"
+            android:textColor="@color/admin_text_primary"/>
         
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/recyclerViewDoctorPerformance"
@@ -171,6 +222,36 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="8dp"
             android:nestedScrollingEnabled="false"/>
+
+        <!-- Export Buttons -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:layout_marginBottom="32dp"
+            android:orientation="horizontal"
+            android:gravity="center">
+            
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnExportExcel"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Xuất EXCEL"
+                app:icon="@drawable/ic_list"
+                android:layout_marginEnd="8dp"/>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnExportPdf"
+                style="@style/Widget.Material3.Button.TonalButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Xuất PDF"
+                app:icon="@drawable/ic_save"
+                android:layout_marginStart="8dp"/>
+        </LinearLayout>
         
         <ProgressBar
             android:id="@+id/progressBar"

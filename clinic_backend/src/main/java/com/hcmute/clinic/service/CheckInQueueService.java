@@ -14,9 +14,12 @@ import com.hcmute.clinic.repository.NotificationRepository;
 import com.hcmute.clinic.repository.PatientRepository;
 import com.hcmute.clinic.repository.ServiceRepository;
 import com.hcmute.clinic.repository.DoctorRepository;
+import com.hcmute.clinic.repository.TreatmentPlanStepRepository;
+import com.hcmute.clinic.entity.TreatmentPlanStep;
 import com.hcmute.clinic.entity.Doctor;
 import com.hcmute.clinic.enums.AppointmentStatus;
 import com.hcmute.clinic.enums.BookingType;
+import com.hcmute.clinic.enums.StepStatus;
 import com.hcmute.clinic.security.JwtService;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -49,6 +52,7 @@ public class CheckInQueueService {
     private final FcmService fcmService;
     private final ServiceRepository serviceRepository;
     private final DoctorRepository doctorRepository;
+    private final TreatmentPlanStepRepository treatmentPlanStepRepository;
 
     @Transactional
     public CheckInResult processScan(String qrData) {
@@ -479,6 +483,26 @@ public class CheckInQueueService {
             q.setClinicRoom(examRoom);
         }
         checkInQueueRepository.save(q);
+        
+        // ====== ROOT FIX: Mark the X-Ray TreatmentPlanStep as COMPLETED ======
+        // Without this, the hasPreviousIncomplete check in startStep() will always
+        // block the next treatment step from starting after the patient returns.
+        if (q.getAppointment() != null) {
+            Long appointmentId = q.getAppointment().getId();
+            // Find the X-Ray step that is IN_PROGRESS for this appointment
+            treatmentPlanStepRepository.findInProgressXRayStepByAppointmentId(appointmentId)
+                .ifPresent(xrayStep -> {
+                    xrayStep.setStatus(StepStatus.COMPLETED);
+                    if (xrayStep.getCompletedAt() == null) {
+                        xrayStep.setCompletedAt(java.time.LocalDateTime.now());
+                    }
+                    treatmentPlanStepRepository.save(xrayStep);
+                    log.info("[completeXRay] Marked TreatmentPlanStep #{} as COMPLETED for appointment #{}",
+                        xrayStep.getId(), appointmentId);
+                });
+        }
+        // ====== END ROOT FIX ======
+        
         if (examRoom != null) {
             String pn = q.getAppointment() != null && q.getAppointment().getPatient() != null
                     ? (q.getAppointment().getPatient().getLastName() + " " + q.getAppointment().getPatient().getFirstName()).trim()

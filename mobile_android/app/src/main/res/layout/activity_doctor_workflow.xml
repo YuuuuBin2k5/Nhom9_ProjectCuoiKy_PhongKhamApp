@@ -209,6 +209,48 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp" />
 
+                <!-- Odontogram View (Tooth Selection) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@android:color/white">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Biểu Đồ Răng - Chọn Dịch Vụ Cụ Thể"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="#0D1B2A"
+                            android:layout_marginBottom="12dp" />
+
+                        <com.hcmute.mobile_android.ui.views.OdontogramView
+                            android:id="@+id/odontogramView"
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp"
+                            android:background="@android:color/white" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Nhấp vào một răng để thêm dịch vụ cụ thể"
+                            android:textSize="12sp"
+                            android:textColor="#78909C"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
                 <!-- Treatment Plan Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardTreatmentPlan"

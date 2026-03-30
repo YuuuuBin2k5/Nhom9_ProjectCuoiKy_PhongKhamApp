@@ -4,6 +4,7 @@ import com.hcmute.clinic.dto.*;
 import com.hcmute.clinic.entity.*;
 import com.hcmute.clinic.enums.*;
 import com.hcmute.clinic.repository.*;
+import com.hcmute.clinic.service.QueueEventService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.core.Authentication;
@@ -11,6 +12,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -25,9 +27,12 @@ public class InvoiceService {
     private final InvoiceRepository invoiceRepository;
     private final PatientRepository patientRepository;
     private final TreatmentPlanRepository treatmentPlanRepository;
+    private final TreatmentPlanStepRepository treatmentPlanStepRepository;
     private final InvoiceItemRepository invoiceItemRepository;
     private final NotificationRepository notificationRepository;
     private final FcmService fcmService;
+    private final CheckInQueueRepository checkInQueueRepository;
+    private final QueueEventService queueEventService;
     
     @Transactional(readOnly = true)
     public List<InvoiceDto> getPatientInvoices(Long patientId) {
@@ -109,14 +114,16 @@ public class InvoiceService {
         TreatmentPlan plan = treatmentPlanRepository.findById(treatmentPlanId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phác đồ điều trị không tồn tại"));
         
-        // 2. Validate: All steps must be COMPLETED or SKIPPED
-        boolean hasIncompleteSteps = plan.getSteps().stream()
-            .anyMatch(s -> s.getStatus() != StepStatus.COMPLETED && s.getStatus() != StepStatus.SKIPPED);
-        
-        if (hasIncompleteSteps) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
-                "Không thể tạo hóa đơn. Vui lòng hoàn thành tất cả các bước điều trị trước.");
+        // 2. Instead of rejecting, auto-SKIP any remaining PENDING/IN_PROGRESS steps
+        // This allows the doctor to manually complete the treatment without doing every step
+        for (TreatmentPlanStep step : plan.getSteps()) {
+            if (step.getStatus() == StepStatus.PENDING || step.getStatus() == StepStatus.IN_PROGRESS) {
+                step.setStatus(StepStatus.SKIPPED);
+                treatmentPlanStepRepository.save(step);
+            }
         }
+        // Reload plan steps for invoice calculation
+        plan.getSteps().forEach(s -> {}); // trigger lazy load
         
         // 3. Check if invoice already exists
         Optional<Invoice> existingInvoice = invoiceRepository.findByTreatmentPlanId(treatmentPlanId);
@@ -171,6 +178,31 @@ public class InvoiceService {
         // 7. Mark treatment plan as COMPLETED
         plan.setStatus(TreatmentPlanStatus.COMPLETED);
         treatmentPlanRepository.save(plan);
+        
+        // ====== QUEUE FLUSH: Remove patient from today's queue ======
+        // This ensures the patient exits the waiting room after completing treatment.
+        try {
+            List<CheckInQueue> queuesForPatient = checkInQueueRepository.findTodayForPatient(
+                plan.getPatient().getId(),
+                LocalDate.now().atStartOfDay(),
+                LocalDate.now().plusDays(1).atStartOfDay()
+            );
+            for (CheckInQueue q : queuesForPatient) {
+                if (q.getStatus() == QueueStatus.IN_PROGRESS ||
+                    q.getStatus() == QueueStatus.WAITING ||
+                    q.getStatus() == QueueStatus.RETURNED_PRIORITY) {
+                    q.setStatus(QueueStatus.COMPLETED);
+                    checkInQueueRepository.save(q);
+                    if (q.getClinicRoom() != null) {
+                        queueEventService.broadcastQueueUpdated(q.getClinicRoom().getId());
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Log but do not fail invoice creation for queue errors
+            System.err.println("[InvoiceService] Queue flush error: " + e.getMessage());
+        }
+        // ====== END QUEUE FLUSH ======
         
         // 8. Send notification to patient
         Notification notif = Notification.builder()

@@ -1,13 +1,17 @@
 package com.hcmute.mobile_android.network;
 
+import com.hcmute.mobile_android.network.models.AddGeneralServiceRequest;
+import com.hcmute.mobile_android.network.models.AddToothServiceRequest;
 import com.hcmute.mobile_android.network.models.CheckInMyStatusResponse;
 import com.hcmute.mobile_android.network.models.CreateAppointmentRequest;
 import com.hcmute.mobile_android.network.models.CreateCategoryRequest;
 import com.hcmute.mobile_android.network.models.CreateDoctorRequest;
 import com.hcmute.mobile_android.network.models.CreateServiceRequest;
+import com.hcmute.mobile_android.network.models.GeneralServiceResponse;
 import com.hcmute.mobile_android.network.models.LoginRequest;
 import com.hcmute.mobile_android.network.models.PatientMeResponse;
 import com.hcmute.mobile_android.network.models.ServiceCategory;
+import com.hcmute.mobile_android.network.models.ToothServiceResponse;
 import com.hcmute.mobile_android.network.models.TreatmentPlanSummary;
 import com.hcmute.mobile_android.network.models.LoginResponse;
 import com.hcmute.mobile_android.network.models.MessageResponse;
@@ -118,14 +122,29 @@ public interface ApiService {
     @PATCH("api/admin/doctors/{id}/status")
     Call<MessageResponse> updateDoctorStatus(@Path("id") Long id, @Query("active") boolean active);
 
+    @PUT("api/admin/doctors/{id}")
+    Call<MessageResponse> updateDoctor(@Path("id") Long id, @Body CreateDoctorRequest request);
+
+    @retrofit2.http.DELETE("api/admin/doctors/{id}")
+    Call<MessageResponse> deleteDoctor(@Path("id") Long id);
+
     @GET("api/admin/doctors")
     Call<List<com.hcmute.mobile_android.network.models.DoctorItem>> getAdminDoctors();
 
     @GET("api/admin/rooms")
     Call<List<RoomItem>> getRooms();
 
+    @POST("api/admin/rooms")
+    Call<RoomItem> createRoom(@Body com.hcmute.mobile_android.network.models.RoomRequest request);
+
+    @PUT("api/admin/rooms/{id}")
+    Call<RoomItem> updateRoom(@Path("id") Long id, @Body com.hcmute.mobile_android.network.models.RoomRequest request);
+
     @PATCH("api/admin/rooms/{id}/status")
     Call<MessageResponse> updateRoomStatus(@Path("id") Long id, @Query("active") boolean active);
+
+    @retrofit2.http.DELETE("api/admin/rooms/{id}")
+    Call<MessageResponse> deleteRoom(@Path("id") Long id);
 
     // Queue Management APIs
     @GET("api/queue/room/{roomId}")
@@ -201,6 +220,12 @@ public interface ApiService {
     @POST("api/admin/services/categories")
     Call<ServiceCategory> createServiceCategory(@Body CreateCategoryRequest request);
 
+    @PUT("api/admin/services/categories/{id}")
+    Call<MessageResponse> updateCategory(@Path("id") Long id, @Body CreateCategoryRequest request);
+
+    @retrofit2.http.DELETE("api/admin/services/categories/{id}")
+    Call<MessageResponse> deleteCategory(@Path("id") Long id);
+
     @POST("api/admin/services")
     Call<MessageResponse> createService(@Body CreateServiceRequest request);
 
@@ -209,6 +234,12 @@ public interface ApiService {
 
     @PATCH("api/admin/services/{id}/status")
     Call<MessageResponse> updateServiceStatus(@Path("id") Long id, @Query("active") boolean active);
+
+    @PUT("api/admin/services/{id}")
+    Call<MessageResponse> updateService(@Path("id") Long id, @Body CreateServiceRequest request);
+
+    @retrofit2.http.DELETE("api/admin/services/{id}")
+    Call<MessageResponse> deleteService(@Path("id") Long id);
 
     @retrofit2.http.Multipart
     @POST("api/upload")
@@ -244,9 +275,48 @@ public interface ApiService {
     @GET("api/admin/reports/revenue")
     Call<com.hcmute.mobile_android.network.models.RevenueReport> getRevenueReport(@Query("startDate") String startDate, @Query("endDate") String endDate);
     
-    @GET("api/admin/reports/services")
-    Call<List<com.hcmute.mobile_android.network.models.ServiceStats>> getTopServices(@Query("limit") int limit);
+    @GET("api/admin/reports/top-services")
+    Call<List<com.hcmute.mobile_android.network.models.ServiceStats>> getTopServices(@Query("startDate") String startDate, @Query("endDate") String endDate, @Query("limit") int limit);
     
-    @GET("api/admin/reports/doctors")
+    @GET("api/admin/reports/doctor-performance")
     Call<List<com.hcmute.mobile_android.network.models.DoctorStats>> getDoctorPerformance(@Query("startDate") String startDate, @Query("endDate") String endDate);
+    
+    // Tooth Service APIs (Odontogram)
+    @POST("api/treatment-plans/{planId}/services/teeth/{toothNumber}")
+    Call<ToothServiceResponse> addServiceToTooth(
+        @Path("planId") Long planId,
+        @Path("toothNumber") String toothNumber,
+        @Body AddToothServiceRequest request
+    );
+    
+    @POST("api/treatment-plans/{planId}/services/general")
+    Call<GeneralServiceResponse> addGeneralService(
+        @Path("planId") Long planId,
+        @Body AddGeneralServiceRequest request
+    );
+    
+    @GET("api/treatment-plans/{planId}/services/teeth/{toothNumber}")
+    Call<List<TreatmentPlan.Step>> getServicesForTooth(
+        @Path("planId") Long planId,
+        @Path("toothNumber") String toothNumber
+    );
+    
+    @GET("api/treatment-plans/{planId}/services/general")
+    Call<List<TreatmentPlan.Step>> getGeneralServices(@Path("planId") Long planId);
+    
+    @retrofit2.http.DELETE("api/treatment-plans/{planId}/services/steps/{stepId}")
+    Call<java.util.Map<String, Object>> removeService(
+        @Path("planId") Long planId,
+        @Path("stepId") Long stepId
+    );
+    
+    @PUT("api/treatment-plans/{planId}/services/steps/{stepId}/price")
+    Call<java.util.Map<String, Object>> updateStepPrice(
+        @Path("planId") Long planId,
+        @Path("stepId") Long stepId,
+        @Body java.util.Map<String, Object> body
+    );
+    
+    @GET("api/treatment-plans/{planId}/services/all")
+    Call<java.util.Map<String, Object>> getAllSteps(@Path("planId") Long planId);
 }

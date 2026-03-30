@@ -90,10 +90,10 @@ public class InvoiceDetailActivity extends AppCompatActivity {
         btnPay.setOnClickListener(v -> {
             if (currentInvoice != null) {
                 Intent intent = new Intent(this, PaymentActivity.class);
-                intent.putExtra("invoiceId", currentInvoice.getId());
+                intent.putExtra("invoiceId", currentInvoice.getId() != null ? currentInvoice.getId().longValue() : 0L);
                 intent.putExtra("amount", currentInvoice.getTotalAmount() != null ? currentInvoice.getTotalAmount().doubleValue() : 0.0);
                 if (currentInvoice.getTreatmentPlanId() != null) {
-                    intent.putExtra("treatmentPlanId", currentInvoice.getTreatmentPlanId());
+                    intent.putExtra("treatmentPlanId", currentInvoice.getTreatmentPlanId().longValue());
                 }
                 startActivity(intent);
             }

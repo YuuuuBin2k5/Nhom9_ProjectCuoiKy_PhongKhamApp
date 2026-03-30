@@ -5,10 +5,9 @@ import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Spinner;
-import android.widget.Toast;
-
+import android.widget.TextView;
 import androidx.activity.EdgeToEdge;
-import androidx.appcompat.app.AppCompatActivity;
+import com.hcmute.mobile_android.ui.activities.BaseAdminActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -34,19 +33,29 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class QueueManagementActivity extends AppCompatActivity implements QueueAdapter.OnQueueActionListener, QueueListFragment.OnRefreshRequestedListener {
+public class QueueManagementActivity extends BaseAdminActivity implements QueueAdapter.OnQueueActionListener, QueueListFragment.OnRefreshRequestedListener {
 
     private Spinner spinnerRooms;
     private MaterialButton btnRefresh;
+    private com.google.android.material.textfield.TextInputEditText etSearch;
+    private TextView tvTotalWaiting, tvAverageWaitTime, tvPriorityCount;
+    private View connectionStatus;
     
     private TabLayout tabLayout;
     private ViewPager2 viewPager;
     private QueuePagerAdapter pagerAdapter;
     private FirebaseQueueManager firebaseQueueManager;
     private List<RoomItem> roomList = new ArrayList<>();
+    private List<QueueItem> allQueueItems = new ArrayList<>();
     
     private ApiService apiService;
     private Long selectedRoomId;
+    
+    // Auto-refresh
+    private android.os.Handler refreshHandler = new android.os.Handler();
+    private Runnable refreshRunnable;
+    private static final long REFRESH_INTERVAL = 30000; // 30 seconds
+    private boolean autoRefreshEnabled = true;
     
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +67,7 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
         
         initViews();
         loadRooms();
+        setupAutoRefresh();
 
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -71,6 +81,11 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
         
         spinnerRooms = findViewById(R.id.spinnerRooms);
         btnRefresh = findViewById(R.id.btnRefresh);
+        etSearch = findViewById(R.id.etSearch);
+        tvTotalWaiting = findViewById(R.id.tvTotalWaiting);
+        tvAverageWaitTime = findViewById(R.id.tvAverageWaitTime);
+        tvPriorityCount = findViewById(R.id.tvPriorityCount);
+        
         tabLayout = findViewById(R.id.tabLayout);
         viewPager = findViewById(R.id.viewPager);
         
@@ -93,6 +108,20 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
         }).attach();
         
         btnRefresh.setOnClickListener(v -> loadQueue());
+        
+        // Setup search
+        etSearch.addTextChangedListener(new android.text.TextWatcher() {
+            @Override
+            public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+
+            @Override
+            public void onTextChanged(CharSequence s, int start, int before, int count) {
+                filterQueue(s.toString());
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {}
+        });
         
         // Setup room selection
         spinnerRooms.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -139,8 +168,7 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
 
             @Override
             public void onFailure(Call<List<RoomItem>> call, Throwable t) {
-                Toast.makeText(QueueManagementActivity.this, 
-                    "Lỗi tải danh sách phòng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                showError("Lỗi tải danh sách phòng: " + t.getMessage());
             }
         });
     }
@@ -165,6 +193,17 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
     }
     
     private void filterAndDistributeQueue(List<QueueItem> allItems) {
+        // Store all items for search
+        allQueueItems.clear();
+        allQueueItems.addAll(allItems);
+        
+        // Apply search filter if needed
+        String searchQuery = etSearch != null ? etSearch.getText().toString().trim() : "";
+        if (!searchQuery.isEmpty()) {
+            filterQueue(searchQuery);
+            return;
+        }
+        
         List<QueueItem> waiting = new ArrayList<>();
         List<QueueItem> subClinical = new ArrayList<>();
         List<QueueItem> priority = new ArrayList<>();
@@ -187,6 +226,67 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
         pagerAdapter.getWaitingFragment().updateList(waiting);
         pagerAdapter.getSubClinicalFragment().updateList(subClinical);
         pagerAdapter.getPriorityFragment().updateList(priority);
+        
+        // Update statistics
+        updateStatistics(waiting, subClinical, priority);
+    }
+    
+    private void filterQueue(String query) {
+        if (query.isEmpty()) {
+            filterAndDistributeQueue(allQueueItems);
+            return;
+        }
+        
+        String lowerQuery = query.toLowerCase();
+        List<QueueItem> filtered = new ArrayList<>();
+        
+        for (QueueItem item : allQueueItems) {
+            if (item.getPatientName().toLowerCase().contains(lowerQuery) ||
+                item.getPatientPhone().contains(query) ||
+                String.valueOf(item.getQueueNumber()).contains(query)) {
+                filtered.add(item);
+            }
+        }
+        
+        // Distribute filtered results
+        List<QueueItem> waiting = new ArrayList<>();
+        List<QueueItem> subClinical = new ArrayList<>();
+        List<QueueItem> priority = new ArrayList<>();
+        
+        for (QueueItem item : filtered) {
+            String status = item.getStatus();
+            if (item.isPriority() || item.isReturnedPriority()) {
+                priority.add(item);
+            } else if ("PAUSED_FOR_TEST".equals(status)) {
+                subClinical.add(item);
+            } else if ("WAITING".equals(status) || "IN_PROGRESS".equals(status)) {
+                if ("IN_PROGRESS".equals(status)) {
+                    waiting.add(0, item);
+                } else {
+                    waiting.add(item);
+                }
+            }
+        }
+        
+        pagerAdapter.getWaitingFragment().updateList(waiting);
+        pagerAdapter.getSubClinicalFragment().updateList(subClinical);
+        pagerAdapter.getPriorityFragment().updateList(priority);
+        
+        // Update statistics with filtered data
+        updateStatistics(waiting, subClinical, priority);
+    }
+    
+    private void updateStatistics(List<QueueItem> waiting, List<QueueItem> subClinical, List<QueueItem> priority) {
+        // Total waiting (waiting + subclinical)
+        int totalWaiting = waiting.size() + subClinical.size();
+        tvTotalWaiting.setText(String.valueOf(totalWaiting));
+        
+        // Priority count
+        tvPriorityCount.setText(String.valueOf(priority.size()));
+        
+        // Average wait time (estimate: 15 minutes per patient)
+        int avgWaitTime = waiting.size() > 0 ? (waiting.size() * 15) / 2 : 0;
+        tvAverageWaitTime.setText(String.valueOf(avgWaitTime));
     }
 
     private void loadQueue() {
@@ -198,15 +298,13 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
                 if (response.isSuccessful() && response.body() != null) {
                     filterAndDistributeQueue(response.body());
                 } else {
-                    Toast.makeText(QueueManagementActivity.this, 
-                        "Lỗi tải hàng đợi", Toast.LENGTH_SHORT).show();
+                    showError("Lỗi tải hàng đợi: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(Call<List<QueueItem>> call, Throwable t) {
-                Toast.makeText(QueueManagementActivity.this, 
-                    "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                showError("Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -217,69 +315,109 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
         if (firebaseQueueManager != null) {
             firebaseQueueManager.stopListening();
         }
+        stopAutoRefresh();
+    }
+    
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if (autoRefreshEnabled) {
+            startAutoRefresh();
+        }
+    }
+    
+    @Override
+    protected void onPause() {
+        super.onPause();
+        stopAutoRefresh();
+    }
+    
+    private void setupAutoRefresh() {
+        refreshRunnable = new Runnable() {
+            @Override
+            public void run() {
+                if (autoRefreshEnabled && selectedRoomId != null) {
+                    loadQueue();
+                    refreshHandler.postDelayed(this, REFRESH_INTERVAL);
+                }
+            }
+        };
+    }
+    
+    private void startAutoRefresh() {
+        stopAutoRefresh(); // Stop any existing refresh
+        refreshHandler.postDelayed(refreshRunnable, REFRESH_INTERVAL);
+    }
+    
+    private void stopAutoRefresh() {
+        refreshHandler.removeCallbacks(refreshRunnable);
     }
 
     @Override
     public void onCallPatient(QueueItem item) {
+        showLoading(true, "Đang gọi bệnh nhân...");
         apiService.callPatientToRoom(item.getId()).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
+                showLoading(false);
                 if (response.isSuccessful()) {
-                    Toast.makeText(QueueManagementActivity.this, 
-                        "Đã gọi bệnh nhân: " + item.getPatientName(), Toast.LENGTH_SHORT).show();
+                    showSuccess("Đã gọi bệnh nhân: " + item.getPatientName());
                     loadQueue();
                 } else {
-                    Toast.makeText(QueueManagementActivity.this, "Lỗi gọi bệnh nhân", Toast.LENGTH_SHORT).show();
+                    showError("Lỗi gọi bệnh nhân: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-                Toast.makeText(QueueManagementActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                showLoading(false);
+                showError("Lỗi kết nối: " + t.getMessage());
             }
         });
     }
 
     @Override
     public void onTransferToXRay(QueueItem item) {
+        showLoading(true, "Đang chuyển X-Quang...");
         apiService.transferToXRay(item.getId(), new java.util.HashMap<>()).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
+                showLoading(false);
                 if (response.isSuccessful()) {
-                    Toast.makeText(QueueManagementActivity.this, 
-                        "Đã chuyển " + item.getPatientName() + " đi chụp X-Quang", Toast.LENGTH_SHORT).show();
+                    showSuccess("Đã chuyển " + item.getPatientName() + " đi chụp X-Quang");
                     loadQueue();
                 } else {
-                    Toast.makeText(QueueManagementActivity.this, "Lỗi chuyển X-Quang", Toast.LENGTH_SHORT).show();
+                    showError("Lỗi chuyển X-Quang: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-                Toast.makeText(QueueManagementActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                showLoading(false);
+                showError("Lỗi kết nối: " + t.getMessage());
             }
         });
     }
 
-
-
     @Override
     public void onCompletePatient(QueueItem item) {
+        showLoading(true, "Đang hoàn thành...");
         apiService.completePatient(item.getId()).enqueue(new Callback<Void>() {
             @Override
             public void onResponse(Call<Void> call, Response<Void> response) {
+                showLoading(false);
                 if (response.isSuccessful()) {
-                    Toast.makeText(QueueManagementActivity.this, 
-                        "Đã hoàn thành khám cho: " + item.getPatientName(), Toast.LENGTH_SHORT).show();
+                    showSuccess("Đã hoàn thành khám cho: " + item.getPatientName());
                     loadQueue();
                 } else {
-                    Toast.makeText(QueueManagementActivity.this, "Lỗi hoàn thành", Toast.LENGTH_SHORT).show();
+                    showError("Lỗi hoàn thành: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(Call<Void> call, Throwable t) {
-                Toast.makeText(QueueManagementActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                showLoading(false);
+                showError("Lỗi kết nối: " + t.getMessage());
             }
         });
     }
@@ -287,13 +425,27 @@ public class QueueManagementActivity extends AppCompatActivity implements QueueA
     @Override
     public void onExaminePatient(QueueItem item) {
         if (item.getPatientId() == null) {
-            Toast.makeText(this, "Lỗi: Không tìm thấy ID bệnh nhân", Toast.LENGTH_SHORT).show();
+            showError("Lỗi: Không tìm thấy ID bệnh nhân");
             return;
         }
         
         android.content.Intent intent = new android.content.Intent(this, DoctorWorkflowActivity.class);
         intent.putExtra(DoctorWorkflowActivity.EXTRA_INITIAL_QR, "patient:" + item.getPatientId());
-        Toast.makeText(this, "Đang mở hồ sơ: " + item.getPatientName(), Toast.LENGTH_SHORT).show();
+        
+        // Pass Room Info to avoid X-Ray transfer loops
+        if (selectedRoomId != null) {
+            intent.putExtra("EXTRA_ROOM_ID", selectedRoomId);
+            String roomName = "";
+            for (com.hcmute.mobile_android.network.models.RoomItem r : roomList) {
+                if (r.getId().equals(selectedRoomId)) {
+                    roomName = r.getName();
+                    break;
+                }
+            }
+            intent.putExtra("EXTRA_ROOM_NAME", roomName);
+        }
+        
+        showSuccess("Đang mở hồ sơ: " + item.getPatientName());
         startActivity(intent);
     }
 }
