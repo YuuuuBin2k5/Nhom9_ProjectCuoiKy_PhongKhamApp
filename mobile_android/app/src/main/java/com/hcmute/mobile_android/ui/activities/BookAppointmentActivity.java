@@ -62,6 +62,8 @@ public class BookAppointmentActivity extends AppCompatActivity {
     private ServiceItem selectedService;
     private DoctorItem selectedDoctor;
     private String selectedDatetime; 
+    private static final int START_MINUTES = 8 * 60; // 08:00
+    private static final int END_MINUTES = 16 * 60 + 40; // 16:40
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -242,13 +244,9 @@ public class BookAppointmentActivity extends AppCompatActivity {
         TimePickerDialog timePicker = new TimePickerDialog(this,
                 (timeView, hourOfDay, minute) -> {
                     int totalMinutes = hourOfDay * 60 + minute;
-                    int startMinutes = 8 * 60; // 08:00
-                    int endMinutes = 16 * 60 + 40; // 16:40
-
-                    if (totalMinutes < startMinutes || totalMinutes > endMinutes) {
-                        ToastUtils.showCenteredToastLong(this, "Vui lòng chọn từ 08:00 đến 16:40");
-                        // Re-open the time picker
-                        showTimePicker(year, month, dayOfMonth);
+                    if (totalMinutes < START_MINUTES || totalMinutes > END_MINUTES) {
+                        ToastUtils.showCenteredToastLong(this, "Thời gian đặt lịch phải từ 08:00 đến 16:40");
+                        clearSelectedDatetime();
                         return;
                     }
 
@@ -258,7 +256,7 @@ public class BookAppointmentActivity extends AppCompatActivity {
 
                     if (selectedCalend.before(now)) {
                         ToastUtils.showCenteredToastLong(this, "Thời gian chọn không được trong quá khứ");
-                        showTimePicker(year, month, dayOfMonth);
+                        clearSelectedDatetime();
                         return;
                     }
 
@@ -277,6 +275,14 @@ public class BookAppointmentActivity extends AppCompatActivity {
                 now.get(Calendar.MINUTE),
                 true);
         timePicker.show();
+    }
+
+    private void clearSelectedDatetime() {
+        selectedDatetime = null;
+        if (tvDatetime != null) {
+            tvDatetime.setText("Chọn ngày và giờ");
+            tvDatetime.setTextColor(0xFF757575);
+        }
     }
 
     private void submitBooking() {
@@ -298,12 +304,10 @@ public class BookAppointmentActivity extends AppCompatActivity {
             int hour = Integer.parseInt(parts[0]);
             int minute = Integer.parseInt(parts[1]);
             int totalMinutes = hour * 60 + minute;
-            
-            int startMinutes = 8 * 60; // 08:00
-            int endMinutes = 16 * 60 + 40; // 16:40
-            
-            if (totalMinutes < startMinutes || totalMinutes > endMinutes) {
+
+            if (totalMinutes < START_MINUTES || totalMinutes > END_MINUTES) {
                 ToastUtils.showCenteredToastLong(this, "Thời gian đặt lịch phải từ 08:00 đến 16:40");
+                clearSelectedDatetime();
                 return;
             }
         } catch (Exception e) {

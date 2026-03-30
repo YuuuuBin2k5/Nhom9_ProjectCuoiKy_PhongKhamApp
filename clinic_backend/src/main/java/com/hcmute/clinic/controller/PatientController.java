@@ -130,7 +130,10 @@ public class PatientController {
             }
             if (req.getAllergies() != null) p.getProfile().setAllergies(req.getAllergies().trim());
             if (req.getUnderlyingConditions() != null) p.getProfile().setUnderlyingConditions(req.getUnderlyingConditions().trim());
-            if (req.getBloodType() != null) p.getProfile().setBloodType(req.getBloodType().trim());
+            if (req.getBloodType() != null) {
+                String bt = req.getBloodType().trim();
+                p.getProfile().setBloodType(bt.isEmpty() ? null : bt);
+            }
 
             try {
                 patientRepository.saveAndFlush(p);

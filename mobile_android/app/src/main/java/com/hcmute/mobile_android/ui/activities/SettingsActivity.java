@@ -35,6 +35,11 @@ public class SettingsActivity extends AppCompatActivity {
         findViewById(R.id.btnNotificationList).setOnClickListener(v ->
                 Toast.makeText(this, "Mở tab thông báo ở màn hình chính", Toast.LENGTH_SHORT).show());
         findViewById(R.id.btnLogout).setOnClickListener(v -> logout());
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
         loadProfileCard();
     }
 

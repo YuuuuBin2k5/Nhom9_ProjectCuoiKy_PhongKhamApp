@@ -85,11 +85,15 @@ public class MedicalRecordActivity extends AppCompatActivity {
             return false;
         });
 
-        // Load Header User Info
-        loadUserInfo();
-
         // Setup Mock Data for Lists to match the UI precisely
         setupPastAppointments();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        // Tải hồ sơ mỗi khi vào màn (và sau khi quay lại từ ProfileActivity).
+        loadUserInfo();
     }
 
     private void loadUserInfo() {

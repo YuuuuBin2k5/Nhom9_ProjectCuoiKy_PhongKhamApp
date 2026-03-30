@@ -24,8 +24,9 @@ public class InvoiceController {
     }
     
     @GetMapping("/{id}")
-    public ResponseEntity<InvoiceDto> getInvoiceDetail(@PathVariable Long id) {
-        return ResponseEntity.ok(invoiceService.getInvoiceDetail(id));
+    @PreAuthorize("hasRole('PATIENT') or hasRole('RECEPTIONIST') or hasRole('ADMIN')")
+    public ResponseEntity<InvoiceDto> getInvoiceDetail(@PathVariable Long id, Authentication auth) {
+        return ResponseEntity.ok(invoiceService.getInvoiceDetail(id, auth));
     }
     
     @PostMapping("/{id}/pay")

@@ -45,8 +45,8 @@ public class InvoiceListActivity extends AppCompatActivity {
     private List<Invoice> allInvoices = new ArrayList<>();
     private ApiService apiService;
 
-    // Filter state
-    private int currentFilter = 0; // 0 = All, 1 = Unpaid, 2 = Paid
+    // Filter state — mặc định tab "Chờ thanh toán" (UC_08)
+    private int currentFilter = 1; // 0 = All, 1 = Unpaid, 2 = Paid
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -58,6 +58,10 @@ public class InvoiceListActivity extends AppCompatActivity {
         initViews();
         setupRecyclerView();
         setupTabs();
+        tabLayout.post(() -> {
+            TabLayout.Tab t = tabLayout.getTabAt(1);
+            if (t != null) t.select();
+        });
     }
     
     @Override
@@ -140,11 +144,13 @@ public class InvoiceListActivity extends AppCompatActivity {
         List<Invoice> filtered = new ArrayList<>();
         
         for (Invoice invoice : allInvoices) {
-            boolean isPaid = "PAID".equalsIgnoreCase(invoice.getPaymentStatus());
+            String st = invoice.getPaymentStatus() != null ? invoice.getPaymentStatus() : "";
+            boolean isPaid = "PAID".equalsIgnoreCase(st);
+            boolean isPending = "UNPAID".equalsIgnoreCase(st) || "PARTIAL".equalsIgnoreCase(st);
             
             if (currentFilter == 0) { // Tất cả
                 filtered.add(invoice);
-            } else if (currentFilter == 1 && !isPaid) { // Chưa thanh toán
+            } else if (currentFilter == 1 && isPending) { // Chưa thanh toán (PENDING / UNPAID / PARTIAL)
                 filtered.add(invoice);
             } else if (currentFilter == 2 && isPaid) { // Đã thanh toán
                 filtered.add(invoice);
@@ -226,7 +232,8 @@ public class InvoiceListActivity extends AppCompatActivity {
             double amount = invoice.getTotalAmount() != null ? invoice.getTotalAmount().doubleValue() : 0;
             holder.tvAmount.setText(currencyFormat.format(amount) + " VNĐ");
             
-            boolean isPaid = "PAID".equalsIgnoreCase(invoice.getPaymentStatus());
+            String st = invoice.getPaymentStatus() != null ? invoice.getPaymentStatus() : "";
+            boolean isPaid = "PAID".equalsIgnoreCase(st);
             if (isPaid) {
                 holder.tvStatus.setText("Đã thanh toán");
                 holder.tvStatus.setTextColor(android.graphics.Color.parseColor("#4CAF50"));

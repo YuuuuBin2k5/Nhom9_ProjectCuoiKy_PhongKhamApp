@@ -14,12 +14,14 @@ import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 
 import com.bumptech.glide.Glide;
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
 import com.hcmute.mobile_android.network.models.PatientMeResponse;
 import com.hcmute.mobile_android.network.models.UpdatePatientRequest;
+import com.hcmute.mobile_android.util.ToastUtils;
 import com.hcmute.mobile_android.util.TokenManager;
 
 import java.util.ArrayList;
@@ -40,6 +42,7 @@ public class ProfileActivity extends AppCompatActivity {
     private AutoCompleteTextView actvBloodType;
     private ArrayAdapter<String> bloodTypeAdapter;
     private ShapeableImageView ivProfile;
+    private MaterialButton btnSave;
     private String currentAvatarUrl = "";
     private androidx.activity.result.ActivityResultLauncher<Intent> galleryLauncher;
 
@@ -102,7 +105,8 @@ public class ProfileActivity extends AppCompatActivity {
         // Setup Date Picker
         etDob.setOnClickListener(v -> showDatePicker());
 
-        findViewById(R.id.btnSave).setOnClickListener(v -> saveProfile());
+        btnSave = findViewById(R.id.btnSave);
+        btnSave.setOnClickListener(v -> saveProfile());
         ivProfile.setOnClickListener(v -> showAvatarEditDialog());
 
         // Setup Avatar Edit FAB
@@ -119,6 +123,19 @@ public class ProfileActivity extends AppCompatActivity {
 
         
         loadProfile();
+    }
+
+    private static String readApiErrorMessage(Response<?> response, String fallback) {
+        try {
+            if (response.errorBody() != null) {
+                String body = response.errorBody().string();
+                org.json.JSONObject obj = new org.json.JSONObject(body);
+                if (obj.has("message")) {
+                    return obj.getString("message");
+                }
+            }
+        } catch (Exception ignored) {}
+        return fallback;
     }
 
     private void showDatePicker() {
@@ -146,42 +163,51 @@ public class ProfileActivity extends AppCompatActivity {
             @Override
             public void onResponse(Call<PatientMeResponse> call, Response<PatientMeResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    PatientMeResponse p = response.body();
-                    String fullName = ((p.getFirstName() != null ? p.getFirstName() : "") + " " +
-                            (p.getLastName() != null ? p.getLastName() : "")).trim();
-                    etQrCode.setText(p.getQrCodeData() != null ? p.getQrCodeData() : "-");
-                    etName.setText(fullName.isEmpty() ? "" : fullName);
-                    etEmail.setText(p.getEmail() != null ? p.getEmail() : "-");
-                    etPhone.setText(p.getPhone() != null ? p.getPhone() : "");
-                    etAddress.setText(p.getAddress() != null ? p.getAddress() : "");
-                    etDob.setText(p.getDob() != null ? p.getDob() : "");
-                    actvGender.setText(p.getGender() != null ? p.getGender() : "", false);
-                    currentAvatarUrl = p.getAvatarUrl() != null ? p.getAvatarUrl() : "";
-
-                    // Update Display Info
-                    tvUserNameDisplay.setText(fullName.isEmpty() ? "Bệnh nhân" : fullName);
-                    tvUserEmailDisplay.setText(p.getEmail() != null ? p.getEmail() : "Chưa có email");
-
-                    applyBloodTypeToField(p.getBloodType());
-                    etAllergies.setText(p.getAllergies() != null ? p.getAllergies() : "");
-                    etConditions.setText(p.getUnderlyingConditions() != null ? p.getUnderlyingConditions() : "");
-
-                    if (!currentAvatarUrl.isEmpty()) {
-                        Glide.with(ProfileActivity.this).load(currentAvatarUrl).placeholder(R.drawable.ic_doctor).into(ivProfile);
-                    }
-                    
-                    boolean isMissingInfo = p.getPhone() == null || p.getPhone().isEmpty() ||
-                            p.getAddress() == null || p.getAddress().isEmpty();
-                    
-                    View warningIcon = findViewById(R.id.ivWarningProfile);
-                    if (warningIcon != null) {
-                        warningIcon.setVisibility(isMissingInfo ? View.VISIBLE : View.GONE);
-                    }
+                    applyPatientToUi(response.body());
+                } else {
+                    ToastUtils.showCenteredToast(ProfileActivity.this,
+                            readApiErrorMessage(response, "Không tải được hồ sơ (" + response.code() + ")"));
                 }
             }
             @Override
-            public void onFailure(Call<PatientMeResponse> call, Throwable t) {}
+            public void onFailure(Call<PatientMeResponse> call, Throwable t) {
+                ToastUtils.showCenteredToast(ProfileActivity.this,
+                        "Không tải được hồ sơ. Kiểm tra kết nối mạng.");
+            }
         });
+    }
+
+    /** Cập nhật toàn bộ form + header từ dữ liệu server (dùng sau GET và sau PUT thành công). */
+    private void applyPatientToUi(PatientMeResponse p) {
+        String fullName = ((p.getFirstName() != null ? p.getFirstName() : "") + " " +
+                (p.getLastName() != null ? p.getLastName() : "")).trim();
+        etQrCode.setText(p.getQrCodeData() != null ? p.getQrCodeData() : "-");
+        etName.setText(fullName.isEmpty() ? "" : fullName);
+        etEmail.setText(p.getEmail() != null ? p.getEmail() : "-");
+        etPhone.setText(p.getPhone() != null ? p.getPhone() : "");
+        etAddress.setText(p.getAddress() != null ? p.getAddress() : "");
+        etDob.setText(p.getDob() != null ? p.getDob() : "");
+        actvGender.setText(p.getGender() != null ? p.getGender() : "", false);
+        currentAvatarUrl = p.getAvatarUrl() != null ? p.getAvatarUrl() : "";
+
+        tvUserNameDisplay.setText(fullName.isEmpty() ? "Bệnh nhân" : fullName);
+        tvUserEmailDisplay.setText(p.getEmail() != null ? p.getEmail() : "Chưa có email");
+
+        applyBloodTypeToField(p.getBloodType());
+        etAllergies.setText(p.getAllergies() != null ? p.getAllergies() : "");
+        etConditions.setText(p.getUnderlyingConditions() != null ? p.getUnderlyingConditions() : "");
+
+        if (!currentAvatarUrl.isEmpty()) {
+            Glide.with(ProfileActivity.this).load(currentAvatarUrl).placeholder(R.drawable.ic_doctor).into(ivProfile);
+        }
+
+        boolean isMissingInfo = p.getPhone() == null || p.getPhone().isEmpty() ||
+                p.getAddress() == null || p.getAddress().isEmpty();
+
+        View warningIcon = findViewById(R.id.ivWarningProfile);
+        if (warningIcon != null) {
+            warningIcon.setVisibility(isMissingInfo ? View.VISIBLE : View.GONE);
+        }
     }
 
     private void applyBloodTypeToField(String blood) {
@@ -231,30 +257,37 @@ public class ProfileActivity extends AppCompatActivity {
                 actvBloodType.getText().toString().trim()
         );
 
+        btnSave.setEnabled(false);
+        btnSave.setText("Đang lưu...");
+
         ApiService api = RetrofitClient.getApiService(this);
         api.updatePatientMe(req).enqueue(new Callback<PatientMeResponse>() {
             @Override
             public void onResponse(Call<PatientMeResponse> call, Response<PatientMeResponse> response) {
+                btnSave.setEnabled(true);
+                btnSave.setText("Lưu thay đổi hồ sơ");
                 if (response.isSuccessful()) {
-                    Toast.makeText(ProfileActivity.this, "Cập nhật thành công!", Toast.LENGTH_SHORT).show();
-                    loadProfile();
+                    PatientMeResponse body = response.body();
+                    if (body != null) {
+                        applyPatientToUi(body);
+                    } else {
+                        loadProfile();
+                    }
+                    ToastUtils.showCenteredToastLong(ProfileActivity.this,
+                            "Đã cập nhật hồ sơ thành công.");
+                    setResult(RESULT_OK);
                 } else {
-                    String errorMsg = "Lỗi " + response.code();
-                    try {
-                        if (response.errorBody() != null) {
-                            String body = response.errorBody().string();
-                            if (body.contains("message")) {
-                                errorMsg += ": " + body;
-                            }
-                        }
-                    } catch (Exception ignored) {}
-                    Toast.makeText(ProfileActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                    String msg = readApiErrorMessage(response, "Cập nhật thất bại (mã " + response.code() + ")");
+                    ToastUtils.showCenteredToastLong(ProfileActivity.this, msg);
                 }
             }
 
             @Override
             public void onFailure(Call<PatientMeResponse> call, Throwable t) {
-                Toast.makeText(ProfileActivity.this, "Lỗi kết nối mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                btnSave.setEnabled(true);
+                btnSave.setText("Lưu thay đổi hồ sơ");
+                ToastUtils.showCenteredToastLong(ProfileActivity.this,
+                        "Lỗi kết nối mạng: " + (t.getMessage() != null ? t.getMessage() : ""));
             }
         });
     }

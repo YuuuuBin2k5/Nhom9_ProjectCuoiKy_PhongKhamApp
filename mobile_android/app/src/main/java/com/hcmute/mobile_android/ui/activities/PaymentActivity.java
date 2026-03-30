@@ -80,6 +80,7 @@ public class PaymentActivity extends AppCompatActivity {
         if (selectedId == R.id.radioCreditCard) return "CREDIT_CARD";
         if (selectedId == R.id.radioMomo) return "MOMO";
         if (selectedId == R.id.radioZaloPay) return "ZALOPAY";
+        if (selectedId == R.id.radioVnpay) return "VNPAY";
         
         return "CASH";
     }
@@ -91,6 +92,7 @@ public class PaymentActivity extends AppCompatActivity {
             case "CREDIT_CARD": return "Thẻ tín dụng";
             case "MOMO": return "MoMo";
             case "ZALOPAY": return "ZaloPay";
+            case "VNPAY": return "VNPay";
             default: return method;
         }
     }
@@ -143,7 +145,7 @@ public class PaymentActivity extends AppCompatActivity {
     private void showSuccessDialog() {
         new AlertDialog.Builder(this)
             .setTitle("Thanh toán thành công")
-            .setMessage("Hóa đơn đã được thanh toán thành công!")
+            .setMessage("Hóa đơn đã được ghi nhận thanh toán. Bạn có thể đánh giá dịch vụ sau tại mục lịch hẹn hoặc thông báo.")
             .setPositiveButton("OK", (dialog, which) -> finish())
             .setCancelable(false)
             .show();

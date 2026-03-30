@@ -13,6 +13,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -28,16 +29,30 @@ public class InvoiceService {
     private final NotificationRepository notificationRepository;
     private final FcmService fcmService;
     
+    @Transactional(readOnly = true)
     public List<InvoiceDto> getPatientInvoices(Long patientId) {
-        return invoiceRepository.findByPatientIdOrderByCreatedAtDesc(patientId)
-            .stream()
+        List<Invoice> invoices = invoiceRepository.findByPatientIdOrderByCreatedAtDesc(patientId);
+        for (Invoice inv : invoices) {
+            if (inv.getTreatmentPlan() != null) {
+                inv.getTreatmentPlan().getId();
+            }
+            if (inv.getItems() != null) {
+                inv.getItems().size();
+            }
+        }
+        return invoices.stream()
             .map(this::toDto)
             .collect(Collectors.toList());
     }
     
-    public InvoiceDto getInvoiceDetail(Long id) {
+    @Transactional(readOnly = true)
+    public InvoiceDto getInvoiceDetail(Long id, Authentication auth) {
         Invoice invoice = invoiceRepository.findById(id)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
+        assertPatientOwnsInvoiceIfPatientRole(invoice, auth);
+        if (invoice.getItems() != null) {
+            invoice.getItems().size();
+        }
         return toDto(invoice);
     }
     
@@ -46,17 +61,32 @@ public class InvoiceService {
         Invoice invoice = invoiceRepository.findById(invoiceId)
             .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Invoice not found"));
         
+        assertPatientOwnsInvoiceIfPatientRole(invoice, auth);
+        
         if (invoice.getPaymentStatus() == InvoiceStatus.PAID) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Invoice already paid");
         }
         
+        PaymentMethod method;
+        try {
+            method = PaymentMethod.valueOf(request.getPaymentMethod());
+        } catch (IllegalArgumentException e) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phương thức thanh toán không hợp lệ");
+        }
+        
+        // UC_08: cổng thanh toán bên thứ ba — ở môi trường demo coi như gọi gateway thành công (tích hợp thật: redirect + callback).
+        if (method != PaymentMethod.CASH) {
+            // Gateway: VNPay / MoMo / Banking / …
+        }
+        
         // Update invoice
         invoice.setPaymentStatus(InvoiceStatus.PAID);
-        invoice.setPaymentMethod(PaymentMethod.valueOf(request.getPaymentMethod()));
+        invoice.setPaymentMethod(method);
         invoice.setPaidAt(LocalDateTime.now());
-        invoice.setPaidBy(auth.getName());
+        invoice.setPaidBy(auth != null ? auth.getName() : null);
         invoice.setPaidAmount(request.getAmount());
-        invoice.setRemainingAmount(invoice.getTotalAmount().subtract(request.getAmount()));
+        BigDecimal remaining = invoice.getTotalAmount().subtract(request.getAmount());
+        invoice.setRemainingAmount(remaining.compareTo(BigDecimal.ZERO) < 0 ? BigDecimal.ZERO : remaining);
         
         invoiceRepository.save(invoice);
         
@@ -172,16 +202,47 @@ public class InvoiceService {
         return invoice;
     }
     
+    private void assertPatientOwnsInvoiceIfPatientRole(Invoice invoice, Authentication auth) {
+        if (auth == null || auth.getAuthorities() == null) {
+            return;
+        }
+        boolean isPatient = auth.getAuthorities().stream()
+            .anyMatch(a -> "ROLE_PATIENT".equals(a.getAuthority()));
+        if (!isPatient) {
+            return;
+        }
+        long patientId = Long.parseLong(auth.getName());
+        if (!invoice.getPatient().getId().equals(patientId)) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Không có quyền truy cập hóa đơn này");
+        }
+    }
+    
     private InvoiceDto toDto(Invoice invoice) {
+        Long treatmentPlanId = invoice.getTreatmentPlan() != null ? invoice.getTreatmentPlan().getId() : null;
+        List<InvoiceDto.InvoiceItemDto> itemDtos = Collections.emptyList();
+        if (invoice.getItems() != null && !invoice.getItems().isEmpty()) {
+            itemDtos = invoice.getItems().stream()
+                .map(i -> InvoiceDto.InvoiceItemDto.builder()
+                    .serviceName(i.getServiceName())
+                    .toothNumber(i.getToothNumber())
+                    .quantity(i.getQuantity())
+                    .unitPrice(i.getUnitPrice())
+                    .totalPrice(i.getTotalPrice())
+                    .description(i.getDescription())
+                    .build())
+                .collect(Collectors.toList());
+        }
         return InvoiceDto.builder()
             .id(invoice.getId())
             .patientId(invoice.getPatient().getId())
+            .treatmentPlanId(treatmentPlanId)
             .patientName(invoice.getPatient().getFirstName() + " " + invoice.getPatient().getLastName())
             .totalAmount(invoice.getTotalAmount())
             .paymentStatus(invoice.getPaymentStatus().toString())
             .paymentMethod(invoice.getPaymentMethod() != null ? invoice.getPaymentMethod().toString() : null)
             .paidAt(invoice.getPaidAt())
             .createdAt(invoice.getCreatedAt())
+            .items(itemDtos)
             .build();
     }
 }

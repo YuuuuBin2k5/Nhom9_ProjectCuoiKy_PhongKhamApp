@@ -232,8 +232,10 @@ public class PatientDashboardFragment extends Fragment {
                     if (currentPatient.getId() != null) {
                         new TokenManager(requireContext()).savePatientId(currentPatient.getId());
                     }
-                    String fullName = (currentPatient.getLastName() + " " + currentPatient.getFirstName()).trim();
-                    tvPatientName.setText(fullName);
+                    String fn = currentPatient.getFirstName() != null ? currentPatient.getFirstName() : "";
+                    String ln = currentPatient.getLastName() != null ? currentPatient.getLastName() : "";
+                    String fullName = (fn + " " + ln).trim();
+                    tvPatientName.setText(fullName.isEmpty() ? "Bệnh nhân" : fullName);
                     
                     boolean isMissingInfo = currentPatient.getPhone() == null || currentPatient.getPhone().isEmpty() ||
                             currentPatient.getEmail() == null || currentPatient.getEmail().isEmpty() ||

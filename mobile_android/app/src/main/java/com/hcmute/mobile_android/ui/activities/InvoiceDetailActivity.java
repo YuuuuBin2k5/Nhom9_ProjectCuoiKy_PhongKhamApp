@@ -92,6 +92,9 @@ public class InvoiceDetailActivity extends AppCompatActivity {
                 Intent intent = new Intent(this, PaymentActivity.class);
                 intent.putExtra("invoiceId", currentInvoice.getId());
                 intent.putExtra("amount", currentInvoice.getTotalAmount() != null ? currentInvoice.getTotalAmount().doubleValue() : 0.0);
+                if (currentInvoice.getTreatmentPlanId() != null) {
+                    intent.putExtra("treatmentPlanId", currentInvoice.getTreatmentPlanId());
+                }
                 startActivity(intent);
             }
         });
@@ -157,8 +160,10 @@ public class InvoiceDetailActivity extends AppCompatActivity {
         }
 
         List<Invoice.InvoiceItem> items = invoice.getItems();
-        if (items != null) {
+        if (items != null && !items.isEmpty()) {
             rvItems.setAdapter(new InvoiceItemAdapter(items));
+        } else {
+            rvItems.setAdapter(null);
         }
     }
 

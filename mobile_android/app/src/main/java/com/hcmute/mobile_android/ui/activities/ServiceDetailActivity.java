@@ -10,10 +10,10 @@ import android.widget.ArrayAdapter;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -68,6 +68,9 @@ public class ServiceDetailActivity extends AppCompatActivity {
 
     // Chosen datetime (ISO: yyyy-MM-dd'T'HH:mm:ss)
     private String selectedDatetime = null;
+
+    private static final int START_MINUTES = 8 * 60; // 08:00
+    private static final int END_MINUTES = 16 * 60 + 40; // 16:40
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -213,13 +216,11 @@ public class ServiceDetailActivity extends AppCompatActivity {
         Calendar now = Calendar.getInstance();
         new TimePickerDialog(this, (tv, hour, minute) -> {
             int totalMin = hour * 60 + minute;
-            int startMin = 8 * 60; // 08:00
-            int endMin = 16 * 60 + 40; // 16:40
 
-            if (totalMin < startMin || totalMin > endMin) {
-                ToastUtils.showCenteredToastLong(this, "Vui lòng chọn từ 08:00 đến 16:40");
-                // Re-open the time picker
-                showTimePicker(year, month, day);
+            if (totalMin < START_MINUTES || totalMin > END_MINUTES) {
+                ToastUtils.showCenteredToastLong(this,
+                        "Giờ khám chỉ trong khung 08:00 – 16:40. Vui lòng chọn giờ khác.");
+                clearSelectedDatetime();
                 return;
             }
 
@@ -229,7 +230,7 @@ public class ServiceDetailActivity extends AppCompatActivity {
 
             if (selectedCalendar.before(now)) {
                 ToastUtils.showCenteredToastLong(this, "Thời gian chọn không được trong quá khứ");
-                showTimePicker(year, month, day);
+                clearSelectedDatetime();
                 return;
             }
             // Update ISO format for Backend
@@ -245,6 +246,14 @@ public class ServiceDetailActivity extends AppCompatActivity {
         }, now.get(Calendar.HOUR_OF_DAY), now.get(Calendar.MINUTE), true).show();
     }
 
+    private void clearSelectedDatetime() {
+        selectedDatetime = null;
+        if (tvDatetimeSelected != null) {
+            tvDatetimeSelected.setText("Nhấn để chọn ngày & giờ");
+            tvDatetimeSelected.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
+        }
+    }
+
     // ─── Submit → POST api/appointments ──────────────────────────────────────
 
     private void submitBooking() {
@@ -256,6 +265,19 @@ public class ServiceDetailActivity extends AppCompatActivity {
             ToastUtils.showCenteredToast(this, "Vui lòng chọn ngày & giờ khám");
             return;
         }
+
+        try {
+            String timePart = selectedDatetime.substring(11, 16);
+            String[] parts = timePart.split(":");
+            int h = Integer.parseInt(parts[0]);
+            int m = Integer.parseInt(parts[1]);
+            int totalMin = h * 60 + m;
+            if (totalMin < START_MINUTES || totalMin > END_MINUTES) {
+                ToastUtils.showCenteredToastLong(this, "Thời gian đặt lịch phải từ 08:00 đến 16:40");
+                clearSelectedDatetime();
+                return;
+            }
+        } catch (Exception ignored) { }
 
         int idx = spinnerDoctors.getSelectedItemPosition();
         DoctorItem doctor = (idx >= 0 && idx < doctorList.size()) ? doctorList.get(idx) : null;
