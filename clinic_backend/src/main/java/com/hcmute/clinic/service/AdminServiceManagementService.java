@@ -2,8 +2,7 @@ package com.hcmute.clinic.service;
 
 import com.hcmute.clinic.entity.ServiceCategory;
 import com.hcmute.clinic.entity.ServiceImage;
-import com.hcmute.clinic.repository.ServiceCategoryRepository;
-import com.hcmute.clinic.repository.ServiceRepository;
+import com.hcmute.clinic.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -17,6 +16,10 @@ public class AdminServiceManagementService {
 
     private final ServiceRepository serviceRepository;
     private final ServiceCategoryRepository categoryRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final TreatmentPlanStepRepository treatmentPlanStepRepository;
+    private final InvoiceItemRepository invoiceItemRepository;
+    private final TreatmentPlanTemplateStepRepository templateStepRepository;
 
     @Transactional
     public ServiceCategory createCategory(String name, String description) {
@@ -116,9 +119,22 @@ public class AdminServiceManagementService {
     public void deleteService(Long id) {
         com.hcmute.clinic.entity.Service service = serviceRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Service not found"));
-        // Soft delete
-        service.setActive(false);
-        serviceRepository.save(service);
+        
+        // UC: Nếu muốn xóa dịch vụ thì dịch vụ đó chưa được thực hiện (hóa đơn, treatment step, ..) và chưa được đặt lịch.
+        if (appointmentRepository.existsByServiceId(id)) {
+            throw new IllegalArgumentException("Không thể xóa dịch vụ này vì đã có lịch hẹn liên quan. Hãy chuyển sang trạng thái Ngừng hoạt động (Active=false) nếu cần.");
+        }
+        if (treatmentPlanStepRepository.existsByServiceId(id)) {
+            throw new IllegalArgumentException("Không thể xóa dịch vụ này vì đã có trong hồ sơ điều trị của bệnh nhân.");
+        }
+        if (invoiceItemRepository.existsByServiceId(id)) {
+            throw new IllegalArgumentException("Không thể xóa dịch vụ này vì đã có trong hóa đơn đã thanh toán/chờ thanh toán.");
+        }
+        if (templateStepRepository.existsByServiceId(id)) {
+            throw new IllegalArgumentException("Không thể xóa dịch vụ này vì đang nằm trong danh sách phác đồ mẫu.");
+        }
+
+        serviceRepository.delete(service);
     }
 
     @Transactional

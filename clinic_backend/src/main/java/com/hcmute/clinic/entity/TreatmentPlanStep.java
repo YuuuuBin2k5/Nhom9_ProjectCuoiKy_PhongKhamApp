@@ -73,4 +73,6 @@ public class TreatmentPlanStep {
     @EqualsAndHashCode.Exclude
     private Prescription prescription;
 
+    @Column(name = "medication_details", columnDefinition = "TEXT")
+    private String medicationDetails;
 }

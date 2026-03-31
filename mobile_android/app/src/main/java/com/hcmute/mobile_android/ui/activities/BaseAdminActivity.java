@@ -98,6 +98,29 @@ public abstract class BaseAdminActivity extends AppCompatActivity {
         snackbar.show();
     }
 
+    public void showErrorDialog(String title, String message) {
+        if (isFinishing()) return;
+        new android.app.AlertDialog.Builder(this)
+                .setTitle(title)
+                .setMessage(message)
+                .setPositiveButton("Đóng", null)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .show();
+    }
+
+    protected String parseErrorBody(retrofit2.Response<?> response) {
+        try {
+            if (response.errorBody() != null) {
+                String errorJson = response.errorBody().string();
+                com.google.gson.JsonObject json = new com.google.gson.Gson().fromJson(errorJson, com.google.gson.JsonObject.class);
+                if (json.has("message")) {
+                    return json.get("message").getAsString();
+                }
+            }
+        } catch (Exception ignored) {}
+        return "Lỗi hệ thống (" + response.code() + ")";
+    }
+
     public void updateEmptyState(boolean isEmpty, @Nullable String title, @Nullable String message) {
         updateEmptyState(isEmpty, title, message, null);
     }

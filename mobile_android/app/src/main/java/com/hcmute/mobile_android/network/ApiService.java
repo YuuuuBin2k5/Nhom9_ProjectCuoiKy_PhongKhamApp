@@ -32,6 +32,7 @@ import com.hcmute.mobile_android.network.models.ChatMessagePayload;
 import com.hcmute.mobile_android.network.models.ChatSendBody;
 import com.hcmute.mobile_android.network.models.DoctorDetailResponse;
 import com.hcmute.mobile_android.network.models.AuditLog;
+import com.hcmute.mobile_android.network.models.AdminTreatmentPlanTemplateRequest;
 import com.hcmute.mobile_android.network.models.AuditLogResponse;
 import com.hcmute.mobile_android.network.models.Receptionist;
 import com.hcmute.mobile_android.network.models.ScheduleAppointment;
@@ -359,4 +360,27 @@ public interface ApiService {
 
     @GET("api/appointments/doctor/{doctorId}/date/{date}")
     Call<List<ScheduleAppointment>> getDoctorSchedule(@Path("doctorId") Long doctorId, @Path("date") String date);
+
+    // Admin Treatment Template Management
+    @GET("api/admin/treatment-templates")
+    Call<List<TreatmentTemplate>> getAdminTreatmentTemplates();
+
+    @GET("api/admin/treatment-templates/{id}")
+    Call<TreatmentTemplate> getAdminTreatmentTemplate(@Path("id") Long id);
+
+    @POST("api/admin/treatment-templates")
+    Call<TreatmentTemplate> createTreatmentTemplate(@Body AdminTreatmentPlanTemplateRequest body);
+
+    @PUT("api/admin/treatment-templates/{id}")
+    Call<TreatmentTemplate> updateTreatmentTemplate(@Path("id") Long id, @Body AdminTreatmentPlanTemplateRequest body);
+
+    @retrofit2.http.DELETE("api/admin/treatment-templates/{id}")
+    Call<com.hcmute.mobile_android.network.models.MessageResponse> deleteTreatmentTemplate(@Path("id") Long id);
+
+    @GET("api/admin/revenue/report")
+    Call<com.hcmute.mobile_android.network.models.AdminRevenueReport> getAdminRevenueReport(
+        @Query("year") Integer year,
+        @Query("month") Integer month,
+        @Query("day") Integer day
+    );
 }

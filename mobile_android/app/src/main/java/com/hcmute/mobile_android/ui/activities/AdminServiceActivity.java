@@ -56,7 +56,7 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
     private List<ServiceCategory> categoryList = new ArrayList<>();
     private ApiService apiService;
     private Spinner spinnerCategories;
-    private MaterialButton btnAddCategory;
+    private MaterialButton btnAddCategory, btnDeleteCategory;
     private ExtendedFloatingActionButton fabAddService;
     private int selectedCategoryId = -1;
 
@@ -107,6 +107,7 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
         
         spinnerCategories = findViewById(R.id.spinnerCategories);
         btnAddCategory = findViewById(R.id.btnAddCategory);
+        btnDeleteCategory = findViewById(R.id.btnDeleteCategory);
         fabAddService = findViewById(R.id.fabAddService);
         
         rvServices = findViewById(R.id.rvServices);
@@ -118,6 +119,7 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
         setupSearch(toolbar, adapter);
 
         btnAddCategory.setOnClickListener(v -> showAddCategoryDialog());
+        btnDeleteCategory.setOnClickListener(v -> confirmDeleteCategory());
         fabAddService.setOnClickListener(v -> showAddServiceDialog());
         
         spinnerCategories.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -126,6 +128,7 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
                 if (position < categoryList.size()) {
                     selectedCategoryId = categoryList.get(position).getId();
                     loadServicesByCategory(selectedCategoryId);
+                    btnDeleteCategory.setVisibility(selectedCategoryId == -1 ? View.GONE : View.VISIBLE);
                 }
             }
 
@@ -582,7 +585,49 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
                     showSuccess("Xóa dịch vụ thành công");
                     loadServices();
                 } else {
-                    showError("Lỗi khi xóa dịch vụ: " + response.code());
+                    showErrorDialog("Lỗi khi xóa", parseErrorBody(response));
+                }
+            }
+
+            @Override
+            public void onFailure(Call<MessageResponse> call, Throwable t) {
+                showLoading(false);
+                showError("Lỗi kết nối mạng: " + t.getMessage());
+            }
+        });
+    }
+
+    private void confirmDeleteCategory() {
+        if (selectedCategoryId == -1) return;
+
+        String categoryName = "";
+        for (ServiceCategory cat : categoryList) {
+            if (cat.getId() == selectedCategoryId) {
+                categoryName = cat.getName();
+                break;
+            }
+        }
+
+        new android.app.AlertDialog.Builder(this)
+                .setTitle("Xác nhận xóa")
+                .setMessage("Bạn có chắc muốn xóa danh mục \"" + categoryName + "\"?")
+                .setPositiveButton("Xóa", (dialog, which) -> deleteCategory(selectedCategoryId))
+                .setNegativeButton("Hủy", null)
+                .show();
+    }
+
+    private void deleteCategory(int categoryId) {
+        showLoading(true, "Đang xóa danh mục...");
+        apiService.deleteCategory((long) categoryId).enqueue(new Callback<MessageResponse>() {
+            @Override
+            public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
+                showLoading(false);
+                if (response.isSuccessful()) {
+                    showSuccess("Xóa danh mục thành công");
+                    loadCategories(-1);
+                    loadServices();
+                } else {
+                    showErrorDialog("Lỗi khi xóa", parseErrorBody(response));
                 }
             }
 

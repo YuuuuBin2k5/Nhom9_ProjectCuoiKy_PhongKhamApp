@@ -84,6 +84,7 @@ public class TreatmentPlan {
         private String roomName;
         private String uiTemplateType;
         private boolean editable;
+        private String medicationDetails;
         private List<ImageItem> images;
 
         public static class ImageItem {
@@ -99,6 +100,9 @@ public class TreatmentPlan {
         // Getters and Setters
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
+
+        public String getMedicationDetails() { return medicationDetails; }
+        public void setMedicationDetails(String medicationDetails) { this.medicationDetails = medicationDetails; }
 
         public Long getTreatmentPlanId() { return treatmentPlanId; }
         public void setTreatmentPlanId(Long treatmentPlanId) { this.treatmentPlanId = treatmentPlanId; }

@@ -117,6 +117,14 @@
             android:theme="@style/Theme.AdminPanel"
             android:exported="false" />
         <activity
+            android:name=".ui.activities.AdminTreatmentTemplateActivity"
+            android:theme="@style/Theme.AdminPanel"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.AdminCreateTemplateActivity"
+            android:theme="@style/Theme.AdminPanel"
+            android:exported="false" />
+        <activity
             android:name=".ui.activities.QRCheckInActivity"
             android:exported="false" />
         <activity

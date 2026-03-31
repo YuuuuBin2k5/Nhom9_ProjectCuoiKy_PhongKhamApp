@@ -11,4 +11,5 @@ public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Lo
     java.util.List<MedicalRecord> findByPatientIdOrderByCreatedAtDesc(Long patientId);
     Page<MedicalRecord> findByPatientId(Long patientId, Pageable pageable);
     java.util.Optional<MedicalRecord> findByAppointmentId(Long appointmentId);
+    boolean existsByDoctorId(Long doctorId);
 }

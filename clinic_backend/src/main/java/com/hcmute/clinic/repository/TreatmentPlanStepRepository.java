@@ -25,6 +25,8 @@ public interface TreatmentPlanStepRepository extends JpaRepository<TreatmentPlan
     Optional<TreatmentPlanStep> findByPlanIdAndToothNumberAndServiceId(
         Long planId, String toothNumber, Long serviceId);
 
+    boolean existsByServiceId(Long serviceId);
+
 
     /**
      * Find the first IN_PROGRESS X-Ray step linked to a given appointment.

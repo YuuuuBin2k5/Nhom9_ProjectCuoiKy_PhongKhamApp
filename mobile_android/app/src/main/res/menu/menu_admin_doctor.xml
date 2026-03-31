@@ -6,4 +6,7 @@
     <item
         android:id="@+id/action_delete"
         android:title="Xóa" />
+    <item
+        android:id="@+id/action_status_toggle"
+        android:title="Đổi trạng thái" />
 </menu>
