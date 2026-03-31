@@ -104,4 +104,8 @@
     <color name="status_in_progress_bg">#E3F2FD</color>
     <color name="status_priority_bg">#FFF3E0</color>
     <color name="status_paused_bg">#F3E5F5</color>
+
+    <!-- Check-in Status Colors -->
+    <color name="warning_orange">#F59E0B</color>
+    <color name="info_blue">#3B82F6</color>
 </resources>
