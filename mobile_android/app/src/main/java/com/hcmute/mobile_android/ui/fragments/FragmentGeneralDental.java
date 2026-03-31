@@ -222,10 +222,12 @@ public class FragmentGeneralDental extends Fragment {
         if (etReason != null) {
             etReason.setEnabled(!readOnly);
             etReason.setFocusable(!readOnly);
+            etReason.setFocusableInTouchMode(!readOnly);
         }
         if (etDiagnosis != null) {
             etDiagnosis.setEnabled(!readOnly);
             etDiagnosis.setFocusable(!readOnly);
+            etDiagnosis.setFocusableInTouchMode(!readOnly);
         }
     }
 }

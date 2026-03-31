@@ -438,28 +438,32 @@ public class FragmentXray extends Fragment {
     public void setReadOnlyMode(boolean readOnly) {
         android.util.Log.d("FragmentXray", "setReadOnlyMode: " + readOnly);
         
-        // Disable all input fields
+        // Enable/disable all input fields
         if (etXrayFindings != null) {
             etXrayFindings.setEnabled(!readOnly);
             etXrayFindings.setFocusable(!readOnly);
+            etXrayFindings.setFocusableInTouchMode(!readOnly);
         }
         
         if (etXrayDiagnosis != null) {
             etXrayDiagnosis.setEnabled(!readOnly);
             etXrayDiagnosis.setFocusable(!readOnly);
+            etXrayDiagnosis.setFocusableInTouchMode(!readOnly);
         }
         
         if (etXrayRecommendations != null) {
             etXrayRecommendations.setEnabled(!readOnly);
             etXrayRecommendations.setFocusable(!readOnly);
+            etXrayRecommendations.setFocusableInTouchMode(!readOnly);
         }
         
         if (etOtherType != null) {
             etOtherType.setEnabled(!readOnly);
             etOtherType.setFocusable(!readOnly);
+            etOtherType.setFocusableInTouchMode(!readOnly);
         }
         
-        // Disable image type selection
+        // Enable/disable image type selection
         if (rgImageType != null) {
             rgImageType.setEnabled(!readOnly);
             for (int i = 0; i < rgImageType.getChildCount(); i++) {
@@ -467,10 +471,10 @@ public class FragmentXray extends Fragment {
             }
         }
         
-        // Disable upload button
+        // Enable/disable upload button
         if (btnUploadXrayImage != null) {
             btnUploadXrayImage.setEnabled(!readOnly);
-            btnUploadXrayImage.setVisibility(readOnly ? View.GONE : View.VISIBLE);
+            btnUploadXrayImage.setVisibility(!readOnly ? View.VISIBLE : View.GONE);
         }
     }
 
