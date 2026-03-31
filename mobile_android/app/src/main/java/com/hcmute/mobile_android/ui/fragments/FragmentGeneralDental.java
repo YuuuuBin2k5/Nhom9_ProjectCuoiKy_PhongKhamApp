@@ -4,6 +4,7 @@ import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
@@ -21,7 +22,12 @@ public class FragmentGeneralDental extends Fragment {
 
     private TextView tvToothNotes;
     public EditText etReason, etDiagnosis;
+    private Button btnEditMode;
     private Map<Integer, String> toothCustomNotesMap = new HashMap<>();
+    
+    // Edit mode state
+    private boolean isReadOnly = false;
+    private boolean isEditMode = false;
 
     @Nullable
     @Override
@@ -39,6 +45,13 @@ public class FragmentGeneralDental extends Fragment {
         tvToothNotes = view.findViewById(R.id.tvToothNotes);
         etReason = view.findViewById(R.id.etReason);
         etDiagnosis = view.findViewById(R.id.etDiagnosis);
+        btnEditMode = view.findViewById(R.id.btnEditMode);
+        
+        // Setup edit mode button
+        if (btnEditMode != null) {
+            btnEditMode.setOnClickListener(v -> toggleEditMode());
+            btnEditMode.setVisibility(View.GONE); // Hidden by default
+        }
     }
 
     public void onToothSelected(int toothNumber) {
@@ -218,14 +231,51 @@ public class FragmentGeneralDental extends Fragment {
         android.util.Log.d("FragmentGeneralDental", "=== setData() end ===");
     }
 
-    public void setReadOnlyMode(boolean readOnly) {
-        if (etReason != null) {
-            etReason.setEnabled(!readOnly);
-            etReason.setFocusable(!readOnly);
+    private void toggleEditMode() {
+        isEditMode = !isEditMode;
+        updateEditableState();
+        
+        if (btnEditMode != null) {
+            btnEditMode.setText(isEditMode ? "Lưu" : "Chỉnh sửa");
         }
+        
+        if (!isEditMode) {
+            // Save mode - notify parent activity
+            android.widget.Toast.makeText(getContext(), "Đã lưu thay đổi", android.widget.Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    private void updateEditableState() {
+        boolean canEdit = !isReadOnly || isEditMode;
+        
+        // EditText fields
+        if (etReason != null) {
+            etReason.setEnabled(canEdit);
+            etReason.setFocusable(canEdit);
+            etReason.setFocusableInTouchMode(canEdit);
+            etReason.setTextColor(canEdit ? 0xFF000000 : 0xFF757575);
+        }
+        
         if (etDiagnosis != null) {
-            etDiagnosis.setEnabled(!readOnly);
-            etDiagnosis.setFocusable(!readOnly);
+            etDiagnosis.setEnabled(canEdit);
+            etDiagnosis.setFocusable(canEdit);
+            etDiagnosis.setFocusableInTouchMode(canEdit);
+            etDiagnosis.setTextColor(canEdit ? 0xFF000000 : 0xFF757575);
+        }
+        
+        // Note: Tooth notes are always read-only in this view
+        // User must use the odontogram dialog to edit tooth notes
+    }
+    
+    public void setReadOnlyMode(boolean readOnly) {
+        this.isReadOnly = readOnly;
+        this.isEditMode = false; // Reset edit mode
+        updateEditableState();
+        
+        // Show/hide edit button
+        if (btnEditMode != null) {
+            btnEditMode.setVisibility(readOnly ? View.VISIBLE : View.GONE);
+            btnEditMode.setText("Chỉnh sửa");
         }
     }
 }

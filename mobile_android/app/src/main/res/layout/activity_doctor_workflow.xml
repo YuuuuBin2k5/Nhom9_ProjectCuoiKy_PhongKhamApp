@@ -442,6 +442,8 @@
                                 android:layout_marginEnd="4dp"
                                 android:visibility="gone" />
 
+                            <!-- REMOVED: Draft save button - plans are now auto-activated -->
+                            <!--
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnSavePlan"
                                 android:layout_width="0dp"
@@ -453,6 +455,7 @@
                                 app:cornerRadius="8dp"
                                 app:backgroundTint="#1565C0"
                                 android:layout_marginEnd="4dp" />
+                            -->
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnCompleteStep"

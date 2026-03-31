@@ -5,6 +5,21 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
+    <!-- Edit Button (Hidden by default, shown when in read-only mode) -->
+    <Button
+        android:id="@+id/btnEditMode"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:text="Chỉnh sửa"
+        android:textSize="13sp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:visibility="gone"
+        android:layout_marginBottom="12dp"
+        android:drawableStart="@android:drawable/ic_menu_edit"
+        android:drawablePadding="6dp"
+        style="@style/Widget.Material3.Button.TonalButton" />
+
     <!-- Clinical Details Card -->
     <com.google.android.material.card.MaterialCardView
         android:layout_width="match_parent"
