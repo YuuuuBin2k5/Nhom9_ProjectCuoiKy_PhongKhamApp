@@ -181,12 +181,13 @@ public class OdontogramView extends View {
                 canvas.drawRoundRect(bounds, 8f, 8f, selectedPaint);
             }
             
-            // Draw tooth number
+            // Draw tooth number with appropriate text color
             float textX = bounds.centerX();
             float textY = bounds.centerY() + (textPaint.getTextSize() / 3);
             
-            // Text color: white if service applied, black otherwise
-            textPaint.setColor(service != null ? Color.WHITE : Color.BLACK);
+            // Choose text color based on background brightness
+            int textColor = getTextColorForBackground(fillPaint.getColor());
+            textPaint.setColor(textColor);
             canvas.drawText(String.valueOf(toothNumber), textX, textY, textPaint);
         }
         
@@ -203,10 +204,26 @@ public class OdontogramView extends View {
     private Paint getToothFillPaint(String serviceName) {
         Paint paint = new Paint(toothPaint);
         
-        if (serviceName != null && SERVICE_COLORS.containsKey(serviceName)) {
-            paint.setColor(SERVICE_COLORS.get(serviceName));
+        if (serviceName != null) {
+            // Try to find matching service color (case-insensitive, substring match)
+            String lowerService = serviceName.toLowerCase().trim();
+            boolean foundMatch = false;
+            
+            for (Map.Entry<String, Integer> entry : SERVICE_COLORS.entrySet()) {
+                if (lowerService.contains(entry.getKey().toLowerCase())) {
+                    paint.setColor(entry.getValue());
+                    foundMatch = true;
+                    break;
+                }
+            }
+            
+            if (!foundMatch) {
+                // Service exists but no color match - use light blue
+                paint.setColor(Color.parseColor("#90CAF9"));
+            }
         } else {
-            paint.setColor(Color.WHITE); // White for no service
+            // No service - use light gray
+            paint.setColor(Color.parseColor("#F5F5F5"));
         }
         
         return paint;
@@ -312,5 +329,24 @@ public class OdontogramView extends View {
     
     public void setOnToothServiceListener(OnToothServiceListener listener) {
         this.listener = listener;
+    }
+    
+    /**
+     * Calculate appropriate text color based on background brightness
+     * Uses luminance formula to determine if background is light or dark
+     */
+    private int getTextColorForBackground(int backgroundColor) {
+        // Extract RGB components
+        int red = Color.red(backgroundColor);
+        int green = Color.green(backgroundColor);
+        int blue = Color.blue(backgroundColor);
+        
+        // Calculate luminance (perceived brightness)
+        // Formula: 0.299*R + 0.587*G + 0.114*B
+        double luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255.0;
+        
+        // If background is light (luminance > 0.5), use dark text
+        // If background is dark (luminance <= 0.5), use white text
+        return luminance > 0.5 ? Color.BLACK : Color.WHITE;
     }
 }

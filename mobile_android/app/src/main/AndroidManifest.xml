@@ -134,6 +134,10 @@
         <activity
             android:name=".ui.activities.staff.DoctorWorkflowActivity"
             android:exported="true" />
+        
+        <activity
+            android:name=".ui.activities.PatientDetailActivity"
+            android:exported="false" />
             
         <!-- Prescription -->
         <activity

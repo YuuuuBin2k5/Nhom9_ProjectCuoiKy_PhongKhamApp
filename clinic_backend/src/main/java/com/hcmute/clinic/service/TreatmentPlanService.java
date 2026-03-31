@@ -485,44 +485,19 @@ public class TreatmentPlanService {
             boolean hasInProgress = plan.getSteps().stream()
                     .anyMatch(s -> s.getStatus() == StepStatus.IN_PROGRESS);
             
-            if (!hasInProgress) {
-                // Tất cả steps đều COMPLETED hoặc CANCELLED → Complete plan
-                plan.setStatus(TreatmentPlanStatus.COMPLETED);
-                planRepository.save(plan);
-
-                // Dọn rác Hàng đợi khi Hoàn thành Phác đồ
-                java.util.List<com.hcmute.clinic.entity.CheckInQueue> queuesForSweep = queueRepo.findTodayForPatient(
-                    plan.getPatient().getId(), 
-                    java.time.LocalDate.now().atStartOfDay(), 
-                    java.time.LocalDate.now().plusDays(1).atStartOfDay()
-                );
-                for (com.hcmute.clinic.entity.CheckInQueue q : queuesForSweep) {
-                    if (q.getStatus() == com.hcmute.clinic.enums.QueueStatus.IN_PROGRESS || 
-                        q.getStatus() == com.hcmute.clinic.enums.QueueStatus.WAITING ||
-                        q.getStatus() == com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY) {
-                        q.setStatus(com.hcmute.clinic.enums.QueueStatus.COMPLETED);
-                        queueRepo.save(q);
-                        try {
-                            if (q.getClinicRoom() != null) {
-                                queueEventService.broadcastQueueUpdated(q.getClinicRoom().getId());
-                            }
-                        } catch (Exception e) {}
-                    }
-                }
-
-                com.hcmute.clinic.entity.Notification notif = com.hcmute.clinic.entity.Notification.builder()
-                        .patient(plan.getPatient())
-                        .title("Phác đồ hoàn tất")
-                        .message("Phác đồ điều trị của bạn đã hoàn tất.")
-                        .type("TREATMENT_COMPLETE")
-                        .build();
-                notifRepo.save(notif);
-                if (plan.getPatient().getFcmToken() != null && !plan.getPatient().getFcmToken().isBlank()) {
-                    fcmService.sendNotification(plan.getPatient().getFcmToken(), notif.getTitle(), notif.getMessage());
-                }
-            }
-            // Nếu còn IN_PROGRESS → Không complete plan, chỉ return null
-            return null; // Không còn bước nào để chuyển
+            // REMOVED AUTO-COMPLETE LOGIC:
+            // Plan should only be completed when user explicitly clicks "Hoàn thành" button
+            // NOT automatically when all steps are done
+            // 
+            // Old logic (removed):
+            // if (!hasInProgress) {
+            //     plan.setStatus(TreatmentPlanStatus.COMPLETED);
+            //     planRepository.save(plan);
+            //     ... cleanup queues and send notification ...
+            // }
+            
+            // Now: Just return null, don't auto-complete the plan
+            return null;
         }
 
         // Kích hoạt bước tiếp theo

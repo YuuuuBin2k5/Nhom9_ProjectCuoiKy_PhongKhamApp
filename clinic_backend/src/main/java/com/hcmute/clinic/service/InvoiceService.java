@@ -95,6 +95,33 @@ public class InvoiceService {
         
         invoiceRepository.save(invoice);
         
+        // ====== MARK QUEUE AS COMPLETED AFTER PAYMENT ======
+        // When payment is finalized, mark the patient's queue as COMPLETED
+        // This ensures the check-in status is removed from patient dashboard
+        try {
+            if (invoice.getPatient() != null) {
+                List<CheckInQueue> queuesForPatient = checkInQueueRepository.findTodayForPatient(
+                    invoice.getPatient().getId(),
+                    LocalDate.now().atStartOfDay(),
+                    LocalDate.now().plusDays(1).atStartOfDay()
+                );
+                for (CheckInQueue q : queuesForPatient) {
+                    if (q.getStatus() != QueueStatus.COMPLETED && q.getStatus() != QueueStatus.SKIPPED) {
+                        q.setStatus(QueueStatus.COMPLETED);
+                        q.setCompletedAt(LocalDateTime.now());
+                        checkInQueueRepository.save(q);
+                        if (q.getClinicRoom() != null) {
+                            queueEventService.broadcastQueueUpdated(q.getClinicRoom().getId());
+                        }
+                    }
+                }
+            }
+        } catch (Exception e) {
+            // Log but do not fail payment for queue errors
+            System.err.println("[InvoiceService] Queue completion error after payment: " + e.getMessage());
+        }
+        // ====== END QUEUE COMPLETION ======
+        
         return PaymentResponse.builder()
             .success(true)
             .message("Payment successful")
@@ -192,6 +219,7 @@ public class InvoiceService {
                     q.getStatus() == QueueStatus.WAITING ||
                     q.getStatus() == QueueStatus.RETURNED_PRIORITY) {
                     q.setStatus(QueueStatus.COMPLETED);
+                    q.setCompletedAt(LocalDateTime.now());
                     checkInQueueRepository.save(q);
                     if (q.getClinicRoom() != null) {
                         queueEventService.broadcastQueueUpdated(q.getClinicRoom().getId());

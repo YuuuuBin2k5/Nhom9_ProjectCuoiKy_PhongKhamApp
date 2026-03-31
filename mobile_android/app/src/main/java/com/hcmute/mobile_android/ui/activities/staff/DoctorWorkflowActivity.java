@@ -1,6 +1,7 @@
 package com.hcmute.mobile_android.ui.activities.staff;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.EditText;
@@ -58,6 +59,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         TreatmentStepAdapter.OnStepActionListener {
     
     public static final String EXTRA_INITIAL_QR = "EXTRA_INITIAL_QR";
+    private static final int REQUEST_PATIENT_DETAIL = 1001;
 
     // Views
     private EditText etQrInput;
@@ -273,6 +275,15 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             lookupPatient();
         }
         
+        // Check if coming back from PatientDetailActivity
+        PatientInfo patientFromDetail = (PatientInfo) getIntent().getSerializableExtra("patient_info");
+        boolean fromDetail = getIntent().getBooleanExtra("from_detail", false);
+        if (fromDetail && patientFromDetail != null) {
+            currentPatient = patientFromDetail;
+            displayPatientInfo(currentPatient);
+            loadLastPlanForPatient(currentPatient.getId());
+        }
+        
         // Auto-open camera scanner if launched from home "Quét QR" shortcut
         if (getIntent().getBooleanExtra("OPEN_SCANNER", false)) {
             // Small delay to let Activity fully render before launching scanner
@@ -288,6 +299,19 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
         });
+    }
+    
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        
+        if (requestCode == REQUEST_PATIENT_DETAIL && resultCode == RESULT_OK) {
+            // Patient detail screen closed, continue with examination
+            if (currentPatient != null) {
+                displayPatientInfo(currentPatient);
+                loadLastPlanForPatient(currentPatient.getId());
+            }
+        }
     }
 
     /**
@@ -350,6 +374,10 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
 
     private void initViews() {
         findViewById(R.id.btnBack).setOnClickListener(v -> handleBackPress());
+        
+        // Skip Patient Button
+        MaterialButton btnSkipPatient = findViewById(R.id.btnSkipPatient);
+        btnSkipPatient.setOnClickListener(v -> handleSkipPatient());
         
         // Header
         tvPatientHeader = findViewById(R.id.tv_patient_header);
@@ -461,11 +489,16 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             qrScannerLauncher.launch(intent);
         });
         
-        btnViewHistory = findViewById(R.id.btnViewHistory);
-        btnViewHistory.setOnClickListener(v -> {
+        // Patient Info Button (i icon)
+        ImageButton btnPatientInfo = findViewById(R.id.btnPatientInfo);
+        btnPatientInfo.setOnClickListener(v -> {
             if (currentPatient != null) {
-                BottomSheetMedicalHistory bottomSheet = BottomSheetMedicalHistory.newInstance(currentPatient.getId());
-                bottomSheet.show(getSupportFragmentManager(), "MedicalHistory");
+                Intent intent = new Intent(this, com.hcmute.mobile_android.ui.activities.PatientDetailActivity.class);
+                intent.putExtra(com.hcmute.mobile_android.ui.activities.PatientDetailActivity.EXTRA_PATIENT_INFO, 
+                    currentPatient);
+                intent.putExtra(com.hcmute.mobile_android.ui.activities.PatientDetailActivity.EXTRA_FROM_WORKFLOW, 
+                    true);
+                startActivity(intent);
             }
         });
         
@@ -643,8 +676,22 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                 
                 if (response.isSuccessful() && response.body() != null) {
                     currentPatient = response.body();
-                    displayPatientInfo(currentPatient);
-                    loadLastPlanForPatient(currentPatient.getId());
+                    
+                    // Check if this is first time examining this patient
+                    if (isFirstVisit(currentPatient.getId())) {
+                        // Show patient detail screen first
+                        Intent intent = new Intent(DoctorWorkflowActivity.this, 
+                            com.hcmute.mobile_android.ui.activities.PatientDetailActivity.class);
+                        intent.putExtra(com.hcmute.mobile_android.ui.activities.PatientDetailActivity.EXTRA_PATIENT_INFO, 
+                            currentPatient);
+                        intent.putExtra(com.hcmute.mobile_android.ui.activities.PatientDetailActivity.EXTRA_FROM_WORKFLOW, 
+                            false);
+                        startActivityForResult(intent, REQUEST_PATIENT_DETAIL);
+                    } else {
+                        // Go directly to examination
+                        displayPatientInfo(currentPatient);
+                        loadLastPlanForPatient(currentPatient.getId());
+                    }
                 } else {
                     Toast.makeText(DoctorWorkflowActivity.this, 
                         "Không tìm thấy bệnh nhân", Toast.LENGTH_SHORT).show();
@@ -660,6 +707,15 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             }
         });
     }
+    
+    private boolean isFirstVisit(Long patientId) {
+        SharedPreferences prefs = getSharedPreferences("doctor_visits", MODE_PRIVATE);
+        SharedPreferences authPrefs = getSharedPreferences("auth", MODE_PRIVATE);
+        Long doctorId = authPrefs.getLong("user_id", 0L);
+        
+        String key = "doctor_" + doctorId + "_patient_" + patientId + "_visited";
+        return !prefs.getBoolean(key, false);
+    }
 
     private void displayPatientInfo(PatientInfo patient) {
         String header = "Khám Bệnh nhân " + patient.getFullName();
@@ -667,6 +723,18 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             header += "\n(Đặt lịch: " + patient.getBookedService() + ")";
         }
         tvPatientHeader.setText(header);
+        
+        // Show patient info button
+        ImageButton btnPatientInfo = findViewById(R.id.btnPatientInfo);
+        btnPatientInfo.setVisibility(View.VISIBLE);
+        
+        // Show/hide skip button based on queue status
+        MaterialButton btnSkipPatient = findViewById(R.id.btnSkipPatient);
+        if (patient.getQueueId() != null && patient.getQueueId() > 0) {
+            btnSkipPatient.setVisibility(View.VISIBLE);
+        } else {
+            btnSkipPatient.setVisibility(View.GONE);
+        }
         
         // Hide lookup, show examination area
         cardLookup.setVisibility(View.GONE);
@@ -686,6 +754,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                 .setNegativeButton("Quay lại quầy", (dialog, which) -> {
                     cardLookup.setVisibility(View.VISIBLE);
                     layoutExamination.setVisibility(View.GONE);
+                    btnPatientInfo.setVisibility(View.GONE);
                 })
                 .setCancelable(false)
                 .show();
@@ -2137,6 +2206,58 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                     "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
             }
         });
+    }
+
+    /**
+     * Handle skip patient button click
+     * Moves current patient back to queue and calls next patient
+     */
+    private void handleSkipPatient() {
+        if (currentPatient == null || currentPatient.getQueueId() == null || currentPatient.getQueueId() <= 0) {
+            Toast.makeText(this, "Không có bệnh nhân trong hàng đợi để lùi", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        String patientName = (currentPatient.getLastName() + " " + currentPatient.getFirstName()).trim();
+        
+        new android.app.AlertDialog.Builder(this)
+            .setTitle("Lùi 1 người")
+            .setMessage("Bệnh nhân " + patientName + " sẽ quay lại hàng đợi với độ ưu tiên cao.\n\nNgười tiếp theo sẽ được gọi vào phòng.\n\nXác nhận?")
+            .setPositiveButton("Xác nhận", (dialog, which) -> {
+                android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
+                progressDialog.setMessage("Đang xử lý...");
+                progressDialog.setCancelable(false);
+                progressDialog.show();
+                
+                apiService.skipPatient(currentPatient.getQueueId()).enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        progressDialog.dismiss();
+                        if (response.isSuccessful()) {
+                            Toast.makeText(DoctorWorkflowActivity.this, 
+                                "Đã lùi " + patientName + " và gọi người tiếp theo", 
+                                Toast.LENGTH_SHORT).show();
+                            
+                            // Close current activity and return to home
+                            finish();
+                        } else {
+                            Toast.makeText(DoctorWorkflowActivity.this, 
+                                "Lỗi: " + response.code(), 
+                                Toast.LENGTH_SHORT).show();
+                        }
+                    }
+                    
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        progressDialog.dismiss();
+                        Toast.makeText(DoctorWorkflowActivity.this, 
+                            "Lỗi kết nối: " + t.getMessage(), 
+                            Toast.LENGTH_SHORT).show();
+                    }
+                });
+            })
+            .setNegativeButton("Hủy", null)
+            .show();
     }
 
 }

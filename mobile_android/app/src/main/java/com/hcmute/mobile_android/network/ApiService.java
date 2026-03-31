@@ -174,6 +174,9 @@ public interface ApiService {
     @POST("api/queue/{id}/transfer-xray")
     Call<Void> transferToXRay(@Path("id") Long queueId, @Body java.util.Map<String, Long> body);
 
+    @POST("api/reception/queue/{id}/skip")
+    Call<Void> skipPatient(@Path("id") Long queueId);
+
     @PUT("api/queue/{id}/status")
     Call<Void> completePatient(@Path("id") Long queueId);
 

@@ -1,6 +1,7 @@
 package com.hcmute.clinic.repository;
 
 import com.hcmute.clinic.entity.Patient;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -16,6 +17,14 @@ public interface PatientRepository extends JpaRepository<Patient, Long> {
     Optional<Patient> findByEmailIgnoreCase(String email);
 
     Optional<Patient> findByPhone(String phone);
+    
+    // Optimized: Fetch patient with profile in one query
+    @EntityGraph(attributePaths = {"profile"})
+    Optional<Patient> findById(Long id);
+    
+    // Optimized: Fetch patient with profile using JOIN FETCH
+    @Query("SELECT p FROM Patient p LEFT JOIN FETCH p.profile WHERE p.id = :id")
+    Optional<Patient> findByIdWithProfile(@Param("id") Long id);
     
     // Search functionality
     @Query("SELECT p FROM Patient p WHERE " +

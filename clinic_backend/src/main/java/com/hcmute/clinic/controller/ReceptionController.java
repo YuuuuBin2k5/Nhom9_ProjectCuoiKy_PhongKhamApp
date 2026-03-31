@@ -59,4 +59,25 @@ public class ReceptionController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+    
+    /**
+     * Skip current patient (move back to waiting) and call next patient
+     * Use case: Doctor needs more time with current patient
+     */
+    @PostMapping("/queue/{queueId}/skip")
+    public ResponseEntity<?> skipPatient(@PathVariable Long queueId) {
+        try {
+            checkInQueueService.skipCurrentPatient(queueId);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Đã lùi bệnh nhân và gọi người tiếp theo"
+            ));
+        } catch (Exception e) {
+            log.error("Error skipping patient", e);
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", e.getMessage()
+            ));
+        }
+    }
 }

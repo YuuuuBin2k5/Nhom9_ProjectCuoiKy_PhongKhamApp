@@ -3,66 +3,137 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginHorizontal="12dp"
-    android:layout_marginVertical="8dp"
-    app:cardBackgroundColor="#FFFFFF"
-    app:cardCornerRadius="24dp"
-    app:cardElevation="4dp"
-    app:cardMaxElevation="6dp"
-    app:strokeWidth="0dp">
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="1dp"
+    app:cardBackgroundColor="#F9FAFB"
+    app:strokeColor="#E0E0E0"
+    app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="14dp"
-        android:background="?android:attr/selectableItemBackground">
+        android:orientation="vertical"
+        android:padding="16dp">
 
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/ivHistoryIcon"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
-            android:padding="12dp"
-            android:src="@drawable/ic_info"
-            app:shapeAppearanceOverlay="@style/CircleAppearance"
-            android:background="#1A3B82F6"
-            app:tint="#3B82F6" />
-
+        <!-- Date and Doctor -->
         <LinearLayout
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:orientation="vertical"
-            android:layout_marginStart="16dp">
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
 
             <TextView
-                android:id="@+id/tvHistoryTitle"
-                android:layout_width="wrap_content"
+                android:id="@+id/tvDate"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:text="BLOOD TYPE"
-                android:textColor="#94A3B8"
-                android:textSize="11sp"
+                android:layout_weight="1"
+                android:text="15/03/2026"
+                android:textSize="14sp"
                 android:textStyle="bold"
-                android:letterSpacing="0.1" />
+                android:textColor="#1565C0" />
 
             <TextView
-                android:id="@+id/tvHistoryValue"
+                android:id="@+id/tvDoctorName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="2dp"
-                android:text="O+"
-                android:textColor="#1E293B"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                android:text="BS. Trần Văn B"
+                android:textSize="13sp"
+                android:textColor="#546E7A" />
         </LinearLayout>
 
-        <ImageView
-            android:layout_width="20dp"
-            android:layout_height="20dp"
-            android:src="@drawable/ic_arrow_forward"
-            app:tint="#CBD5E1" />
+        <!-- Diagnosis -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="6dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chẩn đoán: "
+                android:textSize="13sp"
+                android:textColor="#546E7A" />
+
+            <TextView
+                android:id="@+id/tvDiagnosis"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Sâu răng số 6"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="#0D1B2A" />
+        </LinearLayout>
+
+        <!-- Symptoms -->
+        <LinearLayout
+            android:id="@+id/layoutSymptoms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="6dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Triệu chứng: "
+                android:textSize="13sp"
+                android:textColor="#546E7A" />
+
+            <TextView
+                android:id="@+id/tvSymptoms"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text=""
+                android:textSize="13sp"
+                android:textColor="#0D1B2A" />
+        </LinearLayout>
+
+        <!-- Advice -->
+        <LinearLayout
+            android:id="@+id/layoutAdvice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lời khuyên: "
+                android:textSize="13sp"
+                android:textColor="#546E7A" />
+
+            <TextView
+                android:id="@+id/tvAdvice"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text=""
+                android:textSize="13sp"
+                android:textColor="#0D1B2A" />
+        </LinearLayout>
+
+        <!-- Expand button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnExpand"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="Xem chi tiết"
+            android:textSize="12sp"
+            android:textAllCaps="false"
+            android:textColor="#1565C0"
+            android:layout_marginTop="4dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="8dp" />
 
     </LinearLayout>
+
 </com.google.android.material.card.MaterialCardView>

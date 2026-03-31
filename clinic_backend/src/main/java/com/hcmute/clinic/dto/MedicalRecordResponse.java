@@ -13,10 +13,14 @@ import java.util.List;
 @NoArgsConstructor
 @AllArgsConstructor
 public class MedicalRecordResponse {
+    private Long id;
     private Long appointmentId;
     private String date;
     private String doctorName;
+    private String doctorSpecialty;
     private String diagnosis;
+    private String symptoms;
+    private String advice;
     private String prescription;
     private List<String> services;
     private String totalAmount;

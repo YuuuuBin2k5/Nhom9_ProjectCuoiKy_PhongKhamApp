@@ -388,19 +388,27 @@ public class HomeFragment extends Fragment {
                     });
                 });
                 holder.btnDelay.setOnClickListener(v -> {
-                    ApiService api = RetrofitClient.getApiService(holder.itemView.getContext());
-                    api.delayPatient(q.getId()).enqueue(new Callback<Void>() {
-                        @Override
-                        public void onResponse(Call<Void> call, Response<Void> res) {
-                            ToastUtils.showCenteredToast(holder.itemView.getContext(),
-                                    res.isSuccessful() ? "Đã lùi lượt " + name : "Lỗi khi lùi");
-                            if (res.isSuccessful() && isAdded()) loadData();
-                        }
-                        @Override
-                        public void onFailure(Call<Void> call, Throwable t) {
-                            ToastUtils.showCenteredToast(holder.itemView.getContext(), "Lỗi mạng");
-                        }
-                    });
+                    // Show confirmation dialog before skipping
+                    new android.app.AlertDialog.Builder(holder.itemView.getContext())
+                        .setTitle("Lùi 1 người")
+                        .setMessage("Bệnh nhân " + name + " sẽ quay lại hàng đợi với độ ưu tiên cao.\n\nNgười tiếp theo sẽ được gọi vào phòng.\n\nXác nhận?")
+                        .setPositiveButton("Xác nhận", (dialog, which) -> {
+                            ApiService api = RetrofitClient.getApiService(holder.itemView.getContext());
+                            api.skipPatient(q.getId()).enqueue(new Callback<Void>() {
+                                @Override
+                                public void onResponse(Call<Void> call, Response<Void> res) {
+                                    ToastUtils.showCenteredToast(holder.itemView.getContext(),
+                                            res.isSuccessful() ? "Đã lùi " + name + " và gọi người tiếp theo" : "Lỗi khi lùi");
+                                    if (res.isSuccessful() && isAdded()) loadData();
+                                }
+                                @Override
+                                public void onFailure(Call<Void> call, Throwable t) {
+                                    ToastUtils.showCenteredToast(holder.itemView.getContext(), "Lỗi mạng: " + t.getMessage());
+                                }
+                            });
+                        })
+                        .setNegativeButton("Hủy", null)
+                        .show();
                 });
             }
 

@@ -16,8 +16,23 @@ import java.util.Optional;
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
     List<Appointment> findByPatientIdAndStatus(Long patientId, AppointmentStatus status);
 
+    // Optimized: Fetch with patient and doctor to avoid N+1
+    @Query("""
+            SELECT a FROM Appointment a
+            LEFT JOIN FETCH a.patient p
+            LEFT JOIN FETCH p.profile
+            LEFT JOIN FETCH a.doctor d
+            LEFT JOIN FETCH d.clinicRoom
+            LEFT JOIN FETCH a.service s
+            LEFT JOIN FETCH s.category
+            WHERE a.patient.id = :patientId
+            AND a.appointmentDatetime BETWEEN :start AND :end
+            ORDER BY a.appointmentDatetime ASC
+            """)
     List<Appointment> findByPatientIdAndAppointmentDatetimeBetweenOrderByAppointmentDatetimeAsc(
-            Long patientId, java.time.LocalDateTime start, java.time.LocalDateTime end);
+            @Param("patientId") Long patientId, 
+            @Param("start") LocalDateTime start, 
+            @Param("end") LocalDateTime end);
 
     boolean existsByDoctorIdAndAppointmentDatetimeBetween(Long doctorId, LocalDateTime start, LocalDateTime end);
 
@@ -31,8 +46,23 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
                 today.plusDays(1).atStartOfDay());
     }
     
+    // Optimized: Fetch with patient and service to avoid N+1
+    @Query("""
+            SELECT a FROM Appointment a
+            LEFT JOIN FETCH a.patient p
+            LEFT JOIN FETCH p.profile
+            LEFT JOIN FETCH a.doctor d
+            LEFT JOIN FETCH d.clinicRoom
+            LEFT JOIN FETCH a.service s
+            LEFT JOIN FETCH s.category
+            WHERE a.doctor.id = :doctorId
+            AND a.appointmentDatetime BETWEEN :start AND :end
+            ORDER BY a.appointmentDatetime ASC
+            """)
     List<Appointment> findByDoctorIdAndAppointmentDatetimeBetweenOrderByAppointmentDatetimeAsc(
-            Long doctorId, java.time.LocalDateTime start, java.time.LocalDateTime end);
+            @Param("doctorId") Long doctorId, 
+            @Param("start") LocalDateTime start, 
+            @Param("end") LocalDateTime end);
 
     default List<Appointment> findTodayByDoctorId(Long doctorId) {
         LocalDate today = LocalDate.now();
@@ -63,5 +93,17 @@ public interface AppointmentRepository extends JpaRepository<Appointment, Long> 
     @Query("SELECT a FROM Appointment a WHERE DATE(a.appointmentDatetime) = :date")
     List<Appointment> findByDate(@Param("date") LocalDate date);
     
-    List<Appointment> findByPatientIdOrderByAppointmentDatetimeDesc(Long patientId);
+    // Optimized: Fetch with patient, doctor, service for patient history
+    @Query("""
+            SELECT a FROM Appointment a
+            LEFT JOIN FETCH a.patient p
+            LEFT JOIN FETCH p.profile
+            LEFT JOIN FETCH a.doctor d
+            LEFT JOIN FETCH d.clinicRoom
+            LEFT JOIN FETCH a.service s
+            LEFT JOIN FETCH s.category
+            WHERE a.patient.id = :patientId
+            ORDER BY a.appointmentDatetime DESC
+            """)
+    List<Appointment> findByPatientIdOrderByAppointmentDatetimeDesc(@Param("patientId") Long patientId);
 }

@@ -1,11 +1,15 @@
 package com.hcmute.clinic.controller;
 
 import com.hcmute.clinic.entity.Appointment;
+import com.hcmute.clinic.entity.Doctor;
 import com.hcmute.clinic.entity.Patient;
 import com.hcmute.clinic.enums.AppointmentStatus;
+import com.hcmute.clinic.enums.StepStatus;
 import com.hcmute.clinic.repository.AppointmentRepository;
 import com.hcmute.clinic.repository.CheckInQueueRepository;
 import com.hcmute.clinic.repository.PatientRepository;
+import com.hcmute.clinic.repository.MedicalRecordRepository;
+import com.hcmute.clinic.repository.InvoiceRepository;
 import com.hcmute.clinic.entity.CheckInQueue;
 import com.hcmute.clinic.dto.MedicalRecordResponse;
 import lombok.RequiredArgsConstructor;
@@ -30,6 +34,8 @@ public class DoctorController {
     private final PatientRepository patientRepository;
     private final AppointmentRepository appointmentRepository;
     private final CheckInQueueRepository checkInQueueRepository;
+    private final MedicalRecordRepository medicalRecordRepository;
+    private final InvoiceRepository invoiceRepository;
     private final com.hcmute.clinic.repository.DoctorRepository doctorRepository;
     private final com.hcmute.clinic.repository.TreatmentPlanRepository treatmentPlanRepository;
     private final com.hcmute.clinic.service.CheckInQueueService checkInQueueService;
@@ -201,47 +207,90 @@ public class DoctorController {
             return ResponseEntity.notFound().build();
         }
         
-        // Get all completed appointments for this patient
-        List<Appointment> completedAppointments = appointmentRepository
-            .findByPatientIdOrderByAppointmentDatetimeDesc(id)
-            .stream()
-            .filter(a -> a.getStatus() == AppointmentStatus.COMPLETED)
-            .collect(java.util.stream.Collectors.toList());
+        // Get medical records with optimized fetching (avoid MultipleBagFetchException)
+        // Step 1: Get basic medical records
+        List<com.hcmute.clinic.entity.MedicalRecord> medicalRecords = 
+            medicalRecordRepository.findByPatientIdWithBasicRelations(id);
+        
+        if (medicalRecords.isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+        
+        // Step 2: Fetch details and prescription details separately
+        medicalRecordRepository.fetchDetails(medicalRecords);
+        medicalRecordRepository.fetchPrescriptionDetails(medicalRecords);
         
         DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
         
-        List<MedicalRecordResponse> records = completedAppointments.stream()
-            .map(appointment -> {
+        List<MedicalRecordResponse> records = medicalRecords.stream()
+            .map(record -> {
                 MedicalRecordResponse.MedicalRecordResponseBuilder builder = MedicalRecordResponse.builder()
-                    .appointmentId(appointment.getId())
-                    .date(appointment.getAppointmentDatetime() != null ? 
-                        appointment.getAppointmentDatetime().format(dateFormatter) : "")
-                    .doctorName(appointment.getDoctor() != null ? 
-                        (appointment.getDoctor().getLastName() + " " + appointment.getDoctor().getFirstName()).trim() : "");
+                    .id(record.getId())
+                    .appointmentId(record.getAppointment() != null ? record.getAppointment().getId() : null)
+                    .date(record.getCreatedAt() != null ? 
+                        record.getCreatedAt().format(dateFormatter) : "");
                 
-                // Get treatment plan for services
-                Optional<com.hcmute.clinic.entity.TreatmentPlan> planOpt = treatmentPlanRepository
-                    .findFirstByAppointmentIdOrderByCreatedAtDesc(appointment.getId());
-                
-                if (planOpt.isPresent()) {
-                    com.hcmute.clinic.entity.TreatmentPlan plan = planOpt.get();
-                    
-                    // Get services from treatment plan steps
-                    List<String> services = plan.getSteps().stream()
-                        .map(step -> step.getService() != null ? step.getService().getName() : "")
-                        .filter(s -> !s.isEmpty())
-                        .collect(java.util.stream.Collectors.toList());
-                    builder.services(services);
-                    builder.diagnosis("Đã hoàn thành " + services.size() + " dịch vụ");
+                // Doctor info
+                if (record.getDoctor() != null) {
+                    Doctor doctor = record.getDoctor();
+                    builder.doctorName((doctor.getLastName() + " " + doctor.getFirstName()).trim());
+                    builder.doctorSpecialty(doctor.getSpecialization() != null ? 
+                        doctor.getSpecialization() : "Nha khoa tổng quát");
                 } else {
-                    builder.diagnosis("Không có thông tin");
-                    builder.services(List.of());
+                    builder.doctorName("");
+                    builder.doctorSpecialty("");
                 }
                 
-                // Simplified - no prescription or invoice details
-                builder.prescription("Xem chi tiết trong hồ sơ");
-                builder.totalAmount("N/A");
-                builder.paymentStatus("N/A");
+                // Diagnosis, symptoms, advice from medical record
+                builder.diagnosis(record.getDiagnosis() != null ? record.getDiagnosis() : "Khám tổng quát");
+                builder.symptoms(record.getSymptoms());
+                builder.advice(record.getAdvice());
+                
+                // Get services from medical record details
+                List<String> services = record.getDetails() != null ? 
+                    record.getDetails().stream()
+                        .filter(detail -> detail.getService() != null)
+                        .map(detail -> {
+                            String serviceName = detail.getService().getName();
+                            if (detail.getToothNumber() != null && !detail.getToothNumber().isEmpty()) {
+                                return serviceName + " (Răng " + detail.getToothNumber() + ")";
+                            }
+                            return serviceName;
+                        })
+                        .collect(java.util.stream.Collectors.toList())
+                    : List.of();
+                
+                builder.services(services);
+                
+                // Prescription info
+                if (record.getPrescription() != null) {
+                    com.hcmute.clinic.entity.Prescription prescription = record.getPrescription();
+                    int medicineCount = prescription.getDetails() != null ? 
+                        prescription.getDetails().size() : 0;
+                    builder.prescription(medicineCount > 0 ? 
+                        medicineCount + " loại thuốc" : "Không có đơn thuốc");
+                } else {
+                    builder.prescription("Không có đơn thuốc");
+                }
+                
+                // Get invoice info if exists
+                if (record.getAppointment() != null) {
+                    Optional<com.hcmute.clinic.entity.Invoice> invoiceOpt = 
+                        invoiceRepository.findByAppointmentId(record.getAppointment().getId());
+                    
+                    if (invoiceOpt.isPresent()) {
+                        com.hcmute.clinic.entity.Invoice invoice = invoiceOpt.get();
+                        builder.totalAmount(String.format("%,.0f VNĐ", invoice.getTotalAmount()));
+                        builder.paymentStatus(invoice.getPaymentStatus() != null ? 
+                            invoice.getPaymentStatus().toString() : "N/A");
+                    } else {
+                        builder.totalAmount("N/A");
+                        builder.paymentStatus("N/A");
+                    }
+                } else {
+                    builder.totalAmount("N/A");
+                    builder.paymentStatus("N/A");
+                }
                 
                 return builder.build();
             })

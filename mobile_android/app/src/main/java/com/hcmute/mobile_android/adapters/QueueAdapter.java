@@ -24,6 +24,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
         void onCallPatient(QueueItem item);
         void onExaminePatient(QueueItem item);
         void onTransferToXRay(QueueItem item);
+        void onSkipPatient(QueueItem item);
         void onCompletePatient(QueueItem item);
     }
 
@@ -62,6 +63,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
         private MaterialButton btnCall;
         private MaterialButton btnExamine;
         private MaterialButton btnXRay;
+        private MaterialButton btnSkip;
         private MaterialButton btnComplete;
 
         public QueueViewHolder(@NonNull View itemView) {
@@ -76,6 +78,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
             btnCall = itemView.findViewById(R.id.btnCall);
             btnExamine = itemView.findViewById(R.id.btnExamine);
             btnXRay = itemView.findViewById(R.id.btnXRay);
+            btnSkip = itemView.findViewById(R.id.btnSkip);
             btnComplete = itemView.findViewById(R.id.btnComplete);
         }
 
@@ -172,6 +175,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
             btnCall.setVisibility(View.GONE);
             btnExamine.setVisibility(View.GONE);
             btnXRay.setVisibility(View.GONE);
+            btnSkip.setVisibility(View.GONE);
             btnComplete.setVisibility(View.GONE);
 
             switch (item.getStatus()) {
@@ -196,13 +200,15 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
                     break;
 
                 case "IN_PROGRESS":
-                    // Can examine, transfer to X-Ray or complete
+                    // Can examine, transfer to X-Ray, skip, or complete
                     btnExamine.setVisibility(View.VISIBLE);
                     btnXRay.setVisibility(View.VISIBLE);
+                    btnSkip.setVisibility(View.VISIBLE);
                     btnComplete.setVisibility(View.VISIBLE);
                     
                     btnExamine.setOnClickListener(v -> listener.onExaminePatient(item));
                     btnXRay.setOnClickListener(v -> listener.onTransferToXRay(item));
+                    btnSkip.setOnClickListener(v -> listener.onSkipPatient(item));
                     btnComplete.setOnClickListener(v -> listener.onCompletePatient(item));
                     break;
 

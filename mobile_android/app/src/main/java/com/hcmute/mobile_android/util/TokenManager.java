@@ -34,9 +34,17 @@ public class TokenManager {
             android.util.Log.d("TokenManager", "EncryptedSharedPreferences initialized successfully");
         } catch (GeneralSecurityException | IOException e) {
             android.util.Log.e("TokenManager", "Failed to initialize EncryptedSharedPreferences", e);
-            e.printStackTrace();
             
-            // Fallback to regular SharedPreferences if encryption fails
+            // If encryption fails, delete corrupted encrypted prefs and use fallback
+            try {
+                // Clear corrupted encrypted preferences
+                context.deleteSharedPreferences(PREF_NAME);
+                android.util.Log.w("TokenManager", "Deleted corrupted encrypted preferences");
+            } catch (Exception deleteEx) {
+                android.util.Log.e("TokenManager", "Failed to delete corrupted prefs", deleteEx);
+            }
+            
+            // Fallback to regular SharedPreferences
             try {
                 android.util.Log.w("TokenManager", "Falling back to regular SharedPreferences");
                 sharedPreferences = context.getSharedPreferences(PREF_NAME + "_fallback", Context.MODE_PRIVATE);

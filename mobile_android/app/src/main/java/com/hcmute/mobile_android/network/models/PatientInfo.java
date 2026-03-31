@@ -1,6 +1,8 @@
 package com.hcmute.mobile_android.network.models;
 
-public class PatientInfo {
+import java.io.Serializable;
+
+public class PatientInfo implements Serializable {
     private Long id;
     private String firstName;
     private String lastName;

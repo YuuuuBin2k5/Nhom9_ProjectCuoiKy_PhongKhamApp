@@ -423,6 +423,37 @@ public class QueueManagementActivity extends BaseAdminActivity implements QueueA
     }
 
     @Override
+    public void onSkipPatient(QueueItem item) {
+        // Show confirmation dialog
+        new android.app.AlertDialog.Builder(this)
+            .setTitle("Lùi 1 người")
+            .setMessage("Bệnh nhân " + item.getPatientName() + " sẽ quay lại hàng đợi với độ ưu tiên cao.\n\nNgười tiếp theo sẽ được gọi vào phòng.\n\nXác nhận?")
+            .setPositiveButton("Xác nhận", (dialog, which) -> {
+                showLoading(true, "Đang xử lý...");
+                apiService.skipPatient(item.getId()).enqueue(new Callback<Void>() {
+                    @Override
+                    public void onResponse(Call<Void> call, Response<Void> response) {
+                        showLoading(false);
+                        if (response.isSuccessful()) {
+                            showSuccess("Đã lùi " + item.getPatientName() + " và gọi người tiếp theo");
+                            loadQueue();
+                        } else {
+                            showError("Lỗi: " + response.code());
+                        }
+                    }
+
+                    @Override
+                    public void onFailure(Call<Void> call, Throwable t) {
+                        showLoading(false);
+                        showError("Lỗi kết nối: " + t.getMessage());
+                    }
+                });
+            })
+            .setNegativeButton("Hủy", null)
+            .show();
+    }
+
+    @Override
     public void onExaminePatient(QueueItem item) {
         if (item.getPatientId() == null) {
             showError("Lỗi: Không tìm thấy ID bệnh nhân");
