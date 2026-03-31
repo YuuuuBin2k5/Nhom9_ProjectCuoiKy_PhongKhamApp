@@ -26,8 +26,10 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
         void onStepEdit(TreatmentPlan.Step step);
         void onStepComplete(TreatmentPlan.Step step);
         void onStepRemove(TreatmentPlan.Step step);
+        void onStepCancel(TreatmentPlan.Step step);
         void onToothSelected(int toothNumber);
         void onStepSave(TreatmentPlan.Step step);
+        void onStepTransfer(TreatmentPlan.Step step);
     }
 
     public TreatmentStepAdapter(List<TreatmentPlan.Step> stepList, OnStepActionListener listener) {
@@ -51,7 +53,35 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
     @Override
     public void onBindViewHolder(@NonNull StepViewHolder holder, int position) {
         TreatmentPlan.Step step = stepList.get(position);
-        holder.bind(step, position + 1, listener, isDraftMode, editModeMap, this);
+        
+        // Determine if this step is the next one allowed to be started
+        boolean hasAnyInProgress = false;
+        int firstPendingIndex = -1;
+        for (int i = 0; i < stepList.size(); i++) {
+            String s = stepList.get(i).getStatus();
+            if (s == null) s = "PENDING";
+            String statusUpper = s.toUpperCase();
+            
+            if ("IN_PROGRESS".equals(statusUpper)) {
+                hasAnyInProgress = true;
+            }
+            if (firstPendingIndex == -1 && "PENDING".equals(statusUpper)) {
+                firstPendingIndex = i;
+            }
+        }
+        
+        // A PENDING step is actionable ONLY if:
+        // 1. We are in Draft Mode (allow planning anything)
+        // 2. OR: No step is IN_PROGRESS AND it is the FIRST PENDING step
+        boolean isActionable = true;
+        String status = step.getStatus() != null ? step.getStatus().toUpperCase() : "PENDING";
+        if (!isDraftMode && "PENDING".equals(status)) {
+            if (hasAnyInProgress || (firstPendingIndex != -1 && position != firstPendingIndex)) {
+                isActionable = false;
+            }
+        }
+        
+        holder.bind(step, position + 1, listener, isDraftMode, editModeMap, this, isActionable);
     }
 
     @Override
@@ -72,6 +102,8 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
         private TextView tvDoctorConclusion;
         private MaterialButton btnEdit;
         private MaterialButton btnComplete;
+        private MaterialButton btnTransfer;
+        private MaterialButton btnCancel;
         private android.widget.ImageButton btnRemoveStep;
 
         public StepViewHolder(@NonNull View itemView) {
@@ -88,11 +120,13 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
             tvDoctorConclusion = itemView.findViewById(R.id.tvDoctorConclusion);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnComplete = itemView.findViewById(R.id.btnComplete);
+            btnTransfer = itemView.findViewById(R.id.btnTransfer);
+            btnCancel = itemView.findViewById(R.id.btnCancel);
             btnRemoveStep = itemView.findViewById(R.id.btnRemoveStep);
         }
 
         public void bind(TreatmentPlan.Step step, int stepNumber, OnStepActionListener listener, boolean isDraft, 
-                         java.util.Map<Long, Boolean> editModeMap, TreatmentStepAdapter adapter) {
+                         java.util.Map<Long, Boolean> editModeMap, TreatmentStepAdapter adapter, boolean isActionable) {
             tvStepNumber.setText(String.valueOf(stepNumber));
             tvServiceName.setText(step.getServiceName());
             tvStepDescription.setText(step.getDescription());
@@ -154,6 +188,18 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
                     }
                 }
             });
+
+            btnTransfer.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onStepTransfer(step);
+                }
+            });
+
+            btnCancel.setOnClickListener(v -> {
+                if (listener != null) {
+                    listener.onStepCancel(step);
+                }
+            });
             
             // Room Name
             if (step.getRoomName() != null && !step.getRoomName().isEmpty()) {
@@ -180,7 +226,7 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
             }
 
             // Configure buttons based on status and edit mode
-            configureButtons(step.getStatus(), step.isEditable(), isDraft, isInEditMode);
+            configureButtons(step, step.getStatus(), step.isEditable(), isDraft, isInEditMode, isActionable);
         }
 
         private String getStatusDisplay(String status) {
@@ -224,15 +270,40 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
             }
         }
 
-        private void configureButtons(String status, boolean isEditable, boolean isDraft, boolean isInEditMode) {
+        private void configureButtons(TreatmentPlan.Step step, String status, boolean isEditable, boolean isDraft, boolean isInEditMode, boolean isActionable) {
             if (status == null) status = "PENDING";
             
+            // Determine service type for special handling (X-Ray, Surgery, etc.)
+            String template = step.getUiTemplateType() != null ? step.getUiTemplateType().toUpperCase() : "";
+            String svcName = step.getServiceName() != null ? step.getServiceName().toLowerCase() : "";
+            
+            boolean isXrayOrSurgery = template.contains("XRAY") || template.contains("X-RAY") || 
+                                     template.contains("SURGERY") || svcName.contains("phim") || 
+                                     svcName.contains("xquang") || svcName.contains("x quang") || 
+                                     svcName.contains("x-quang") || 
+                                     svcName.contains("tiểu phẫu") || svcName.contains("phẫu thuật") || 
+                                     svcName.contains("nhổ");
+            
+            // Default visibility
+            btnTransfer.setVisibility(View.GONE);
+            btnCancel.setVisibility(View.GONE);
+
             if (isDraft) {
                 // Draft mode - everything can be edited or removed (we mock "Edit" as "Change")
                 btnEdit.setVisibility(View.VISIBLE);
                 btnEdit.setText("Tùy chỉnh");
                 btnComplete.setVisibility(View.GONE);
                 btnRemoveStep.setVisibility(View.VISIBLE);
+                
+                // Show transfer button even in draft
+                if (isXrayOrSurgery) {
+                    btnTransfer.setVisibility(View.VISIBLE);
+                    btnTransfer.setEnabled(isActionable);
+                    btnTransfer.setAlpha(isActionable ? 1.0f : 0.5f);
+                }
+                
+                btnEdit.setEnabled(isActionable);
+                btnEdit.setAlpha(isActionable ? 1.0f : 0.5f);
                 return;
             }
 
@@ -249,6 +320,7 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
                     btnEdit.setVisibility(View.VISIBLE);
                     btnEdit.setText("Khám bệnh");
                     btnComplete.setVisibility(View.VISIBLE);
+                    btnCancel.setVisibility(View.VISIBLE);
                     btnRemoveStep.setVisibility(View.GONE);
                     break;
                 case "CANCELLED":
@@ -262,6 +334,16 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
                     btnEdit.setText("Bắt đầu");
                     btnComplete.setVisibility(View.GONE);
                     btnRemoveStep.setVisibility(View.VISIBLE);
+                    
+                    // Show transfer button for special services
+                    if (isXrayOrSurgery) {
+                        btnTransfer.setVisibility(View.VISIBLE);
+                        btnTransfer.setEnabled(isActionable);
+                        btnTransfer.setAlpha(isActionable ? 1.0f : 0.5f);
+                    }
+                    
+                    btnEdit.setEnabled(isActionable);
+                    btnEdit.setAlpha(isActionable ? 1.0f : 0.5f);
                     break;
             }
         }

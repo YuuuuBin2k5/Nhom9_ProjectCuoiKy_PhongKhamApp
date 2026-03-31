@@ -183,6 +183,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
+                    android:visibility="gone"
                     app:singleSelection="true"
                     app:selectionRequired="true"
                     app:checkedButton="@+id/btnFormGeneral">
@@ -204,6 +205,14 @@
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
                         
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFormCrown"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="Bọc sứ"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+                        
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnFormOrtho"
                         android:layout_width="0dp"
                         android:layout_weight="1"
@@ -222,13 +231,13 @@
 
                 <androidx.fragment.app.FragmentContainerView
                     android:id="@+id/fragmentContainerForm"
-                    android:name="com.hcmute.mobile_android.ui.fragments.FragmentGeneralDental"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp" />
 
-                <!-- Odontogram View (Tooth Selection) -->
+                <!-- Odontogram View (Tooth Selection) - Chỉ hiển thị ở tab Tổng quát -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardOdontogram"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
@@ -245,7 +254,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Biểu Đồ Răng - Chọn Dịch Vụ Cụ Thể"
+                            android:text="Biểu Đồ Răng - Chọn Răng"
                             android:textSize="14sp"
                             android:textStyle="bold"
                             android:textColor="#0D1B2A"
@@ -260,7 +269,7 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Nhấp vào một răng để thêm dịch vụ cụ thể"
+                            android:text="Nhấp vào các răng để áp dụng dịch vụ này"
                             android:textSize="12sp"
                             android:textColor="#78909C"
                             android:layout_marginTop="8dp"
@@ -459,7 +468,7 @@
                                 app:backgroundTint="#2E7D32"
                                 android:layout_marginEnd="4dp"
                                 android:visibility="gone" />
-
+                                
                             <!-- REMOVED: Draft save button - plans are now auto-activated -->
                             <!--
                             <com.google.android.material.button.MaterialButton
@@ -475,19 +484,7 @@
                                 android:layout_marginEnd="4dp" />
                             -->
 
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnCompleteStep"
-                                android:layout_width="0dp"
-                                android:layout_height="48dp"
-                                android:layout_weight="1"
-                                android:text="Hoàn thành\nBước khám"
-                                android:textSize="11sp"
-                                android:textAllCaps="false"
-                                android:textColor="#FFFFFF"
-                                app:cornerRadius="8dp"
-                                app:backgroundTint="#FF6D00"
-                                android:layout_marginEnd="4dp"
-                                android:visibility="gone" />
+  <!-- Complete/Cancel buttons removed - use list items -->
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnPrescribe"
@@ -504,20 +501,7 @@
                                 app:strokeWidth="1dp" />
                         </LinearLayout>
                         
-                        <com.google.android.material.button.MaterialButton
-                            android:id="@+id/btnCancelStep"
-                            android:layout_width="match_parent"
-                            android:layout_height="48dp"
-                            android:text="Hủy Bước"
-                            android:textSize="12sp"
-                            android:textAllCaps="false"
-                            android:textColor="#D32F2F"
-                            app:cornerRadius="8dp"
-                            app:backgroundTint="@android:color/white"
-                            app:strokeColor="#D32F2F"
-                            app:strokeWidth="1dp"
-                            android:layout_marginTop="8dp"
-                            android:visibility="gone" />
+
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnCompleteTreatment"

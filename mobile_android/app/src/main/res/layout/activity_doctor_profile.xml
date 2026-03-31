@@ -48,18 +48,35 @@
                 android:paddingBottom="24dp"
                 android:paddingTop="?attr/actionBarSize">
 
-                <com.google.android.material.imageview.ShapeableImageView
-                    android:id="@+id/ivDoctorAvatar"
-                    android:layout_width="80dp"
-                    android:layout_height="80dp"
-                    android:src="@drawable/ic_doctor"
-                    android:scaleType="centerCrop"
-                    android:background="@android:color/white"
-                    android:padding="16dp"
-                    app:shapeAppearanceOverlay="@style/CircleAppearance"
-                    app:strokeColor="@android:color/white"
-                    app:strokeWidth="3dp"
-                    android:elevation="4dp" />
+                <FrameLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content">
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/ivDoctorAvatar"
+                        android:layout_width="100dp"
+                        android:layout_height="100dp"
+                        android:src="@drawable/ic_doctor"
+                        android:scaleType="centerCrop"
+                        android:background="@android:color/white"
+                        android:padding="2dp"
+                        app:shapeAppearanceOverlay="@style/CircleAppearance"
+                        app:strokeColor="@android:color/white"
+                        app:strokeWidth="3dp"
+                        android:elevation="4dp" />
+
+                    <com.google.android.material.floatingactionbutton.FloatingActionButton
+                        android:id="@+id/btnChangeAvatar"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|end"
+                        app:fabSize="mini"
+                        app:srcCompat="@drawable/ic_camera"
+                        app:tint="@android:color/white"
+                        app:backgroundTint="@color/primary_trust_blue"
+                        android:layout_margin="2dp"
+                        app:elevation="6dp" />
+                </FrameLayout>
 
                 <TextView
                     android:id="@+id/tvDoctorName"

@@ -177,7 +177,8 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp">
 
                         <TextView
                             android:layout_width="120dp"
@@ -192,6 +193,77 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:text="123 Đường ABC, Q1, TP.HCM"
+                            android:textSize="14sp"
+                            android:textColor="#0D1B2A" />
+                    </LinearLayout>
+
+                    <!-- Blood Type -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:layout_width="120dp"
+                            android:layout_height="wrap_content"
+                            android:text="🩸 Nhóm máu:"
+                            android:textSize="14sp"
+                            android:textColor="#546E7A" />
+
+                        <TextView
+                            android:id="@+id/tvPatientBloodType"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Chưa xác định"
+                            android:textSize="14sp"
+                            android:textColor="#0D1B2A" />
+                    </LinearLayout>
+
+                    <!-- Allergies -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp">
+
+                        <TextView
+                            android:layout_width="120dp"
+                            android:layout_height="wrap_content"
+                            android:text="⚠️ Dị ứng:"
+                            android:textSize="14sp"
+                            android:textColor="#546E7A" />
+
+                        <TextView
+                            android:id="@+id/tvPatientAllergies"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Không có"
+                            android:textSize="14sp"
+                            android:textColor="#0D1B2A" />
+                    </LinearLayout>
+
+                    <!-- Underlying Conditions -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="120dp"
+                            android:layout_height="wrap_content"
+                            android:text="🏥 Bệnh nền:"
+                            android:textSize="14sp"
+                            android:textColor="#546E7A" />
+
+                        <TextView
+                            android:id="@+id/tvPatientUnderlyingConditions"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Không có"
                             android:textSize="14sp"
                             android:textColor="#0D1B2A" />
                     </LinearLayout>

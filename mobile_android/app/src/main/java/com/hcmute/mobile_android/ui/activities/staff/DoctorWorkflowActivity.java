@@ -29,6 +29,8 @@ import com.hcmute.mobile_android.adapters.ImagePreviewAdapter;
 import com.hcmute.mobile_android.adapters.PriceBreakdownAdapter;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
+import com.hcmute.mobile_android.network.models.AddMultipleTeethServiceRequest;
+import com.hcmute.mobile_android.network.models.MultipleTeethServiceResponse;
 import com.hcmute.mobile_android.network.models.PatientInfo;
 import com.hcmute.mobile_android.network.models.TreatmentPlan;
 import com.hcmute.mobile_android.network.models.TreatmentTemplate;
@@ -36,10 +38,12 @@ import com.hcmute.mobile_android.ui.activities.PatientQRScannerActivity;
 import com.hcmute.mobile_android.ui.activities.PaymentActivity;
 import com.hcmute.mobile_android.ui.activities.staff.PrescriptionActivity;
 import com.hcmute.mobile_android.ui.fragments.BottomSheetMedicalHistory;
+import com.hcmute.mobile_android.ui.fragments.FragmentCrownService;
 import com.hcmute.mobile_android.ui.fragments.FragmentGeneralDental;
 import com.hcmute.mobile_android.ui.fragments.FragmentSurgeryChecklist;
 import com.hcmute.mobile_android.ui.fragments.FragmentOrthodontics;
 import com.hcmute.mobile_android.ui.fragments.FragmentXray;
+import com.hcmute.mobile_android.ui.fragments.FragmentBasicService;
 import com.hcmute.mobile_android.network.models.CreateTreatmentPlanRequest;
 import com.google.android.material.button.MaterialButtonToggleGroup;
 import androidx.fragment.app.Fragment;
@@ -49,6 +53,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -66,11 +71,13 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     private EditText etQrInput;
     private TextView tvPatientHeader, tvDoctorGreeting, tvTotalEstimate;
     private ImageButton btnScanQr;
-    private MaterialButton btnActivatePlan, btnSelectTemplate, btnAddService, btnPrescribe, btnPrintPlan, btnCompleteStep, btnCancelStep, btnLookup, btnCompleteTreatment;
-    private MaterialCardView cardLookup, cardTreatmentPlan;
+    private MaterialButton btnActivatePlan, btnSelectTemplate, btnAddService, btnPrescribe, btnPrintPlan, btnLookup, btnCompleteTreatment;
+
+    private MaterialCardView cardLookup, cardTreatmentPlan, cardOdontogram;
     private com.google.android.material.textfield.TextInputEditText etDoctorConclusion;
     private View btnViewHistory;
     private View layoutExamination;
+    private View fragmentContainerView;
     private RecyclerView rvTemplates, rvTreatmentSteps, rvPriceBreakdown;
     private com.google.android.material.button.MaterialButtonToggleGroup toggleFormType;
     
@@ -86,6 +93,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     private Long currentTreatmentPlanId;
     // Current room context – passed from QueueManagementActivity to detect X-Ray room
     private String currentRoomName = "";
+    private com.hcmute.mobile_android.network.models.ServiceItem pendingServiceToAdd;
     
     private ActivityResultLauncher<Intent> qrScannerLauncher;
     
@@ -135,6 +143,8 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             finalNotes = ((FragmentGeneralDental) fragment).getFormDataNotes();
         } else if (fragment instanceof FragmentSurgeryChecklist) {
             finalNotes = ((FragmentSurgeryChecklist) fragment).getFormDataNotes();
+        } else if (fragment instanceof FragmentCrownService) {
+            finalNotes = ((FragmentCrownService) fragment).getFormDataNotes();
         } else if (fragment instanceof FragmentOrthodontics) {
             finalNotes = ((FragmentOrthodontics) fragment).getFormDataNotes();
         } else if (fragment instanceof com.hcmute.mobile_android.ui.fragments.FragmentXray) {
@@ -307,10 +317,30 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         super.onActivityResult(requestCode, resultCode, data);
         
         if (requestCode == REQUEST_PATIENT_DETAIL && resultCode == RESULT_OK) {
-            // Patient detail screen closed, continue with examination
-            if (currentPatient != null) {
-                displayPatientInfo(currentPatient);
-                loadLastPlanForPatient(currentPatient.getId());
+            // Patient detail screen closed, refresh patient info to ensure queueId is still valid
+            if (currentPatient != null && currentPatient.getId() != null) {
+                // Refresh patient info from server
+                String qrCode = "patient:" + currentPatient.getId();
+                apiService.lookupPatientByQR(qrCode).enqueue(new Callback<PatientInfo>() {
+                    @Override
+                    public void onResponse(Call<PatientInfo> call, Response<PatientInfo> response) {
+                        if (response.isSuccessful() && response.body() != null) {
+                            currentPatient = response.body();
+                            displayPatientInfo(currentPatient);
+                            
+                            // Reload treatment plan if exists
+                            if (currentPatient.getHasTreatmentPlan() != null && currentPatient.getHasTreatmentPlan()) {
+                                loadExistingTreatmentPlan(currentPatient.getTreatmentPlanId());
+                            }
+                        }
+                    }
+                    
+                    @Override
+                    public void onFailure(Call<PatientInfo> call, Throwable t) {
+                        // If refresh fails, keep current patient data
+                        android.util.Log.w("DoctorWorkflow", "Failed to refresh patient info: " + t.getMessage());
+                    }
+                });
             }
         } else if (requestCode == REQUEST_PRESCRIPTION && resultCode == RESULT_OK) {
             // Reload steps to reflect updated actualPrice from kê đơn
@@ -402,39 +432,68 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         
         // Examination Area
         layoutExamination = findViewById(R.id.layoutExamination);
+        fragmentContainerView = findViewById(R.id.fragmentContainerForm);
+        cardOdontogram = findViewById(R.id.cardOdontogram);
         toggleFormType = findViewById(R.id.toggleFormType);
+        
+        // Disable các tab chuyên biệt ban đầu – chỉ mở khóa khi có dịch vụ tương ứng 'Bắt đầu'
+        setSpecialTabsEnabled(false);
         
         toggleFormType.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked) {
-                Fragment fragment = null;
-                String templateKey = null;
-                
                 if (checkedId == R.id.btnFormGeneral) {
-                    fragment = new FragmentGeneralDental();
-                    templateKey = "GENERAL";
-                } else if (checkedId == R.id.btnFormSurgery) {
-                    fragment = new FragmentSurgeryChecklist();
-                    templateKey = "SURGERY";
-                } else if (checkedId == R.id.btnFormXray) {
-                    fragment = new com.hcmute.mobile_android.ui.fragments.FragmentXray();
-                    templateKey = "XRAY";
-                } else if (checkedId == R.id.btnFormOrtho) {
-                    fragment = new FragmentOrthodontics();
-                    templateKey = "ORTHO";
-                }
-                
-                if (fragment != null) {
-                    final Fragment finalFragment = fragment;
-                    final String finalTemplateKey = templateKey;
+                    // Tab Tổng quát: Phác đồ điều trị
+                    if (fragmentContainerView != null) fragmentContainerView.setVisibility(View.GONE);
+                    // Sơ đồ răng CHỈ hiện ra nếu đang trong quá trình Thêm dịch vụ
+                    if (cardOdontogram != null) cardOdontogram.setVisibility(pendingServiceToAdd != null ? View.VISIBLE : View.GONE);
+                } else if (checkedId == R.id.btnFormCrown) {
+                    // Tab Bọc sứ: hiện fragment form và odontogram
+                    if (fragmentContainerView != null) fragmentContainerView.setVisibility(View.VISIBLE);
+                    // ALWAYS show odontogram for Crown tab
+                    if (cardOdontogram != null) cardOdontogram.setVisibility(View.VISIBLE);
                     
+                    Fragment fragment = new FragmentCrownService();
                     getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragmentContainerForm, fragment)
                         .commit();
                     
-                    // AUTO-LOAD: Kiểm tra xem có dữ liệu COMPLETED trong cache không
-                    findViewById(R.id.fragmentContainerForm).postDelayed(() -> {
-                        autoPopulateFragmentFromCache(finalFragment, finalTemplateKey);
+                    final Fragment finalFragment = fragment;
+                    fragmentContainerView.postDelayed(() -> {
+                        autoPopulateFragmentFromCache(finalFragment, "CROWN");
                     }, 100);
+                } else {
+                    // Tab Tiểu phẫu, Niềng, X-quang: hiện fragment form
+                    if (fragmentContainerView != null) fragmentContainerView.setVisibility(View.VISIBLE);
+                    // Sơ đồ răng CHỈ hiện ra nếu đang trong quá trình Thêm dịch vụ
+                    if (cardOdontogram != null) cardOdontogram.setVisibility(pendingServiceToAdd != null ? View.VISIBLE : View.GONE);
+                    
+                    Fragment fragment = null;
+                    String templateKey = null;
+                    
+                    if (checkedId == R.id.btnFormSurgery) {
+                        fragment = new FragmentSurgeryChecklist();
+                        templateKey = "SURGERY";
+                    } else if (checkedId == R.id.btnFormXray) {
+                        fragment = new com.hcmute.mobile_android.ui.fragments.FragmentXray();
+                        templateKey = "XRAY";
+                    } else if (checkedId == R.id.btnFormOrtho) {
+                        fragment = new FragmentOrthodontics();
+                        templateKey = "ORTHO";
+                    }
+                    
+                    if (fragment != null) {
+                        final Fragment finalFragment = fragment;
+                        final String finalTemplateKey = templateKey;
+                        
+                        getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.fragmentContainerForm, fragment)
+                            .commit();
+                        
+                        // AUTO-LOAD: Kiểm tra xem có dữ liệu COMPLETED trong cache không
+                        fragmentContainerView.postDelayed(() -> {
+                            autoPopulateFragmentFromCache(finalFragment, finalTemplateKey);
+                        }, 100);
+                    }
                 }
             }
         });
@@ -458,13 +517,16 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                 
                 @Override
                 public void onToothClicked(int toothNumber) {
-                    // Show service selection dialog when tooth is clicked
-                    if (currentTreatmentPlanId == null) {
-                        Toast.makeText(DoctorWorkflowActivity.this, "Vui lòng tạo phác đồ điều trị trước", Toast.LENGTH_SHORT).show();
-                        return;
+                    // Check if we're in Crown tab
+                    Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainerForm);
+                    if (currentFragment instanceof FragmentCrownService) {
+                        // Crown tab: allow tooth selection
+                        odontogramView.toggleSelection(toothNumber);
+                        ((FragmentCrownService) currentFragment).onToothClicked(toothNumber);
+                    } else {
+                        // Original behavior: show dialog to select service for this tooth
+                        showToothServiceSelectionDialog(toothNumber, odontogramView);
                     }
-                    
-                    showToothServiceSelectionDialog(toothNumber, odontogramView);
                 }
             });
         }
@@ -475,8 +537,6 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         btnAddService = findViewById(R.id.btnAddService);
         btnPrescribe = findViewById(R.id.btnPrescribe);
         btnPrintPlan = findViewById(R.id.btnPrintPlan);
-        btnCompleteStep = findViewById(R.id.btnCompleteStep);
-        btnCancelStep = findViewById(R.id.btnCancelStep);
         btnCompleteTreatment = findViewById(R.id.btnCompleteTreatment);
         
         // CRITICAL FIX: Setup upload image button
@@ -504,7 +564,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                     currentPatient);
                 intent.putExtra(com.hcmute.mobile_android.ui.activities.PatientDetailActivity.EXTRA_FROM_WORKFLOW, 
                     true);
-                startActivity(intent);
+                startActivityForResult(intent, REQUEST_PATIENT_DETAIL);
             }
         });
         
@@ -524,16 +584,6 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                 .setPositiveButton("Xác nhận & Lập Hóa đơn", (dialog, which) -> completeAndGenerateInvoice())
                 .setNegativeButton("Hủy", null)
                 .show();
-        });
-        btnCompleteStep.setOnClickListener(v -> {
-            if (currentStep != null) {
-                onStepComplete(currentStep);
-            }
-        });
-        btnCancelStep.setOnClickListener(v -> {
-            if (currentStep != null) {
-                onStepCancel(currentStep);
-            }
         });
         btnSelectTemplate.setOnClickListener(v -> {
             rvTemplates.setVisibility(rvTemplates.getVisibility() == View.VISIBLE ? View.GONE : View.VISIBLE);
@@ -750,7 +800,8 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         cardLookup.setVisibility(View.GONE);
         layoutExamination.setVisibility(View.VISIBLE);
         
-        // CRITICAL FIX: Always default to "Tổng quát" tab first
+        // Reset: disable các tab chuyên biệt, về tab Tổng quát
+        setSpecialTabsEnabled(false);
         toggleFormType.check(R.id.btnFormGeneral);
         
         // Cảnh báo chỉ khi CHƯA Check-in (queueId == -1 = chưa vào hàng đợi)
@@ -855,6 +906,12 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                 ", Status=" + step.getStatus() + 
                 ", UiTemplateType=" + step.getUiTemplateType() +
                 ", ServiceName=" + step.getServiceName());
+            
+            if (("COMPLETED".equals(step.getStatus()) || "IN_PROGRESS".equals(step.getStatus())) 
+                    && step.getUiTemplateType() != null) {
+                // Enable tab tương ứng để bác sĩ có thể xem lại dữ liệu
+                enableTabForStep(step);
+            }
             
             if ("COMPLETED".equals(step.getStatus()) && step.getUiTemplateType() != null) {
                 completedCount++;
@@ -992,6 +1049,15 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             }
             surgeryFragment.setReadOnlyMode(true);
             android.util.Log.d("DoctorWorkflow", "✓ Set READ-ONLY mode for FragmentSurgeryChecklist");
+            
+        } else if (fragment instanceof FragmentCrownService) {
+            FragmentCrownService crownFragment = (FragmentCrownService) fragment;
+            if (finalCachedData.doctorConclusion != null && !finalCachedData.doctorConclusion.trim().isEmpty()) {
+                crownFragment.setData(finalCachedData.doctorConclusion);
+                android.util.Log.d("DoctorWorkflow", "✓ Set data for FragmentCrownService");
+            }
+            crownFragment.setReadOnlyMode(true);
+            android.util.Log.d("DoctorWorkflow", "✓ Set READ-ONLY mode for FragmentCrownService");
             
         } else if (fragment instanceof FragmentOrthodontics) {
             FragmentOrthodontics orthoFragment = (FragmentOrthodontics) fragment;
@@ -1153,6 +1219,37 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         // For PENDING or IN_PROGRESS steps, continue normally
         continueStepEdit(step);
     }
+
+    @Override
+    public void onStepTransfer(TreatmentPlan.Step step) {
+        if (currentPatient == null || currentPatient.getQueueId() == null || currentPatient.getQueueId() <= 0) {
+            Toast.makeText(this, "Không tìm thấy thông tin hàng đợi bệnh nhân", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
+        String template = step.getUiTemplateType() != null ? step.getUiTemplateType().toUpperCase() : "";
+        String svcName = step.getServiceName() != null ? step.getServiceName().toLowerCase() : "";
+        
+        boolean isXrayService = template.contains("XRAY") || template.contains("X-RAY") || 
+                               svcName.contains("phim") || svcName.contains("xquang") || 
+                               svcName.contains("x quang") || svcName.contains("x-quang");
+        boolean isSurgeryService = template.contains("SURGERY") || svcName.contains("tiểu phẫu") || 
+                                  svcName.contains("phẫu thuật") || svcName.contains("nhổ");
+
+        if (isXrayService) {
+            android.util.Log.d("DoctorWorkflow", "Manual transfer to X-Ray room");
+            saveTreatmentPlanInternal(true, () -> {
+                transferPatientToXRay(currentPatient.getQueueId(), step.getServiceName());
+            });
+        } else if (isSurgeryService) {
+            android.util.Log.d("DoctorWorkflow", "Manual transfer to Surgery room");
+            saveTreatmentPlanInternal(true, () -> {
+                transferPatientToSurgeryRoom(currentPatient.getQueueId(), step.getServiceName());
+            });
+        } else {
+            Toast.makeText(this, "Dịch vụ này không yêu cầu chuyển phòng đặc biệt", Toast.LENGTH_SHORT).show();
+        }
+    }
     
     /**
      * Continue the edit flow after status is confirmed as IN_PROGRESS
@@ -1164,7 +1261,6 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                 // New step without ID: Sync with server first
                 step.setStatus("IN_PROGRESS");
                 stepAdapter.notifyDataSetChanged();
-                btnCompleteStep.setVisibility(View.VISIBLE);
                 saveTreatmentPlanInternal(true, () -> {
                     // Refresh from server to get the actual ID
                     loadTreatmentPlanForRoom(currentTreatmentPlanId);
@@ -1172,40 +1268,17 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                 Toast.makeText(this, "Đã lưu và bắt đầu thực hiện: " + step.getServiceName(), Toast.LENGTH_SHORT).show();
                 return;
             } else {
-                // CRITICAL FIX: Check if this is X-ray service - transfer patient first
-                boolean isXrayService = step.getServiceName() != null && 
-                        (step.getServiceName().toLowerCase().contains("x-quang") || 
-                         step.getServiceName().toLowerCase().contains("xquang") ||
-                         step.getServiceName().toLowerCase().contains("x quang") ||
-                         step.getServiceName().toLowerCase().contains("panorama"));
-                
-                // BUG FIX: If doctor is ALREADY in the X-Ray room, skip the transfer.
-                // This handles the case where the X-Ray doctor clicks 'Bắt đầu' on the
-                // patient's X-Ray step, which previously caused an infinite transfer loop.
-                boolean doctorIsInXrayRoom = currentRoomName != null && 
-                        (currentRoomName.toLowerCase().contains("x-quang") ||
-                         currentRoomName.toLowerCase().contains("xquang") ||
-                         currentRoomName.toLowerCase().contains("x quang") ||
-                         currentRoomName.toLowerCase().contains("x-ray") ||
-                         currentRoomName.toLowerCase().contains("xray") ||
-                         currentRoomName.toLowerCase().contains("panorama"));
-                
-                if (isXrayService && !doctorIsInXrayRoom && currentPatient != null && currentPatient.getQueueId() != null && currentPatient.getQueueId() > 0) {
-                    // Transfer to X-ray room first, then start the step
-                    android.util.Log.d("DoctorWorkflow", "Transferring patient to X-Ray room (doctor is in: '" + currentRoomName + "')");
-                    transferPatientToXRay(currentPatient.getQueueId(), step.getServiceName());
-                    return; // Don't continue - patient is transferred
-                } else if (isXrayService && doctorIsInXrayRoom) {
-                    android.util.Log.d("DoctorWorkflow", "Doctor is already in X-Ray room ('" + currentRoomName + "'). Skipping transfer, starting step directly.");
-                }
-                
+                // Start the step via API
                 apiService.startTreatmentStep(step.getId()).enqueue(new Callback<com.hcmute.mobile_android.network.models.MessageResponse>() {
                 @Override
                 public void onResponse(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Response<com.hcmute.mobile_android.network.models.MessageResponse> response) {
                     if (response.isSuccessful()) {
                         step.setStatus("IN_PROGRESS");
                         stepAdapter.notifyDataSetChanged();
-                        btnCompleteStep.setVisibility(View.VISIBLE);
+                        
+                        // Switch to appropriate tab after starting
+                        switchToTabForStep(step);
+                        
                         Toast.makeText(DoctorWorkflowActivity.this, "Đã bắt đầu thực hiện: " + step.getServiceName(), Toast.LENGTH_SHORT).show();
                     }
                 }
@@ -1215,14 +1288,11 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                     // Silently fail or log, as this is an optimization
                 }
                 });
+                return; // Exit early after starting the step
             }
         }
 
-        if ("IN_PROGRESS".equals(step.getStatus())) {
-            btnCompleteStep.setVisibility(View.VISIBLE);
-        } else {
-            btnCompleteStep.setVisibility(View.GONE);
-        }
+
 
         Toast.makeText(this, "Nhập kết luận cho: " + step.getServiceName(), Toast.LENGTH_SHORT).show();
         
@@ -1231,25 +1301,30 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainerForm);
         boolean needsSwitch = true;
         
-        if (step.getUiTemplateType() != null) {
-            String template = step.getUiTemplateType().toUpperCase();
+        String template = step.getUiTemplateType() != null ? step.getUiTemplateType().toUpperCase() : "";
+        String svcName = step.getServiceName() != null ? step.getServiceName().toLowerCase() : "";
+        
+        // Check if current fragment matches the step's template or service name keywords
+        if ((template.contains("SURGERY") || svcName.contains("tiểu phẫu") || svcName.contains("phẫu thuật") || svcName.contains("nhổ")) 
+            && currentFragment instanceof FragmentSurgeryChecklist) {
+            needsSwitch = false;
+        } else if ((template.contains("ORTHO") || svcName.contains("niềng")) && currentFragment instanceof FragmentOrthodontics) {
+            needsSwitch = false;
+        } else if ((template.contains("XRAY") || template.contains("X-RAY") || template.contains("X_RAY") || svcName.contains("phim") || svcName.contains("xquang")) 
+                   && currentFragment instanceof com.hcmute.mobile_android.ui.fragments.FragmentXray) {
+            needsSwitch = false;
+        } else if (template.contains("CROWN") && currentFragment instanceof FragmentCrownService) {
+            // Crown selection form is only for ADDING. For treatment execution, we use Basic Service.
+            // So if we are here (Execution), we usually NEED a switch to Basic Service.
+            needsSwitch = true;
+        } else if (currentFragment instanceof FragmentBasicService) {
+            // Default check for Basic Service
+            boolean isSpecial = template.contains("SURGERY") || template.contains("ORTHO") || 
+                              template.contains("XRAY") || template.contains("X-RAY") || template.contains("X_RAY") ||
+                              svcName.contains("phim") || svcName.contains("xquang") || 
+                              svcName.contains("tiểu phẫu") || svcName.contains("phẫu thuật") || svcName.contains("nhổ");
             
-            // Check if current fragment matches the step's template
-            if (template.contains("SURGERY") && currentFragment instanceof FragmentSurgeryChecklist) {
-                needsSwitch = false;
-            } else if (template.contains("ORTHO") && currentFragment instanceof FragmentOrthodontics) {
-                needsSwitch = false;
-            } else if ((template.contains("XRAY") || template.contains("X-RAY") || template.contains("X_RAY")) 
-                       && currentFragment instanceof com.hcmute.mobile_android.ui.fragments.FragmentXray) {
-                needsSwitch = false;
-            } else if (currentFragment instanceof FragmentGeneralDental && 
-                      !template.contains("SURGERY") && !template.contains("ORTHO") && 
-                      !template.contains("XRAY") && !template.contains("X-RAY") && !template.contains("X_RAY")) {
-                needsSwitch = false;
-            }
-        } else {
-            // Default is general dental
-            if (currentFragment instanceof FragmentGeneralDental) {
+            if (!isSpecial) {
                 needsSwitch = false;
             }
         }
@@ -1280,13 +1355,44 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                     // Ensure editable mode when editing (status is already IN_PROGRESS)
                     ((com.hcmute.mobile_android.ui.fragments.FragmentXray) currentFragment).setReadOnlyMode(false);
                 } else if (currentFragment instanceof FragmentSurgeryChecklist) {
-                    ((FragmentSurgeryChecklist) currentFragment).setData(step.getDoctorConclusion());
-                    // Ensure editable mode when editing (status is already IN_PROGRESS)
+                    if (step.getDoctorConclusion() != null) {
+                        ((FragmentSurgeryChecklist) currentFragment).setData(step.getDoctorConclusion());
+                    }
                     ((FragmentSurgeryChecklist) currentFragment).setReadOnlyMode(false);
+                } else if (currentFragment instanceof FragmentCrownService) {
+                    if (step.getDoctorConclusion() != null) {
+                        ((FragmentCrownService) currentFragment).setData(step.getDoctorConclusion());
+                    }
+                    ((FragmentCrownService) currentFragment).setReadOnlyMode(false);
                 } else if (currentFragment instanceof FragmentOrthodontics) {
-                    ((FragmentOrthodontics) currentFragment).setData(step.getDoctorConclusion());
-                    // Ensure editable mode when editing (status is already IN_PROGRESS)
+                    if (step.getDoctorConclusion() != null) {
+                        ((FragmentOrthodontics) currentFragment).setData(step.getDoctorConclusion());
+                    }
                     ((FragmentOrthodontics) currentFragment).setReadOnlyMode(false);
+                } else if (currentFragment instanceof FragmentBasicService) {
+                    // Populate initial data like Service Name and Tooth Position
+                    List<Integer> teeth = new ArrayList<>();
+                    if (step.getToothNumber() != null && !step.getToothNumber().trim().isEmpty()) {
+                        try {
+                            String[] parts = step.getToothNumber().split(",");
+                            for (String p : parts) {
+                                teeth.add(Integer.parseInt(p.trim()));
+                            }
+                        } catch (Exception e) {}
+                    }
+                    
+                    ((FragmentBasicService) currentFragment).loadStepData(
+                        step.getId(), 
+                        step.getServiceName(), 
+                        null, 
+                        null, 
+                        teeth
+                    );
+
+                    if (step.getDoctorConclusion() != null) {
+                        ((FragmentBasicService) currentFragment).setData(step.getDoctorConclusion());
+                    }
+                    ((FragmentBasicService) currentFragment).setReadOnlyMode(false);
                 }
             }
         }
@@ -1303,13 +1409,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         }
         
         // Show complete and cancel buttons based on step status
-        if (step.isInProgress() && step.isEditable()) {
-            btnCompleteStep.setVisibility(View.VISIBLE);
-            btnCancelStep.setVisibility(View.VISIBLE);
-        } else {
-            btnCompleteStep.setVisibility(View.GONE);
-            btnCancelStep.setVisibility(View.GONE);
-        }
+
     }
     
     /**
@@ -1379,34 +1479,103 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         dialog.show(getSupportFragmentManager(), "ToothServiceDialog");
     }
     
+    // ====================================================================
+    //  HELPER: Enable/Disable các tab chuyên biệt
+    // ====================================================================
+    
+    /**
+     * Enable hoặc disable các tab chuyên biệt (Tiểu phẫu, Niềng, X-quang)
+     * Tab Bọc sứ luôn được enable để bác sĩ có thể thêm dịch vụ bất cứ lúc nào
+     * Các tab khác chỉ được mở khóa khi bác sĩ nhấn "Bắt đầu" trên dịch vụ tương ứng
+     */
+    private void setSpecialTabsEnabled(boolean enabled) {
+        com.google.android.material.button.MaterialButton btnSurgery = findViewById(R.id.btnFormSurgery);
+        com.google.android.material.button.MaterialButton btnCrown = findViewById(R.id.btnFormCrown);
+        com.google.android.material.button.MaterialButton btnOrtho = findViewById(R.id.btnFormOrtho);
+        com.google.android.material.button.MaterialButton btnXray = findViewById(R.id.btnFormXray);
+        if (btnSurgery != null) { btnSurgery.setEnabled(enabled); btnSurgery.setAlpha(enabled ? 1.0f : 0.5f); }
+        // Crown tab is always enabled
+        if (btnCrown != null)   { btnCrown.setEnabled(true);   btnCrown.setAlpha(1.0f); }
+        if (btnOrtho != null)   { btnOrtho.setEnabled(enabled);   btnOrtho.setAlpha(enabled ? 1.0f : 0.5f); }
+        if (btnXray != null)    { btnXray.setEnabled(enabled);    btnXray.setAlpha(enabled ? 1.0f : 0.5f); }
+    }
+    
+    /**
+     * Enable đúng tab dựa theo uiTemplateType của dịch vụ đang "Bắt đầu"
+     */
+    private void enableTabForStep(TreatmentPlan.Step step) {
+        if (step == null) return;
+        String template = step.getUiTemplateType() != null ? step.getUiTemplateType().toUpperCase() : "";
+        String svcName = step.getServiceName() != null ? step.getServiceName().toLowerCase() : "";
+        
+        com.google.android.material.button.MaterialButton btn = null;
+        if (template.contains("SURGERY") || svcName.contains("tiểu phẫu") || svcName.contains("phẫu thuật") || svcName.contains("nhổ")) {
+            btn = findViewById(R.id.btnFormSurgery);
+        } else if (template.contains("CROWN") || svcName.contains("bọc")) {
+            btn = findViewById(R.id.btnFormCrown);
+        } else if (template.contains("ORTHO") || svcName.contains("niềng")) {
+            btn = findViewById(R.id.btnFormOrtho);
+        } else if (template.contains("XRAY") || template.contains("X-RAY") || template.contains("X_RAY") || svcName.contains("phim") || svcName.contains("xquang")) {
+            btn = findViewById(R.id.btnFormXray);
+        }
+        
+        if (btn != null) {
+            btn.setEnabled(true);
+            btn.setAlpha(1.0f);
+        }
+    }
+    
     /**
      * Switch to the appropriate tab based on step's UI template type
      * and load the fragment with existing data
      */
     private void switchToTabForStep(TreatmentPlan.Step step) {
+        // QUAN TRỌNG: Enable đúng tab TRƯỚC khi check(), tránh check() bị bỏ qua vì tab disabled
+        enableTabForStep(step);
+        
         // Determine which fragment to load based on template type
         Fragment targetFragment = null;
-        if (toggleFormType != null && step.getUiTemplateType() != null) {
-            String template = step.getUiTemplateType().toUpperCase();
-            if (template.contains("SURGERY")) {
+        if (toggleFormType != null) {
+            String template = step.getUiTemplateType() != null ? step.getUiTemplateType().toUpperCase() : "";
+            String svcName = step.getServiceName() != null ? step.getServiceName().toLowerCase() : "";
+
+            if (template.contains("SURGERY") || svcName.contains("tiểu phẫu") || svcName.contains("phẫu thuật") || svcName.contains("nhổ")) {
                 toggleFormType.check(R.id.btnFormSurgery);
                 targetFragment = new FragmentSurgeryChecklist();
-            } else if (template.contains("ORTHO")) {
+            } else if (template.contains("ORTHO") || svcName.contains("niềng")) {
                 toggleFormType.check(R.id.btnFormOrtho);
                 targetFragment = new FragmentOrthodontics();
-            } else if (template.contains("XRAY") || template.contains("X-RAY") || template.contains("X_RAY")) {
+            } else if (template.contains("XRAY") || template.contains("X-RAY") || template.contains("X_RAY") || svcName.contains("phim") || svcName.contains("xquang")) {
                 toggleFormType.check(R.id.btnFormXray);
                 targetFragment = new com.hcmute.mobile_android.ui.fragments.FragmentXray();
             } else {
                 toggleFormType.check(R.id.btnFormGeneral);
-                targetFragment = new FragmentGeneralDental();
+                // [FIX] Sử dụng Form Basic Service mới nhất thay cho General Dental cũ
+                targetFragment = new FragmentBasicService();
             }
         } else {
-            // Default to general dental
+            // Default to Basic Service
             if (toggleFormType != null) {
-                toggleFormType.check(R.id.btnFormGeneral);
+                toggleFormType.clearChecked();
             }
-            targetFragment = new FragmentGeneralDental();
+            targetFragment = new FragmentBasicService();
+        }
+        
+        // ĐẢM BẢO HIỂN THỊ CÁC CONTAINER FORM LÊN MÀN HÌNH TRƯỚC KHI THÊM
+        android.view.View containerFragment = findViewById(R.id.fragmentContainerForm);
+        if (containerFragment != null) {
+            containerFragment.setVisibility(android.view.View.VISIBLE);
+        }
+        
+        android.view.View cardOdontogram = findViewById(R.id.cardOdontogram);
+        if (cardOdontogram != null) {
+            // Hiện sơ đồ răng cho General/Crown/Basic Service (null template), tắt cho các dịch vụ khác
+            String typeForOdon = step.getUiTemplateType() != null ? step.getUiTemplateType().toUpperCase() : "";
+            if (typeForOdon.contains("GENERAL") || typeForOdon.contains("CROWN") || typeForOdon.isEmpty() || typeForOdon.contains("BASIC")) {
+                cardOdontogram.setVisibility(android.view.View.VISIBLE);
+            } else {
+                cardOdontogram.setVisibility(android.view.View.GONE);
+            }
         }
         
         // Load the fragment and populate with existing data
@@ -1443,6 +1612,39 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                         // Ensure editable mode when editing
                         ((FragmentGeneralDental) finalFragment).setReadOnlyMode(false);
                     }
+                } else if (finalFragment instanceof FragmentBasicService) {
+                    // Populate initial data like Service Name and Tooth Position
+                    List<Integer> teeth = new ArrayList<>();
+                    if (step.getToothNumber() != null) {
+                        try {
+                            teeth.add(Integer.parseInt(step.getToothNumber()));
+                        } catch (Exception e) {}
+                    }
+                    
+                    ((FragmentBasicService) finalFragment).loadStepData(
+                        step.getId(), 
+                        step.getServiceName(), 
+                        null, 
+                        null, 
+                        teeth
+                    );
+
+                    if (existingConclusion != null && !existingConclusion.trim().isEmpty()) {
+                        ((FragmentBasicService) finalFragment).setData(existingConclusion);
+                    }
+                    // Set read-only mode ONLY if step is still COMPLETED (not being edited)
+                    if (shouldBeReadOnly) {
+                        ((FragmentBasicService) finalFragment).setReadOnlyMode(true);
+                        // Show edit button
+                        android.view.View btnEdit = finalFragment.getView().findViewById(R.id.btnEditMode);
+                        if (btnEdit != null) {
+                            btnEdit.setVisibility(View.VISIBLE);
+                            btnEdit.setOnClickListener(v -> onStepEdit(step));
+                        }
+                    } else {
+                        // Ensure editable mode when editing
+                        ((FragmentBasicService) finalFragment).setReadOnlyMode(false);
+                    }
                 } else if (finalFragment instanceof FragmentSurgeryChecklist) {
                     if (existingConclusion != null && !existingConclusion.trim().isEmpty()) {
                         ((FragmentSurgeryChecklist) finalFragment).setData(existingConclusion);
@@ -1460,6 +1662,23 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                         // Ensure editable mode when editing
                         ((FragmentSurgeryChecklist) finalFragment).setReadOnlyMode(false);
                     }
+                } else if (finalFragment instanceof FragmentCrownService) {
+                    if (existingConclusion != null && !existingConclusion.trim().isEmpty()) {
+                        ((FragmentCrownService) finalFragment).setData(existingConclusion);
+                    }
+                    // Set read-only mode ONLY if step is still COMPLETED (not being edited)
+                    if (shouldBeReadOnly) {
+                        ((FragmentCrownService) finalFragment).setReadOnlyMode(true);
+                        // Show edit button
+                        android.view.View btnEdit = finalFragment.getView().findViewById(R.id.btnEditMode);
+                        if (btnEdit != null) {
+                            btnEdit.setVisibility(View.VISIBLE);
+                            btnEdit.setOnClickListener(v -> onStepEdit(step));
+                        }
+                    } else {
+                        // Ensure editable mode when editing
+                        ((FragmentCrownService) finalFragment).setReadOnlyMode(false);
+                    }
                 } else if (finalFragment instanceof FragmentOrthodontics) {
                     if (existingConclusion != null && !existingConclusion.trim().isEmpty()) {
                         ((FragmentOrthodontics) finalFragment).setData(existingConclusion);
@@ -1476,6 +1695,43 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                     } else {
                         // Ensure editable mode when editing
                         ((FragmentOrthodontics) finalFragment).setReadOnlyMode(false);
+                    }
+                } else if (finalFragment instanceof FragmentBasicService) {
+                    // Extract Diagnosis and Notes from Conclusion
+                    String diagnosis = "";
+                    String notes = step.getDoctorConclusion();
+                    if (notes != null && notes.contains("Chẩn đoán: ") && notes.contains("Ghi chú thực hiện: ")) {
+                        int diagStart = notes.indexOf("Chẩn đoán: ") + "Chẩn đoán: ".length();
+                        int noteStart = notes.indexOf("Ghi chú thực hiện: ");
+                        diagnosis = notes.substring(diagStart, noteStart).trim();
+                        notes = notes.substring(noteStart + "Ghi chú thực hiện: ".length()).trim();
+                    } else if (notes == null) {
+                        notes = "";
+                    }
+                    
+                    // Parse teeth
+                    List<Integer> teeth = new ArrayList<>();
+                    if (step.getToothNumber() != null && !step.getToothNumber().trim().isEmpty()) {
+                        try {
+                            String[] parts = step.getToothNumber().split(",");
+                            for (String p : parts) {
+                                teeth.add(Integer.parseInt(p.trim()));
+                            }
+                        } catch (Exception e) {}
+                    }
+                    
+                    ((FragmentBasicService) finalFragment).loadStepData(step.getId(), step.getServiceName(), diagnosis, notes, teeth);
+                    
+                    if (shouldBeReadOnly) {
+                        ((FragmentBasicService) finalFragment).setReadOnlyMode(true);
+                        // Show edit button
+                        android.view.View btnEdit = finalFragment.getView().findViewById(R.id.btnEditMode);
+                        if (btnEdit != null) {
+                            btnEdit.setVisibility(View.VISIBLE);
+                            btnEdit.setOnClickListener(v -> onStepEdit(step));
+                        }
+                    } else {
+                        ((FragmentBasicService) finalFragment).setReadOnlyMode(false);
                     }
                 } else if (finalFragment instanceof com.hcmute.mobile_android.ui.fragments.FragmentXray) {
                     android.util.Log.d("DoctorWorkflow", "Loading data for FragmentXray");
@@ -1628,6 +1884,13 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                     else if (inProgressCount == 1 && firstInProgressStep != null) {
                         android.util.Log.d("DoctorWorkflow", "✓ Single IN_PROGRESS step is valid: " + 
                             firstInProgressStep.getServiceName());
+                            
+                        // [FIX] Nếu chưa có currentStepId (vd: ấn bắt đầu một bước mới thêm),
+                        // hãy lấy bước IN_PROGRESS duy nhất này làm currentStep
+                        if (currentStepId == null) {
+                            currentStepId = firstInProgressStep.getId();
+                            android.util.Log.d("DoctorWorkflow", "✓ Auto-selected new progress step as current: " + currentStepId);
+                        }
                     }
                     
                     treatmentSteps.clear();
@@ -1658,9 +1921,11 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                     // AUTO-LOAD: Tự động load dữ liệu của TẤT CẢ bước COMPLETED
                     autoLoadInProgressStep();
                     
-                    // AUTO-SELECT: Tự động chọn tab đầu tiên để fragment được tạo
-                    // CRITICAL FIX: Uncheck all buttons first, then select to ensure fragment creation
-                    if (toggleFormType != null) {
+                    // [FIX] Điều hướng Fragment luôn cho currentStep thay vì mặc định
+                    if (currentStep != null) {
+                        switchToTabForStep(currentStep);
+                    } else if (toggleFormType != null) {
+                        // AUTO-SELECT: Tự động chọn tab đầu tiên để fragment được tạo
                         toggleFormType.post(() -> {
                             // Uncheck all buttons first
                             toggleFormType.clearChecked();
@@ -1727,7 +1992,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                         .setTitle(title)
                         .setItems(serviceNames, (dialog, which) -> {
                             com.hcmute.mobile_android.network.models.ServiceItem selectedSvc = services.get(which);
-                            addServiceAsStep(selectedSvc, toothNumber);
+                            addServiceAsStep(selectedSvc);
                         })
                         .show();
                 } else {
@@ -1741,45 +2006,58 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             }
         });
     }
+    
+    private void addServiceAsStep(com.hcmute.mobile_android.network.models.ServiceItem svc) {
+        if (currentTreatmentPlanId == null) {
+            Toast.makeText(this, "Vui lòng tạo phác đồ điều trị trước", Toast.LENGTH_SHORT).show();
+            return;
+        }
 
-    private void addServiceAsStep(com.hcmute.mobile_android.network.models.ServiceItem svc, Integer toothNumber) {
+        String template = svc.getUiTemplateType() != null ? svc.getUiTemplateType().toUpperCase() : "";
+        Long svcId = svc.getId();
+        String svcName = svc.getName() != null ? svc.getName().toLowerCase() : "";
+        
+        // Tự động chuyển hướng sang tab Bọc sứ nếu chọn dịch vụ Bọc sứ (bất chấp template nếu id=9)
+        if (template.contains("CROWN") || (svcId != null && svcId == 9L) || svcName.contains("bọc")) {
+            Toast.makeText(this, "Đang mở thẻ điều trị Bọc Sứ...", Toast.LENGTH_SHORT).show();
+            // Đảm bảo Form Container hiển thị trước khi switch Tab!
+            android.view.View formContainer = findViewById(R.id.fragmentContainerForm);
+            if (formContainer != null) formContainer.setVisibility(android.view.View.VISIBLE);
+            
+            // Thay đổi UI Toggle sang nút Bọc sứ
+            if (toggleFormType != null) {
+                findViewById(R.id.btnFormCrown).setEnabled(true);
+                toggleFormType.check(R.id.btnFormCrown);
+            }
+            return;
+        }
+        
+        // TẤT CẢ CÁC DỊCH VỤ CÒN LẠI (BASIC/GENERAL/SURGERY/XRAY...) ĐỀU TẠO STEP TRỰC TIẾP VÀO PHÁC ĐỒ (Bỏ quy trình Pending riêng biệt)
+        
+        // TẤT CẢ CÁC DỊCH VỤ CÒN LẠI: Tạo Step trực tiếp vào phác đồ (Bỏ quy trình Pending phức tạp)
         TreatmentPlan.Step newStep = new TreatmentPlan.Step();
         newStep.setServiceId(svc.getId());
         newStep.setServiceName(svc.getName());
-        newStep.setDescription(svc.getDescription());
         newStep.setEstimatedPrice(svc.getPrice());
         newStep.setActualPrice(svc.getPrice());
         newStep.setStatus("PENDING");
         newStep.setUiTemplateType(svc.getUiTemplateType());
-        newStep.setEditable(true);
-        newStep.setToothNumber(String.valueOf(toothNumber));
-
+        newStep.setStepOrder(treatmentSteps.size() + 1);
+        
+        // Theo yêu cầu của khách: Tạo ngay vào phác đồ mà ko cần qua bước Chọn sơ đồ răng
         treatmentSteps.add(newStep);
         stepAdapter.notifyDataSetChanged();
         updateTotalEstimate();
         
-        String msg = toothNumber != null ? "Đã chỉ định " + svc.getName() + " cho Răng " + toothNumber 
-                                         : "Đã thêm dịch vụ: " + svc.getName();
-        Toast.makeText(this, msg, Toast.LENGTH_SHORT).show();
-        
-        // CRITICAL FIX: Auto-transfer to X-ray room when adding X-ray service
-        boolean isXrayService = svc.getName() != null && 
-                (svc.getName().toLowerCase().contains("x-quang") || 
-                 svc.getName().toLowerCase().contains("xquang") ||
-                 svc.getName().toLowerCase().contains("x quang") ||
-                 svc.getName().toLowerCase().contains("panorama"));
-        
-        // Auto-save immediately so the step gets an ID from backend
+        // Lưu server
         saveTreatmentPlanInternal(true, () -> {
-            // Reload to get the step IDs from backend
             loadTreatmentPlanForRoom(currentTreatmentPlanId);
-            
-            // If X-ray service, transfer patient to X-ray room
-            if (isXrayService && currentPatient != null && currentPatient.getQueueId() != null && currentPatient.getQueueId() > 0) {
-                transferPatientToXRay(currentPatient.getQueueId(), svc.getName());
-            }
         });
+        
+        Toast.makeText(this, "Đã thêm dịch vụ: " + svc.getName(), Toast.LENGTH_SHORT).show();
     }
+    
+
     
     /**
      * Transfer patient to X-ray room
@@ -1810,6 +2088,113 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                 Toast.makeText(DoctorWorkflowActivity.this, "Lỗi kết nối khi chuyển phòng", Toast.LENGTH_SHORT).show();
             }
         });
+    }
+    
+    /**
+     * Transfer patient to Surgery room
+     */
+    private void transferPatientToSurgeryRoom(Long queueId, String serviceName) {
+        // Call API to transfer patient to surgery room
+        apiService.transferToSurgery(queueId, new java.util.HashMap<>()).enqueue(new Callback<Void>() {
+            @Override
+            public void onResponse(Call<Void> call, Response<Void> response) {
+                if (response.isSuccessful()) {
+                    new androidx.appcompat.app.AlertDialog.Builder(DoctorWorkflowActivity.this)
+                        .setTitle("Chuyển phòng Tiểu phẫu")
+                        .setMessage("Bệnh nhân đã được chuyển sang phòng Tiểu phẫu để thực hiện dịch vụ: " + serviceName + 
+                                  "\n\nHệ thống sẽ tự động đưa bệnh nhân trở lại sau khi hoàn thành.")
+                        .setPositiveButton("OK", (dialog, which) -> {
+                            // Close this activity - patient is now in surgery room
+                            finish();
+                        })
+                        .setCancelable(false)
+                        .show();
+                } else {
+                    Toast.makeText(DoctorWorkflowActivity.this, "Lỗi chuyển phòng Tiểu phẫu", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<Void> call, Throwable t) {
+                Toast.makeText(DoctorWorkflowActivity.this, "Lỗi kết nối khi chuyển phòng", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+    
+    /**
+     * Add crown service to multiple teeth
+     * Called from FragmentCrownService when user clicks "Thêm dịch vụ bọc răng sứ"
+     */
+    public void addCrownServiceToMultipleTeeth(List<Integer> teeth, java.math.BigDecimal customPrice, String notes) {
+        if (currentTreatmentPlanId == null) {
+            Toast.makeText(this, "Vui lòng tạo phác đồ điều trị trước", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        if (teeth == null || teeth.isEmpty()) {
+            Toast.makeText(this, "Vui lòng chọn ít nhất một răng", Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        // Show progress dialog
+        android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
+        progressDialog.setMessage("Đang thêm dịch vụ bọc răng sứ...");
+        progressDialog.setCancelable(false);
+        progressDialog.show();
+        
+        // Convert teeth to string list
+        List<String> toothNumbers = new ArrayList<>();
+        for (Integer tooth : teeth) {
+            toothNumbers.add(String.valueOf(tooth));
+        }
+        
+        // Create request
+        com.hcmute.mobile_android.network.models.AddMultipleTeethServiceRequest request = 
+            new com.hcmute.mobile_android.network.models.AddMultipleTeethServiceRequest();
+        request.setServiceId(9L); // ID for "Bọc răng sứ" service
+        request.setToothNumbers(toothNumbers);
+        request.setCustomPrice(customPrice);
+        request.setNotes(notes);
+        request.setStartingSequenceOrder(treatmentSteps.size() + 1);
+        
+        // Call API
+        apiService.addServiceToMultipleTeeth(currentTreatmentPlanId, request)
+            .enqueue(new Callback<com.hcmute.mobile_android.network.models.MultipleTeethServiceResponse>() {
+                @Override
+                public void onResponse(Call<com.hcmute.mobile_android.network.models.MultipleTeethServiceResponse> call, 
+                                     Response<com.hcmute.mobile_android.network.models.MultipleTeethServiceResponse> response) {
+                    progressDialog.dismiss();
+                    
+                    if (response.isSuccessful() && response.body() != null) {
+                        Toast.makeText(DoctorWorkflowActivity.this, 
+                            "Đã thêm " + response.body().getCreatedSteps().size() + " bước điều trị", 
+                            Toast.LENGTH_SHORT).show();
+                        
+                        // Clear selection in fragment
+                        Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainerForm);
+                        if (fragment instanceof FragmentCrownService) {
+                            ((FragmentCrownService) fragment).setSelectedTeeth(new ArrayList<>());
+                        }
+                        
+                        // Clear odontogram selection
+                        com.hcmute.mobile_android.ui.views.OdontogramView odv = findViewById(R.id.odontogramView);
+                        if (odv != null) {
+                            odv.clearSelection();
+                        }
+                        
+                        // Reload treatment plan to show new steps
+                        loadTreatmentPlanForRoom(currentTreatmentPlanId);
+                    } else {
+                        Toast.makeText(DoctorWorkflowActivity.this, "Có lỗi xảy ra khi thêm dịch vụ", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<com.hcmute.mobile_android.network.models.MultipleTeethServiceResponse> call, Throwable t) {
+                    progressDialog.dismiss();
+                    Toast.makeText(DoctorWorkflowActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
     }
 
     @Override
@@ -1875,6 +2260,8 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             currentData = ((FragmentGeneralDental) currentFragment).getFormDataNotes();
         } else if (currentFragment instanceof FragmentSurgeryChecklist) {
             currentData = ((FragmentSurgeryChecklist) currentFragment).getFormDataNotes();
+        } else if (currentFragment instanceof FragmentCrownService) {
+            currentData = ((FragmentCrownService) currentFragment).getFormDataNotes();
         } else if (currentFragment instanceof FragmentOrthodontics) {
             currentData = ((FragmentOrthodontics) currentFragment).getFormDataNotes();
         } else if (currentFragment instanceof com.hcmute.mobile_android.ui.fragments.FragmentXray) {
@@ -1884,11 +2271,30 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             }
             currentData = ((com.hcmute.mobile_android.ui.fragments.FragmentXray) currentFragment).getFormDataNotes();
             currentImages = ((com.hcmute.mobile_android.ui.fragments.FragmentXray) currentFragment).getImageUrls();
+        } else if (currentFragment instanceof FragmentBasicService) {
+            currentData = ((FragmentBasicService) currentFragment).getFormDataNotes();
+            
+            // Xử lý răng được chọn từ Basic Service
+            List<Integer> teeth = ((FragmentBasicService) currentFragment).getSelectedTeeth();
+            if (teeth != null && !teeth.isEmpty()) {
+                StringBuilder teethStr = new StringBuilder();
+                for (int i = 0; i < teeth.size(); i++) {
+                    if (i > 0) teethStr.append(",");
+                    teethStr.append(teeth.get(i));
+                }
+                step.setToothNumber(teethStr.toString());
+            } else {
+                step.setToothNumber("");
+            }
         }
         
         // Validate other fragment types
         if (currentFragment instanceof FragmentSurgeryChecklist) {
             if (!((FragmentSurgeryChecklist) currentFragment).validateForm()) {
+                return;
+            }
+        } else if (currentFragment instanceof FragmentCrownService) {
+            if (!((FragmentCrownService) currentFragment).validateForm()) {
                 return;
             }
         } else if (currentFragment instanceof FragmentOrthodontics) {
@@ -1924,10 +2330,6 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             saveTreatmentPlanInternal(true, () -> {
                 // Update UI
                 stepAdapter.notifyDataSetChanged();
-                
-                // Hide buttons
-                btnCompleteStep.setVisibility(View.GONE);
-                btnCancelStep.setVisibility(View.GONE);
                 currentStep = null;
                 
                 // Clear flag
@@ -1950,6 +2352,33 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         }
     }
     
+    @Override
+    public void onToothSelected(int toothNumber) {
+        // This method is called from FragmentGeneralDental when a tooth is clicked
+        // Show tooth service selection dialog
+        showToothServiceSelectionDialog(toothNumber, findViewById(R.id.odontogramView));
+    }
+    
+    /**
+     * Update odontogram selection from fragment
+     * Called from FragmentCrownService when teeth selection changes
+     */
+    public void updateOdontogramSelection(Set<Integer> selectedTeeth) {
+        com.hcmute.mobile_android.ui.views.OdontogramView odv = findViewById(R.id.odontogramView);
+        if (odv != null) {
+            odv.clearSelection();
+            for (Integer toothNumber : selectedTeeth) {
+                odv.toggleSelection(toothNumber);
+            }
+        }
+    }
+    
+    /**
+     * Handle crown service addition by calling bulk API
+     * Crown service creates multiple steps (one per tooth) with custom pricing
+     * Called from FragmentCrownService when user clicks "Add Service" button
+     */
+
     private void completeStepWithData(TreatmentPlan.Step step, String doctorConclusion, List<String> imageUrls) {
         Map<String, Object> body = new HashMap<>();
         body.put("doctorConclusion", doctorConclusion);
@@ -1966,8 +2395,6 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                     step.setStatus("COMPLETED");
                     step.setDoctorConclusion(doctorConclusion);
                     stepAdapter.notifyDataSetChanged();
-                    btnCompleteStep.setVisibility(View.GONE);
-                    btnCancelStep.setVisibility(View.GONE);
                     currentStep = null;
                     
                     if (nextRoom != null) {
@@ -2001,6 +2428,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         });
     }
 
+    @Override
     public void onStepCancel(TreatmentPlan.Step step) {
         if (step.getId() == null) {
             Toast.makeText(this, "Lỗi: Bước chưa được lưu vào hệ thống.", Toast.LENGTH_SHORT).show();
@@ -2019,8 +2447,6 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                             step.setStatus("PENDING");
                             step.setDoctorConclusion(null);
                             stepAdapter.notifyDataSetChanged();
-                            btnCompleteStep.setVisibility(View.GONE);
-                            btnCancelStep.setVisibility(View.GONE);
                             currentStep = null;
                             
                             Toast.makeText(DoctorWorkflowActivity.this, "Đã hủy bước khám", Toast.LENGTH_SHORT).show();
@@ -2045,30 +2471,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             .show();
     }
 
-    @Override
-    public void onToothSelected(int toothNumber) {
-        if (currentStep != null) {
-            currentStep.setToothNumber(String.valueOf(toothNumber));
-            stepAdapter.notifyDataSetChanged();
-            Toast.makeText(this, "Đã chọn răng " + toothNumber + " cho bước " + currentStep.getServiceName(), Toast.LENGTH_SHORT).show();
-            
-            // Also update the UI fragment if it's the General Dental one
-            Fragment fragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainerForm);
-            if (fragment instanceof FragmentGeneralDental) {
-                ((FragmentGeneralDental) fragment).onToothSelected(toothNumber);
-            }
-        } else {
-            // Hiển thị dialog thêm dịch vụ trực tiếp cho răng này nếu chưa chọn step nào
-            new androidx.appcompat.app.AlertDialog.Builder(this)
-                .setTitle("Chỉ định dịch vụ")
-                .setMessage("Bạn có muốn chỉ định một dịch vụ/phát sinh mới cho Răng " + toothNumber + " không?")
-                .setPositiveButton("Có", (dialog, which) -> {
-                    showAddServiceDialog(toothNumber);
-                })
-                .setNegativeButton("Không", null)
-                .show();
-        }
-    }
+
 
 
 
@@ -2272,6 +2675,8 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             .setNegativeButton("Hủy", null)
             .show();
     }
+
+
 
 }
       

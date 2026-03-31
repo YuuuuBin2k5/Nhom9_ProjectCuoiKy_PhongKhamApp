@@ -55,6 +55,17 @@ public class QueueController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+    
+    @PostMapping("/{id}/transfer-surgery")
+    public ResponseEntity<?> transferToSurgery(@PathVariable Long id, @RequestBody(required = false) Map<String, Long> body) {
+        Long surgeryRoomId = body != null && body.containsKey("surgeryRoomId") ? body.get("surgeryRoomId") : null;
+        try {
+            checkInQueueService.transferToSurgery(id, surgeryRoomId);
+            return ResponseEntity.ok(Map.of("message", "Đã chuyển đi Tiểu phẫu"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
 
     @PostMapping("/{id}/complete-xray")
     public ResponseEntity<?> completeXRay(@PathVariable Long id) {

@@ -59,15 +59,15 @@ public class ToothServiceCalculationService {
             throw new RuntimeException("Tooth number cannot be empty");
         }
         
-        // REFACTORED: Use centralized room assignment service
-        ClinicRoom room = roomAssignmentService.determineRoomForService(service);
-        log.info("Room assignment: {}", roomAssignmentService.explainRoomAssignment(service, room));
+        // CHANGED: Do NOT assign room when adding service
+        // Room will be assigned when the step is started (when doctor clicks "Bắt đầu")
+        log.info("Service added without room assignment. Room will be assigned when step starts.");
         
         // Create step for specific tooth
         TreatmentPlanStep step = TreatmentPlanStep.builder()
             .plan(plan)
             .service(service)
-            .clinicRoom(room)  // FIXED: Now assigns room via centralized service
+            .clinicRoom(null)  // CHANGED: No room assignment yet
             .toothNumber(toothNumber)
             .actualPrice(service.getPrice())
             .sequenceOrder(sequenceOrder)
@@ -102,15 +102,15 @@ public class ToothServiceCalculationService {
         Service service = serviceRepository.findById(serviceId)
             .orElseThrow(() -> new RuntimeException("Service not found: " + serviceId));
         
-        // REFACTORED: Use centralized room assignment service
-        ClinicRoom room = roomAssignmentService.determineRoomForService(service);
-        log.info("Room assignment: {}", roomAssignmentService.explainRoomAssignment(service, room));
+        // CHANGED: Do NOT assign room when adding service
+        // Room will be assigned when the step is started (when doctor clicks "Bắt đầu")
+        log.info("Service added without room assignment. Room will be assigned when step starts.");
         
         // Create step for general service
         TreatmentPlanStep step = TreatmentPlanStep.builder()
             .plan(plan)
             .service(service)
-            .clinicRoom(room)  // FIXED: Now assigns room via centralized service
+            .clinicRoom(null)  // CHANGED: No room assignment yet
             .toothNumber(null)  // No specific tooth
             .actualPrice(service.getPrice())
             .sequenceOrder(sequenceOrder)
@@ -205,6 +205,80 @@ public class ToothServiceCalculationService {
         
         log.info("Price updated. Recalculating plan cost...");
         recalculatePlanTotalCost(step.getPlan().getId());
+    }
+    
+    /**
+     * Add a service to multiple teeth at once
+     * Useful for services like crown, extraction that can be applied to multiple teeth
+     * 
+     * @param planId Treatment plan ID
+     * @param serviceId Service ID
+     * @param toothNumbers List of tooth numbers
+     * @param startingSequenceOrder Starting sequence order
+     * @param notes Optional notes (e.g., crown type)
+     * @param customPrice Optional custom price (overrides service default price)
+     * @return List of created TreatmentPlanSteps
+     */
+    @Transactional
+    public List<TreatmentPlanStep> addServiceToMultipleTeeth(
+        Long planId,
+        Long serviceId,
+        List<String> toothNumbers,
+        Integer startingSequenceOrder,
+        String notes,
+        BigDecimal customPrice
+    ) {
+        log.info("Adding service {} to {} teeth in plan {}", serviceId, toothNumbers.size(), planId);
+        
+        if (toothNumbers == null || toothNumbers.isEmpty()) {
+            throw new RuntimeException("Tooth numbers list cannot be empty");
+        }
+        
+        TreatmentPlan plan = planRepository.findById(planId)
+            .orElseThrow(() -> new RuntimeException("Treatment plan not found: " + planId));
+        
+        Service service = serviceRepository.findById(serviceId)
+            .orElseThrow(() -> new RuntimeException("Service not found: " + serviceId));
+        
+        // Determine room for this service
+        ClinicRoom room = roomAssignmentService.determineRoomForService(service);
+        log.info("Room assignment: {}", roomAssignmentService.explainRoomAssignment(service, room));
+        
+        // Determine price: use customPrice if provided, otherwise use service default price
+        BigDecimal priceToUse = (customPrice != null) ? customPrice : service.getPrice();
+        log.info("Price: {} (custom={}, default={})", priceToUse, customPrice, service.getPrice());
+        
+        List<TreatmentPlanStep> createdSteps = new java.util.ArrayList<>();
+        int currentSequence = startingSequenceOrder;
+        
+        for (String toothNumber : toothNumbers) {
+            // Validate tooth number
+            if (toothNumber == null || toothNumber.trim().isEmpty()) {
+                log.warn("Skipping empty tooth number");
+                continue;
+            }
+            
+            // Create step for each tooth
+            TreatmentPlanStep step = TreatmentPlanStep.builder()
+                .plan(plan)
+                .service(service)
+                .clinicRoom(room)
+                .toothNumber(toothNumber.trim())
+                .actualPrice(priceToUse)  // Use custom price or default
+                .sequenceOrder(currentSequence++)
+                .status(StepStatus.PENDING)
+                .isGeneralService(false)
+                .doctorConclusion(notes)  // Store notes in doctorConclusion
+                .build();
+            
+            TreatmentPlanStep savedStep = stepRepository.save(step);
+            createdSteps.add(savedStep);
+            
+            log.info("Created step for tooth {}: Step ID {}, Price {}", toothNumber, savedStep.getId(), priceToUse);
+        }
+        
+        log.info("Successfully created {} steps for multiple teeth", createdSteps.size());
+        return createdSteps;
     }
     
     /**

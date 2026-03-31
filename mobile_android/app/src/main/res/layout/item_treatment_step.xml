@@ -200,6 +200,19 @@
                     android:contentDescription="Xóa" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTransfer"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Chuyển phòng"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="8dp"
+                    app:backgroundTint="#FF9800"
+                    app:icon="@drawable/ic_location_pin"
+                    app:iconSize="16dp"
+                    android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnEdit"
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="wrap_content"
@@ -220,6 +233,19 @@
                     android:textSize="12sp"
                     app:backgroundTint="@color/success_green"
                     app:icon="@drawable/ic_check"
+                    app:iconSize="16dp"
+                    android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCancel"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Hủy"
+                    android:textSize="12sp"
+                    android:layout_marginStart="8dp"
+                    app:backgroundTint="#D32F2F"
+                    app:icon="@android:drawable/ic_menu_close_clear_cancel"
                     app:iconSize="16dp"
                     android:visibility="gone" />
 

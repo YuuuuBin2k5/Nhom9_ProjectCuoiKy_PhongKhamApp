@@ -36,15 +36,8 @@ public class AppointmentService {
             String reason = null;
             
             if (!isPast) {
-                isBusy = appointmentRepository.existsByDoctorIdAndAppointmentDatetimeBetween(
-                    doctorId,
-                    slotDateTime.minusMinutes(29),
-                    slotDateTime.plusMinutes(29)
-                );
-                
-                if (isBusy) {
-                    reason = "Bác sĩ đã có lịch hẹn";
-                }
+                // (Note: Removed doctor availability check per user request to allow multiple bookings)
+                isBusy = false; 
             } else {
                 reason = "Đã qua giờ";
             }

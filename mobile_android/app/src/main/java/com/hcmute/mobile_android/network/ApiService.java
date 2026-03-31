@@ -1,6 +1,7 @@
 package com.hcmute.mobile_android.network;
 
 import com.hcmute.mobile_android.network.models.AddGeneralServiceRequest;
+import com.hcmute.mobile_android.network.models.AddMultipleTeethServiceRequest;
 import com.hcmute.mobile_android.network.models.AddToothServiceRequest;
 import com.hcmute.mobile_android.network.models.CheckInMyStatusResponse;
 import com.hcmute.mobile_android.network.models.CreateAppointmentRequest;
@@ -9,6 +10,7 @@ import com.hcmute.mobile_android.network.models.CreateDoctorRequest;
 import com.hcmute.mobile_android.network.models.CreateServiceRequest;
 import com.hcmute.mobile_android.network.models.GeneralServiceResponse;
 import com.hcmute.mobile_android.network.models.LoginRequest;
+import com.hcmute.mobile_android.network.models.MultipleTeethServiceResponse;
 import com.hcmute.mobile_android.network.models.PatientMeResponse;
 import com.hcmute.mobile_android.network.models.ServiceCategory;
 import com.hcmute.mobile_android.network.models.ToothServiceResponse;
@@ -177,6 +179,9 @@ public interface ApiService {
 
     @POST("api/queue/{id}/transfer-xray")
     Call<Void> transferToXRay(@Path("id") Long queueId, @Body java.util.Map<String, Long> body);
+    
+    @POST("api/queue/{id}/transfer-surgery")
+    Call<Void> transferToSurgery(@Path("id") Long queueId, @Body java.util.Map<String, Long> body);
 
     @POST("api/reception/queue/{id}/skip")
     Call<Void> skipPatient(@Path("id") Long queueId);
@@ -322,6 +327,12 @@ public interface ApiService {
         @Path("planId") Long planId,
         @Path("toothNumber") String toothNumber,
         @Body AddToothServiceRequest request
+    );
+    
+    @POST("api/treatment-plans/{planId}/services/teeth/bulk")
+    Call<MultipleTeethServiceResponse> addServiceToMultipleTeeth(
+        @Path("planId") Long planId,
+        @Body AddMultipleTeethServiceRequest request
     );
     
     @POST("api/treatment-plans/{planId}/services/general")

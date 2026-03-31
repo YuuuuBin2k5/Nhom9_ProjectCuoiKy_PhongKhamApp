@@ -12,7 +12,9 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Enhanced Odontogram View with FDI numbering and service color coding
@@ -60,7 +62,7 @@ public class OdontogramView extends View {
     
     private Map<Integer, RectF> toothBounds = new HashMap<>();
     private Map<Integer, String> toothServices = new HashMap<>(); // Tooth -> Service name
-    private int selectedTooth = -1;
+    private Set<Integer> selectedTeeth = new HashSet<>();
     
     private float toothSize = 40f;
     private float toothSpacing = 8f;
@@ -177,7 +179,7 @@ public class OdontogramView extends View {
             canvas.drawRoundRect(bounds, 8f, 8f, borderPaint);
             
             // Draw selection highlight if selected
-            if (toothNumber == selectedTooth) {
+            if (selectedTeeth.contains(toothNumber)) {
                 canvas.drawRoundRect(bounds, 8f, 8f, selectedPaint);
             }
             
@@ -239,8 +241,8 @@ public class OdontogramView extends View {
             for (Map.Entry<Integer, RectF> entry : toothBounds.entrySet()) {
                 if (entry.getValue().contains(x, y)) {
                     int toothNumber = entry.getKey();
-                    selectedTooth = toothNumber;
-                    invalidate();
+                    // Let the caller handle toggling selection or logic
+                    // NOT auto-selecting here anymore if we want Activity to control it, or just pass the click
                     
                     if (listener != null) {
                         listener.onToothClicked(toothNumber);
@@ -312,16 +314,40 @@ public class OdontogramView extends View {
     // ===== Selection Methods =====
     
     public void setSelectedTooth(int toothNumber) {
-        selectedTooth = toothNumber;
+        selectedTeeth.clear();
+        selectedTeeth.add(toothNumber);
+        invalidate();
+    }
+    
+    public void toggleSelection(int toothNumber) {
+        if (selectedTeeth.contains(toothNumber)) {
+            selectedTeeth.remove(toothNumber);
+        } else {
+            selectedTeeth.add(toothNumber);
+        }
+        invalidate();
+    }
+    
+    public void setSelectedTeeth(Set<Integer> teeth) {
+        selectedTeeth.clear();
+        if (teeth != null) {
+            selectedTeeth.addAll(teeth);
+        }
         invalidate();
     }
 
+    public Set<Integer> getSelectedTeeth() {
+        return new HashSet<>(selectedTeeth);
+    }
+    
+    // For backwards compatibility or single mode cases:
     public int getSelectedTooth() {
-        return selectedTooth;
+        if (selectedTeeth.isEmpty()) return -1;
+        return selectedTeeth.iterator().next(); // Return first
     }
 
     public void clearSelection() {
-        selectedTooth = -1;
+        selectedTeeth.clear();
         invalidate();
     }
 

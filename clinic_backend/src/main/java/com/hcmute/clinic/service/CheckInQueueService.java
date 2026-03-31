@@ -625,6 +625,38 @@ public class CheckInQueueService {
         if (oldRoom != null) queueEventService.broadcastQueueUpdated(oldRoom.getId());
         queueEventService.broadcastQueueUpdated(xrayRoom.getId());
     }
+    
+    @Transactional
+    public void transferToSurgery(Long queueId, Long surgeryRoomId) {
+        CheckInQueue q = checkInQueueRepository.findById(queueId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hàng đợi"));
+        ClinicRoom oldRoom = q.getClinicRoom();
+        ClinicRoom surgeryRoom = surgeryRoomId != null
+                ? clinicRoomRepository.findById(surgeryRoomId).orElse(null)
+                : clinicRoomRepository.findAll().stream()
+                        .filter(r -> r.getName() != null && 
+                                (r.getName().toLowerCase().contains("tiểu phẫu") ||
+                                 r.getName().toLowerCase().contains("tieu phau") ||
+                                 r.getName().toLowerCase().contains("phẫu thuật") ||
+                                 r.getName().toLowerCase().contains("phau thuat") ||
+                                 r.getName().toLowerCase().contains("surgery")))
+                        .findFirst()
+                        .orElse(clinicRoomRepository.findAll().stream().findFirst().orElse(null));
+        if (surgeryRoom == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chưa cấu hình phòng Tiểu phẫu");
+        }
+        
+        // Lưu originalRoomId nếu chưa có (lần đầu chuyển phòng)
+        if (q.getOriginalRoomId() == null && oldRoom != null) {
+            q.setOriginalRoomId(oldRoom.getId());
+        }
+        
+        q.setStatus(QueueStatus.PAUSED_FOR_TEST);
+        q.setClinicRoom(surgeryRoom);
+        checkInQueueRepository.save(q);
+        if (oldRoom != null) queueEventService.broadcastQueueUpdated(oldRoom.getId());
+        queueEventService.broadcastQueueUpdated(surgeryRoom.getId());
+    }
 
     @Transactional
     public void completeXRay(Long queueId) {

@@ -22,6 +22,12 @@ public class PatientInfo implements Serializable {
     private Long treatmentPlanId;
     private Boolean hasTreatmentPlan;
     private String treatmentPlanStatus;
+    
+    // NEW: Thêm fields cho PatientProfile
+    private String bloodType;
+    private String allergies;
+    private String underlyingConditions;
+    private String notes;
 
     // Constructors
     public PatientInfo() {}
@@ -47,6 +53,19 @@ public class PatientInfo implements Serializable {
 
     public String getTreatmentPlanStatus() { return treatmentPlanStatus; }
     public void setTreatmentPlanStatus(String treatmentPlanStatus) { this.treatmentPlanStatus = treatmentPlanStatus; }
+    
+    // NEW: Getters and Setters cho PatientProfile fields
+    public String getBloodType() { return bloodType; }
+    public void setBloodType(String bloodType) { this.bloodType = bloodType; }
+    
+    public String getAllergies() { return allergies; }
+    public void setAllergies(String allergies) { this.allergies = allergies; }
+    
+    public String getUnderlyingConditions() { return underlyingConditions; }
+    public void setUnderlyingConditions(String underlyingConditions) { this.underlyingConditions = underlyingConditions; }
+    
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 
     public PatientInfo(Long id, String firstName, String lastName, String email, String phone) {
         this.id = id;
@@ -108,5 +127,26 @@ public class PatientInfo implements Serializable {
             case "OTHER": return "Khác";
             default: return gender;
         }
+    }
+    
+    public String getBloodTypeDisplay() {
+        if (bloodType == null || bloodType.trim().isEmpty()) {
+            return "Chưa xác định";
+        }
+        return bloodType;
+    }
+    
+    public String getAllergiesDisplay() {
+        if (allergies == null || allergies.trim().isEmpty()) {
+            return "Không có";
+        }
+        return allergies;
+    }
+    
+    public String getUnderlyingConditionsDisplay() {
+        if (underlyingConditions == null || underlyingConditions.trim().isEmpty()) {
+            return "Không có";
+        }
+        return underlyingConditions;
     }
 }

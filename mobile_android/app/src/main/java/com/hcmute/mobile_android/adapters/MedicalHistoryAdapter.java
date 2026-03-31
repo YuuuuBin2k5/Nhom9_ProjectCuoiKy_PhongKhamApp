@@ -19,6 +19,7 @@ import java.util.List;
 public class MedicalHistoryAdapter extends RecyclerView.Adapter<MedicalHistoryAdapter.ViewHolder> {
 
     private List<MedicalRecordResponse> records;
+    private java.util.Set<Long> expandedRecordIds = new java.util.HashSet<>();
 
     public MedicalHistoryAdapter() {
         this.records = new ArrayList<>();
@@ -40,7 +41,15 @@ public class MedicalHistoryAdapter extends RecyclerView.Adapter<MedicalHistoryAd
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         MedicalRecordResponse record = records.get(position);
-        holder.bind(record);
+        boolean isExpanded = expandedRecordIds.contains(record.getId());
+        holder.bind(record, isExpanded, () -> {
+            if (expandedRecordIds.contains(record.getId())) {
+                expandedRecordIds.remove(record.getId());
+            } else {
+                expandedRecordIds.add(record.getId());
+            }
+            notifyItemChanged(position);
+        });
     }
 
     @Override
@@ -59,7 +68,6 @@ public class MedicalHistoryAdapter extends RecyclerView.Adapter<MedicalHistoryAd
         private LinearLayout layoutTreatmentSteps;
         private RecyclerView rvTreatmentSteps;
         private MaterialButton btnExpand;
-        private boolean isExpanded = false;
         private TreatmentStepDetailAdapter stepAdapter;
 
         public ViewHolder(@NonNull View itemView) {
@@ -81,7 +89,7 @@ public class MedicalHistoryAdapter extends RecyclerView.Adapter<MedicalHistoryAd
             rvTreatmentSteps.setAdapter(stepAdapter);
         }
 
-        public void bind(MedicalRecordResponse record) {
+        public void bind(MedicalRecordResponse record, boolean isExpanded, Runnable onExpandClick) {
             // Set basic info
             tvDate.setText(record.getDate() != null ? record.getDate() : "N/A");
             tvDoctorName.setText(record.getDoctorName() != null ? "BS. " + record.getDoctorName() : "");
@@ -103,7 +111,7 @@ public class MedicalHistoryAdapter extends RecyclerView.Adapter<MedicalHistoryAd
                 layoutAdvice.setVisibility(View.GONE);
             }
             
-            // NEW: Set treatment steps
+            // Set treatment steps
             if (record.getTreatmentSteps() != null && !record.getTreatmentSteps().isEmpty()) {
                 stepAdapter.setSteps(record.getTreatmentSteps());
                 layoutTreatmentSteps.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
@@ -119,10 +127,7 @@ public class MedicalHistoryAdapter extends RecyclerView.Adapter<MedicalHistoryAd
             if (hasDetails) {
                 btnExpand.setVisibility(View.VISIBLE);
                 btnExpand.setText(isExpanded ? "Thu gọn" : "Xem chi tiết");
-                btnExpand.setOnClickListener(v -> {
-                    isExpanded = !isExpanded;
-                    bind(record); // Re-bind to update visibility
-                });
+                btnExpand.setOnClickListener(v -> onExpandClick.run());
             } else {
                 btnExpand.setVisibility(View.GONE);
             }

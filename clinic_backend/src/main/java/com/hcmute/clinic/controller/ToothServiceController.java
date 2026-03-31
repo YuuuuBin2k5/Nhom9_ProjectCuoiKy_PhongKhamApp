@@ -63,6 +63,56 @@ public class ToothServiceController {
     }
     
     /**
+     * Add a service to multiple teeth at once
+     * POST /api/treatment-plans/1/services/teeth/bulk
+     * 
+     * Used for services like crown, extraction that can be applied to multiple teeth
+     */
+    @PostMapping("/teeth/bulk")
+    public ResponseEntity<?> addServiceToMultipleTeeth(
+        @PathVariable Long planId,
+        @RequestBody AddMultipleTeethServiceRequest request
+    ) {
+        log.info("POST /api/treatment-plans/{}/services/teeth/bulk - {} teeth", 
+            planId, request.getToothNumbers() != null ? request.getToothNumbers().size() : 0);
+        
+        try {
+            List<TreatmentPlanStep> steps = toothService.addServiceToMultipleTeeth(
+                planId,
+                request.getServiceId(),
+                request.getToothNumbers(),
+                request.getStartingSequenceOrder(),
+                request.getNotes(),
+                request.getCustomPrice()  // Pass custom price to service
+            );
+            
+            BigDecimal totalCost = toothService.recalculatePlanTotalCost(planId);
+            
+            // Build response
+            List<MultipleTeethServiceResponse.StepInfo> stepInfos = steps.stream()
+                .map(step -> MultipleTeethServiceResponse.StepInfo.builder()
+                    .stepId(step.getId())
+                    .toothNumber(step.getToothNumber())
+                    .serviceName(step.getService().getName())
+                    .price(step.getActualPrice())
+                    .build())
+                .collect(java.util.stream.Collectors.toList());
+            
+            MultipleTeethServiceResponse response = MultipleTeethServiceResponse.builder()
+                .createdSteps(stepInfos)
+                .totalPlanCost(totalCost)
+                .message("Successfully added service to " + steps.size() + " teeth")
+                .build();
+            
+            log.info("Service added to {} teeth successfully", steps.size());
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            log.error("Error adding service to multiple teeth", e);
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+    
+    /**
      * Add a general service (not specific to a tooth)
      * POST /api/treatment-plans/1/services/general
      */

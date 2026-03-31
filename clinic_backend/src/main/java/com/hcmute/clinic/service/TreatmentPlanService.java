@@ -36,6 +36,8 @@ public class TreatmentPlanService {
     private final FcmService fcmService;
     private final com.hcmute.clinic.repository.AppointmentRepository appointmentRepository;
     private final com.hcmute.clinic.repository.InvoiceRepository invoiceRepository;
+    private final com.hcmute.clinic.repository.CheckInQueueRepository checkInQueueRepository;
+    private final QueueEventService queueEventService;
 
     public List<TreatmentPlanTemplateResponseDTO> listActiveTemplates() {
         return templateRepository.findByActiveTrueOrderByNameAsc()
@@ -127,16 +129,15 @@ public class TreatmentPlanService {
             sorted.sort(Comparator.comparingInt(TreatmentPlanTemplateStep::getSequenceOrder));
 
             for (TreatmentPlanTemplateStep ts : sorted) {
-                // Auto-assign room if template doesn't have one
+                // CHANGED: Do NOT auto-assign room when creating from template
+                // Room will be assigned when the step is started (when doctor clicks "Bắt đầu")
+                // Only use room from template if explicitly set
                 ClinicRoom assignedRoom = ts.getClinicRoom();
-                if (assignedRoom == null && ts.getService() != null) {
-                    assignedRoom = roomAssignmentService.determineRoomForService(ts.getService());
-                }
                 
                 TreatmentPlanStep step = TreatmentPlanStep.builder()
                         .plan(plan)
                         .service(ts.getService())
-                        .clinicRoom(assignedRoom)
+                        .clinicRoom(assignedRoom)  // CHANGED: Only use template room, don't auto-assign
                         .sequenceOrder(ts.getSequenceOrder())
                         .status(StepStatus.PENDING)
                         .medicationDetails(ts.getMedicationDetails())
@@ -305,12 +306,12 @@ public class TreatmentPlanService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bước này không ở trạng thái chờ");
         }
         
-        // Kiểm tra quyền: Bác sĩ phải ở đúng phòng (nếu step có chỉ định phòng)
-        if (doctorRoomId != null && step.getClinicRoom() != null) {
-            if (!doctorRoomId.equals(step.getClinicRoom().getId())) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
-                    "Bạn không có quyền bắt đầu bước này. Bước này thuộc về phòng khác.");
-            }
+        // CHANGED: Assign room when starting step (if not already assigned)
+        if (step.getClinicRoom() == null && step.getService() != null) {
+            ClinicRoom assignedRoom = roomAssignmentService.determineRoomForService(step.getService());
+            step.setClinicRoom(assignedRoom);
+            log.info("Room assigned when starting step: {}", 
+                roomAssignmentService.explainRoomAssignment(step.getService(), assignedRoom));
         }
         
         // VALIDATION: Kiểm tra các bước trước đó đã hoàn thành chưa
@@ -325,8 +326,121 @@ public class TreatmentPlanService {
                 "Không thể bắt đầu bước này. Vui lòng hoàn thành các bước trước đó theo thứ tự.");
         }
         
+        // NEW: Transfer patient to new room when starting step (if room is different)
+        ClinicRoom stepRoom = step.getClinicRoom();
+        if (stepRoom != null) {
+            transferPatientToRoom(plan, stepRoom);
+        }
+        
+        // Kiểm tra quyền: Bác sĩ phải ở đúng phòng (nếu step có chỉ định phòng)
+        // NOTE: Check this AFTER room transfer, so doctor can start step in the new room
+        if (doctorRoomId != null && step.getClinicRoom() != null) {
+            if (!doctorRoomId.equals(step.getClinicRoom().getId())) {
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                    "Bạn không có quyền bắt đầu bước này. Bước này thuộc về phòng khác.");
+            }
+        }
+        
         step.setStatus(StepStatus.IN_PROGRESS);
         stepRepository.save(step);
+    }
+    
+    /**
+     * Transfer patient to a new room in the queue
+     * @param plan Treatment plan
+     * @param newRoom New clinic room
+     */
+    private void transferPatientToRoom(TreatmentPlan plan, ClinicRoom newRoom) {
+        if (plan == null || plan.getPatient() == null || newRoom == null) {
+            return;
+        }
+        
+        // Find active queue for patient (including PAUSED_FOR_TEST and RETURNED_PRIORITY)
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.util.List<com.hcmute.clinic.entity.CheckInQueue> queues = 
+            checkInQueueRepository.findTodayForPatient(
+                plan.getPatient().getId(), 
+                today.atStartOfDay(), 
+                today.plusDays(1).atStartOfDay()
+            );
+            
+        com.hcmute.clinic.entity.CheckInQueue activeQueue = queues.stream()
+            .filter(q -> q.getStatus() == com.hcmute.clinic.enums.QueueStatus.IN_PROGRESS 
+                      || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.WAITING
+                      || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.PAUSED_FOR_TEST
+                      || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY)
+            .findFirst()
+            .orElse(null);
+        
+        if (activeQueue == null) {
+            log.info("No active queue found for patient {}, skipping room transfer", plan.getPatient().getId());
+            return;
+        }
+        
+        // CRITICAL FIX: Do NOT transfer if patient is PAUSED_FOR_TEST (at X-Ray)
+        // They will return to original room after X-Ray is complete
+        if (activeQueue.getStatus() == com.hcmute.clinic.enums.QueueStatus.PAUSED_FOR_TEST) {
+            log.info("Patient {} is at X-Ray (PAUSED_FOR_TEST), skipping room transfer", plan.getPatient().getId());
+            return;
+        }
+        
+        // Check if room is different
+        if (newRoom.getId().equals(activeQueue.getClinicRoom().getId())) {
+            log.info("Patient already in room {}, no transfer needed", newRoom.getName());
+            return;
+        }
+        
+        Long oldRoomId = activeQueue.getClinicRoom().getId();
+        
+        // Save original room if not set
+        if (activeQueue.getOriginalRoomId() == null) {
+            activeQueue.setOriginalRoomId(oldRoomId);
+        }
+        
+        // Transfer to new room - preserve current status if RETURNED_PRIORITY
+        activeQueue.setClinicRoom(newRoom);
+        if (activeQueue.getStatus() != com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY) {
+            activeQueue.setStatus(com.hcmute.clinic.enums.QueueStatus.WAITING);
+        }
+        activeQueue.setPriorityLevel(activeQueue.getPriorityLevel() + 5); // Priority boost
+        checkInQueueRepository.save(activeQueue);
+        
+        log.info("Patient {} transferred from room {} to room {}", 
+            plan.getPatient().getId(), oldRoomId, newRoom.getId());
+        
+        // Send notification to patient
+        String roomLocation = newRoom.getDescription() != null && !newRoom.getDescription().isBlank() 
+                ? newRoom.getDescription() 
+                : "Vui lòng hỏi nhân viên";
+        
+        String message = String.format(
+            "Vui lòng di chuyển đến %s (%s) để tiếp tục điều trị.\n\n" +
+            "🔢 Số thứ tự: %d\n\n" +
+            "Bạn được ưu tiên trong hàng đợi.",
+            newRoom.getName(),
+            roomLocation,
+            activeQueue.getQueueNumber()
+        );
+
+        com.hcmute.clinic.entity.Notification notif = com.hcmute.clinic.entity.Notification.builder()
+                .patient(plan.getPatient())
+                .title("🏥 Chuyển phòng khám")
+                .message(message)
+                .type("ROOM_TRANSFER")
+                .build();
+        notificationRepository.save(notif);
+        
+        if (plan.getPatient().getFcmToken() != null && !plan.getPatient().getFcmToken().isBlank()) {
+            fcmService.sendNotification(plan.getPatient().getFcmToken(), notif.getTitle(), notif.getMessage());
+        }
+
+        // Broadcast queue updates
+        try {
+            queueEventService.broadcastQueueUpdated(oldRoomId);
+            queueEventService.broadcastQueueUpdated(newRoom.getId());
+        } catch (Exception e) {
+            log.error("Failed to broadcast queue update", e);
+        }
     }
 
     @Transactional
@@ -515,9 +629,16 @@ public class TreatmentPlanService {
             return null;
         }
 
-        // Kích hoạt bước tiếp theo
-        nextStep.setStatus(StepStatus.IN_PROGRESS);
-        stepRepository.save(nextStep);
+        // CRITICAL FIX: Do NOT auto-start next step
+        // The next step should remain PENDING until doctor explicitly clicks "Bắt đầu"
+        // This prevents automatic room transfers when completing a step
+        //
+        // OLD LOGIC (REMOVED):
+        // nextStep.setStatus(StepStatus.IN_PROGRESS);
+        // stepRepository.save(nextStep);
+        
+        // NEW LOGIC: Just identify the next room for notification, but don't change step status
+        // The step will be started when doctor clicks "Bắt đầu" button in the UI
 
         // Chuyển phòng nếu bước tiếp theo thuộc phòng khác
         // NHƯNG: Không chuyển phòng nếu bước TIẾP THEO là step đầu tiên (sequenceOrder = 0)
@@ -534,9 +655,17 @@ public class TreatmentPlanService {
             );
             com.hcmute.clinic.entity.CheckInQueue activeQueue = queues.stream()
                 .filter(q -> q.getStatus() == com.hcmute.clinic.enums.QueueStatus.IN_PROGRESS 
-                          || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.WAITING)
+                          || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.WAITING
+                          || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.PAUSED_FOR_TEST
+                          || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY)
                 .findFirst()
                 .orElse(null);
+            
+            // CRITICAL FIX: Do NOT transfer if patient is PAUSED_FOR_TEST (at X-Ray)
+            if (activeQueue != null && activeQueue.getStatus() == com.hcmute.clinic.enums.QueueStatus.PAUSED_FOR_TEST) {
+                log.info("Patient is at X-Ray (PAUSED_FOR_TEST), skipping room transfer in completeStepAndAdvance");
+                return null;
+            }
             
             if (activeQueue != null && !nextRoom.getId().equals(activeQueue.getClinicRoom().getId())) {
                 Long oldRoomId = activeQueue.getClinicRoom().getId();
@@ -547,7 +676,10 @@ public class TreatmentPlanService {
                 }
                 
                 activeQueue.setClinicRoom(nextRoom);
-                activeQueue.setStatus(com.hcmute.clinic.enums.QueueStatus.WAITING);
+                // Preserve RETURNED_PRIORITY status if applicable
+                if (activeQueue.getStatus() != com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY) {
+                    activeQueue.setStatus(com.hcmute.clinic.enums.QueueStatus.WAITING);
+                }
                 activeQueue.setPriorityLevel(activeQueue.getPriorityLevel() + 5); 
                 queueRepo.save(activeQueue);
 
@@ -617,9 +749,17 @@ public class TreatmentPlanService {
             );
             com.hcmute.clinic.entity.CheckInQueue activeQueue = queuesReturn.stream()
                 .filter(q -> q.getStatus() == com.hcmute.clinic.enums.QueueStatus.IN_PROGRESS 
-                          || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.WAITING)
+                          || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.WAITING
+                          || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.PAUSED_FOR_TEST
+                          || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY)
                 .findFirst()
                 .orElse(null);
+            
+            // CRITICAL FIX: Do NOT transfer if patient is PAUSED_FOR_TEST (at X-Ray)
+            if (activeQueue != null && activeQueue.getStatus() == com.hcmute.clinic.enums.QueueStatus.PAUSED_FOR_TEST) {
+                log.info("Patient is at X-Ray (PAUSED_FOR_TEST), skipping return to original room");
+                return null;
+            }
                 
             if (activeQueue != null && activeQueue.getOriginalRoomId() != null && 
                 !activeQueue.getOriginalRoomId().equals(activeQueue.getClinicRoom().getId())) {

@@ -48,27 +48,35 @@ public class ScheduleSlotAdapter extends RecyclerView.Adapter<ScheduleSlotAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         String time = timeSlots.get(position);
-        holder.tvTime.setText(time);
-        
-        // Find appointment for this slot
-        ScheduleAppointment match = null;
+        // Find appointments for this slot
+        List<ScheduleAppointment> matches = new ArrayList<>();
         for (ScheduleAppointment a : appointments) {
-            // Check if a.getDatetime() contains this 'time' (e.g. "2026-03-25T08:30:00")
             if (a.getDatetime().contains(time)) {
-                match = a;
-                break;
+                matches.add(a);
             }
         }
 
-        if (match != null) {
-            holder.tvSlotInfo.setText(match.getServiceName());
-            holder.tvPatientName.setText("Bệnh nhân: " + match.getPatientName());
+        if (!matches.isEmpty()) {
+            StringBuilder patientNames = new StringBuilder();
+            StringBuilder services = new StringBuilder();
+            for (int i = 0; i < matches.size(); i++) {
+                ScheduleAppointment m = matches.get(i);
+                patientNames.append(m.getPatientName());
+                services.append(m.getServiceName());
+                if (i < matches.size() - 1) {
+                    patientNames.append(", ");
+                    services.append(", ");
+                }
+            }
+
+            holder.tvSlotInfo.setText(services.toString());
+            holder.tvPatientName.setText("Bệnh nhân: " + patientNames.toString());
             holder.tvPatientName.setVisibility(View.VISIBLE);
-            holder.tvStatus.setText(match.getStatus());
+            holder.tvStatus.setText(matches.size() > 1 ? "TRÙNG LỊCH (" + matches.size() + ")" : matches.get(0).getStatus());
             holder.tvStatus.setVisibility(View.VISIBLE);
             
-            holder.cardView.setStrokeColor(Color.parseColor("#4285F4")); // Material Blue
-            holder.cardView.setCardBackgroundColor(Color.parseColor("#F0F4FF"));
+            holder.cardView.setStrokeColor(Color.parseColor(matches.size() > 1 ? "#F44336" : "#4285F4")); // Red if overlap
+            holder.cardView.setCardBackgroundColor(Color.parseColor(matches.size() > 1 ? "#FFF5F5" : "#F0F4FF"));
         } else {
             holder.tvSlotInfo.setText("Trống");
             holder.tvPatientName.setVisibility(View.GONE);

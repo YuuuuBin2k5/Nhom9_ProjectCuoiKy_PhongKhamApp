@@ -17,6 +17,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 
 import java.util.ArrayList;
@@ -111,8 +113,17 @@ public class DoctorController {
             return ResponseEntity.status(401).build();
         }
         long doctorId = Long.parseLong(auth.getName());
-        List<Appointment> list = appointmentRepository.findTodayByDoctorId(doctorId).stream()
-                .filter(a -> a.getStatus() == AppointmentStatus.SCHEDULED || a.getStatus() == AppointmentStatus.CONFIRMED || a.getStatus() == AppointmentStatus.IN_PROGRESS)
+        
+        // Get appointments for the next 7 days (not just today)
+        LocalDateTime from = LocalDate.now().atStartOfDay();
+        LocalDateTime to = LocalDate.now().plusDays(7).atTime(23, 59, 59);
+        
+        List<Appointment> list = appointmentRepository
+                .findByDoctorIdAndAppointmentDatetimeBetweenOrderByAppointmentDatetimeAsc(doctorId, from, to)
+                .stream()
+                .filter(a -> a.getStatus() == AppointmentStatus.SCHEDULED 
+                        || a.getStatus() == AppointmentStatus.CONFIRMED 
+                        || a.getStatus() == AppointmentStatus.IN_PROGRESS)
                 .collect(java.util.stream.Collectors.toList());
                 
         List<Map<String, Object>> items = list.stream()
@@ -240,6 +251,24 @@ public class DoctorController {
         response.put("lastName", p.getLastName() != null ? p.getLastName() : "");
         response.put("email", p.getEmail() != null ? p.getEmail() : "");
         response.put("phone", p.getPhone() != null ? p.getPhone() : "");
+        response.put("address", p.getAddress() != null ? p.getAddress() : "");
+        response.put("gender", p.getGender() != null ? p.getGender() : "");
+        response.put("dob", p.getDob() != null ? p.getDob().toString() : "");
+        response.put("avatarUrl", p.getAvatarUrl() != null ? p.getAvatarUrl() : "");
+        
+        // Add patient profile fields
+        if (p.getProfile() != null) {
+            response.put("bloodType", p.getProfile().getBloodType() != null ? p.getProfile().getBloodType() : "");
+            response.put("allergies", p.getProfile().getAllergies() != null ? p.getProfile().getAllergies() : "");
+            response.put("underlyingConditions", p.getProfile().getUnderlyingConditions() != null ? p.getProfile().getUnderlyingConditions() : "");
+            response.put("notes", p.getProfile().getNotes() != null ? p.getProfile().getNotes() : "");
+        } else {
+            response.put("bloodType", "");
+            response.put("allergies", "");
+            response.put("underlyingConditions", "");
+            response.put("notes", "");
+        }
+        
         response.put("bookedService", serviceName);
         response.put("appointmentStatus", status);
         response.put("queueId", queueId != null ? queueId : -1);

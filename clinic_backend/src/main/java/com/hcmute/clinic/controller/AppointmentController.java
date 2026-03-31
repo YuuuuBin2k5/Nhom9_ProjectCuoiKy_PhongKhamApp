@@ -115,25 +115,9 @@ public class AppointmentController {
                         "Không thể đặt lịch trong quá khứ. Vui lòng chọn giờ sau thời điểm hiện tại, trong khung 08:00–16:40."));
             }
 
-            // 6.1 Validate existing active appointments for patient
-            boolean hasActiveAppt = appointmentRepository.existsByPatientIdAndStatusIn(patient.getId(), 
-                java.util.List.of(AppointmentStatus.SCHEDULED, AppointmentStatus.IN_PROGRESS));
-            if (hasActiveAppt) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Bệnh nhân đang có một lịch khám chưa hoàn thành. Không thể đặt thêm."));
-            }
-
-            // 5.2 Validate doctor availability (assume each appointment is ~30 mins)
-            boolean doctorBusy = appointmentRepository.existsByDoctorIdAndAppointmentDatetimeBetween(
-                doctor.getId(), 
-                appointmentTime.minusMinutes(29), 
-                appointmentTime.plusMinutes(29)
-            );
-            
-            if (doctorBusy) {
-                return ResponseEntity.badRequest().body(Map.of("message", "Bác sĩ đã có lịch hẹn trong khung giờ này. Vui lòng chọn giờ khác."));
-            }
-
             // 6. Create Appointment
+            // 6. Create Appointment
+            // (Note: Removed doctor busy check and active appointment check per user request to allow overlapping bookings)
             BookingType bookingType = BookingType.ONLINE;
             if (request.getBookingType() != null) {
                 try {
@@ -281,17 +265,7 @@ public class AppointmentController {
                         "Không thể đặt lịch trong quá khứ. Vui lòng chọn giờ sau thời điểm hiện tại, trong khung 08:00–16:40."));
             }
             
-            // Check doctor availability
-            boolean doctorBusy = appointmentRepository.existsByDoctorIdAndAppointmentDatetimeBetween(
-                appointment.getDoctor().getId(),
-                newDatetime.minusMinutes(29),
-                newDatetime.plusMinutes(29)
-            );
-            if (doctorBusy) {
-                return ResponseEntity.badRequest().body(Map.of(
-                    "message", "Bác sĩ đã có lịch hẹn trong khung giờ này. Vui lòng chọn giờ khác."
-                ));
-            }
+            // (Note: Removed doctor availability check for rescheduling per user request)
             
             appointment.setAppointmentDatetime(newDatetime);
             appointmentRepository.save(appointment);

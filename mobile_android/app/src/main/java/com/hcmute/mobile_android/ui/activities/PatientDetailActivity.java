@@ -44,6 +44,9 @@ public class PatientDetailActivity extends AppCompatActivity {
     private TextView tvPatientDob;
     private TextView tvPatientGender;
     private TextView tvPatientAddress;
+    private TextView tvPatientBloodType;
+    private TextView tvPatientAllergies;
+    private TextView tvPatientUnderlyingConditions;
     private TextView tvPatientNotes;
     private MaterialCardView cardPatientNotes;
     private RecyclerView rvMedicalHistory;
@@ -88,6 +91,9 @@ public class PatientDetailActivity extends AppCompatActivity {
         tvPatientDob = findViewById(R.id.tvPatientDob);
         tvPatientGender = findViewById(R.id.tvPatientGender);
         tvPatientAddress = findViewById(R.id.tvPatientAddress);
+        tvPatientBloodType = findViewById(R.id.tvPatientBloodType);
+        tvPatientAllergies = findViewById(R.id.tvPatientAllergies);
+        tvPatientUnderlyingConditions = findViewById(R.id.tvPatientUnderlyingConditions);
         tvPatientNotes = findViewById(R.id.tvPatientNotes);
         cardPatientNotes = findViewById(R.id.cardPatientNotes);
         
@@ -131,10 +137,19 @@ public class PatientDetailActivity extends AppCompatActivity {
 
         tvPatientGender.setText(patientInfo.getGenderDisplay());
         tvPatientAddress.setText(patientInfo.getAddress() != null ? patientInfo.getAddress() : "Chưa có");
+        
+        // Display profile fields
+        tvPatientBloodType.setText(patientInfo.getBloodTypeDisplay());
+        tvPatientAllergies.setText(patientInfo.getAllergiesDisplay());
+        tvPatientUnderlyingConditions.setText(patientInfo.getUnderlyingConditionsDisplay());
 
-        // TODO: Load patient notes from API when available
-        // For now, hide the notes card
-        cardPatientNotes.setVisibility(View.GONE);
+        // Display notes if available
+        if (patientInfo.getNotes() != null && !patientInfo.getNotes().trim().isEmpty()) {
+            cardPatientNotes.setVisibility(View.VISIBLE);
+            tvPatientNotes.setText(patientInfo.getNotes());
+        } else {
+            cardPatientNotes.setVisibility(View.GONE);
+        }
     }
 
     private int calculateAge(String dateOfBirth) {
