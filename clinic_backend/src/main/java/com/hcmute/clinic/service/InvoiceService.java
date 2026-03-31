@@ -199,32 +199,8 @@ public class InvoiceService {
                         .build();
                     items.add(item);
                 }
-
-                // === GAP FIX: Cộng giá thuốc của step nếu có ===
-                if (step.getPrescription() != null && step.getPrescription().getDetails() != null) {
-                    BigDecimal medicineTotal = step.getPrescription().getDetails().stream()
-                        .filter(d -> d.getPrice() != null)
-                        .map(com.hcmute.clinic.entity.PrescriptionDetail::getPrice)
-                        .reduce(BigDecimal.ZERO, BigDecimal::add);
-
-                    if (medicineTotal.compareTo(BigDecimal.ZERO) > 0) {
-                        totalAmount = totalAmount.add(medicineTotal);
-                        InvoiceItem medItem = InvoiceItem.builder()
-                            .service(step.getService())
-                            .treatmentPlanStep(step)
-                            .serviceName("Thuốc – " + step.getService().getName())
-                            .toothNumber(step.getToothNumber())
-                            .quantity(1)
-                            .unitPrice(medicineTotal)
-                            .totalPrice(medicineTotal)
-                            .description("Đơn thuốc bước " + step.getSequenceOrder())
-                            .build();
-                        items.add(medItem);
-                    }
-                }
             }
         }
-
         
         // 5. Create invoice
         Invoice invoice = Invoice.builder()

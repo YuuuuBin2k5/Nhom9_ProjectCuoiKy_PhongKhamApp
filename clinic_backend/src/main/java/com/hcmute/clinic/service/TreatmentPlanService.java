@@ -34,7 +34,6 @@ public class TreatmentPlanService {
     private final FcmService fcmService;
     private final com.hcmute.clinic.repository.AppointmentRepository appointmentRepository;
     private final com.hcmute.clinic.repository.InvoiceRepository invoiceRepository;
-    private final com.hcmute.clinic.repository.PrescriptionRepository prescriptionRepository;
 
     public List<TreatmentPlanTemplate> listActiveTemplates() {
         return templateRepository.findByActiveTrueOrderByNameAsc();
@@ -250,21 +249,6 @@ public class TreatmentPlanService {
     public TreatmentPlan getById(Long id) {
         return planRepository.findByIdWithSteps(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phác đồ không tồn tại"));
-    }
-
-    public TreatmentPlanStep getStepById(Long stepId) {
-        return stepRepository.findById(stepId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bước điều trị không tồn tại"));
-    }
-
-    @Transactional
-    public void savePrescriptionForStep(TreatmentPlanStep step, com.hcmute.clinic.entity.Prescription prescription) {
-        prescriptionRepository.save(prescription);
-    }
-
-    @Transactional
-    public void saveStep(TreatmentPlanStep step) {
-        stepRepository.save(step);
     }
 
     public List<TreatmentPlan> findByPatientId(Long patientId) {

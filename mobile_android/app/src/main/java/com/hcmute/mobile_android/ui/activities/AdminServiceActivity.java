@@ -280,7 +280,6 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
         EditText etDesc = view.findViewById(R.id.etServiceDesc);
         EditText etPrice = view.findViewById(R.id.etServicePrice);
         EditText etDuration = view.findViewById(R.id.etServiceDuration);
-        EditText etMonitoringDays = view.findViewById(R.id.etServiceMonitoringDays);
         RecyclerView rvSelectedImages = view.findViewById(R.id.rvSelectedImages);
         MaterialButton btnPickImage = view.findViewById(R.id.btnPickImage);
 
@@ -302,7 +301,6 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
             String desc = etDesc.getText().toString().trim();
             String priceStr = etPrice.getText().toString().trim();
             String durStr = etDuration.getText().toString().trim();
-            String monStr = etMonitoringDays.getText().toString().trim();
 
             if (name.isEmpty() || priceStr.isEmpty() || durStr.isEmpty()) {
                 showError("Vui lòng nhập đầy đủ thông tin");
@@ -312,14 +310,13 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
             try {
                 double price = Double.parseDouble(priceStr);
                 int duration = Integer.parseInt(durStr);
-                Integer monitoringDays = monStr.isEmpty() ? null : Integer.parseInt(monStr);
                 
                 showLoading(true, "Đang xử lý...");
                 
                 if (selectedImageSources.isEmpty()) {
-                    saveService(name, desc, price, duration, monitoringDays, new ArrayList<>(), dialog);
+                    saveService(name, desc, price, duration, new ArrayList<>(), dialog);
                 } else {
-                    uploadImagesAndSave(name, desc, price, duration, monitoringDays, 0, new ArrayList<>(), dialog);
+                    uploadImagesAndSave(name, desc, price, duration, 0, new ArrayList<>(), dialog);
                 }
             } catch (NumberFormatException e) {
                 showError("Giá và thời lượng phải là số");
@@ -330,7 +327,7 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
         dialog.show();
     }
 
-    private void uploadImagesAndSave(String name, String desc, double price, int duration, Integer monitoringDays, int index, List<String> imageUrls, AlertDialog dialog) {
+    private void uploadImagesAndSave(String name, String desc, double price, int duration, int index, List<String> imageUrls, AlertDialog dialog) {
         // Get only new URIs (not URLs)
         List<Uri> newUris = new ArrayList<>();
         for (ImageSource source : selectedImageSources) {
@@ -340,7 +337,7 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
         }
         
         if (index >= newUris.size()) {
-            saveService(name, desc, price, duration, monitoringDays, imageUrls, dialog);
+            saveService(name, desc, price, duration, imageUrls, dialog);
             return;
         }
 
@@ -355,26 +352,26 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
                 public void onResponse(Call<UploadResponse> call, Response<UploadResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         imageUrls.add(response.body().getFileName());
-                        uploadImagesAndSave(name, desc, price, duration, monitoringDays, index + 1, imageUrls, dialog);
+                        uploadImagesAndSave(name, desc, price, duration, index + 1, imageUrls, dialog);
                     } else {
                         showError("Lỗi khi tải ảnh " + (index + 1));
-                        saveService(name, desc, price, duration, monitoringDays, imageUrls, dialog);
+                        saveService(name, desc, price, duration, imageUrls, dialog);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<UploadResponse> call, Throwable t) {
                     showError("Lỗi kết nối khi tải ảnh: " + t.getMessage());
-                    saveService(name, desc, price, duration, monitoringDays, imageUrls, dialog);
+                    saveService(name, desc, price, duration, imageUrls, dialog);
                 }
             });
         } catch (Exception e) {
-            uploadImagesAndSave(name, desc, price, duration, monitoringDays, index + 1, imageUrls, dialog);
+            uploadImagesAndSave(name, desc, price, duration, index + 1, imageUrls, dialog);
         }
     }
 
-    private void saveService(String name, String desc, double price, int duration, Integer monitoringDays, List<String> imageUrls, AlertDialog dialog) {
-        CreateServiceRequest request = new CreateServiceRequest(selectedCategoryId, name, desc, price, duration, monitoringDays, imageUrls);
+    private void saveService(String name, String desc, double price, int duration, List<String> imageUrls, AlertDialog dialog) {
+        CreateServiceRequest request = new CreateServiceRequest(selectedCategoryId, name, desc, price, duration, imageUrls);
         apiService.createService(request).enqueue(new Callback<MessageResponse>() {
             @Override
             public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
@@ -444,7 +441,6 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
         EditText etDesc = view.findViewById(R.id.etServiceDesc);
         EditText etPrice = view.findViewById(R.id.etServicePrice);
         EditText etDuration = view.findViewById(R.id.etServiceDuration);
-        EditText etMonitoringDays = view.findViewById(R.id.etServiceMonitoringDays);
         RecyclerView rvSelectedImages = view.findViewById(R.id.rvSelectedImages);
         MaterialButton btnPickImage = view.findViewById(R.id.btnPickImage);
 
@@ -453,9 +449,6 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
         etDesc.setText(service.getDescription());
         etPrice.setText(String.valueOf(service.getPrice()));
         etDuration.setText(String.valueOf(service.getDurationMinutes()));
-        if (service.getDefaultMonitoringDays() != null) {
-            etMonitoringDays.setText(String.valueOf(service.getDefaultMonitoringDays()));
-        }
 
         // Setup Selected Images RecyclerView
         rvSelectedImages.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
@@ -475,7 +468,6 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
             String desc = etDesc.getText().toString().trim();
             String priceStr = etPrice.getText().toString().trim();
             String durStr = etDuration.getText().toString().trim();
-            String monStr = etMonitoringDays.getText().toString().trim();
 
             if (name.isEmpty() || priceStr.isEmpty() || durStr.isEmpty()) {
                 showError("Vui lòng nhập đầy đủ thông tin");
@@ -485,7 +477,6 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
             try {
                 double price = Double.parseDouble(priceStr);
                 int duration = Integer.parseInt(durStr);
-                Integer monitoringDays = monStr.isEmpty() ? null : Integer.parseInt(monStr);
                 
                 showLoading(true, "Đang xử lý...");
                 
@@ -503,10 +494,10 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
                 
                 if (newUris.isEmpty()) {
                     // No new images, just update with existing URLs
-                    updateService(service.getId(), service.getCategoryId(), name, desc, price, duration, monitoringDays, existingUrls, dialog);
+                    updateService(service.getId(), service.getCategoryId(), name, desc, price, duration, existingUrls, dialog);
                 } else {
                     // Upload new images and combine with existing URLs
-                    uploadImagesAndUpdate(service.getId(), service.getCategoryId(), name, desc, price, duration, monitoringDays, 0, existingUrls, newUris, dialog);
+                    uploadImagesAndUpdate(service.getId(), service.getCategoryId(), name, desc, price, duration, 0, existingUrls, newUris, dialog);
                 }
             } catch (NumberFormatException e) {
                 showError("Giá và thời lượng phải là số");
@@ -522,9 +513,9 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
         dialog.show();
     }
 
-    private void uploadImagesAndUpdate(Long serviceId, Integer categoryId, String name, String desc, double price, int duration, Integer monitoringDays, int index, List<String> existingUrls, List<Uri> newUris, AlertDialog dialog) {
+    private void uploadImagesAndUpdate(Long serviceId, Integer categoryId, String name, String desc, double price, int duration, int index, List<String> existingUrls, List<Uri> newUris, AlertDialog dialog) {
         if (index >= newUris.size()) {
-            updateService(serviceId, categoryId, name, desc, price, duration, monitoringDays, existingUrls, dialog);
+            updateService(serviceId, categoryId, name, desc, price, duration, existingUrls, dialog);
             return;
         }
 
@@ -539,27 +530,27 @@ public class AdminServiceActivity extends BaseAdminActivity implements AdminServ
                 public void onResponse(Call<UploadResponse> call, Response<UploadResponse> response) {
                     if (response.isSuccessful() && response.body() != null) {
                         existingUrls.add(response.body().getFileName());
-                        uploadImagesAndUpdate(serviceId, categoryId, name, desc, price, duration, monitoringDays, index + 1, existingUrls, newUris, dialog);
+                        uploadImagesAndUpdate(serviceId, categoryId, name, desc, price, duration, index + 1, existingUrls, newUris, dialog);
                     } else {
                         showError("Lỗi khi tải ảnh " + (index + 1));
-                        updateService(serviceId, categoryId, name, desc, price, duration, monitoringDays, existingUrls, dialog);
+                        updateService(serviceId, categoryId, name, desc, price, duration, existingUrls, dialog);
                     }
                 }
 
                 @Override
                 public void onFailure(Call<UploadResponse> call, Throwable t) {
                     showError("Lỗi kết nối khi tải ảnh: " + t.getMessage());
-                    updateService(serviceId, categoryId, name, desc, price, duration, monitoringDays, existingUrls, dialog);
+                    updateService(serviceId, categoryId, name, desc, price, duration, existingUrls, dialog);
                 }
             });
         } catch (Exception e) {
-            uploadImagesAndUpdate(serviceId, categoryId, name, desc, price, duration, monitoringDays, index + 1, existingUrls, newUris, dialog);
+            uploadImagesAndUpdate(serviceId, categoryId, name, desc, price, duration, index + 1, existingUrls, newUris, dialog);
         }
     }
 
-    private void updateService(Long serviceId, Integer categoryId, String name, String desc, double price, int duration, Integer monitoringDays, List<String> imageUrls, AlertDialog dialog) {
+    private void updateService(Long serviceId, Integer categoryId, String name, String desc, double price, int duration, List<String> imageUrls, AlertDialog dialog) {
         int catId = (categoryId != null && categoryId != -1) ? categoryId : selectedCategoryId;
-        CreateServiceRequest request = new CreateServiceRequest(catId, name, desc, price, duration, monitoringDays, imageUrls);
+        CreateServiceRequest request = new CreateServiceRequest(catId, name, desc, price, duration, imageUrls);
         apiService.updateService(serviceId, request).enqueue(new Callback<MessageResponse>() {
             @Override
             public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {

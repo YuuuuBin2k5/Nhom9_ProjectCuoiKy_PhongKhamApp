@@ -14,7 +14,6 @@ import com.google.android.material.textfield.TextInputEditText;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
-import com.hcmute.mobile_android.network.models.MedicineItem;
 import com.hcmute.mobile_android.network.models.PrescriptionResponse;
 import com.hcmute.mobile_android.network.models.request.PrescriptionRequest;
 
@@ -76,7 +75,7 @@ public class PrescriptionActivity extends AppCompatActivity {
         addMedicineRow(null);
     }
 
-    private void addMedicineRow(MedicineItem detail) {
+    private void addMedicineRow(PrescriptionResponse.PrescriptionDetail detail) {
         View view = LayoutInflater.from(this).inflate(R.layout.item_prescription_detail, llMedicinesContainer, false);
         
         TextInputEditText etMedicineName = view.findViewById(R.id.etMedicineName);
@@ -114,8 +113,8 @@ public class PrescriptionActivity extends AppCompatActivity {
                     llMedicinesContainer.removeAllViews();
                     medicineViews.clear();
                     
-                    if (prescription.getMedicines() != null) {
-                        for (MedicineItem detail : prescription.getMedicines()) {
+                    if (prescription.getDetails() != null) {
+                        for (PrescriptionResponse.PrescriptionDetail detail : prescription.getDetails()) {
                             addMedicineRow(detail);
                         }
                     }

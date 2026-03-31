@@ -13,8 +13,6 @@ public class ServiceItem {
     private double price;
     @SerializedName("durationMinutes")
     private Integer durationMinutes;
-    @SerializedName("defaultMonitoringDays")
-    private Integer defaultMonitoringDays;
     @SerializedName("uiTemplateType")
     private String uiTemplateType;
     @SerializedName("categoryId")
@@ -40,7 +38,6 @@ public class ServiceItem {
     public String getDescription() { return description; }
     public double getPrice() { return price; }
     public Integer getDurationMinutes() { return durationMinutes; }
-    public Integer getDefaultMonitoringDays() { return defaultMonitoringDays; }
     public String getUiTemplateType() { return uiTemplateType; }
     public Integer getCategoryId() { return categoryId; }
     public String getCategoryName() { return categoryName; }

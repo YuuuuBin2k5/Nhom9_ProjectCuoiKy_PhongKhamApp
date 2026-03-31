@@ -99,22 +99,6 @@
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
-        <com.google.android.material.textfield.TextInputLayout
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:hint="Số ngày theo dõi thuốc mặc định (tùy chọn)"
-            app:hintTextColor="@color/primary_blue"
-            app:boxStrokeColor="@color/primary_blue">
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/etServiceMonitoringDays"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:textColor="@color/black"
-                android:inputType="number" />
-        </com.google.android.material.textfield.TextInputLayout>
-
         <LinearLayout
             android:id="@+id/layoutImagePicker"
             android:layout_width="match_parent"

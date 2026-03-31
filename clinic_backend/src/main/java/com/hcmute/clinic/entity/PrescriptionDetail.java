@@ -3,8 +3,6 @@ package com.hcmute.clinic.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
-import java.math.BigDecimal;
-
 @Entity
 @Table(name = "prescription_details")
 @Data
@@ -27,7 +25,4 @@ public class PrescriptionDetail {
     private String frequency;
     private String duration;
     private String unit;
-
-    @Column(name = "price")
-    private BigDecimal price;  // Giá thuốc (bác sĩ nhập thủ công)
 }

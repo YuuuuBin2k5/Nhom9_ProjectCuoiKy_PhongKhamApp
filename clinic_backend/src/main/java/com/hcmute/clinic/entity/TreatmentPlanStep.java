@@ -7,7 +7,6 @@ import lombok.*;
 import lombok.Builder;
 
 import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.util.List;
 
 @Entity
@@ -73,15 +72,5 @@ public class TreatmentPlanStep {
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
     private Prescription prescription;
-
-    // === Monitoring / Waiting Period Fields ===
-    @Column(name = "monitoring_start_date")
-    private LocalDate monitoringStartDate; // Ngày bắt đầu giai đoạn chờ
-
-    @Column(name = "monitoring_days")
-    private Integer monitoringDays; // Số ngày chờ (VD: 7 ngày uống thuốc)
-
-    @Column(name = "scheduled_resume_date")
-    private LocalDate scheduledResumeDate; // Ngày dự kiến quay lại = start + days
 
 }

@@ -37,12 +37,5 @@ public class TreatmentPlanDTO {
         private String uiTemplateType;
         private String roomName;
         private boolean editable;
-        // Prescription info
-        private Boolean hasPrescription;
-        private Long prescriptionId;
-        // Monitoring / waiting period
-        private Integer defaultMonitoringDays;  // từ service
-        private Integer monitoringDays;         // từ step (bác sĩ đã chỉnh)
-        private String scheduledResumeDate;     // ngày dự kiến quay lại
     }
 }
