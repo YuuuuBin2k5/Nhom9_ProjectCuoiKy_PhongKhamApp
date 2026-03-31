@@ -127,10 +127,16 @@ public class TreatmentPlanService {
             sorted.sort(Comparator.comparingInt(TreatmentPlanTemplateStep::getSequenceOrder));
 
             for (TreatmentPlanTemplateStep ts : sorted) {
+                // Auto-assign room if template doesn't have one
+                ClinicRoom assignedRoom = ts.getClinicRoom();
+                if (assignedRoom == null && ts.getService() != null) {
+                    assignedRoom = roomAssignmentService.determineRoomForService(ts.getService());
+                }
+                
                 TreatmentPlanStep step = TreatmentPlanStep.builder()
                         .plan(plan)
                         .service(ts.getService())
-                        .clinicRoom(ts.getClinicRoom())
+                        .clinicRoom(assignedRoom)
                         .sequenceOrder(ts.getSequenceOrder())
                         .status(StepStatus.PENDING)
                         .medicationDetails(ts.getMedicationDetails())
