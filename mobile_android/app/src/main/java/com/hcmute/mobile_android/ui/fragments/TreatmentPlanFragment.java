@@ -187,39 +187,65 @@ public class TreatmentPlanFragment extends Fragment {
             stepsContainer.removeAllViews();
             List<TreatmentStepSummary> steps = plan.getSteps();
             if (steps != null) {
+                int shown = 0;
                 for (TreatmentStepSummary step : steps) {
                     // Hide SKIPPED/CANCELLED steps from patient view
                     if ("SKIPPED".equals(step.getStatus()) || "CANCELLED".equals(step.getStatus())) {
                         continue;
                     }
+                    if (shown >= 3) break;
 
-                    View row = LayoutInflater.from(h.itemView.getContext()).inflate(R.layout.item_treatment_step, stepsContainer, false);
-                    TextView tvStepNumber = row.findViewById(R.id.tvStepNumber);
-                    TextView tvServiceName = row.findViewById(R.id.tvServiceName);
-                    TextView tvStepDescription = row.findViewById(R.id.tvStepDescription);
-                    TextView tvStatus = row.findViewById(R.id.tvStatus);
-                    MaterialButton btnStart = row.findViewById(R.id.btnEdit);
+                    android.widget.LinearLayout row = new android.widget.LinearLayout(h.itemView.getContext());
+                    row.setOrientation(android.widget.LinearLayout.HORIZONTAL);
+                    row.setGravity(android.view.Gravity.CENTER_VERTICAL);
+                    row.setPadding(12, 8, 12, 8);
 
-                    Integer order = step.getOrder();
-                    tvStepNumber.setText(order != null ? String.valueOf(order) : "?");
-                    tvServiceName.setText(step.getServiceName() != null ? step.getServiceName() : "");
-                    tvStepDescription.setText(step.getRoomName() != null ? "Phòng: " + step.getRoomName() : "");
-                    tvStatus.setText(formatStepStatus(step.getStatus()));
+                    TextView tvOrder = new TextView(h.itemView.getContext());
+                    tvOrder.setText((step.getOrder() != null ? step.getOrder() : 0) + ".");
+                    tvOrder.setTextColor(android.graphics.Color.parseColor("#64748B"));
+                    tvOrder.setTextSize(13);
+                    row.addView(tvOrder);
 
-                    // Patient cannot start/cancel steps — read-only view.
-                    // The 'Bắt đầu' button is a doctor-only action; hide it for all statuses.
-                    if (btnStart != null) btnStart.setVisibility(View.GONE);
+                    TextView tvService = new TextView(h.itemView.getContext());
+                    android.widget.LinearLayout.LayoutParams serviceLp =
+                            new android.widget.LinearLayout.LayoutParams(0, ViewGroup.LayoutParams.WRAP_CONTENT, 1f);
+                    tvService.setLayoutParams(serviceLp);
+                    tvService.setPadding(12, 0, 8, 0);
+                    tvService.setText(step.getServiceName() != null ? step.getServiceName() : "Dịch vụ");
+                    tvService.setTextSize(13);
+                    tvService.setTextColor(android.graphics.Color.parseColor("#334155"));
+                    row.addView(tvService);
 
-                    // Colour-code status text
+                    TextView tvStatusChip = new TextView(h.itemView.getContext());
+                    tvStatusChip.setText(formatStepStatus(step.getStatus()));
+                    tvStatusChip.setTextSize(11);
+                    tvStatusChip.setPadding(14, 6, 14, 6);
                     if ("COMPLETED".equals(step.getStatus())) {
-                        tvStatus.setTextColor(android.graphics.Color.parseColor("#4CAF50")); // green
+                        tvStatusChip.setTextColor(android.graphics.Color.parseColor("#16A34A"));
+                        tvStatusChip.setBackgroundColor(android.graphics.Color.parseColor("#DCFCE7"));
                     } else if ("IN_PROGRESS".equals(step.getStatus())) {
-                        tvStatus.setTextColor(android.graphics.Color.parseColor("#2196F3")); // blue
+                        tvStatusChip.setTextColor(android.graphics.Color.parseColor("#2563EB"));
+                        tvStatusChip.setBackgroundColor(android.graphics.Color.parseColor("#DBEAFE"));
                     } else {
-                        tvStatus.setTextColor(android.graphics.Color.parseColor("#9E9E9E")); // grey for PENDING
+                        tvStatusChip.setTextColor(android.graphics.Color.parseColor("#64748B"));
+                        tvStatusChip.setBackgroundColor(android.graphics.Color.parseColor("#E2E8F0"));
                     }
+                    row.addView(tvStatusChip);
 
                     stepsContainer.addView(row);
+                    shown++;
+                }
+
+                int visibleTotal = (int) steps.stream()
+                        .filter(s -> !"SKIPPED".equals(s.getStatus()) && !"CANCELLED".equals(s.getStatus()))
+                        .count();
+                if (visibleTotal > shown) {
+                    TextView tvMore = new TextView(h.itemView.getContext());
+                    tvMore.setText("+" + (visibleTotal - shown) + " bước khác");
+                    tvMore.setTextSize(12);
+                    tvMore.setTextColor(android.graphics.Color.parseColor("#64748B"));
+                    tvMore.setPadding(12, 6, 12, 0);
+                    stepsContainer.addView(tvMore);
                 }
             }
         }

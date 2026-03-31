@@ -195,6 +195,12 @@ public interface ApiService {
     @GET("api/doctor/me/appointments/upcoming")
     Call<List<com.hcmute.mobile_android.network.models.UpcomingAppointment>> getDoctorUpcomingAppointments();
 
+    @GET("api/doctor/me/profile")
+    Call<com.hcmute.mobile_android.network.models.DoctorProfileResponse> getDoctorProfile();
+
+    @PATCH("api/doctor/me/profile")
+    Call<com.hcmute.mobile_android.network.models.MessageResponse> updateDoctorProfile(@Body java.util.Map<String, Object> body);
+
     // Doctor Workflow APIs
     @GET("api/doctor/patient")
     Call<PatientInfo> lookupPatientByQR(@Query("qr") String qrCode);

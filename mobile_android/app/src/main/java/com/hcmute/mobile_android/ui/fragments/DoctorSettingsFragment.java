@@ -15,8 +15,16 @@ import androidx.fragment.app.Fragment;
 
 import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.hcmute.mobile_android.R;
+import com.hcmute.mobile_android.network.ApiService;
+import com.hcmute.mobile_android.network.RetrofitClient;
+import com.hcmute.mobile_android.network.models.DoctorProfileResponse;
+import com.hcmute.mobile_android.ui.activities.DoctorProfileActivity;
 import com.hcmute.mobile_android.ui.activities.LoginActivity;
 import com.hcmute.mobile_android.util.TokenManager;
+
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class DoctorSettingsFragment extends Fragment {
 
@@ -43,7 +51,7 @@ public class DoctorSettingsFragment extends Fragment {
         }
 
         view.findViewById(R.id.btnEditProfile).setOnClickListener(v -> {
-            Toast.makeText(getContext(), "Tính năng chỉnh sửa hồ sơ đang phát triển", Toast.LENGTH_SHORT).show();
+            startActivity(new Intent(requireContext(), DoctorProfileActivity.class));
         });
 
         SwitchMaterial switchReady = view.findViewById(R.id.switchReady);
@@ -51,28 +59,49 @@ public class DoctorSettingsFragment extends Fragment {
             String status = isChecked ? "Sẵn sàng nhận bệnh" : "Đang bận / Vắng mặt";
             Toast.makeText(getContext(), "Trạng thái: " + status, Toast.LENGTH_SHORT).show();
         });
+
+        // Load doctor profile dynamic data
+        ApiService api = RetrofitClient.getApiService(requireContext());
+        api.getDoctorProfile().enqueue(new Callback<DoctorProfileResponse>() {
+            @Override
+            public void onResponse(Call<DoctorProfileResponse> call, Response<DoctorProfileResponse> response) {
+                if (!isAdded() || !response.isSuccessful() || response.body() == null) return;
+                DoctorProfileResponse p = response.body();
+                tvDoctorName.setText(p.getDisplayName());
+                TextView tvDoctorId = view.findViewById(R.id.tvDoctorId);
+                if (tvDoctorId != null) {
+                    String bio = p.getBiography() != null ? p.getBiography().trim() : "";
+                    if (!bio.isEmpty()) {
+                        tvDoctorId.setText(bio.length() > 60 ? bio.substring(0, 60) + "..." : bio);
+                    } else {
+                        tvDoctorId.setText("Mã BS: " + (p.getId() != null ? p.getId() : ""));
+                    }
+                }
+            }
+
+            @Override
+            public void onFailure(Call<DoctorProfileResponse> call, Throwable t) {}
+        });
     }
 
     private void setupMenus(View view) {
-        // TỐI ƯU QUY TRÌNH
-        setupRow(view, R.id.rowPrescription, R.drawable.ic_medical_services, "Mẫu Đơn thuốc nhanh", "Đơn thuốc mẫu", null);
-        setupRow(view, R.id.rowDiagnosis, R.drawable.ic_edit, "Gõ tắt Chẩn đoán", "Snippets văn bản", null);
-        setupRow(view, R.id.rowVoice, R.drawable.ic_doctor, "Chế độ Giọng nói (Beta)", "Giọng nói, từ lóng", "NEW");
-        setupRow(view, R.id.rowOdontogram, R.drawable.ic_tooth, "Odontogram Nhanh", "Sơ đồ răng", null);
-
-        // LỊCH TRÌNH
+        // Giữ lại các chức năng cần thiết cho bác sĩ
+        setupRow(view, R.id.rowPrescription, R.drawable.ic_medical_services, "Mẫu Đơn thuốc nhanh", "Quản lý mẫu kê đơn", null);
         setupRow(view, R.id.rowSchedule, R.drawable.ic_calendar, "Đăng ký ca làm việc", null, null);
         setupRow(view, R.id.rowLeaveTime, R.drawable.ic_schedule, "Nghỉ phép", null, null);
 
-        // ỨNG DỤNG & BẢO MẬT
         setupSwitch(view, R.id.rowPush, R.drawable.ic_notification, "Thông báo Push", true);
         setupSwitch(view, R.id.rowReminder, R.drawable.ic_calendar, "Nhắc lịch hẹn", true);
-        setupRow(view, R.id.rowFaceId, R.drawable.ic_person, "FaceID/Vân tay", null, null);
-        setupSwitchWithBadge(view, R.id.rowDarkMode, R.drawable.ic_eye, "Giao diện Tối (Beta)", false, "Beta");
 
-        // HỆ THỐNG
         setupRow(view, R.id.rowSupport, R.drawable.ic_user, "Hỗ trợ / Admin", null, null);
         setupRow(view, R.id.rowAbout, R.drawable.ic_info, "Về ứng dụng", "Credits: Nhóm 9 - HCMUT, v1.0.0", null);
+
+        // Ẩn các mục chưa cần thiết để UI gọn và chuyên nghiệp hơn
+        int[] hiddenRows = new int[]{R.id.rowDiagnosis, R.id.rowVoice, R.id.rowOdontogram, R.id.rowFaceId, R.id.rowDarkMode};
+        for (int id : hiddenRows) {
+            View row = view.findViewById(id);
+            if (row != null) row.setVisibility(View.GONE);
+        }
 
         // Logout
         view.findViewById(R.id.rowLogout).setOnClickListener(v -> doLogout());

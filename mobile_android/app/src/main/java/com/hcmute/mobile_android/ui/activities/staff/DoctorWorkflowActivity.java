@@ -60,6 +60,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     
     public static final String EXTRA_INITIAL_QR = "EXTRA_INITIAL_QR";
     private static final int REQUEST_PATIENT_DETAIL = 1001;
+    private static final int REQUEST_PRESCRIPTION = 1002;
 
     // Views
     private EditText etQrInput;
@@ -311,6 +312,11 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                 displayPatientInfo(currentPatient);
                 loadLastPlanForPatient(currentPatient.getId());
             }
+        } else if (requestCode == REQUEST_PRESCRIPTION && resultCode == RESULT_OK) {
+            // Reload steps to reflect updated actualPrice from kê đơn
+            if (currentTreatmentPlanId != null) {
+                loadTreatmentPlanForRoom(currentTreatmentPlanId);
+            }
         }
     }
 
@@ -534,10 +540,14 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         });
         btnAddService.setOnClickListener(v -> showAddServiceDialog(null));
         btnPrescribe.setOnClickListener(v -> {
-            if (currentPatient != null && currentPatient.getAppointmentId() != null && currentPatient.getAppointmentId() != -1) {
+            if (currentPatient != null
+                    && currentPatient.getAppointmentId() != null
+                    && currentPatient.getAppointmentId() != -1
+                    && currentTreatmentPlanId != null) {
                 Intent intent = new Intent(this, PrescriptionActivity.class);
                 intent.putExtra(PrescriptionActivity.EXTRA_APPOINTMENT_ID, currentPatient.getAppointmentId());
-                startActivity(intent);
+                intent.putExtra(PrescriptionActivity.EXTRA_TREATMENT_PLAN_ID, currentTreatmentPlanId);
+                startActivityForResult(intent, REQUEST_PRESCRIPTION);
             } else {
                 Toast.makeText(this, "Không thể xác định lịch hẹn cho bệnh nhân này", Toast.LENGTH_SHORT).show();
             }
@@ -2128,7 +2138,10 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         for (TreatmentPlan.Step step : treatmentSteps) {
             String status = step.getStatus() != null ? step.getStatus().toUpperCase() : "PENDING";
             if (!status.equals("CANCELLED") && !status.equals("SKIPPED")) {
-                Double price = step.getEstimatedPrice();
+                // Ưu tiên actualPrice đã nhập từ phần kê đơn theo từng dịch vụ
+                Double price = (step.getActualPrice() != null && step.getActualPrice() > 0)
+                        ? step.getActualPrice()
+                        : step.getEstimatedPrice();
                 if (price != null) {
                     total += price;
                     countedSteps.add(step);

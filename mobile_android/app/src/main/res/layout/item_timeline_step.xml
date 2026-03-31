@@ -95,6 +95,27 @@
                 android:visibility="gone" />
 
             <TextView
+                android:id="@+id/tvStepDoctor"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="#0EA5E9"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:text="Bác sĩ: Nguyễn Văn A" />
+
+            <TextView
+                android:id="@+id/tvStepMeta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:textColor="#64748B"
+                android:textSize="12sp"
+                android:visibility="gone"
+                tools:text="Răng 36 • Hoàn thành: 2026-03-31" />
+
+            <TextView
                 android:id="@+id/tvDoctorConclusion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

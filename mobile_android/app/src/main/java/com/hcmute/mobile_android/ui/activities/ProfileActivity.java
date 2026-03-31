@@ -113,14 +113,6 @@ public class ProfileActivity extends AppCompatActivity {
             fabEdit.setOnClickListener(v -> showAvatarEditDialog());
         }
 
-        // Invoice button
-        View btnInvoices = findViewById(R.id.btnInvoices);
-        if (btnInvoices != null) {
-            btnInvoices.setOnClickListener(v -> {
-                startActivity(new Intent(ProfileActivity.this, com.hcmute.mobile_android.ui.activities.InvoiceListActivity.class));
-            });
-        }
-
         // Logout button
         View btnLogout = findViewById(R.id.btnLogout);
         if (btnLogout != null) {

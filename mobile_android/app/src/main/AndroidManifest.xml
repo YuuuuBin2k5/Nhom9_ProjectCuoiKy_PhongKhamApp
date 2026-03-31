@@ -35,6 +35,9 @@
             android:name=".ui.activities.ProfileActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activities.DoctorProfileActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activities.MainActivity"
             android:exported="false" />
         <activity

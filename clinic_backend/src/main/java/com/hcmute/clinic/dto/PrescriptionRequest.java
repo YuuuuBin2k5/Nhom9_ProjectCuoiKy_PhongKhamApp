@@ -5,6 +5,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.math.BigDecimal;
 import java.util.List;
 
 @Data
@@ -16,6 +17,11 @@ public class PrescriptionRequest {
     private String diagnosis;
     private String symptoms;
     private String advice;
+    
+    // Optional: kê đơn theo từng step/dịch vụ trong phác đồ
+    private Long treatmentPlanStepId;
+    // Optional: số tiền dùng để cộng vào actualPrice của step
+    private BigDecimal amount;
     private List<DetailRequest> details;
 
     @Data

@@ -40,7 +40,11 @@ public class PriceBreakdownAdapter extends RecyclerView.Adapter<PriceBreakdownAd
         
         holder.tvServiceName.setText(serviceName);
         
-        Double price = step.getEstimatedPrice();
+        // Hiển thị actualPrice nếu bác sĩ đã nhập giá (ưu tiên phần kê đơn),
+        // nếu chưa có thì fallback về estimatedPrice của dịch vụ.
+        Double price = (step.getActualPrice() != null && step.getActualPrice() > 0)
+                ? step.getActualPrice()
+                : step.getEstimatedPrice();
         if (price != null) {
             holder.tvServicePrice.setText(String.format("%,.0f VNĐ", price));
         } else {

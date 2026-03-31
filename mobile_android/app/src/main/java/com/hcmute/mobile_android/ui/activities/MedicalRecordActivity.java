@@ -69,6 +69,9 @@ public class MedicalRecordActivity extends AppCompatActivity {
         findViewById(R.id.avatarContainer).setOnClickListener(v -> {
             startActivity(new Intent(this, ProfileActivity.class));
         });
+        findViewById(R.id.btnInvoiceHistory).setOnClickListener(v -> {
+            startActivity(new Intent(this, InvoiceListActivity.class));
+        });
 
         toolbar.inflateMenu(R.menu.menu_medical_record);
         toolbar.setOnMenuItemClickListener(item -> {

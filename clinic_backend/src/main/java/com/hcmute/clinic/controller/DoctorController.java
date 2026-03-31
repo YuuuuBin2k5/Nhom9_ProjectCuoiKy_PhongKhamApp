@@ -41,6 +41,55 @@ public class DoctorController {
     private final com.hcmute.clinic.service.CheckInQueueService checkInQueueService;
     private final com.hcmute.clinic.security.JwtService jwtService;
 
+    @GetMapping("/me/profile")
+    public ResponseEntity<?> getMyProfile(org.springframework.security.core.Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        Doctor doctor = resolveDoctorFromAuth(auth.getName());
+        if (doctor == null) return ResponseEntity.status(404).body(Map.of("message", "Không tìm thấy bác sĩ"));
+
+        return ResponseEntity.ok(Map.of(
+                "id", doctor.getId(),
+                "firstName", doctor.getFirstName() != null ? doctor.getFirstName() : "",
+                "lastName", doctor.getLastName() != null ? doctor.getLastName() : "",
+                "email", doctor.getEmail() != null ? doctor.getEmail() : "",
+                "specialization", doctor.getSpecialization() != null ? doctor.getSpecialization() : "",
+                "licenseNumber", doctor.getLicenseNumber() != null ? doctor.getLicenseNumber() : "",
+                "experienceYears", doctor.getExperienceYears() != null ? doctor.getExperienceYears() : 0,
+                "biography", doctor.getBiography() != null ? doctor.getBiography() : "",
+                "avatarUrl", doctor.getAvatarUrl() != null ? doctor.getAvatarUrl() : "",
+                "roomName", doctor.getClinicRoom() != null ? doctor.getClinicRoom().getName() : ""
+        ));
+    }
+
+    @PatchMapping("/me/profile")
+    public ResponseEntity<?> updateMyProfile(
+            @RequestBody Map<String, Object> body,
+            org.springframework.security.core.Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        Doctor doctor = resolveDoctorFromAuth(auth.getName());
+        if (doctor == null) return ResponseEntity.status(404).body(Map.of("message", "Không tìm thấy bác sĩ"));
+
+        String biography = body.get("biography") instanceof String ? ((String) body.get("biography")).trim() : null;
+        String specialization = body.get("specialization") instanceof String ? ((String) body.get("specialization")).trim() : null;
+        String avatarUrl = body.get("avatarUrl") instanceof String ? ((String) body.get("avatarUrl")).trim() : null;
+        Integer experienceYears = null;
+        if (body.get("experienceYears") instanceof Number number) {
+            experienceYears = number.intValue();
+        }
+
+        if (biography != null) doctor.setBiography(biography);
+        if (specialization != null && !specialization.isEmpty()) doctor.setSpecialization(specialization);
+        if (avatarUrl != null && !avatarUrl.isEmpty()) doctor.setAvatarUrl(avatarUrl);
+        if (experienceYears != null && experienceYears >= 0) doctor.setExperienceYears(experienceYears);
+        doctorRepository.save(doctor);
+
+        return ResponseEntity.ok(Map.of("message", "Đã cập nhật hồ sơ bác sĩ"));
+    }
+
     @GetMapping("/me/queue")
     public ResponseEntity<?> getMyQueue(org.springframework.security.core.Authentication auth) {
         if (auth == null || auth.getName() == null) {
@@ -198,6 +247,15 @@ public class DoctorController {
         response.put("treatmentPlanStatus", treatmentPlanStatus);
         
         return ResponseEntity.ok(response);
+    }
+
+    private Doctor resolveDoctorFromAuth(String authName) {
+        try {
+            Long id = Long.parseLong(authName);
+            return doctorRepository.findById(id).orElse(null);
+        } catch (Exception ignored) {
+            return doctorRepository.findByEmailIgnoreCase(authName).orElse(null);
+        }
     }
     
     @GetMapping("/patients/{id}/medical-records")

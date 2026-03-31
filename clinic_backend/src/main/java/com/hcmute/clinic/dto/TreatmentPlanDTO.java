@@ -27,6 +27,7 @@ public class TreatmentPlanDTO {
         private Long treatmentPlanId;
         private Long serviceId;
         private String serviceName;
+        private String doctorName;
         private String description;
         private Integer stepOrder;
         private String status;
@@ -34,6 +35,7 @@ public class TreatmentPlanDTO {
         private Double estimatedPrice;
         private Double actualPrice;
         private String doctorConclusion;
+        private String completedAt;
         private String uiTemplateType;
         private String roomName;
         private String medicationDetails;

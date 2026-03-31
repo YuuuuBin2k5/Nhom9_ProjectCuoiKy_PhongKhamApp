@@ -72,6 +72,7 @@ public class TreatmentPlan {
         private Long treatmentPlanId;
         private Long serviceId;
         private String serviceName;
+        private String doctorName;
         private String description;
         private Integer stepOrder;
         private String status; // PENDING, IN_PROGRESS, COMPLETED, CANCELLED
@@ -112,6 +113,8 @@ public class TreatmentPlan {
 
         public String getServiceName() { return serviceName; }
         public void setServiceName(String serviceName) { this.serviceName = serviceName; }
+        public String getDoctorName() { return doctorName; }
+        public void setDoctorName(String doctorName) { this.doctorName = doctorName; }
 
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }

@@ -125,16 +125,19 @@ public class InvoiceService {
 
         // ====== SAFETY: Mark Appointment as COMPLETED on payment if still IN_PROGRESS ======
         try {
-            if (invoice.getTreatmentPlan() != null
-                    && invoice.getTreatmentPlan().getMedicalRecord() != null
-                    && invoice.getTreatmentPlan().getMedicalRecord().getAppointment() != null) {
-                com.hcmute.clinic.entity.Appointment appt =
-                        invoice.getTreatmentPlan().getMedicalRecord().getAppointment();
-                if (appt.getStatus() == com.hcmute.clinic.enums.AppointmentStatus.IN_PROGRESS
-                        || appt.getStatus() == com.hcmute.clinic.enums.AppointmentStatus.SCHEDULED) {
-                    appt.setStatus(com.hcmute.clinic.enums.AppointmentStatus.COMPLETED);
-                    appointmentRepository.save(appt);
+            com.hcmute.clinic.entity.Appointment appt = null;
+            if (invoice.getTreatmentPlan() != null) {
+                if (invoice.getTreatmentPlan().getMedicalRecord() != null
+                        && invoice.getTreatmentPlan().getMedicalRecord().getAppointment() != null) {
+                    appt = invoice.getTreatmentPlan().getMedicalRecord().getAppointment();
+                } else if (invoice.getTreatmentPlan().getAppointment() != null) {
+                    appt = invoice.getTreatmentPlan().getAppointment();
                 }
+            }
+            if (appt != null && appt.getStatus() != com.hcmute.clinic.enums.AppointmentStatus.COMPLETED
+                    && appt.getStatus() != com.hcmute.clinic.enums.AppointmentStatus.CANCELLED) {
+                appt.setStatus(com.hcmute.clinic.enums.AppointmentStatus.COMPLETED);
+                appointmentRepository.save(appt);
             }
         } catch (Exception e) {
             System.err.println("[InvoiceService] Safety-mark appointment COMPLETED on payment error: " + e.getMessage());
@@ -183,7 +186,9 @@ public class InvoiceService {
         
         for (TreatmentPlanStep step : plan.getSteps()) {
             if (step.getStatus() == StepStatus.COMPLETED && step.getService() != null) {
-                BigDecimal price = step.getService().getPrice();
+                // Ưu tiên actualPrice do bác sĩ nhập (tính từ phần kê đơn theo dịch vụ),
+                // fallback sang estimated price của service nếu actualPrice chưa có.
+                BigDecimal price = step.getActualPrice() != null ? step.getActualPrice() : step.getService().getPrice();
                 if (price != null) {
                     totalAmount = totalAmount.add(price);
                     

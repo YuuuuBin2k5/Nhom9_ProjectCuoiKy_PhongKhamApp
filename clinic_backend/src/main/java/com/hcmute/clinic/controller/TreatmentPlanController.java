@@ -77,6 +77,9 @@ public class TreatmentPlanController {
                         .treatmentPlanId(plan.getId())
                         .serviceId(s.getService() != null ? s.getService().getId() : 0L)
                         .serviceName(s.getService() != null ? s.getService().getName() : "")
+                        .doctorName(plan.getMedicalRecord() != null && plan.getMedicalRecord().getDoctor() != null
+                                ? (plan.getMedicalRecord().getDoctor().getLastName() + " " + plan.getMedicalRecord().getDoctor().getFirstName()).trim()
+                                : "")
                         .description(s.getService() != null ? s.getService().getDescription() : "")
                         .stepOrder(s.getSequenceOrder())
                         .status(s.getStatus().name())
@@ -84,6 +87,7 @@ public class TreatmentPlanController {
                         .estimatedPrice(s.getService() != null && s.getService().getPrice() != null ? s.getService().getPrice().doubleValue() : 0.0)
                         .actualPrice(s.getActualPrice() != null ? s.getActualPrice().doubleValue() : 0.0)
                         .doctorConclusion(s.getDoctorConclusion())
+                        .completedAt(s.getCompletedAt() != null ? s.getCompletedAt().toString() : null)
                         .roomName(s.getClinicRoom() != null ? s.getClinicRoom().getName() : null)
                         .uiTemplateType(s.getService() != null && s.getService().getUiTemplateType() != null ? s.getService().getUiTemplateType().name() : "GENERAL")
                         .medicationDetails(s.getMedicationDetails())

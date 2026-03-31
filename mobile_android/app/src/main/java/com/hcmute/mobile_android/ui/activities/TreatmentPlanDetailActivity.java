@@ -215,6 +215,32 @@ public class TreatmentPlanDetailActivity extends AppCompatActivity {
                 holder.tvRoom.setVisibility(View.GONE);
             }
 
+            if (step.getDoctorName() != null && !step.getDoctorName().trim().isEmpty()) {
+                holder.tvDoctor.setVisibility(View.VISIBLE);
+                holder.tvDoctor.setText("Bác sĩ: " + step.getDoctorName().trim());
+            } else {
+                holder.tvDoctor.setVisibility(View.GONE);
+            }
+
+            StringBuilder meta = new StringBuilder();
+            if (step.getToothNumber() != null && !step.getToothNumber().trim().isEmpty()) {
+                meta.append("Răng ").append(step.getToothNumber().trim());
+            }
+            if (step.getCompletedAt() != null && !step.getCompletedAt().isEmpty()) {
+                if (meta.length() > 0) meta.append(" • ");
+                meta.append("Hoàn thành: ").append(step.getCompletedAt().replace("T", " "));
+            }
+            if (step.getActualPrice() != null && step.getActualPrice() > 0) {
+                if (meta.length() > 0) meta.append(" • ");
+                meta.append("Chi phí: ").append(String.format("%,.0f VNĐ", step.getActualPrice()));
+            }
+            if (meta.length() > 0) {
+                holder.tvMeta.setVisibility(View.VISIBLE);
+                holder.tvMeta.setText(meta.toString());
+            } else {
+                holder.tvMeta.setVisibility(View.GONE);
+            }
+
             if (step.getDoctorConclusion() != null && !step.getDoctorConclusion().trim().isEmpty()) {
                 holder.tvNote.setVisibility(View.VISIBLE);
                 holder.tvNote.setText("Ghi chú bác sĩ: " + step.getDoctorConclusion().trim());
@@ -239,7 +265,7 @@ public class TreatmentPlanDetailActivity extends AppCompatActivity {
         class Holder extends RecyclerView.ViewHolder {
             ImageView timelineDot;
             View timelineLine;
-            TextView tvName, tvStatus, tvRoom, tvNote;
+            TextView tvName, tvStatus, tvRoom, tvDoctor, tvMeta, tvNote;
             RecyclerView rvImages;
 
             Holder(View v) {
@@ -249,6 +275,8 @@ public class TreatmentPlanDetailActivity extends AppCompatActivity {
                 tvName = v.findViewById(R.id.tvStepName);
                 tvStatus = v.findViewById(R.id.tvStepStatus);
                 tvRoom = v.findViewById(R.id.tvStepRoom);
+                tvDoctor = v.findViewById(R.id.tvStepDoctor);
+                tvMeta = v.findViewById(R.id.tvStepMeta);
                 tvNote = v.findViewById(R.id.tvDoctorConclusion);
                 rvImages = v.findViewById(R.id.rvStepImages);
             }
