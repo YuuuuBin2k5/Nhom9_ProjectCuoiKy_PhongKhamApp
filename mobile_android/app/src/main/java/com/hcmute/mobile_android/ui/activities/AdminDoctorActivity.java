@@ -343,7 +343,7 @@ public class AdminDoctorActivity extends BaseAdminActivity implements AdminDocto
                     showSuccess("Xóa bác sĩ thành công");
                     loadDoctors();
                 } else {
-                    showError("Lỗi khi xóa bác sĩ: " + response.code());
+                    showErrorDialog("Lỗi khi xóa", parseErrorBody(response));
                 }
             }
 

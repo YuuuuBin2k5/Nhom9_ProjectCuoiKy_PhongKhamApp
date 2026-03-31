@@ -37,30 +37,209 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Welcome Section -->
+            <!-- Title: Doanh thu -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="16dp"
                 android:gravity="center_vertical">
                 
                 <View
                     android:layout_width="4dp"
                     android:layout_height="24dp"
-                    android:background="@color/admin_primary"
+                    android:background="#FF9800"
+                    android:layout_marginEnd="12dp" />
+                
+                <TextView
+                    android:id="@+id/tvDashboardTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Doanh thu"
+                    android:textColor="#000000"
+                    android:textSize="22sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <!-- Revenue Dashboard Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="3dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="@android:color/white">
+                
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+                    
+                    <!-- Year/Month/Day Dropdowns -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:weightSum="3"
+                        android:layout_marginBottom="24dp">
+                        
+                        <!-- Year Spinner -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:hint="Năm"
+                            android:layout_marginEnd="2dp"
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu">
+                            <AutoCompleteTextView
+                                android:id="@+id/spinnerYear"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:paddingHorizontal="4dp"
+                                android:paddingVertical="10dp"
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:textSize="12sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Month Spinner -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:hint="Tháng"
+                            android:layout_marginEnd="2dp"
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu">
+                            <AutoCompleteTextView
+                                android:id="@+id/spinnerMonth"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:paddingHorizontal="4dp"
+                                android:paddingVertical="10dp"
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:textSize="12sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <!-- Day Spinner -->
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/layoutDay"
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:hint="Ngày"
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense.ExposedDropdownMenu">
+                            <AutoCompleteTextView
+                                android:id="@+id/spinnerDay"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:inputType="none"
+                                android:paddingHorizontal="4dp"
+                                android:paddingVertical="10dp"
+                                android:maxLines="1"
+                                android:singleLine="true"
+                                android:textSize="12sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
+                    </LinearLayout>
+
+                    <!-- Revenue List Header -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingVertical="8dp"
+                        android:background="#F5F5F5"
+                        android:paddingHorizontal="12dp">
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1.5"
+                            android:layout_height="wrap_content"
+                            android:text="Danh mục"
+                            android:textColor="#757575"
+                            android:textStyle="bold"
+                            android:textSize="14sp"/>
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="Tổng số"
+                            android:gravity="end"
+                            android:textColor="#757575"
+                            android:textStyle="bold"
+                            android:textSize="14sp"/>
+                    </LinearLayout>
+
+                    <!-- Dynamic Revenue Items Container -->
+                    <LinearLayout
+                        android:id="@+id/layoutRevenueItems"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:paddingHorizontal="12dp"
+                        android:layout_marginTop="8dp">
+                        <!-- Items will be added programmatically -->
+                    </LinearLayout>
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:background="#EEEEEE"
+                        android:layout_marginVertical="12dp"/>
+
+                    <!-- Total Amount Display -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="12dp">
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_weight="1"
+                            android:layout_height="wrap_content"
+                            android:text="Tổng cộng"
+                            android:textColor="#000000"
+                            android:textStyle="bold"
+                            android:textSize="18sp"/>
+                        <TextView
+                            android:id="@+id/tvTotalRevenue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="0.000.000đ"
+                            android:textColor="#F44336"
+                            android:textStyle="bold"
+                            android:textSize="18sp"/>
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Title: Chức năng quản lý -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginBottom="16dp"
+                android:gravity="center_vertical">
+                
+                <View
+                    android:layout_width="4dp"
+                    android:layout_height="24dp"
+                    android:background="#FF9800"
                     android:layout_marginEnd="12dp" />
                 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Tổng quan hệ thống"
-                    android:textColor="@color/admin_text_primary"
-                    android:textSize="20sp"
+                    android:text="Chức năng quản lý"
+                    android:textColor="#000000"
+                    android:textSize="22sp"
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Management Functions -->
+            <!-- Grid Cards -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -76,384 +255,189 @@
                     <!-- Services Card -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardServices"
-                        style="@style/AdminCardStyle"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="145dp"
                         android:layout_weight="1"
                         android:layout_margin="8dp"
-                        app:strokeWidth="0dp">
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="3dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="@android:color/white">
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="140dp"
+                            android:layout_height="match_parent"
                             android:orientation="vertical"
                             android:gravity="center"
-                            android:background="@android:color/white"
                             android:padding="16dp">
                             <ImageView
                                 android:layout_width="48dp"
                                 android:layout_height="48dp"
                                 android:src="@drawable/ic_medical_services"
-                                app:tint="@color/admin_primary"
+                                app:tint="#1976D2"
                                 android:layout_marginBottom="12dp"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Dịch vụ"
-                                android:textColor="@android:color/black"
+                                android:textColor="#000000"
                                 android:textStyle="bold"
                                 android:textSize="16sp"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Categories Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardCategories"
-                        style="@style/AdminCardStyle"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:strokeWidth="0dp">
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="140dp"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:background="@android:color/white"
-                            android:padding="16dp">
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:src="@drawable/ic_category"
-                                app:tint="#FF5722"
-                                android:layout_marginBottom="12dp"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Danh mục"
-                                android:textColor="@android:color/black"
-                                android:textStyle="bold"
-                                android:textSize="16sp"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-
-                <!-- Row 2: Rooms & Doctors -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
 
                     <!-- Rooms Card -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardRooms"
-                        style="@style/AdminCardStyle"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="145dp"
                         android:layout_weight="1"
                         android:layout_margin="8dp"
-                        app:strokeWidth="0dp">
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="3dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="@android:color/white">
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="140dp"
+                            android:layout_height="match_parent"
                             android:orientation="vertical"
                             android:gravity="center"
-                            android:background="@android:color/white"
                             android:padding="16dp">
                             <ImageView
                                 android:layout_width="48dp"
                                 android:layout_height="48dp"
                                 android:src="@drawable/ic_door"
-                                app:tint="@color/admin_success"
+                                app:tint="#1976D2"
                                 android:layout_marginBottom="12dp"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Phòng khám"
-                                android:textColor="@android:color/black"
+                                android:textColor="#000000"
                                 android:textStyle="bold"
                                 android:textSize="16sp"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
+                <!-- Row 2: Doctors & Protocol -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
 
                     <!-- Doctors Card -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardDoctors"
-                        style="@style/AdminCardStyle"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="8dp"
+                        android:layout_height="145dp"
                         android:layout_weight="1"
-                        app:strokeWidth="0dp">
-
+                        android:layout_margin="8dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="3dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="@android:color/white">
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="140dp"
+                            android:layout_height="match_parent"
                             android:orientation="vertical"
                             android:gravity="center"
-                            android:background="@android:color/white"
                             android:padding="16dp">
-
                             <ImageView
                                 android:layout_width="48dp"
                                 android:layout_height="48dp"
                                 android:src="@drawable/ic_person"
-                                app:tint="@color/admin_warning"
+                                app:tint="#1976D2"
                                 android:layout_marginBottom="12dp"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:text="Bác sĩ"
-                                android:textColor="@android:color/black"
-                                android:textStyle="bold"
-                                android:textSize="16sp"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-                
-                <!-- Row 3: Queue & Schedule -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <!-- Queue Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardQueue"
-                        style="@style/AdminCardStyle"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:strokeWidth="0dp">
-                        
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="140dp"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:background="@android:color/white"
-                            android:padding="16dp">
-                            
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:src="@drawable/ic_queue"
-                                app:tint="@color/admin_accent"
-                                android:layout_marginBottom="12dp"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Hàng đợi"
-                                android:textColor="@android:color/black"
+                                android:textColor="#000000"
                                 android:textStyle="bold"
                                 android:textSize="16sp"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
-                    <!-- Schedule Card -->
+                    <!-- Phác đồ Card (Treatment Plan) -->
                     <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardSchedule"
-                        style="@style/AdminCardStyle"
+                        android:id="@+id/cardTreatmentPlan"
                         android:layout_width="0dp"
-                        android:layout_height="wrap_content"
+                        android:layout_height="145dp"
                         android:layout_weight="1"
                         android:layout_margin="8dp"
-                        app:strokeWidth="0dp">
-                        
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="3dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="@android:color/white">
                         <LinearLayout
                             android:layout_width="match_parent"
-                            android:layout_height="140dp"
+                            android:layout_height="match_parent"
                             android:orientation="vertical"
                             android:gravity="center"
-                            android:background="@android:color/white"
-                            android:padding="16dp">
-                            
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:src="@drawable/ic_calendar"
-                                app:tint="@color/admin_primary"
-                                android:layout_marginBottom="12dp"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Lịch trình"
-                                android:textColor="@android:color/black"
-                                android:textStyle="bold"
-                                android:textSize="16sp"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-
-                <!-- Row 4: Receptionists & Audit Log -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
-                    <!-- Receptionists Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardReceptionists"
-                        style="@style/AdminCardStyle"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:strokeWidth="0dp">
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="140dp"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:background="@android:color/white"
-                            android:padding="16dp">
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:src="@drawable/ic_user"
-                                app:tint="@color/admin_primary"
-                                android:layout_marginBottom="12dp"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Lễ tân"
-                                android:textColor="@android:color/black"
-                                android:textStyle="bold"
-                                android:textSize="16sp"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Audit Log Card -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardAuditLogs"
-                        style="@style/AdminCardStyle"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:strokeWidth="0dp">
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="140dp"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:background="@android:color/white"
                             android:padding="16dp">
                             <ImageView
                                 android:layout_width="48dp"
                                 android:layout_height="48dp"
                                 android:src="@drawable/ic_list"
-                                app:tint="@color/admin_text_secondary"
+                                app:tint="#1976D2"
                                 android:layout_marginBottom="12dp"/>
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Nhật ký"
-                                android:textColor="@android:color/black"
+                                android:text="Phác đồ"
+                                android:textColor="#000000"
                                 android:textStyle="bold"
                                 android:textSize="16sp"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
 
-                <!-- Row 5: Dashboard (Full Width) -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardDashboard"
-                    style="@style/AdminCardStyle"
+                <!-- Row 3: Logout & Empty Space -->
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    app:strokeWidth="0dp">
+                    android:orientation="horizontal">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="80dp"
-                        android:orientation="horizontal"
-                        android:gravity="center"
-                        android:background="@android:color/white"
-                        android:padding="16dp">
+                    <!-- Logout Card -->
+                    <com.google.android.material.card.MaterialCardView
+                        android:id="@+id/cardLogout"
+                        android:layout_width="0dp"
+                        android:layout_height="145dp"
+                        android:layout_weight="1"
+                        android:layout_margin="8dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="3dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="@android:color/white">
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="match_parent"
+                            android:orientation="vertical"
+                            android:gravity="center"
+                            android:padding="16dp">
+                            <ImageView
+                                android:layout_width="48dp"
+                                android:layout_height="48dp"
+                                android:src="@drawable/ic_logout"
+                                app:tint="#F44336"
+                                android:layout_marginBottom="12dp"/>
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Đăng xuất"
+                                android:textColor="#F44336"
+                                android:textStyle="bold"
+                                android:textSize="16sp"/>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
-                        <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/ic_chart"
-                            app:tint="@color/admin_info"
-                            android:layout_marginEnd="12dp"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Báo cáo &amp; Phân tích"
-                            android:textColor="@android:color/black"
-                            android:textStyle="bold"
-                            android:textSize="18sp"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Row 6: Settings (Full Width) -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardSettings"
-                    style="@style/AdminCardStyle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    app:strokeWidth="0dp">
-                    
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="80dp"
-                        android:orientation="horizontal"
-                        android:gravity="center"
-                        android:background="@android:color/white"
-                        android:padding="16dp">
-                        
-                        <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/ic_settings"
-                            app:tint="@color/admin_text_secondary"
-                            android:layout_marginEnd="12dp"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Cài đặt"
-                            android:textColor="@android:color/black"
-                            android:textStyle="bold"
-                            android:textSize="18sp"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
-                <!-- Row 5: Logout (Full Width) -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardLogout"
-                    style="@style/AdminCardStyle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    app:strokeWidth="0dp">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="80dp"
-                        android:orientation="horizontal"
-                        android:gravity="center"
-                        android:background="@android:color/white"
-                        android:padding="16dp">
-                        <ImageView
-                            android:layout_width="32dp"
-                            android:layout_height="32dp"
-                            android:src="@drawable/ic_logout"
-                            app:tint="#F44336"
-                            android:layout_marginEnd="12dp"/>
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:text="Đăng xuất"
-                            android:textColor="@color/admin_error"
-                            android:textStyle="bold"
-                            android:textSize="18sp"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
-
+                    <!-- Empty filler -->
+                    <View
+                        android:layout_width="0dp"
+                        android:layout_height="145dp"
+                        android:layout_margin="8dp"
+                        android:layout_weight="1"/>
+                </LinearLayout>
             </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

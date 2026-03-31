@@ -88,20 +88,26 @@
             android:textSize="11sp"
             android:visibility="gone" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnActive"
-            style="@style/Widget.MaterialComponents.Button.TextButton"
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardStatus"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:paddingHorizontal="12dp"
-            android:paddingVertical="4dp"
-            android:text="Active"
-            android:textAllCaps="false"
-            android:textSize="12sp"
-            android:minHeight="0dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp" />
+            android:layout_marginTop="8dp"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="1dp"
+            app:strokeColor="#EEEEEE">
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="2dp"
+                android:text="Hoạt động"
+                android:textColor="#4CAF50"
+                android:textSize="10sp"
+                android:textStyle="bold" />
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- Existing hidden fields for adapter convenience if needed -->
         <TextView android:id="@+id/tvExperience" android:layout_width="0dp" android:layout_height="0dp" android:visibility="gone" />

@@ -56,6 +56,18 @@
                     android:layout_centerVertical="true"/>
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDeleteCategory"
+                    style="@style/Widget.Material3.Button.IconButton"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_toStartOf="@id/btnAddCategory"
+                    android:layout_centerVertical="true"
+                    android:visibility="gone"
+                    app:icon="@drawable/ic_delete"
+                    app:iconTint="#E51C23"
+                    app:rippleColor="#15E51C23" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnAddCategory"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="wrap_content"

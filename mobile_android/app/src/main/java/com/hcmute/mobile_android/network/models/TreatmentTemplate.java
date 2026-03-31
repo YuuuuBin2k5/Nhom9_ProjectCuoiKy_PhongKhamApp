@@ -47,6 +47,7 @@ public class TreatmentTemplate {
         private Integer stepOrder;
         private Double estimatedPrice;
         private Integer estimatedDurationMinutes;
+        private String medicationDetails;
 
         // Constructors
         public TemplateStep() {}
@@ -60,6 +61,9 @@ public class TreatmentTemplate {
 
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
+
+        public String getMedicationDetails() { return medicationDetails; }
+        public void setMedicationDetails(String medicationDetails) { this.medicationDetails = medicationDetails; }
 
         public Integer getStepOrder() { return stepOrder; }
         public void setStepOrder(Integer stepOrder) { this.stepOrder = stepOrder; }

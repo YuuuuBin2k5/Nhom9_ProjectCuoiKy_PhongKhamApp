@@ -3,8 +3,7 @@ package com.hcmute.clinic.service;
 import com.hcmute.clinic.dto.CreateDoctorRequest;
 import com.hcmute.clinic.entity.ClinicRoom;
 import com.hcmute.clinic.entity.Doctor;
-import com.hcmute.clinic.repository.ClinicRoomRepository;
-import com.hcmute.clinic.repository.DoctorRepository;
+import com.hcmute.clinic.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -16,6 +15,10 @@ public class AdminDoctorService {
 
     private final DoctorRepository doctorRepository;
     private final ClinicRoomRepository clinicRoomRepository;
+    private final AppointmentRepository appointmentRepository;
+    private final MedicalRecordRepository medicalRecordRepository;
+    private final PrescriptionRepository prescriptionRepository;
+    private final ReviewRepository reviewRepository;
     private final PasswordEncoder passwordEncoder;
 
     @Transactional
@@ -120,7 +123,22 @@ public class AdminDoctorService {
     @Transactional
     public void deleteDoctor(Long id) {
         Doctor doctor = doctorRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Doctor not found with id: " + id));
+                .orElseThrow(() -> new IllegalArgumentException("Bác sĩ không tồn tại với id: " + id));
+
+        // Check for associations
+        if (appointmentRepository.existsByDoctorId(id)) {
+            throw new IllegalArgumentException("Không thể xóa bác sĩ đã có lịch hẹn");
+        }
+        if (medicalRecordRepository.existsByDoctorId(id)) {
+            throw new IllegalArgumentException("Không thể xóa bác sĩ đã có hồ sơ bệnh án");
+        }
+        if (prescriptionRepository.existsByDoctorId(id)) {
+            throw new IllegalArgumentException("Không thể xóa bác sĩ đã có đơn thuốc");
+        }
+        if (reviewRepository.existsByDoctorId(id)) {
+            throw new IllegalArgumentException("Không thể xóa bác sĩ đã có đánh giá từ khách hàng");
+        }
+
         doctorRepository.delete(doctor);
     }
 }

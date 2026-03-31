@@ -1,5 +1,7 @@
 package com.hcmute.mobile_android.adapters;
 
+import android.content.Intent;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,12 +13,13 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
-import com.google.android.material.button.MaterialButton;
+import com.google.android.material.card.MaterialCardView;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
 import com.hcmute.mobile_android.network.models.DoctorItem;
 import com.hcmute.mobile_android.network.models.MessageResponse;
+import com.hcmute.mobile_android.ui.activities.DoctorDetailActivity;
 
 import android.widget.Filter;
 import android.widget.Filterable;
@@ -66,9 +69,9 @@ public class AdminDoctorAdapter extends RecyclerView.Adapter<AdminDoctorAdapter.
     }
 
     class ViewHolder extends RecyclerView.ViewHolder {
-        private TextView tvName, tvSpecialty, tvRoom;
+        private TextView tvName, tvSpecialty, tvRoom, tvStatus;
         private ImageView ivAvatar, ivMenu;
-        private MaterialButton btnActive;
+        private MaterialCardView cardStatus;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -77,7 +80,8 @@ public class AdminDoctorAdapter extends RecyclerView.Adapter<AdminDoctorAdapter.
             tvRoom = itemView.findViewById(R.id.tvRoom);
             ivAvatar = itemView.findViewById(R.id.ivDoctorAvatar);
             ivMenu = itemView.findViewById(R.id.ivMenu);
-            btnActive = itemView.findViewById(R.id.btnActive);
+            tvStatus = itemView.findViewById(R.id.tvStatus);
+            cardStatus = itemView.findViewById(R.id.cardStatus);
             
             if (apiService == null) {
                 apiService = RetrofitClient.getApiService(itemView.getContext());
@@ -106,9 +110,16 @@ public class AdminDoctorAdapter extends RecyclerView.Adapter<AdminDoctorAdapter.
                 .into(ivAvatar);
 
             // Set Active Status
-            updateActiveButton(doctor.isActive());
+            updateStatusBadge(doctor.isActive());
 
-            btnActive.setOnClickListener(v -> toggleDoctorStatus(doctor));
+            // Click anywhere else to view profile
+            itemView.setOnClickListener(v -> {
+                Intent intent = new Intent(itemView.getContext(), DoctorDetailActivity.class);
+                intent.putExtra("doctorId", doctor.getId());
+                intent.putExtra("doctorName", doctor.getFullName());
+                intent.putExtra("specialization", doctor.getSpecialization());
+                itemView.getContext().startActivity(intent);
+            });
 
             // Setup menu button
             if (ivMenu != null) {
@@ -120,6 +131,12 @@ public class AdminDoctorAdapter extends RecyclerView.Adapter<AdminDoctorAdapter.
             androidx.appcompat.widget.PopupMenu popup = new androidx.appcompat.widget.PopupMenu(itemView.getContext(), anchor);
             popup.getMenuInflater().inflate(R.menu.menu_admin_doctor, popup.getMenu());
             
+            // Set dynamic title for status toggle
+            if (popup.getMenu().findItem(R.id.action_status_toggle) != null) {
+                popup.getMenu().findItem(R.id.action_status_toggle)
+                        .setTitle(doctor.isActive() ? "Chặn hoạt động" : "Kích hoạt lại");
+            }
+
             popup.setOnMenuItemClickListener(item -> {
                 int id = item.getItemId();
                 if (id == R.id.action_edit) {
@@ -128,6 +145,9 @@ public class AdminDoctorAdapter extends RecyclerView.Adapter<AdminDoctorAdapter.
                 } else if (id == R.id.action_delete) {
                     if (listener != null) listener.onDeleteDoctor(doctor);
                     return true;
+                } else if (id == R.id.action_status_toggle) {
+                    toggleDoctorStatus(doctor);
+                    return true;
                 }
                 return false;
             });
@@ -135,27 +155,29 @@ public class AdminDoctorAdapter extends RecyclerView.Adapter<AdminDoctorAdapter.
             popup.show();
         }
 
-        private void updateActiveButton(boolean isActive) {
+        private void updateStatusBadge(boolean isActive) {
             if (isActive) {
-                btnActive.setText("Hoạt động");
-                btnActive.setTextColor(itemView.getContext().getColor(android.R.color.holo_green_dark));
+                tvStatus.setText("Hoạt động");
+                tvStatus.setTextColor(Color.parseColor("#4CAF50"));
+                cardStatus.setStrokeColor(android.content.res.ColorStateList.valueOf(Color.parseColor("#E8F5E9")));
+                cardStatus.setCardBackgroundColor(Color.parseColor("#F1F8E9"));
             } else {
-                btnActive.setText("Chặn");
-                btnActive.setTextColor(itemView.getContext().getColor(android.R.color.holo_red_dark));
+                tvStatus.setText("Bị chặn");
+                tvStatus.setTextColor(Color.parseColor("#E51C23"));
+                cardStatus.setStrokeColor(android.content.res.ColorStateList.valueOf(Color.parseColor("#FFEBEE")));
+                cardStatus.setCardBackgroundColor(Color.parseColor("#FFEBEE"));
             }
         }
 
         private void toggleDoctorStatus(DoctorItem doctor) {
             boolean newStatus = !doctor.isActive();
-            btnActive.setEnabled(false);
             
             apiService.updateDoctorStatus(doctor.getId(), newStatus).enqueue(new Callback<MessageResponse>() {
                 @Override
                 public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
-                    btnActive.setEnabled(true);
                     if (response.isSuccessful()) {
                         doctor.setActive(newStatus);
-                        updateActiveButton(newStatus);
+                        updateStatusBadge(newStatus);
                         Toast.makeText(itemView.getContext(), "Cập nhật thành công", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(itemView.getContext(), "Lỗi cập nhật", Toast.LENGTH_SHORT).show();
@@ -164,7 +186,6 @@ public class AdminDoctorAdapter extends RecyclerView.Adapter<AdminDoctorAdapter.
 
                 @Override
                 public void onFailure(Call<MessageResponse> call, Throwable t) {
-                    btnActive.setEnabled(true);
                     Toast.makeText(itemView.getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
                 }
             });

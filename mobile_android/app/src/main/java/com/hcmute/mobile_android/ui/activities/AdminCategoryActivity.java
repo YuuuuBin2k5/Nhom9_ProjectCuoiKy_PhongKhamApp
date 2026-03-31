@@ -261,7 +261,7 @@ public class AdminCategoryActivity extends BaseAdminActivity implements AdminCat
                     showSuccess("Xóa danh mục thành công");
                     loadCategories();
                 } else {
-                    showError("Lỗi khi xóa danh mục: " + response.code());
+                    showErrorDialog("Lỗi khi xóa", parseErrorBody(response));
                 }
             }
 

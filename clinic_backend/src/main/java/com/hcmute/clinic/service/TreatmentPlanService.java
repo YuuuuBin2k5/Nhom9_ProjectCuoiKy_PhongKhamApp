@@ -1,5 +1,7 @@
 package com.hcmute.clinic.service;
 
+import com.hcmute.clinic.dto.TreatmentPlanTemplateRequest;
+import com.hcmute.clinic.dto.TreatmentPlanTemplateResponseDTO;
 import com.hcmute.clinic.dto.UpdatePlanStepsRequest;
 import com.hcmute.clinic.entity.*;
 import com.hcmute.clinic.enums.StepStatus;
@@ -35,8 +37,20 @@ public class TreatmentPlanService {
     private final com.hcmute.clinic.repository.AppointmentRepository appointmentRepository;
     private final com.hcmute.clinic.repository.InvoiceRepository invoiceRepository;
 
-    public List<TreatmentPlanTemplate> listActiveTemplates() {
-        return templateRepository.findByActiveTrueOrderByNameAsc();
+    public List<TreatmentPlanTemplateResponseDTO> listActiveTemplates() {
+        return templateRepository.findByActiveTrueOrderByNameAsc()
+                .stream().map(this::convertToResponseDTO).collect(java.util.stream.Collectors.toList());
+    }
+
+    public List<TreatmentPlanTemplateResponseDTO> listAllTemplates() {
+        return templateRepository.findAll(org.springframework.data.domain.Sort.by(org.springframework.data.domain.Sort.Direction.DESC, "id"))
+                .stream().map(this::convertToResponseDTO).collect(java.util.stream.Collectors.toList());
+    }
+
+    public TreatmentPlanTemplateResponseDTO getTemplateById(Long id) {
+        TreatmentPlanTemplate template = templateRepository.findByIdWithSteps(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Mẫu không tồn tại"));
+        return convertToResponseDTO(template);
     }
 
     /**
@@ -119,6 +133,7 @@ public class TreatmentPlanService {
                         .clinicRoom(ts.getClinicRoom())
                         .sequenceOrder(ts.getSequenceOrder())
                         .status(StepStatus.PENDING)
+                        .medicationDetails(ts.getMedicationDetails())
                         .build();
                 plan.getSteps().add(step);
             }
@@ -645,5 +660,78 @@ public class TreatmentPlanService {
     @Deprecated
     private ClinicRoom findRoomForService(com.hcmute.clinic.entity.Service service) {
         return roomAssignmentService.determineRoomForService(service);
+    }
+
+    @Transactional
+    public TreatmentPlanTemplateResponseDTO saveTemplate(Long id, TreatmentPlanTemplateRequest req) {
+        log.info("Saving TreatmentPlanTemplate: {} (Action: {})", req.getName(), (id == null ? "CREATE" : "UPDATE"));
+        TreatmentPlanTemplate template;
+        if (id != null) {
+            template = templateRepository.findById(id)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Template không tồn tại"));
+            template.getSteps().clear(); // Clear existing steps
+        } else {
+            template = new TreatmentPlanTemplate();
+            template.setSteps(new ArrayList<>());
+        }
+
+        template.setName(req.getName());
+        template.setDescription(req.getDescription());
+        template.setActive(req.isActive());
+
+        if (req.getSteps() != null) {
+            for (TreatmentPlanTemplateRequest.StepRequest stepReq : req.getSteps()) {
+                com.hcmute.clinic.entity.Service sv = serviceRepository.findById(stepReq.getServiceId())
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST, "Dịch vụ không tồn tại: " + stepReq.getServiceId()));
+                ClinicRoom room = null;
+                if (stepReq.getClinicRoomId() != null) {
+                    room = clinicRoomRepository.findById(stepReq.getClinicRoomId()).orElse(null);
+                }
+                
+                TreatmentPlanTemplateStep tstep = TreatmentPlanTemplateStep.builder()
+                        .template(template)
+                        .service(sv)
+                        .clinicRoom(room)
+                        .sequenceOrder(stepReq.getSequenceOrder())
+                        .medicationDetails(stepReq.getMedicationDetails())
+                        .build();
+                template.getSteps().add(tstep);
+            }
+        }
+        // Use saveAndFlush to catch DB constraints / issues immediately
+        TreatmentPlanTemplate saved = templateRepository.saveAndFlush(template);
+        log.info("Successfully saved TreatmentPlanTemplate with ID: {}", saved.getId());
+        return convertToResponseDTO(saved);
+    }
+
+    private TreatmentPlanTemplateResponseDTO convertToResponseDTO(TreatmentPlanTemplate entity) {
+        List<TreatmentPlanTemplateResponseDTO.StepResponse> steps = entity.getSteps() != null ? entity.getSteps().stream()
+                .sorted(Comparator.comparingInt(TreatmentPlanTemplateStep::getSequenceOrder))
+                .map(s -> TreatmentPlanTemplateResponseDTO.StepResponse.builder()
+                        .id(s.getId())
+                        .serviceName(s.getService() != null ? s.getService().getName() : "")
+                        .description(s.getService() != null ? s.getService().getDescription() : "")
+                        .stepOrder(s.getSequenceOrder())
+                        .estimatedPrice(s.getService() != null && s.getService().getPrice() != null ? s.getService().getPrice().doubleValue() : 0.0)
+                        .estimatedDurationMinutes(s.getService() != null ? s.getService().getDurationMinutes() : 0)
+                        .medicationDetails(s.getMedicationDetails())
+                        .build())
+                .collect(java.util.stream.Collectors.toList()) : new ArrayList<>();
+
+        return TreatmentPlanTemplateResponseDTO.builder()
+                .id(entity.getId())
+                .name(entity.getName())
+                .description(entity.getDescription())
+                .isActive(entity.isActive())
+                .steps(steps)
+                .build();
+    }
+
+    @Transactional
+    public void deleteTemplate(Long id) {
+        if (!templateRepository.existsById(id)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Template không tồn tại");
+        }
+        templateRepository.deleteById(id);
     }
 }

@@ -86,6 +86,7 @@ public class TreatmentPlanController {
                         .doctorConclusion(s.getDoctorConclusion())
                         .roomName(s.getClinicRoom() != null ? s.getClinicRoom().getName() : null)
                         .uiTemplateType(s.getService() != null && s.getService().getUiTemplateType() != null ? s.getService().getUiTemplateType().name() : "GENERAL")
+                        .medicationDetails(s.getMedicationDetails())
                         .build())
                 .collect(Collectors.toList()) : List.of();
 
@@ -136,7 +137,8 @@ public class TreatmentPlanController {
                                     s.getSequenceOrder(),
                                     s.getService() != null ? s.getService().getName() : "",
                                     s.getClinicRoom() != null ? s.getClinicRoom().getName() : null,
-                                    s.getStatus().name()
+                                    s.getStatus().name(),
+                                    s.getMedicationDetails()
                             )).collect(Collectors.toList()),
                             total,
                             completed,
@@ -419,6 +421,6 @@ public class TreatmentPlanController {
     public record PlanSummary(Long id, String title, String status, String createdAt, List<StepSummary> steps, int totalSteps, int completedSteps, String nextStepName) {
     }
 
-    public record StepSummary(Long id, Integer order, String serviceName, String roomName, String status) {
+    public record StepSummary(Long id, Integer order, String serviceName, String roomName, String status, String medicationDetails) {
     }
 }

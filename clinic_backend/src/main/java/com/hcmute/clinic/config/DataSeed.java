@@ -186,9 +186,9 @@ public class DataSeed implements ApplicationRunner {
                 .description("Quy trình chuẩn cho việc nhổ răng khôn mọc lệch/ngầm.")
                 .active(true).build());
         
-        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWisdom, svcConsult, d1.getClinicRoom(), 1));
-        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWisdom, svcXray, dx.getClinicRoom(), 2));
-        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWisdom, svcWisdom, ds.getClinicRoom(), 3));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWisdom, svcConsult, d1.getClinicRoom(), 1, null));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWisdom, svcXray, dx.getClinicRoom(), 2, null));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWisdom, svcWisdom, ds.getClinicRoom(), 3, null));
 
         // 2. Niềng răng Chỉnh nha
         TreatmentPlanTemplate tplBraces = treatmentPlanTemplateRepository.save(TreatmentPlanTemplate.builder()
@@ -196,10 +196,10 @@ public class DataSeed implements ApplicationRunner {
                 .description("Quy trình chỉnh nha mắc cài toàn hàm.")
                 .active(true).build());
 
-        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplBraces, svcConsult, d1.getClinicRoom(), 1));
-        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplBraces, svcXray, dx.getClinicRoom(), 2));
-        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplBraces, svcScale, d1.getClinicRoom(), 3));
-        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplBraces, svcBraces, d1.getClinicRoom(), 4));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplBraces, svcConsult, d1.getClinicRoom(), 1, null));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplBraces, svcXray, dx.getClinicRoom(), 2, null));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplBraces, svcScale, d1.getClinicRoom(), 3, null));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplBraces, svcBraces, d1.getClinicRoom(), 4, null));
 
         // 3. Tẩy trắng răng
         TreatmentPlanTemplate tplWhite = treatmentPlanTemplateRepository.save(TreatmentPlanTemplate.builder()
@@ -207,9 +207,9 @@ public class DataSeed implements ApplicationRunner {
                 .description("Làm trắng răng Laser cao cấp.")
                 .active(true).build());
 
-        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWhite, svcConsult, d1.getClinicRoom(), 1));
-        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWhite, svcScale, d1.getClinicRoom(), 2));
-        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWhite, svcWhite, d_cosm.getClinicRoom(), 3));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWhite, svcConsult, d1.getClinicRoom(), 1, null));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWhite, svcScale, d1.getClinicRoom(), 2, null));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplWhite, svcWhite, d_cosm.getClinicRoom(), 3, null));
 
         // 4. Trám răng sâu
         TreatmentPlanTemplate tplFill = treatmentPlanTemplateRepository.save(TreatmentPlanTemplate.builder()
@@ -217,8 +217,8 @@ public class DataSeed implements ApplicationRunner {
                 .description("Quy trình trám phục hồi răng sâu.")
                 .active(true).build());
 
-        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplFill, svcConsult, d1.getClinicRoom(), 1));
-        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplFill, svcFill, d1.getClinicRoom(), 2));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplFill, svcConsult, d1.getClinicRoom(), 1, null));
+        treatmentPlanTemplateStepRepository.save(new TreatmentPlanTemplateStep(null, tplFill, svcFill, d1.getClinicRoom(), 2, null));
     }
 
     private Service addService(ServiceCategory cat, String name, String desc, double price, int duration, UiTemplateType type, String... images) {

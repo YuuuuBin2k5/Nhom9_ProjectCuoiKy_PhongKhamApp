@@ -283,6 +283,9 @@ public class AdminRoomActivity extends BaseAdminActivity implements AdminRoomAda
         if (progressBar != null) {
             progressBar.setVisibility(show ? View.VISIBLE : View.GONE);
         }
+        if (!show) {
+            super.showLoading(false, "");
+        }
     }
 
 

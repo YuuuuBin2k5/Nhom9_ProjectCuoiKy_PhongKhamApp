@@ -36,6 +36,7 @@ public class TreatmentPlanDTO {
         private String doctorConclusion;
         private String uiTemplateType;
         private String roomName;
+        private String medicationDetails;
         private boolean editable;
     }
 }

@@ -6,4 +6,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface TreatmentPlanTemplateStepRepository extends JpaRepository<TreatmentPlanTemplateStep, Long> {
+    boolean existsByServiceId(Long serviceId);
 }
