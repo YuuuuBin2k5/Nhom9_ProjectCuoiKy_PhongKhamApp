@@ -234,12 +234,24 @@ public interface ApiService {
     @PATCH("api/treatment-plans/steps/{stepId}/complete")
     Call<MessageResponse> completeTreatmentStep(@Path("stepId") Long stepId, @Body java.util.Map<String, Object> body);
 
-    // Prescription APIs
     @POST("api/prescriptions")
     Call<com.hcmute.mobile_android.network.models.PrescriptionResponse> createPrescription(@Body com.hcmute.mobile_android.network.models.request.PrescriptionRequest request);
 
     @GET("api/prescriptions/appointment/{appointmentId}")
     Call<com.hcmute.mobile_android.network.models.PrescriptionResponse> getPrescriptionByAppointment(@Path("appointmentId") Long appointmentId);
+
+    // Step-level Prescription & Monitoring APIs
+    @POST("api/treatment-plans/steps/{stepId}/prescription")
+    Call<com.hcmute.mobile_android.network.models.PrescriptionResponse> savePrescriptionForStep(
+            @Path("stepId") Long stepId,
+            @Body com.hcmute.mobile_android.network.models.SavePrescriptionRequest request);
+
+    @GET("api/treatment-plans/steps/{stepId}/prescription")
+    Call<com.hcmute.mobile_android.network.models.PrescriptionResponse> getPrescriptionForStep(@Path("stepId") Long stepId);
+
+    @PATCH("api/treatment-plans/steps/{stepId}/resume")
+    Call<MessageResponse> resumeMonitoringStep(@Path("stepId") Long stepId);
+
 
     // Admin Service Management
     @POST("api/admin/services/categories")

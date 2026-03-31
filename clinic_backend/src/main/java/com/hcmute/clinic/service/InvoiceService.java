@@ -33,6 +33,7 @@ public class InvoiceService {
     private final FcmService fcmService;
     private final CheckInQueueRepository checkInQueueRepository;
     private final QueueEventService queueEventService;
+    private final com.hcmute.clinic.repository.AppointmentRepository appointmentRepository;
     
     @Transactional(readOnly = true)
     public List<InvoiceDto> getPatientInvoices(Long patientId) {
@@ -121,6 +122,24 @@ public class InvoiceService {
             System.err.println("[InvoiceService] Queue completion error after payment: " + e.getMessage());
         }
         // ====== END QUEUE COMPLETION ======
+
+        // ====== SAFETY: Mark Appointment as COMPLETED on payment if still IN_PROGRESS ======
+        try {
+            if (invoice.getTreatmentPlan() != null
+                    && invoice.getTreatmentPlan().getMedicalRecord() != null
+                    && invoice.getTreatmentPlan().getMedicalRecord().getAppointment() != null) {
+                com.hcmute.clinic.entity.Appointment appt =
+                        invoice.getTreatmentPlan().getMedicalRecord().getAppointment();
+                if (appt.getStatus() == com.hcmute.clinic.enums.AppointmentStatus.IN_PROGRESS
+                        || appt.getStatus() == com.hcmute.clinic.enums.AppointmentStatus.SCHEDULED) {
+                    appt.setStatus(com.hcmute.clinic.enums.AppointmentStatus.COMPLETED);
+                    appointmentRepository.save(appt);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[InvoiceService] Safety-mark appointment COMPLETED on payment error: " + e.getMessage());
+        }
+        // ====== END SAFETY ======
         
         return PaymentResponse.builder()
             .success(true)
@@ -180,8 +199,32 @@ public class InvoiceService {
                         .build();
                     items.add(item);
                 }
+
+                // === GAP FIX: Cộng giá thuốc của step nếu có ===
+                if (step.getPrescription() != null && step.getPrescription().getDetails() != null) {
+                    BigDecimal medicineTotal = step.getPrescription().getDetails().stream()
+                        .filter(d -> d.getPrice() != null)
+                        .map(com.hcmute.clinic.entity.PrescriptionDetail::getPrice)
+                        .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+                    if (medicineTotal.compareTo(BigDecimal.ZERO) > 0) {
+                        totalAmount = totalAmount.add(medicineTotal);
+                        InvoiceItem medItem = InvoiceItem.builder()
+                            .service(step.getService())
+                            .treatmentPlanStep(step)
+                            .serviceName("Thuốc – " + step.getService().getName())
+                            .toothNumber(step.getToothNumber())
+                            .quantity(1)
+                            .unitPrice(medicineTotal)
+                            .totalPrice(medicineTotal)
+                            .description("Đơn thuốc bước " + step.getSequenceOrder())
+                            .build();
+                        items.add(medItem);
+                    }
+                }
             }
         }
+
         
         // 5. Create invoice
         Invoice invoice = Invoice.builder()
@@ -205,6 +248,20 @@ public class InvoiceService {
         // 7. Mark treatment plan as COMPLETED
         plan.setStatus(TreatmentPlanStatus.COMPLETED);
         treatmentPlanRepository.save(plan);
+
+        // 7b. Mark related Appointment as COMPLETED so patient can book again
+        try {
+            if (plan.getMedicalRecord() != null && plan.getMedicalRecord().getAppointment() != null) {
+                com.hcmute.clinic.entity.Appointment appt = plan.getMedicalRecord().getAppointment();
+                if (appt.getStatus() != com.hcmute.clinic.enums.AppointmentStatus.COMPLETED
+                        && appt.getStatus() != com.hcmute.clinic.enums.AppointmentStatus.CANCELLED) {
+                    appt.setStatus(com.hcmute.clinic.enums.AppointmentStatus.COMPLETED);
+                    appointmentRepository.save(appt);
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("[InvoiceService] Failed to mark appointment COMPLETED: " + e.getMessage());
+        }
         
         // ====== QUEUE FLUSH: Remove patient from today's queue ======
         // This ensures the patient exits the waiting room after completing treatment.

@@ -8,14 +8,16 @@ public class CreateServiceRequest {
     private String description;
     private double price;
     private int durationMinutes;
+    private Integer defaultMonitoringDays;
     private List<String> imageUrls;
 
-    public CreateServiceRequest(int categoryId, String name, String description, double price, int durationMinutes, List<String> imageUrls) {
+    public CreateServiceRequest(int categoryId, String name, String description, double price, int durationMinutes, Integer defaultMonitoringDays, List<String> imageUrls) {
         this.categoryId = categoryId;
         this.name = name;
         this.description = description;
         this.price = price;
         this.durationMinutes = durationMinutes;
+        this.defaultMonitoringDays = defaultMonitoringDays;
         this.imageUrls = imageUrls;
     }
 
@@ -25,5 +27,6 @@ public class CreateServiceRequest {
     public String getDescription() { return description; }
     public double getPrice() { return price; }
     public int getDurationMinutes() { return durationMinutes; }
+    public Integer getDefaultMonitoringDays() { return defaultMonitoringDays; }
     public List<String> getImageUrls() { return imageUrls; }
 }

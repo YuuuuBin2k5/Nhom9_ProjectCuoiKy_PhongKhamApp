@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingBottom="32dp">
+
+    <!-- Header -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:background="@color/white">
+        <View
+            android:layout_width="40dp"
+            android:layout_height="4dp"
+            android:background="#CCCCCC"
+            android:layout_gravity="center_horizontal"/>
+    </LinearLayout>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="📋 Kê đơn thuốc"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:textColor="#1A1A2E"
+        android:paddingHorizontal="20dp"
+        android:paddingBottom="4dp"/>
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Thêm thuốc cho bệnh nhân (tuỳ chọn)"
+        android:textSize="13sp"
+        android:textColor="#666666"
+        android:paddingHorizontal="20dp"
+        android:paddingBottom="12dp"/>
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginBottom="8dp"/>
+
+    <!-- Medicine List -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvMedicines"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:maxHeight="280dp"
+        android:paddingHorizontal="12dp"
+        android:nestedScrollingEnabled="false"/>
+
+    <!-- Add Medicine Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnAddMedicine"
+        style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="＋ Thêm thuốc"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="8dp"
+        android:layout_marginBottom="4dp"
+        app:cornerRadius="8dp"/>
+
+    <View android:layout_width="match_parent" android:layout_height="1dp" android:background="#EEEEEE" android:layout_marginVertical="12dp"/>
+
+    <!-- Monitoring Section (shown only when defaultMonitoringDays != null) -->
+    <LinearLayout
+        android:id="@+id/layoutMonitoring"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:background="#FFF8E1"
+        android:padding="16dp"
+        android:layout_marginHorizontal="12dp"
+        android:layout_marginBottom="12dp">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="⏳ Giai đoạn theo dõi"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textColor="#F57F17"
+            android:paddingBottom="8dp"/>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical"
+            android:paddingBottom="8dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Số ngày theo dõi:"
+                android:textSize="14sp"
+                android:textColor="#333333"/>
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnDecrementDays"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:text="−"
+                    android:textSize="18sp"
+                    android:padding="0dp"
+                    app:cornerRadius="18dp"/>
+
+                <TextView
+                    android:id="@+id/tvMonitoringDays"
+                    android:layout_width="56dp"
+                    android:layout_height="wrap_content"
+                    android:text="7"
+                    android:gravity="center"
+                    android:textSize="20sp"
+                    android:textStyle="bold"
+                    android:textColor="#1A1A2E"/>
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnIncrementDays"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:text="＋"
+                    android:textSize="18sp"
+                    android:padding="0dp"
+                    app:cornerRadius="18dp"/>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text=" ngày"
+                android:textSize="14sp"
+                android:textColor="#333333"/>
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Dự kiến quay lại:"
+                android:textSize="14sp"
+                android:textColor="#333333"/>
+            <TextView
+                android:id="@+id/tvResumeDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="--/--/----"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#1565C0"/>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Bác sĩ có thể điều chỉnh số ngày theo tình trạng bệnh nhân"
+            android:textSize="12sp"
+            android:textColor="#888888"
+            android:paddingTop="6dp"/>
+    </LinearLayout>
+
+    <!-- Action Buttons -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="8dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSkipPrescription"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="48dp"
+            android:text="Bỏ qua"
+            android:layout_marginEnd="8dp"
+            app:cornerRadius="12dp"/>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSavePrescription"
+            android:layout_width="0dp"
+            android:layout_weight="1"
+            android:layout_height="48dp"
+            android:text="Lưu &amp; Hoàn thành"
+            app:cornerRadius="12dp"/>
+    </LinearLayout>
+
+</LinearLayout>

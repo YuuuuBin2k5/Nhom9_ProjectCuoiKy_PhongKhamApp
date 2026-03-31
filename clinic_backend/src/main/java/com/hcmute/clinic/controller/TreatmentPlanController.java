@@ -86,6 +86,13 @@ public class TreatmentPlanController {
                         .doctorConclusion(s.getDoctorConclusion())
                         .roomName(s.getClinicRoom() != null ? s.getClinicRoom().getName() : null)
                         .uiTemplateType(s.getService() != null && s.getService().getUiTemplateType() != null ? s.getService().getUiTemplateType().name() : "GENERAL")
+                        // Prescription info
+                        .hasPrescription(s.getPrescription() != null)
+                        .prescriptionId(s.getPrescription() != null ? s.getPrescription().getId() : null)
+                        // Monitoring / waiting period
+                        .defaultMonitoringDays(s.getService() != null ? s.getService().getDefaultMonitoringDays() : null)
+                        .monitoringDays(s.getMonitoringDays())
+                        .scheduledResumeDate(s.getScheduledResumeDate() != null ? s.getScheduledResumeDate().toString() : null)
                         .build())
                 .collect(Collectors.toList()) : List.of();
 
@@ -414,6 +421,187 @@ public class TreatmentPlanController {
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
+    }
+
+    // =========================================================
+    //  PRESCRIPTION & MONITORING ENDPOINTS
+    // =========================================================
+
+    /**
+     * POST /api/treatment-plans/steps/{stepId}/prescription
+     * Bác sĩ kê đơn thuốc và đăng ký giai đoạn theo dõi cho step
+     */
+    @PostMapping("/steps/{stepId}/prescription")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> savePrescription(
+            @PathVariable Long stepId,
+            @RequestBody Map<String, Object> body,
+            Authentication auth) {
+        try {
+            com.hcmute.clinic.entity.TreatmentPlanStep step =
+                    treatmentPlanService.getStepById(stepId);
+
+            // 1. Build Prescription + Details
+            List<Map<String, Object>> medicines =
+                    (List<Map<String, Object>>) body.get("medicines");
+
+            com.hcmute.clinic.entity.Doctor doctor = resolveDoctorFromAuth(auth);
+            if (doctor == null) return ResponseEntity.status(403).body(Map.of("message", "Không xác định được bác sĩ"));
+
+            com.hcmute.clinic.entity.Prescription prescription = step.getPrescription();
+            if (prescription == null) {
+                prescription = com.hcmute.clinic.entity.Prescription.builder()
+                        .doctor(doctor)
+                        .step(step)
+                        .build();
+            }
+
+            // Clear old details and re-add
+            if (prescription.getDetails() != null) prescription.getDetails().clear();
+
+            final com.hcmute.clinic.entity.Prescription finalPrescription = prescription;
+            if (medicines != null) {
+                List<com.hcmute.clinic.entity.PrescriptionDetail> details = medicines.stream()
+                    .map(m -> com.hcmute.clinic.entity.PrescriptionDetail.builder()
+                        .prescription(finalPrescription)
+                        .medicineName((String) m.getOrDefault("medicineName", ""))
+                        .dosage((String) m.get("dosage"))
+                        .frequency((String) m.get("frequency"))
+                        .duration((String) m.get("duration"))
+                        .unit((String) m.get("unit"))
+                        .price(m.get("price") != null ? new java.math.BigDecimal(m.get("price").toString()) : null)
+                        .build())
+                    .collect(Collectors.toList());
+                if (prescription.getDetails() == null) {
+                    prescription = finalPrescription;
+                }
+                prescription.setDetails(details);
+            }
+
+            treatmentPlanService.savePrescriptionForStep(step, prescription);
+
+            // 2. Set monitoring fields if provided
+            Integer monitoringDays = body.get("monitoringDays") != null
+                    ? Integer.parseInt(body.get("monitoringDays").toString()) : null;
+            String monitoringStartDateStr = (String) body.get("monitoringStartDate");
+
+            if (monitoringDays != null && monitoringDays > 0) {
+                java.time.LocalDate startDate = monitoringStartDateStr != null
+                        ? java.time.LocalDate.parse(monitoringStartDateStr)
+                        : java.time.LocalDate.now();
+                step.setMonitoringDays(monitoringDays);
+                step.setMonitoringStartDate(startDate);
+                step.setScheduledResumeDate(startDate.plusDays(monitoringDays));
+                step.setStatus(com.hcmute.clinic.enums.StepStatus.MONITORING);
+                treatmentPlanService.saveStep(step);
+
+                // TODO: send notification to patient
+            }
+
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("message", "Đã lưu đơn thuốc thành công");
+            response.put("prescriptionId", prescription.getId());
+            response.put("monitoringDays", monitoringDays);
+            if (step.getScheduledResumeDate() != null) {
+                response.put("scheduledResumeDate", step.getScheduledResumeDate().toString());
+            }
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    /**
+     * GET /api/treatment-plans/steps/{stepId}/prescription
+     * Lấy đơn thuốc hiện tại của bước
+     */
+    @GetMapping("/steps/{stepId}/prescription")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> getPrescription(@PathVariable Long stepId) {
+        try {
+            com.hcmute.clinic.entity.TreatmentPlanStep step =
+                    treatmentPlanService.getStepById(stepId);
+
+            com.hcmute.clinic.entity.Prescription prescription = step.getPrescription();
+
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("hasPrescription", prescription != null);
+            response.put("prescriptionId", prescription != null ? prescription.getId() : null);
+            response.put("monitoringDays", step.getMonitoringDays());
+            response.put("monitoringStartDate", step.getMonitoringStartDate() != null ? step.getMonitoringStartDate().toString() : null);
+            response.put("scheduledResumeDate", step.getScheduledResumeDate() != null ? step.getScheduledResumeDate().toString() : null);
+            response.put("defaultMonitoringDays", step.getService() != null ? step.getService().getDefaultMonitoringDays() : null);
+
+            if (prescription != null && prescription.getDetails() != null) {
+                List<Map<String, Object>> medicines = prescription.getDetails().stream()
+                    .map(d -> {
+                        Map<String, Object> m = new java.util.HashMap<>();
+                        m.put("id", d.getId());
+                        m.put("medicineName", d.getMedicineName());
+                        m.put("dosage", d.getDosage());
+                        m.put("frequency", d.getFrequency());
+                        m.put("duration", d.getDuration());
+                        m.put("unit", d.getUnit());
+                        m.put("price", d.getPrice() != null ? d.getPrice().doubleValue() : 0.0);
+                        return m;
+                    })
+                    .collect(Collectors.toList());
+                response.put("medicines", medicines);
+            } else {
+                response.put("medicines", List.of());
+            }
+
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    /**
+     * PATCH /api/treatment-plans/steps/{stepId}/resume
+     * Resume bước từ MONITORING -> IN_PROGRESS (bệnh nhân quay lại)
+     */
+    @PatchMapping("/steps/{stepId}/resume")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> resumeStep(@PathVariable Long stepId) {
+        try {
+            com.hcmute.clinic.entity.TreatmentPlanStep step =
+                    treatmentPlanService.getStepById(stepId);
+
+            if (step.getStatus() != com.hcmute.clinic.enums.StepStatus.MONITORING) {
+                return ResponseEntity.badRequest().body(
+                    Map.of("message", "Bước không ở trạng thái MONITORING, không thể resume"));
+            }
+
+            boolean isOverdue = step.getScheduledResumeDate() != null
+                    && java.time.LocalDate.now().isBefore(step.getScheduledResumeDate());
+
+            step.setStatus(com.hcmute.clinic.enums.StepStatus.IN_PROGRESS);
+            treatmentPlanService.saveStep(step);
+
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("message", "Đã bắt đầu lại bước điều trị");
+            if (isOverdue) {
+                response.put("warning", "Bệnh nhân quay lại sớm hơn ngày dự kiến (" + step.getScheduledResumeDate() + ")");
+            }
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    private com.hcmute.clinic.entity.Doctor resolveDoctorFromAuth(Authentication auth) {
+        if (auth == null) return null;
+        String authName = auth.getName();
+        com.hcmute.clinic.entity.Doctor doc = null;
+        try {
+            Long docId = Long.parseLong(authName);
+            doc = doctorRepository.findById(docId).orElse(null);
+        } catch (Exception e) {}
+        if (doc == null) {
+            doc = doctorRepository.findByEmailIgnoreCase(authName).orElse(null);
+        }
+        return doc;
     }
 
     public record PlanSummary(Long id, String title, String status, String createdAt, List<StepSummary> steps, int totalSteps, int completedSteps, String nextStepName) {

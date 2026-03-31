@@ -181,6 +181,7 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
                 case "IN_PROGRESS": return "Đang thực hiện";
                 case "COMPLETED": return "Hoàn thành";
                 case "CANCELLED": return "Đã hủy";
+                case "MONITORING": return "⏳ Đang theo dõi";
                 default: return status;
             }
         }
@@ -201,6 +202,12 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
                     cardStep.setCardBackgroundColor(itemView.getContext().getColor(R.color.priority_background));
                     cardStep.setStrokeColor(itemView.getContext().getColor(R.color.warning_amber));
                     cardStep.setStrokeWidth(2);
+                    break;
+                case "MONITORING":
+                    // Cam đậm — bệnh nhân đang ở nhà uống thuốc
+                    cardStep.setCardBackgroundColor(itemView.getContext().getColor(R.color.priority_background));
+                    cardStep.setStrokeColor(0xFFF57F17); // deep amber
+                    cardStep.setStrokeWidth(3);
                     break;
                 case "CANCELLED":
                     cardStep.setCardBackgroundColor(itemView.getContext().getColor(R.color.error_background));
@@ -240,6 +247,14 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
                     btnEdit.setVisibility(View.VISIBLE);
                     btnEdit.setText("Khám bệnh");
                     btnComplete.setVisibility(View.VISIBLE);
+                    btnComplete.setText("Hoàn thành");
+                    btnRemoveStep.setVisibility(View.GONE);
+                    break;
+                case "MONITORING":
+                    // Bệnh nhân đã quây lại — bắc sĩ bắt đầu lại bước
+                    btnEdit.setVisibility(View.VISIBLE);
+                    btnEdit.setText("▶ Bắt đầu lại");
+                    btnComplete.setVisibility(View.GONE);
                     btnRemoveStep.setVisibility(View.GONE);
                     break;
                 case "CANCELLED":

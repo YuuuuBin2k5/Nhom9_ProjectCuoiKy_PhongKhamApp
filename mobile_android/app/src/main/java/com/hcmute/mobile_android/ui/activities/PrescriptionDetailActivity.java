@@ -22,6 +22,7 @@ import com.google.android.material.appbar.MaterialToolbar;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
+import com.hcmute.mobile_android.network.models.MedicineItem;
 import com.hcmute.mobile_android.network.models.PrescriptionResponse;
 
 import java.util.ArrayList;
@@ -62,7 +63,8 @@ public class PrescriptionDetailActivity extends AppCompatActivity {
         rvDrugs = findViewById(R.id.rvDrugs);
 
         rvDrugs.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new DrugAdapter(new ArrayList<>());
+        adapter = new DrugAdapter(new ArrayList<MedicineItem>());
+
         rvDrugs.setAdapter(adapter);
 
         // Get intent extras
@@ -128,10 +130,10 @@ public class PrescriptionDetailActivity extends AppCompatActivity {
     }
 
     private static class DrugAdapter extends RecyclerView.Adapter<DrugAdapter.Holder> {
-        private List<PrescriptionResponse.PrescriptionDetail> items;
-        DrugAdapter(List<PrescriptionResponse.PrescriptionDetail> items) { this.items = items; }
+        private List<MedicineItem> items;
+        DrugAdapter(List<MedicineItem> items) { this.items = items; }
 
-        void setItems(List<PrescriptionResponse.PrescriptionDetail> items) {
+        void setItems(List<MedicineItem> items) {
             this.items = items != null ? items : new ArrayList<>();
             notifyDataSetChanged();
         }
@@ -144,7 +146,7 @@ public class PrescriptionDetailActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull Holder holder, int position) {
-            PrescriptionResponse.PrescriptionDetail item = items.get(position);
+            MedicineItem item = items.get(position);
             holder.tvName.setText(item.getMedicineName());
             holder.tvDosage.setText(item.getDosage());
             

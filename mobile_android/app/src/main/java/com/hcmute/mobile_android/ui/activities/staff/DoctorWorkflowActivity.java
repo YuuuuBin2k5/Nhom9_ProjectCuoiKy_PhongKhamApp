@@ -1099,6 +1099,31 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         android.util.Log.d("DoctorWorkflow", "onStepEdit: editingStep = " + step.getServiceName() + " (ID: " + step.getId() + ")");
         android.util.Log.d("DoctorWorkflow", "onStepEdit: currentStep = " + (currentStep != null ? currentStep.getServiceName() : "null"));
         
+        // CRITICAL FIX: If editing a MONITORING step, call resume API to transition to IN_PROGRESS
+        if ("MONITORING".equals(step.getStatus())) {
+            apiService.resumeMonitoringStep(step.getId()).enqueue(new Callback<com.hcmute.mobile_android.network.models.MessageResponse>() {
+                @Override
+                public void onResponse(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Response<com.hcmute.mobile_android.network.models.MessageResponse> response) {
+                    if (response.isSuccessful()) {
+                        step.setStatus("IN_PROGRESS");
+                        stepAdapter.notifyDataSetChanged();
+                        Toast.makeText(DoctorWorkflowActivity.this, "Đã bắt đầu lại: " + step.getServiceName(), Toast.LENGTH_SHORT).show();
+                        continueStepEdit(step);
+                    } else {
+                        Toast.makeText(DoctorWorkflowActivity.this, "Không thể bắt đầu lại bước khám", Toast.LENGTH_SHORT).show();
+                        editingPreviouslyCompletedStep = false;
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Throwable t) {
+                    Toast.makeText(DoctorWorkflowActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+                    editingPreviouslyCompletedStep = false;
+                }
+            });
+            return;
+        }
+
         // CRITICAL FIX: If editing a COMPLETED step, call cancelStep API to revert to IN_PROGRESS
         // This allows backend to accept updates (backend checks for IN_PROGRESS steps)
         if ("COMPLETED".equals(step.getStatus())) {
@@ -1974,7 +1999,8 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                             .show();
                     } else {
                         Toast.makeText(DoctorWorkflowActivity.this, "Hoàn tất bước khám", Toast.LENGTH_SHORT).show();
-                        loadTreatmentPlanForRoom(currentTreatmentPlanId); // reload step states
+                        // Show prescription bottom sheet before reloading
+                        openPrescriptionSheet(step);
                     }
                 } else {
                     try {
@@ -2035,8 +2061,56 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             .show();
     }
 
+
+    /**
+     * Opens PrescriptionBottomSheet after a step is completed.
+     * The sheet shows medicine input and (if applicable) the monitoring period selector.
+     */
+    private void openPrescriptionSheet(TreatmentPlan.Step step) {
+        if (step == null || step.getId() == null) {
+            loadTreatmentPlanForRoom(currentTreatmentPlanId);
+            return;
+        }
+
+        Integer defaultMonitoringDays = step.getDefaultMonitoringDays(); // from DTO
+
+        com.hcmute.mobile_android.ui.dialogs.PrescriptionBottomSheet sheet =
+                com.hcmute.mobile_android.ui.dialogs.PrescriptionBottomSheet.newInstance(
+                        step.getId(),
+                        defaultMonitoringDays,
+                        step.getServiceName());
+
+        sheet.setListener(new com.hcmute.mobile_android.ui.dialogs.PrescriptionBottomSheet.Listener() {
+            @Override
+            public void onSkip() {
+                // Doctor chose to skip prescription – reload plan normally
+                loadTreatmentPlanForRoom(currentTreatmentPlanId);
+            }
+
+            @Override
+            public void onPrescriptionSaved(boolean hasMonitoring, String scheduledResumeDate) {
+                loadTreatmentPlanForRoom(currentTreatmentPlanId);
+                if (hasMonitoring && scheduledResumeDate != null) {
+                    // Step is now MONITORING
+                    String[] parts = scheduledResumeDate.split("-"); // yyyy-MM-dd
+                    String formattedDate = parts.length == 3 ? parts[2] + "/" + parts[1] + "/" + parts[0] : scheduledResumeDate;
+                    Toast.makeText(DoctorWorkflowActivity.this,
+                            "✅ Đã kê đơn thuốc. Bệnh nhân quay lại ngày " + formattedDate,
+                            Toast.LENGTH_LONG).show();
+                } else {
+                    Toast.makeText(DoctorWorkflowActivity.this,
+                            "✅ Đã lưu đơn thuốc",
+                            Toast.LENGTH_SHORT).show();
+                }
+            }
+        });
+
+        sheet.show(getSupportFragmentManager(), "PrescriptionSheet");
+    }
+
     @Override
     public void onToothSelected(int toothNumber) {
+
         if (currentStep != null) {
             currentStep.setToothNumber(String.valueOf(toothNumber));
             stepAdapter.notifyDataSetChanged();

@@ -85,6 +85,12 @@ public class TreatmentPlan {
         private String uiTemplateType;
         private boolean editable;
         private List<ImageItem> images;
+        // Prescription & monitoring fields (from backend DTO)
+        private Boolean hasPrescription;
+        private Long prescriptionId;
+        private Integer defaultMonitoringDays; // from Service config
+        private Integer monitoringDays;        // from step (doctor-adjusted)
+        private String scheduledResumeDate;    // "yyyy-MM-dd"
 
         public static class ImageItem {
             private Long id;
@@ -160,5 +166,18 @@ public class TreatmentPlan {
 
         public boolean isEditable() { return editable; }
         public void setEditable(boolean editable) { this.editable = editable; }
+
+        public boolean isMonitoring() { return "MONITORING".equalsIgnoreCase(status); }
+
+        public Boolean getHasPrescription() { return hasPrescription; }
+        public void setHasPrescription(Boolean hasPrescription) { this.hasPrescription = hasPrescription; }
+        public Long getPrescriptionId() { return prescriptionId; }
+        public void setPrescriptionId(Long prescriptionId) { this.prescriptionId = prescriptionId; }
+        public Integer getDefaultMonitoringDays() { return defaultMonitoringDays; }
+        public void setDefaultMonitoringDays(Integer defaultMonitoringDays) { this.defaultMonitoringDays = defaultMonitoringDays; }
+        public Integer getMonitoringDays() { return monitoringDays; }
+        public void setMonitoringDays(Integer monitoringDays) { this.monitoringDays = monitoringDays; }
+        public String getScheduledResumeDate() { return scheduledResumeDate; }
+        public void setScheduledResumeDate(String scheduledResumeDate) { this.scheduledResumeDate = scheduledResumeDate; }
     }
 }

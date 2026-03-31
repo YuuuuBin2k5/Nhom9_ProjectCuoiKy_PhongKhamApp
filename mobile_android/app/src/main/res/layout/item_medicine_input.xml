@@ -1,0 +1,93 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:gravity="center_vertical"
+    android:padding="8dp">
+
+    <!-- Medicine Name -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="0dp"
+        android:layout_weight="3"
+        android:layout_height="wrap_content"
+        android:hint="Tên thuốc"
+        android:layout_marginEnd="4dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etMedicineName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Dosage -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="0dp"
+        android:layout_weight="2"
+        android:layout_height="wrap_content"
+        android:hint="Liều"
+        android:layout_marginEnd="4dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etDosage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="text"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Frequency -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="0dp"
+        android:layout_weight="2"
+        android:layout_height="wrap_content"
+        android:hint="Tần suất"
+        android:layout_marginEnd="4dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etFrequency"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="3 lần/ngày"
+            android:inputType="text"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Duration -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="0dp"
+        android:layout_weight="1"
+        android:layout_height="wrap_content"
+        android:hint="Ngày"
+        android:layout_marginEnd="4dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etDuration"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="number"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Price -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:layout_width="0dp"
+        android:layout_weight="2"
+        android:layout_height="wrap_content"
+        android:hint="Giá (đ)"
+        android:layout_marginEnd="4dp"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox.Dense">
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etPrice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="numberDecimal"/>
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Delete button -->
+    <ImageButton
+        android:id="@+id/btnDelete"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:src="@android:drawable/ic_delete"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:tint="#E53935"/>
+</LinearLayout>

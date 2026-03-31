@@ -1,32 +1,51 @@
 package com.hcmute.mobile_android.network.models;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.List;
 
 public class PrescriptionResponse {
-    private Long id;
-    private Long medicalRecordId;
-    private Long doctorId;
+    @SerializedName("hasPrescription")
+    private Boolean hasPrescription;
+
+    @SerializedName("prescriptionId")
+    private Long prescriptionId;
+
+    @SerializedName("medicines")
+    private List<MedicineItem> medicines;
+
+    @SerializedName("monitoringDays")
+    private Integer monitoringDays;
+
+    @SerializedName("monitoringStartDate")
+    private String monitoringStartDate;
+
+    @SerializedName("scheduledResumeDate")
+    private String scheduledResumeDate;
+
+    @SerializedName("defaultMonitoringDays")
+    private Integer defaultMonitoringDays;
+
+    @SerializedName("message")
+    private String message;
+
+    // Backward-compat fields (used by PrescriptionDetailActivity with appointment endpoint)
+    @SerializedName("doctorName")
     private String doctorName;
-    private String createdAt;
-    private List<PrescriptionDetail> details;
 
+    @SerializedName("date")
+    private String date;
+
+    public Boolean getHasPrescription() { return hasPrescription; }
+    public Long getPrescriptionId() { return prescriptionId; }
+    public List<MedicineItem> getMedicines() { return medicines; }
+    /** Alias for getMedicines() for backward compatibility */
+    public List<MedicineItem> getDetails() { return medicines; }
+    public Integer getMonitoringDays() { return monitoringDays; }
+    public String getMonitoringStartDate() { return monitoringStartDate; }
+    public String getScheduledResumeDate() { return scheduledResumeDate; }
+    public Integer getDefaultMonitoringDays() { return defaultMonitoringDays; }
+    public String getMessage() { return message; }
     public String getDoctorName() { return doctorName; }
-    public String getDate() { return createdAt; }
-
-    public static class PrescriptionDetail {
-        private Long id;
-        private String medicineName;
-        private String dosage;
-        private String frequency;
-        private String duration;
-        private String unit;
-
-        public String getMedicineName() { return medicineName; }
-        public String getDosage() { return dosage; }
-        public String getFrequency() { return frequency; }
-        public String getDuration() { return duration; }
-        public String getUnit() { return unit; }
-    }
-
-    public List<PrescriptionDetail> getDetails() { return details; }
+    public String getDate() { return date; }
 }
