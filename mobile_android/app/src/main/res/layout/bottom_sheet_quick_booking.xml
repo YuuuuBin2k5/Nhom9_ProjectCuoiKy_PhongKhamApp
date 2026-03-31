@@ -1,0 +1,183 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <!-- Handle -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:background="#E2E8F0" />
+
+    <!-- Title -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="4dp"
+        android:fontFamily="sans-serif-black"
+        android:text="Đặt lịch hẹn nhanh"
+        android:textColor="#1E293B"
+        android:textSize="22sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:text="Chạm để xác nhận, không cần điền Form."
+        android:textColor="#64748B"
+        android:textSize="14sp" />
+
+    <!-- Service Selection -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:fontFamily="sans-serif-medium"
+        android:text="Khám dịch vụ gì?"
+        android:textColor="#334155"
+        android:textSize="16sp" />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="24dp"
+        android:scrollbars="none">
+
+        <!-- RadioGroup internally to make single selection easy -->
+        <RadioGroup
+            android:id="@+id/rgServices"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/rbService1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/selector_chip_outline"
+                android:button="@null"
+                android:checked="true"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="10dp"
+                android:text="Khám tổng quát"
+                android:textColor="@color/selector_chip_text"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-medium"/>
+
+            <RadioButton
+                android:id="@+id/rbService2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/selector_chip_outline"
+                android:button="@null"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="10dp"
+                android:text="Lấy cao răng"
+                android:textColor="@color/selector_chip_text"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-medium"/>
+
+            <RadioButton
+                android:id="@+id/rbService3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/selector_chip_outline"
+                android:button="@null"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="10dp"
+                android:text="Nhổ răng"
+                android:textColor="@color/selector_chip_text"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-medium"/>
+        </RadioGroup>
+    </HorizontalScrollView>
+
+    <!-- Time Selection -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:fontFamily="sans-serif-medium"
+        android:text="Thời gian mong muốn"
+        android:textColor="#334155"
+        android:textSize="16sp" />
+
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="32dp"
+        android:scrollbars="none">
+
+        <RadioGroup
+            android:id="@+id/rgTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <RadioButton
+                android:id="@+id/rbTime1"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/selector_chip_outline"
+                android:button="@null"
+                android:checked="true"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="10dp"
+                android:text="Chiều nay (14:00)"
+                android:textColor="@color/selector_chip_text"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-medium"/>
+
+            <RadioButton
+                android:id="@+id/rbTime2"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/selector_chip_outline"
+                android:button="@null"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="10dp"
+                android:text="Sáng mai (09:00)"
+                android:textColor="@color/selector_chip_text"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-medium"/>
+                
+            <RadioButton
+                android:id="@+id/rbTime3"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:background="@drawable/selector_chip_outline"
+                android:button="@null"
+                android:paddingHorizontal="16dp"
+                android:paddingVertical="10dp"
+                android:text="Tuần tới (Tự động)"
+                android:textColor="@color/selector_chip_text"
+                android:textSize="14sp"
+                android:fontFamily="sans-serif-medium"/>
+        </RadioGroup>
+    </HorizontalScrollView>
+
+    <!-- Confirm Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnConfirm"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:text="Xác nhận Đặt"
+        android:textSize="16sp"
+        android:fontFamily="sans-serif-bold"
+        app:cornerRadius="16dp"
+        app:backgroundTint="@color/primary_trust_blue"
+        android:layout_marginBottom="8dp" />
+
+</LinearLayout>

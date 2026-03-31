@@ -19,28 +19,20 @@
         android:layout_height="wrap_content"
         android:orientation="vertical"
         android:gravity="center_horizontal"
-        android:paddingStart="14dp"
-        android:paddingEnd="14dp"
-        android:paddingTop="16dp"
-        android:paddingBottom="14dp"
-        android:background="@color/white">
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="20dp"
+        android:background="?attr/selectableItemBackground">
 
-        <FrameLayout
-            android:layout_width="88dp"
-            android:layout_height="88dp"
-            android:background="@drawable/bg_circle_service_icon_well">
-
-            <ImageView
-                android:id="@+id/ivServiceIcon"
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                android:layout_gravity="center"
-                android:src="@drawable/ic_3d_crown"
-                android:scaleType="fitCenter"
-                android:padding="6dp"
-                android:background="@color/white"
-                android:contentDescription="@null" />
-        </FrameLayout>
+        <ImageView
+            android:id="@+id/ivServiceIcon"
+            android:layout_width="64dp"
+            android:layout_height="64dp"
+            android:layout_gravity="center"
+            android:src="@drawable/ic_3d_crown"
+            android:scaleType="fitCenter"
+            android:contentDescription="@null" />
 
         <TextView
             android:id="@+id/tvServiceName"

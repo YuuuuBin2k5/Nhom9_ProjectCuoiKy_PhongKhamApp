@@ -114,7 +114,7 @@ public interface ApiService {
     @POST("api/appointments")
     Call<com.hcmute.mobile_android.network.models.UpcomingAppointment> createAppointment(@Body CreateAppointmentRequest request);
 
-    @POST("api/appointments/{id}/cancel")
+    @PATCH("api/appointments/{id}/cancel")
     Call<com.hcmute.mobile_android.network.models.UpcomingAppointment> cancelAppointment(@Path("id") Long id);
 
     @POST("api/auth/otp/request")

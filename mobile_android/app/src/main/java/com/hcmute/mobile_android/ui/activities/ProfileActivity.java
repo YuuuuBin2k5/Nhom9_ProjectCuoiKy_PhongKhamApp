@@ -53,10 +53,8 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_user_profile_premium);
 
         // Header Icons
-        findViewById(R.id.ivSettings).setOnClickListener(v -> {
-            // Settings logic
-        });
-        findViewById(R.id.ivLogoutHeader).setOnClickListener(v -> logout());
+        View btnBack = findViewById(R.id.ivBack);
+        if (btnBack != null) btnBack.setOnClickListener(v -> finish());
 
         // Bind views
         etQrCode = findViewById(R.id.etQrCode);
@@ -113,6 +111,14 @@ public class ProfileActivity extends AppCompatActivity {
         View fabEdit = findViewById(R.id.fabAvatarEdit);
         if (fabEdit != null) {
             fabEdit.setOnClickListener(v -> showAvatarEditDialog());
+        }
+
+        // Invoice button
+        View btnInvoices = findViewById(R.id.btnInvoices);
+        if (btnInvoices != null) {
+            btnInvoices.setOnClickListener(v -> {
+                startActivity(new Intent(ProfileActivity.this, com.hcmute.mobile_android.ui.activities.InvoiceListActivity.class));
+            });
         }
 
         // Logout button

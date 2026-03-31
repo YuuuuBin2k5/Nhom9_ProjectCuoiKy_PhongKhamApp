@@ -35,7 +35,6 @@
                 app:navigationIcon="@drawable/ic_back"
                 app:navigationIconTint="#1A237E"
                 app:title="Hồ sơ sức khỏe"
-                app:titleCentered="true"
                 app:titleTextAppearance="@style/TextAppearance.Material3.TitleMedium"
                 app:titleTextColor="#1A237E" />
 
@@ -49,10 +48,14 @@
                     android:id="@+id/avatarContainer"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
+                    android:padding="8dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackgroundBorderless"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent"
-                    android:layout_marginTop="24dp">
+                    android:layout_marginTop="16dp">
 
                     <com.google.android.material.imageview.ShapeableImageView
                         android:id="@+id/ivAvatar"
@@ -77,7 +80,8 @@
                         app:iconTint="#3B82F6"
                         app:backgroundTint="#FFFFFF"
                         app:shapeAppearanceOverlay="@style/CircleAppearance"
-                        app:elevation="6dp" />
+                        android:clickable="false"
+                        app:elevation="4dp" />
                 </FrameLayout>
 
                 <TextView
@@ -169,8 +173,11 @@
                     android:layout_marginHorizontal="20dp"
                     android:layout_marginVertical="8dp"
                     app:cardCornerRadius="20dp"
-                    app:cardElevation="4dp"
-                    app:strokeWidth="0dp">
+                    app:cardElevation="6dp"
+                    app:strokeColor="#EAF4FF"
+                    app:strokeWidth="1dp"
+                    android:outlineSpotShadowColor="#0284C7"
+                    android:outlineAmbientShadowColor="#0284C7">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -248,8 +255,11 @@
                     android:layout_marginHorizontal="20dp"
                     android:layout_marginVertical="8dp"
                     app:cardCornerRadius="20dp"
-                    app:cardElevation="4dp"
-                    app:strokeWidth="0dp">
+                    app:cardElevation="6dp"
+                    app:strokeColor="#EAF4FF"
+                    app:strokeWidth="1dp"
+                    android:outlineSpotShadowColor="#0284C7"
+                    android:outlineAmbientShadowColor="#0284C7">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -327,8 +337,11 @@
                     android:layout_marginHorizontal="20dp"
                     android:layout_marginVertical="8dp"
                     app:cardCornerRadius="20dp"
-                    app:cardElevation="4dp"
-                    app:strokeWidth="0dp">
+                    app:cardElevation="6dp"
+                    app:strokeColor="#EAF4FF"
+                    app:strokeWidth="1dp"
+                    android:outlineSpotShadowColor="#0284C7"
+                    android:outlineAmbientShadowColor="#0284C7">
 
                     <androidx.constraintlayout.widget.ConstraintLayout
                         android:layout_width="match_parent"
@@ -427,7 +440,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:text="Tất cả &#10144;"
-                    android:textColor="#0D9488"
+                    android:textColor="@color/primary_trust_blue"
                     android:textSize="13sp"
                     android:textStyle="bold" />
             </RelativeLayout>

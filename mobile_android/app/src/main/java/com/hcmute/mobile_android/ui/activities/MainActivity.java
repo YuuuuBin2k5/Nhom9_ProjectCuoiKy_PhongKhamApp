@@ -47,8 +47,7 @@ public class MainActivity extends AppCompatActivity
             if (id == R.id.nav_home) {
                 // Route by role
                 f = isDoctor ? new HomeFragment() : new PatientDashboardFragment();
-            } else if (id == R.id.nav_doctors) {
-                f = new DoctorListFragment();
+
             } else if (id == R.id.nav_plan) {
                 f = new TreatmentPlanFragment();
             } else if (id == R.id.nav_notifications) {
@@ -75,12 +74,27 @@ public class MainActivity extends AppCompatActivity
 
         if (isDoctor) {
             bottomNav.getMenu().findItem(R.id.nav_plan).setVisible(false);
-            if (bottomNav.getMenu().findItem(R.id.nav_doctors) != null) {
-                bottomNav.getMenu().findItem(R.id.nav_doctors).setVisible(false);
+        }
+
+        com.google.android.material.floatingactionbutton.FloatingActionButton fab = findViewById(R.id.fabGlobalQuickBook);
+        if (fab != null) {
+            if (isDoctor) {
+                fab.hide();
+            } else {
+                fab.setOnClickListener(v -> {
+                    startActivity(new android.content.Intent(MainActivity.this, com.hcmute.mobile_android.ui.activities.BookAppointmentActivity.class));
+                });
             }
         }
 
         // Padding handled by layout margins
+    }
+
+    public void onNavigateToDoctors() {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragmentContainer, new com.hcmute.mobile_android.ui.fragments.DoctorListFragment())
+                .addToBackStack("DoctorList")
+                .commit();
     }
 
     // ─── HomeFragment.HomeCallbacks ─────────────────────────────────────────────
@@ -91,9 +105,4 @@ public class MainActivity extends AppCompatActivity
         bottomNav.setSelectedItemId(R.id.nav_notifications);
     }
 
-    public void onNavigateToDoctors() {
-        if (bottomNav != null) {
-            bottomNav.setSelectedItemId(R.id.nav_doctors);
-        }
-    }
 }

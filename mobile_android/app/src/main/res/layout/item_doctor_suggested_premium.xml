@@ -5,9 +5,10 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/card_doctor"
     android:layout_width="match_parent"
-    android:layout_height="300dp"
+    android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
     android:layout_marginBottom="20dp"
+    app:cardBackgroundColor="@color/white"
     app:cardCornerRadius="24dp"
     app:cardElevation="4dp"
     app:strokeWidth="1dp"
@@ -15,75 +16,25 @@
 
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:paddingBottom="16dp">
 
         <ImageView
             android:id="@+id/img_doctor"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
+            android:layout_height="220dp"
             android:scaleType="centerCrop"
             android:src="@drawable/ic_doctor"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
             tools:src="@tools:sample/avatars" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="140dp"
-            android:background="@drawable/scrim_doctor_top"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <View
-            android:layout_width="match_parent"
-            android:layout_height="120dp"
-            android:background="@drawable/bg_scrim_doctor_bottom"
-            app:layout_constraintBottom_toBottomOf="parent" />
-
-        <TextView
-            android:id="@+id/tv_doctor_name"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginTop="20dp"
-            android:text="BS. Trần Thị Thanh Thảo"
-            android:textColor="#FFFFFF"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:lineSpacingExtra="2dp"
-            android:maxLines="2"
-            android:ellipsize="end"
-            android:shadowColor="#66000000"
-            android:shadowDx="0"
-            android:shadowDy="1"
-            android:shadowRadius="3"
-            app:layout_constraintEnd_toStartOf="@+id/cl_info_overlay"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent" />
-
-        <TextView
-            android:id="@+id/tv_specialty"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="12dp"
-            android:layout_marginTop="6dp"
-            android:text="Khám và tư vấn"
-            android:textColor="#E8EEF5"
-            android:textSize="13sp"
-            android:maxLines="2"
-            android:ellipsize="end"
-            android:shadowColor="#66000000"
-            android:shadowDx="0"
-            android:shadowDy="1"
-            android:shadowRadius="2"
-            app:layout_constraintEnd_toStartOf="@+id/cl_info_overlay"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tv_doctor_name" />
 
         <androidx.constraintlayout.widget.ConstraintLayout
             android:id="@+id/cl_info_overlay"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="18dp"
+            android:layout_marginTop="16dp"
             android:layout_marginEnd="16dp"
             android:background="@drawable/bg_info_overlay"
             android:paddingHorizontal="12dp"
@@ -141,13 +92,47 @@
                 app:layout_constraintTop_toTopOf="@+id/img_trusted" />
         </androidx.constraintlayout.widget.ConstraintLayout>
 
+        <TextView
+            android:id="@+id/tv_doctor_name"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="16dp"
+            android:text="BS. Trần Thị Thanh Thảo"
+            android:textColor="#1E293B"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:lineSpacingExtra="2dp"
+            android:maxLines="2"
+            android:ellipsize="end"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/img_doctor" />
+
+        <TextView
+            android:id="@+id/tv_specialty"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginTop="4dp"
+            android:text="Khám và tư vấn"
+            android:textColor="#64748B"
+            android:textSize="14sp"
+            android:maxLines="2"
+            android:ellipsize="end"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tv_doctor_name" />
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_swipe_to_book"
             style="@style/Widget.Material3.Button.UnelevatedButton"
             android:layout_width="match_parent"
             android:layout_height="52dp"
             android:layout_marginHorizontal="20dp"
-            android:layout_marginBottom="18dp"
+            android:layout_marginTop="16dp"
             android:insetTop="0dp"
             android:insetBottom="0dp"
             android:text="Đặt lịch hẹn"
@@ -161,7 +146,7 @@
             app:iconGravity="end"
             app:iconPadding="8dp"
             app:iconTint="@color/white"
-            app:layout_constraintBottom_toBottomOf="parent" />
+            app:layout_constraintTop_toBottomOf="@+id/tv_specialty" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </com.google.android.material.card.MaterialCardView>
