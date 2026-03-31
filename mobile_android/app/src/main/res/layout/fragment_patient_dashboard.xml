@@ -100,31 +100,39 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp">
                         
-                        <LinearLayout
+                        <com.google.android.material.card.MaterialCardView
                             android:layout_width="match_parent"
-                            android:layout_height="52dp"
-                            android:background="@drawable/bg_pill_search"
-                            android:orientation="horizontal"
-                            android:gravity="center_vertical"
-                            android:paddingHorizontal="16dp"
+                            android:layout_height="48dp"
                             android:layout_toStartOf="@+id/ivHeaderQrScan"
-                            android:layout_marginEnd="12dp">
+                            android:layout_marginEnd="12dp"
+                            app:cardCornerRadius="24dp"
+                            app:cardElevation="3dp"
+                            app:strokeWidth="0dp"
+                            app:cardBackgroundColor="@color/white">
                             
-                            <ImageView
-                                android:layout_width="20dp"
-                                android:layout_height="20dp"
-                                android:src="@android:drawable/ic_menu_search"
-                                app:tint="@color/text_secondary"/>
-                                
-                            <EditText
+                            <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="match_parent"
-                                android:background="@null"
-                                android:hint="Tìm kiếm dịch vụ hoặc bác sĩ"
-                                android:textSize="15sp"
-                                android:layout_marginStart="12dp"
-                                android:textColorHint="#94A3B8"/>
-                        </LinearLayout>
+                                android:orientation="horizontal"
+                                android:gravity="center_vertical"
+                                android:paddingHorizontal="16dp">
+                                
+                                <ImageView
+                                    android:layout_width="20dp"
+                                    android:layout_height="20dp"
+                                    android:src="@android:drawable/ic_menu_search"
+                                    app:tint="@color/text_secondary"/>
+                                    
+                                <EditText
+                                    android:layout_width="match_parent"
+                                    android:layout_height="match_parent"
+                                    android:background="@null"
+                                    android:hint="Tìm kiếm dịch vụ hoặc bác sĩ"
+                                    android:textSize="14sp"
+                                    android:layout_marginStart="12dp"
+                                    android:textColorHint="#94A3B8"/>
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
 
                         <ImageView
                             android:id="@+id/ivHeaderQrScan"
@@ -138,7 +146,7 @@
                     </RelativeLayout>
                 </LinearLayout>
 
-                <!-- 3. Special Offer Banner -->
+                <!-- 3. Special Offer Banner Redesigned -->
                 <com.google.android.material.card.MaterialCardView
                     android:layout_width="match_parent"
                     android:layout_height="158dp"
@@ -146,74 +154,119 @@
                     app:cardCornerRadius="24dp"
                     app:cardElevation="2dp"
                     app:strokeWidth="0dp">
-                    
+
                     <RelativeLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:background="@drawable/bg_premium_gradient_blue"
-                        android:paddingHorizontal="20dp"
-                        android:paddingVertical="20dp">
-                        
+                        android:background="@drawable/bg_premium_gradient_blue">
+
+                        <!-- Subtle overlay orbs -->
+                        <View
+                            android:layout_width="140dp"
+                            android:layout_height="140dp"
+                            android:background="@drawable/circle_blue_dot"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentTop="true"
+                            android:layout_marginTop="-50dp"
+                            android:layout_marginEnd="-20dp"
+                            android:alpha="0.2"/>
+                        <View
+                            android:layout_width="200dp"
+                            android:layout_height="200dp"
+                            android:background="@drawable/circle_blue_dot"
+                            android:layout_alignParentStart="true"
+                            android:layout_alignParentBottom="true"
+                            android:layout_marginStart="-80dp"
+                            android:layout_marginBottom="-80dp"
+                            android:alpha="0.1"/>
+
+                        <!-- Tooth mascot — clipped neatly by card cornerRadius -->
+                        <ImageView
+                            android:layout_width="155dp"
+                            android:layout_height="158dp"
+                            android:layout_alignParentEnd="true"
+                            android:layout_alignParentBottom="true"
+                            android:src="@drawable/ic_3d_tooth_megaphone_offer_v2"
+                            android:scaleType="centerInside"/>
+
+                        <!-- Text + Button -->
                         <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:orientation="vertical"
-                            android:layout_centerVertical="true">
-                            
+                            android:layout_centerVertical="true"
+                            android:paddingHorizontal="20dp"
+                            android:paddingVertical="10dp">
+
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="SPECIAL OFFER"
-                                android:textColor="#BBDEFB"
+                                android:text="ƯU ĐÃI ĐẶC BIỆT"
+                                android:textColor="#FFD54F"
                                 android:textSize="12sp"
                                 android:textStyle="bold"
-                                android:letterSpacing="0.1"/>
-                                
-                            <TextView
-                                android:layout_width="150dp"
+                                android:letterSpacing="0.05"/>
+
+                            <LinearLayout
+                                android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Get 40% Off on Dental Scaling!"
+                                android:orientation="horizontal"
+                                android:gravity="bottom"
+                                android:layout_marginTop="2dp">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="GIẢM "
+                                    android:textColor="@color/white"
+                                    android:textSize="18sp"
+                                    android:textStyle="bold"
+                                    android:layout_marginBottom="3dp"/>
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="40%"
+                                    android:textColor="#FFB300"
+                                    android:textSize="26sp"
+                                    android:textStyle="bold"
+                                    android:includeFontPadding="false"/>
+                            </LinearLayout>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Dịch vụ Lấy cao răng"
                                 android:textColor="@color/white"
-                                android:textSize="18sp"
-                                android:textStyle="bold"
-                                android:layout_marginTop="6dp"/>
+                                android:textSize="14sp"
+                                android:alpha="0.9"/>
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnBannerAction"
                                 android:layout_width="wrap_content"
                                 android:layout_height="44dp"
-                                android:layout_marginTop="14dp"
+                                android:layout_marginTop="10dp"
                                 android:text="Đặt lịch ưu đãi"
                                 android:textAllCaps="false"
                                 android:textSize="13sp"
                                 app:cornerRadius="20dp"
                                 app:backgroundTint="@color/white"
                                 android:textColor="@color/primary_trust_blue"
-                                app:icon="@android:drawable/ic_menu_call"
-                                app:iconSize="14dp"
+                                app:icon="@drawable/ic_calendar"
+                                app:iconSize="16dp"
                                 app:iconTint="@color/primary_trust_blue"
                                 android:paddingHorizontal="20dp"/>
                         </LinearLayout>
-
-                        <ImageView
-                            android:layout_width="160dp"
-                            android:layout_height="200dp"
-                            android:layout_alignParentEnd="true"
-                            android:layout_alignParentBottom="true"
-                            android:src="@drawable/ic_3d_offer_tooth"
-                            android:scaleType="centerInside"
-                            android:translationY="20dp"/>
                     </RelativeLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- 4. Active Check In Tracker -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardCheckInStatus"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="24dp"
                     app:cardCornerRadius="24dp"
-                    app:cardElevation="1dp"
+                    app:cardBackgroundColor="#EAF4FF"
+                    app:cardElevation="0dp"
+                    app:strokeWidth="0dp"
                     android:visibility="gone">
                     <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
                         <TextView android:id="@+id/tvCheckInStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Đã Check-in" android:textStyle="bold" android:textColor="@color/primary_trust_blue" />
@@ -222,81 +275,7 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Quick Actions (New) -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="24dp">
-                    
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/btnInvoices"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="8dp"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardBackgroundColor="@color/white">
-                        
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp"
-                            android:gravity="center">
-                            
-                            <ImageView
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:src="@drawable/ic_money"
-                                app:tint="@color/primary_trust_blue"/>
-                                
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Hóa đơn"
-                                android:textStyle="bold"
-                                android:layout_marginTop="8dp"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                    
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/btnMedicalRecords"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginStart="8dp"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="2dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardBackgroundColor="@color/white">
-                        
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp"
-                            android:gravity="center">
-                            
-                            <ImageView
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:src="@drawable/ic_treatment_plan"
-                                app:tint="@color/primary_trust_blue"/>
-                                
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Hồ sơ khám"
-                                android:textStyle="bold"
-                                android:layout_marginTop="8dp"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
+
 
 
                 <!-- 4. Unified Dental Services Section -->
@@ -308,9 +287,9 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="Dịch vụ nổi bật"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"/>
+                        android:textSize="22sp"
+                        android:fontFamily="sans-serif-black"
+                        android:textColor="@color/navy_blue_text"/>
                     
                     <TextView
                         android:id="@+id/all_dv"
@@ -367,24 +346,31 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp">
+                    
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Bác sĩ"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/text_primary"/>
-                    
-                    <ImageView
-                        android:id="@+id/all_bs"
-                        android:layout_width="32dp"
-                        android:layout_height="32dp"
+                        android:text="Đội ngũ bác sĩ"
+                        android:textSize="22sp"
+                        android:fontFamily="sans-serif-black"
+                        android:textColor="@color/navy_blue_text"
+                        android:layout_alignParentStart="true"
+                        android:layout_centerVertical="true"/>
+                        
+                    <TextView
+                        android:id="@+id/btnViewAllDoctors"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Xem thêm"
+                        android:textColor="@color/primary_trust_blue"
+                        android:textSize="14sp"
+                        android:fontFamily="sans-serif-medium"
                         android:layout_alignParentEnd="true"
-                        android:background="@drawable/bg_circle_soft_blue"
-                        android:padding="8dp"
-                        android:contentDescription="@null"
-                        android:src="@drawable/ic_chevron_right"
-                        app:tint="@color/primary_trust_blue"/>
+                        android:layout_centerVertical="true"
+                        android:paddingVertical="8dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:clickable="true"
+                        android:focusable="true"/>
                 </RelativeLayout>
 
                 <androidx.recyclerview.widget.RecyclerView
@@ -392,10 +378,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="110dp"
-                    android:clipToPadding="false"/>
+                    android:clipToPadding="false"
+                    android:nestedScrollingEnabled="false" />
 
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
-
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

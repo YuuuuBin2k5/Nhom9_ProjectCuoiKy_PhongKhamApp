@@ -34,11 +34,15 @@ public class FragmentXray extends Fragment {
     private LinearLayout layoutOtherType, layoutImagePreview;
     private RecyclerView rvXrayImages;
     private TextView tvImageCount;
-    private MaterialButton btnUploadXrayImage;
+    private MaterialButton btnUploadXrayImage, btnEditMode;
     
     // Image management
     private List<String> xrayImageUrls = new ArrayList<>();
     private ImagePreviewAdapter imageAdapter;
+    
+    // Edit mode state
+    private boolean isReadOnly = false;
+    private boolean isEditMode = false;
 
     @Nullable
     @Override
@@ -66,9 +70,16 @@ public class FragmentXray extends Fragment {
         
         // Image upload views
         btnUploadXrayImage = view.findViewById(R.id.btnUploadXrayImage);
+        btnEditMode = view.findViewById(R.id.btnEditMode);
         layoutImagePreview = view.findViewById(R.id.layoutImagePreview);
         rvXrayImages = view.findViewById(R.id.rvXrayImages);
         tvImageCount = view.findViewById(R.id.tvImageCount);
+        
+        // Setup edit mode button
+        if (btnEditMode != null) {
+            btnEditMode.setOnClickListener(v -> toggleEditMode());
+            btnEditMode.setVisibility(View.GONE); // Hidden by default
+        }
         
         // Restore state if available
         if (savedInstanceState != null) {
@@ -77,6 +88,8 @@ public class FragmentXray extends Fragment {
                 xrayImageUrls.clear();
                 xrayImageUrls.addAll(savedImages);
             }
+            isReadOnly = savedInstanceState.getBoolean("isReadOnly", false);
+            isEditMode = savedInstanceState.getBoolean("isEditMode", false);
         }
         
         // Setup image RecyclerView
@@ -107,6 +120,8 @@ public class FragmentXray extends Fragment {
         super.onSaveInstanceState(outState);
         // Save image URLs to survive configuration changes
         outState.putStringArrayList("xrayImageUrls", new ArrayList<>(xrayImageUrls));
+        outState.putBoolean("isReadOnly", isReadOnly);
+        outState.putBoolean("isEditMode", isEditMode);
     }
     
     @Override
@@ -435,46 +450,80 @@ public class FragmentXray extends Fragment {
         }
     }
 
-    public void setReadOnlyMode(boolean readOnly) {
-        android.util.Log.d("FragmentXray", "setReadOnlyMode: " + readOnly);
+    private void toggleEditMode() {
+        isEditMode = !isEditMode;
+        updateEditableState();
         
-        // Enable/disable all input fields
+        if (btnEditMode != null) {
+            btnEditMode.setText(isEditMode ? "Lưu" : "Chỉnh sửa");
+        }
+        
+        if (!isEditMode) {
+            // Save mode - notify parent activity
+            Toast.makeText(getContext(), "Đã lưu thay đổi", Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    private void updateEditableState() {
+        boolean canEdit = !isReadOnly || isEditMode;
+        
+        android.util.Log.d("FragmentXray", "updateEditableState - canEdit: " + canEdit + " (isReadOnly: " + isReadOnly + ", isEditMode: " + isEditMode + ")");
+        
+        // EditText fields
         if (etXrayFindings != null) {
-            etXrayFindings.setEnabled(!readOnly);
-            etXrayFindings.setFocusable(!readOnly);
-            etXrayFindings.setFocusableInTouchMode(!readOnly);
+            etXrayFindings.setEnabled(canEdit);
+            etXrayFindings.setFocusable(canEdit);
+            etXrayFindings.setFocusableInTouchMode(canEdit);
+            etXrayFindings.setTextColor(canEdit ? 0xFF000000 : 0xFF757575);
         }
         
         if (etXrayDiagnosis != null) {
-            etXrayDiagnosis.setEnabled(!readOnly);
-            etXrayDiagnosis.setFocusable(!readOnly);
-            etXrayDiagnosis.setFocusableInTouchMode(!readOnly);
+            etXrayDiagnosis.setEnabled(canEdit);
+            etXrayDiagnosis.setFocusable(canEdit);
+            etXrayDiagnosis.setFocusableInTouchMode(canEdit);
+            etXrayDiagnosis.setTextColor(canEdit ? 0xFF000000 : 0xFF757575);
         }
         
         if (etXrayRecommendations != null) {
-            etXrayRecommendations.setEnabled(!readOnly);
-            etXrayRecommendations.setFocusable(!readOnly);
-            etXrayRecommendations.setFocusableInTouchMode(!readOnly);
+            etXrayRecommendations.setEnabled(canEdit);
+            etXrayRecommendations.setFocusable(canEdit);
+            etXrayRecommendations.setFocusableInTouchMode(canEdit);
+            etXrayRecommendations.setTextColor(canEdit ? 0xFF000000 : 0xFF757575);
         }
         
         if (etOtherType != null) {
-            etOtherType.setEnabled(!readOnly);
-            etOtherType.setFocusable(!readOnly);
-            etOtherType.setFocusableInTouchMode(!readOnly);
+            etOtherType.setEnabled(canEdit);
+            etOtherType.setFocusable(canEdit);
+            etOtherType.setFocusableInTouchMode(canEdit);
+            etOtherType.setTextColor(canEdit ? 0xFF000000 : 0xFF757575);
         }
         
-        // Enable/disable image type selection
+        // Radio buttons
         if (rgImageType != null) {
-            rgImageType.setEnabled(!readOnly);
+            rgImageType.setEnabled(canEdit);
             for (int i = 0; i < rgImageType.getChildCount(); i++) {
-                rgImageType.getChildAt(i).setEnabled(!readOnly);
+                rgImageType.getChildAt(i).setEnabled(canEdit);
+                rgImageType.getChildAt(i).setAlpha(canEdit ? 1.0f : 0.6f);
             }
         }
         
-        // Enable/disable upload button
+        // Upload button
         if (btnUploadXrayImage != null) {
-            btnUploadXrayImage.setEnabled(!readOnly);
-            btnUploadXrayImage.setVisibility(!readOnly ? View.VISIBLE : View.GONE);
+            btnUploadXrayImage.setEnabled(canEdit);
+            btnUploadXrayImage.setVisibility(canEdit ? View.VISIBLE : View.GONE);
+        }
+    }
+    
+    public void setReadOnlyMode(boolean readOnly) {
+        android.util.Log.d("FragmentXray", "setReadOnlyMode: " + readOnly);
+        this.isReadOnly = readOnly;
+        this.isEditMode = false; // Reset edit mode
+        updateEditableState();
+        
+        // Show/hide edit button
+        if (btnEditMode != null) {
+            btnEditMode.setVisibility(readOnly ? View.VISIBLE : View.GONE);
+            btnEditMode.setText("Chỉnh sửa");
         }
     }
 

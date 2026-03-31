@@ -89,7 +89,14 @@ public class AppointmentDetailActivity extends AppCompatActivity {
                             finish();
                         }, 1000);
                     } else {
-                        ToastUtils.showCenteredToast(AppointmentDetailActivity.this, "Lỗi: " + response.code());
+                        String errMsg = "Lỗi: " + response.code();
+                        try {
+                            if (response.errorBody() != null) {
+                                org.json.JSONObject obj = new org.json.JSONObject(response.errorBody().string());
+                                if (obj.has("message")) errMsg = obj.getString("message");
+                            }
+                        } catch (Exception e) {}
+                        ToastUtils.showCenteredToastLong(AppointmentDetailActivity.this, errMsg);
                     }
                 }
 

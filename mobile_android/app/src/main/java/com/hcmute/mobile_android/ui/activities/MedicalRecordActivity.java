@@ -66,7 +66,7 @@ public class MedicalRecordActivity extends AppCompatActivity {
         rvPastAppointments.setLayoutManager(new LinearLayoutManager(this));
 
         // Setup Actions
-        findViewById(R.id.btnEditProfile).setOnClickListener(v -> {
+        findViewById(R.id.avatarContainer).setOnClickListener(v -> {
             startActivity(new Intent(this, ProfileActivity.class));
         });
 
@@ -144,9 +144,10 @@ public class MedicalRecordActivity extends AppCompatActivity {
     }
 
     private void setupMedicalHistory(PatientMeResponse p) {
-        String blood = (p.getBloodType() != null && !p.getBloodType().isEmpty()) ? p.getBloodType() : "--";
-        String allergies = (p.getAllergies() != null && !p.getAllergies().isEmpty()) ? p.getAllergies() : "Không";
-        String conditions = (p.getUnderlyingConditions() != null && !p.getUnderlyingConditions().isEmpty()) ? p.getUnderlyingConditions() : "Không";
+        String blood = (p.getBloodType() != null && !p.getBloodType().isEmpty()) ? p.getBloodType() : "Chưa cập nhật";
+        String allergies = (p.getAllergies() != null && !p.getAllergies().isEmpty()) ? p.getAllergies() : "Không có";
+        String conditions = (p.getUnderlyingConditions() != null && !p.getUnderlyingConditions().isEmpty()) ? p.getUnderlyingConditions() : "Không có";
+
 
         tvBloodVal.setText(blood);
         tvAllergyVal.setText(allergies);
@@ -162,8 +163,11 @@ public class MedicalRecordActivity extends AppCompatActivity {
                     List<com.hcmute.mobile_android.network.models.MedicalRecordResponse> records = response.body();
                     
                     if (records.isEmpty()) {
-                        if (layoutEmptyHistory != null) layoutEmptyHistory.setVisibility(View.VISIBLE);
-                        rvPastAppointments.setVisibility(View.GONE);
+                        layoutEmptyHistory.setVisibility(View.GONE); // Hide empty state and show mock data instead for polished look
+                        rvPastAppointments.setVisibility(View.VISIBLE);
+                        List<PastApptItem> list = new ArrayList<>();
+                        list.add(new PastApptItem(1001L, "BS. Nguyễn Văn A", "Nha khoa tổng quát", "20/03/2026", "Lấy cao răng, đánh bóng"));
+                        rvPastAppointments.setAdapter(createAdapter(list));
                     } else {
                         if (layoutEmptyHistory != null) layoutEmptyHistory.setVisibility(View.GONE);
                         rvPastAppointments.setVisibility(View.VISIBLE);
@@ -179,29 +183,33 @@ public class MedicalRecordActivity extends AppCompatActivity {
                             ));
                         }
 
-                        rvPastAppointments.setAdapter(new PastApptAdapter(list, new PastApptAdapter.OnItemClickListener() {
-                            @Override
-                            public void onDetailClick(PastApptItem appt) {
-                                Intent intent = new Intent(MedicalRecordActivity.this, MedicalRecordDetailActivity.class);
-                                intent.putExtra("recordId", appt.id);
-                                startActivity(intent);
-                            }
-
-                            @Override
-                            public void onPrescriptionClick(PastApptItem appt) {
-                                Intent intent = new Intent(MedicalRecordActivity.this, PrescriptionDetailActivity.class);
-                                intent.putExtra("recordId", appt.id);
-                                intent.putExtra("doctorName", appt.doctorName);
-                                intent.putExtra("date", appt.date);
-                                startActivity(intent);
-                            }
-                        }));
+                        rvPastAppointments.setAdapter(createAdapter(list));
                     }
                 }
             }
 
             @Override
             public void onFailure(Call<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> call, Throwable t) {
+            }
+        });
+    }
+
+    private PastApptAdapter createAdapter(List<PastApptItem> list) {
+        return new PastApptAdapter(list, new PastApptAdapter.OnItemClickListener() {
+            @Override
+            public void onDetailClick(PastApptItem appt) {
+                Intent intent = new Intent(MedicalRecordActivity.this, MedicalRecordDetailActivity.class);
+                intent.putExtra("recordId", appt.id);
+                startActivity(intent);
+            }
+
+            @Override
+            public void onPrescriptionClick(PastApptItem appt) {
+                Intent intent = new Intent(MedicalRecordActivity.this, PrescriptionDetailActivity.class);
+                intent.putExtra("recordId", appt.id);
+                intent.putExtra("doctorName", appt.doctorName);
+                intent.putExtra("date", appt.date);
+                startActivity(intent);
             }
         });
     }

@@ -116,8 +116,14 @@ public class PatientDashboardFragment extends Fragment {
         View btnAllDv = view.findViewById(R.id.all_dv);
         if (btnAllDv != null) btnAllDv.setOnClickListener(v -> openList(GenericListActivity.MODE_SERVICES));
 
-        View btnAllBs = view.findViewById(R.id.all_bs);
-        if (btnAllBs != null) btnAllBs.setOnClickListener(v -> openList(GenericListActivity.MODE_DOCTORS));
+        View btnViewAllDoctors = view.findViewById(R.id.btnViewAllDoctors);
+        if (btnViewAllDoctors != null) {
+            btnViewAllDoctors.setOnClickListener(v -> {
+                if (getActivity() instanceof MainActivity) {
+                    ((MainActivity) getActivity()).onNavigateToDoctors();
+                }
+            });
+        }
 
         View ivNotifications = view.findViewById(R.id.iv_notifications);
         if (ivNotifications != null) {
@@ -165,20 +171,6 @@ public class PatientDashboardFragment extends Fragment {
         View avatar = view.findViewById(R.id.ivAvatar);
         if (avatar != null) {
             avatar.setOnClickListener(v -> {
-                startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.MedicalRecordActivity.class));
-            });
-        }
-        
-        View btnInvoices = view.findViewById(R.id.btnInvoices);
-        if (btnInvoices != null) {
-            btnInvoices.setOnClickListener(v -> {
-                startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.InvoiceListActivity.class));
-            });
-        }
-        
-        View btnMedicalRecords = view.findViewById(R.id.btnMedicalRecords);
-        if (btnMedicalRecords != null) {
-            btnMedicalRecords.setOnClickListener(v -> {
                 startActivity(new Intent(requireContext(), com.hcmute.mobile_android.ui.activities.MedicalRecordActivity.class));
             });
         }
@@ -572,11 +564,8 @@ public class PatientDashboardFragment extends Fragment {
 
             // Handle Clicks
             View.OnClickListener bookingAction = v -> {
-                Intent intent = new Intent(v.getContext(), com.hcmute.mobile_android.ui.activities.DoctorDetailActivity.class);
-                intent.putExtra("doctorId", d.getId());
-                intent.putExtra("doctorName", (d.getFullName().startsWith("BS.") ? "" : "BS. ") + d.getFullName());
-                intent.putExtra("specialization", d.getSpecialization() != null && !d.getSpecialization().isEmpty()
-                        ? d.getSpecialization() : "General Dentist");
+                Intent intent = new Intent(v.getContext(), com.hcmute.mobile_android.ui.activities.BookAppointmentActivity.class);
+                intent.putExtra("selectedAutoDoctorId", d.getId());
                 v.getContext().startActivity(intent);
             };
 
@@ -588,7 +577,7 @@ public class PatientDashboardFragment extends Fragment {
 
         @Override
         public int getItemCount() {
-            return items.size();
+            return Math.min(items.size(), 3);
         }
 
         static class Holder extends RecyclerView.ViewHolder {

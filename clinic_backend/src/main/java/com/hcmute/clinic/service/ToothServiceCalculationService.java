@@ -3,6 +3,7 @@ package com.hcmute.clinic.service;
 import com.hcmute.clinic.entity.TreatmentPlan;
 import com.hcmute.clinic.entity.TreatmentPlanStep;
 import com.hcmute.clinic.entity.Service;
+import com.hcmute.clinic.entity.ClinicRoom;
 import com.hcmute.clinic.enums.StepStatus;
 import com.hcmute.clinic.repository.TreatmentPlanStepRepository;
 import com.hcmute.clinic.repository.TreatmentPlanRepository;
@@ -17,6 +18,8 @@ import java.util.List;
 /**
  * Service for managing tooth-specific and general services in treatment plans
  * Handles adding, removing, and calculating costs for services
+ * 
+ * REFACTORED: Now uses ServiceRoomAssignmentService for centralized room assignment logic
  */
 @org.springframework.stereotype.Service
 @RequiredArgsConstructor
@@ -26,6 +29,7 @@ public class ToothServiceCalculationService {
     private final TreatmentPlanStepRepository stepRepository;
     private final TreatmentPlanRepository planRepository;
     private final ServiceRepository serviceRepository;
+    private final ServiceRoomAssignmentService roomAssignmentService;
     
     /**
      * Add a service to a specific tooth
@@ -55,10 +59,15 @@ public class ToothServiceCalculationService {
             throw new RuntimeException("Tooth number cannot be empty");
         }
         
+        // REFACTORED: Use centralized room assignment service
+        ClinicRoom room = roomAssignmentService.determineRoomForService(service);
+        log.info("Room assignment: {}", roomAssignmentService.explainRoomAssignment(service, room));
+        
         // Create step for specific tooth
         TreatmentPlanStep step = TreatmentPlanStep.builder()
             .plan(plan)
             .service(service)
+            .clinicRoom(room)  // FIXED: Now assigns room via centralized service
             .toothNumber(toothNumber)
             .actualPrice(service.getPrice())
             .sequenceOrder(sequenceOrder)
@@ -93,10 +102,15 @@ public class ToothServiceCalculationService {
         Service service = serviceRepository.findById(serviceId)
             .orElseThrow(() -> new RuntimeException("Service not found: " + serviceId));
         
+        // REFACTORED: Use centralized room assignment service
+        ClinicRoom room = roomAssignmentService.determineRoomForService(service);
+        log.info("Room assignment: {}", roomAssignmentService.explainRoomAssignment(service, room));
+        
         // Create step for general service
         TreatmentPlanStep step = TreatmentPlanStep.builder()
             .plan(plan)
             .service(service)
+            .clinicRoom(room)  // FIXED: Now assigns room via centralized service
             .toothNumber(null)  // No specific tooth
             .actualPrice(service.getPrice())
             .sequenceOrder(sequenceOrder)

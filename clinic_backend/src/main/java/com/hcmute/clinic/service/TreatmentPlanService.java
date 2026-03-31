@@ -6,6 +6,7 @@ import com.hcmute.clinic.enums.StepStatus;
 import com.hcmute.clinic.enums.TreatmentPlanStatus;
 import com.hcmute.clinic.repository.*;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,6 +19,7 @@ import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class TreatmentPlanService {
 
     private final TreatmentPlanTemplateRepository templateRepository;
@@ -27,6 +29,7 @@ public class TreatmentPlanService {
     private final MedicalRecordRepository medicalRecordRepository;
     private final ServiceRepository serviceRepository;
     private final ClinicRoomRepository clinicRoomRepository;
+    private final ServiceRoomAssignmentService roomAssignmentService;
     private final NotificationRepository notificationRepository;
     private final FcmService fcmService;
     private final com.hcmute.clinic.repository.AppointmentRepository appointmentRepository;
@@ -96,7 +99,7 @@ public class TreatmentPlanService {
                 .appointment(appointment)
                 .templateId(template != null ? template.getId() : null)
                 .status(TreatmentPlanStatus.IN_PROGRESS)
-                .isDraft(true)
+                .isDraft(false)  // CHANGED: Auto-activate plans (no draft mode)
                 .build();
         plan = planRepository.save(plan);
         if (plan.getSteps() == null) {
@@ -210,8 +213,11 @@ public class TreatmentPlanService {
                 if (item.getClinicRoomId() != null) {
                     room = clinicRoomRepository.findById(item.getClinicRoomId()).orElse(null);
                 } else {
-                    // Try to find appropriate room based on service name
-                    room = findRoomForService(svc);
+                    // REFACTORED: Use centralized room assignment service
+                    room = roomAssignmentService.determineRoomForService(svc);
+                    if (room != null) {
+                        log.info("Auto-assigned room: {}", roomAssignmentService.explainRoomAssignment(svc, room));
+                    }
                 }
                 
                 TreatmentPlanStep step = TreatmentPlanStep.builder()
@@ -355,35 +361,18 @@ public class TreatmentPlanService {
         stepRepository.save(step);
     }
 
+    /**
+     * DEPRECATED: Plans are now auto-activated on creation (no draft mode)
+     * This method is kept for backward compatibility but does nothing
+     * 
+     * @deprecated Plans are automatically activated, no need to call this
+     */
+    @Deprecated
     @Transactional
     public void activatePlan(Long planId) {
-        TreatmentPlan plan = getById(planId);
-        
-        if (plan.getStatus() == TreatmentPlanStatus.COMPLETED) {
-            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Hồ sơ đã hoàn tất và bị khóa");
-        }
-
-        if (!plan.isDraft()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phác đồ đã được kích hoạt");
-        }
-        if (plan.getSteps() == null || plan.getSteps().isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Phác đồ đang trống, không thể kích hoạt");
-        }
-        
-        plan.setDraft(false);
-        planRepository.save(plan);
-
-        // Kích hoạt bước đầu tiên (PENDING -> IN_PROGRESS)
-        TreatmentPlanStep firstStep = plan.getSteps().stream()
-                .min((a, b) -> Integer.compare(
-                        a.getSequenceOrder() != null ? a.getSequenceOrder() : 0,
-                        b.getSequenceOrder() != null ? b.getSequenceOrder() : 0))
-                .orElse(null);
-
-        if (firstStep != null && firstStep.getStatus() == StepStatus.PENDING) {
-            firstStep.setStatus(StepStatus.IN_PROGRESS);
-            stepRepository.save(firstStep);
-        }
+        // NO-OP: Plans are now auto-activated on creation
+        // Kept for backward compatibility with existing API calls
+        log.info("activatePlan called for plan {} - NO-OP (plans are auto-activated)", planId);
     }
 
     /**
@@ -647,36 +636,14 @@ public class TreatmentPlanService {
      * Auto-assign clinic room based on service name/type
      * This allows manually added services to be assigned to the correct room
      */
+    /**
+     * DEPRECATED: Use ServiceRoomAssignmentService.determineRoomForService() instead
+     * This method is kept for backward compatibility but delegates to the centralized service
+     * 
+     * @deprecated Use {@link ServiceRoomAssignmentService#determineRoomForService(Service)} instead
+     */
+    @Deprecated
     private ClinicRoom findRoomForService(com.hcmute.clinic.entity.Service service) {
-        if (service == null || service.getName() == null) {
-            return null;
-        }
-        
-        String serviceName = service.getName().toLowerCase();
-        
-        // Map service names to room names
-        if (serviceName.contains("x-quang") || serviceName.contains("xquang") || serviceName.contains("x quang")) {
-            return clinicRoomRepository.findAll().stream()
-                    .filter(r -> r.getName() != null && r.getName().toLowerCase().contains("x-quang"))
-                    .findFirst()
-                    .orElse(null);
-        }
-        
-        if (serviceName.contains("nhổ răng") || serviceName.contains("phẫu thuật") || serviceName.contains("tiểu phẫu")) {
-            return clinicRoomRepository.findAll().stream()
-                    .filter(r -> r.getName() != null && (r.getName().toLowerCase().contains("phẫu") || r.getName().toLowerCase().contains("surgery")))
-                    .findFirst()
-                    .orElse(null);
-        }
-        
-        if (serviceName.contains("niềng") || serviceName.contains("chỉnh nha") || serviceName.contains("ortho")) {
-            return clinicRoomRepository.findAll().stream()
-                    .filter(r -> r.getName() != null && r.getName().toLowerCase().contains("chỉnh nha"))
-                    .findFirst()
-                    .orElse(null);
-        }
-        
-        // Default: return null (will be handled by current doctor's room)
-        return null;
+        return roomAssignmentService.determineRoomForService(service);
     }
 }

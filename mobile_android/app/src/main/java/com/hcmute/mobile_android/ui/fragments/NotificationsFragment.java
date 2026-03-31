@@ -31,7 +31,8 @@ import retrofit2.Response;
 public class NotificationsFragment extends Fragment {
 
     private ProgressBar progress;
-    private TextView tvEmpty, tvMarkAllRead;
+    private View layoutEmpty;
+    private TextView tvEmptyText, tvMarkAllRead;
     private RecyclerView recycler;
     private NotificationsAdapter adapter;
 
@@ -45,7 +46,8 @@ public class NotificationsFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         progress = view.findViewById(R.id.progress);
-        tvEmpty = view.findViewById(R.id.tvEmpty);
+        layoutEmpty = view.findViewById(R.id.layoutEmpty);
+        tvEmptyText = view.findViewById(R.id.tvEmpty);
         tvMarkAllRead = view.findViewById(R.id.tvMarkAllRead);
         tvMarkAllRead.setOnClickListener(v -> markAllAsRead());
         recycler = view.findViewById(R.id.recycler);
@@ -82,7 +84,7 @@ public class NotificationsFragment extends Fragment {
 
     private void loadNotifications() {
         progress.setVisibility(View.VISIBLE);
-        tvEmpty.setVisibility(View.GONE);
+        layoutEmpty.setVisibility(View.GONE);
         ApiService api = RetrofitClient.getApiService(requireContext());
         api.getMyNotifications().enqueue(new Callback<List<NotificationItem>>() {
             @Override
@@ -93,10 +95,11 @@ public class NotificationsFragment extends Fragment {
                     List<NotificationItem> items = response.body();
                     adapter.setItems(items);
                     adapter.notifyDataSetChanged();
-                    tvEmpty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+                    layoutEmpty.setVisibility(items.isEmpty() ? View.VISIBLE : View.GONE);
+                    if (items.isEmpty()) tvEmptyText.setText("Chưa có thông báo nào");
                 } else {
-                    tvEmpty.setVisibility(View.VISIBLE);
-                    tvEmpty.setText("Vui lòng đăng nhập");
+                    layoutEmpty.setVisibility(View.VISIBLE);
+                    tvEmptyText.setText("Vui lòng đăng nhập");
                 }
             }
 
@@ -104,8 +107,8 @@ public class NotificationsFragment extends Fragment {
             public void onFailure(Call<List<NotificationItem>> call, Throwable t) {
                 if (!isAdded()) return;
                 progress.setVisibility(View.GONE);
-                tvEmpty.setVisibility(View.VISIBLE);
-                tvEmpty.setText(t.getMessage() != null ? t.getMessage() : "Không tải được");
+                layoutEmpty.setVisibility(View.VISIBLE);
+                tvEmptyText.setText(t.getMessage() != null ? t.getMessage() : "Không tải được");
                 ToastUtils.showCenteredToast(getContext(), "Lỗi kết nối");
             }
         });
