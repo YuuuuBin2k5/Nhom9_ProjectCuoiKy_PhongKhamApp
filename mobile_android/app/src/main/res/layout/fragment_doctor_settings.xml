@@ -173,6 +173,7 @@
 
         <!-- TỐI ƯU QUY TRÌNH -->
         <TextView
+            android:id="@+id/sectionWorkflowTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="TỐI ƯU QUY TRÌNH"
@@ -184,6 +185,7 @@
             android:layout_marginBottom="12dp" />
 
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardWorkflow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
@@ -222,6 +224,7 @@
 
         <!-- LỊCH TRÌNH -->
         <TextView
+            android:id="@+id/sectionScheduleTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="LỊCH TRÌNH &amp; CÔNG VIỆC"
@@ -233,6 +236,7 @@
             android:layout_marginBottom="12dp" />
 
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardSchedule"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
@@ -256,6 +260,7 @@
 
         <!-- ỨNG DỤNG & BẢO MẬT -->
         <TextView
+            android:id="@+id/sectionAppTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="ỨNG DỤNG &amp; BẢO MẬT"
@@ -267,6 +272,7 @@
             android:layout_marginBottom="12dp" />
 
         <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardApp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"

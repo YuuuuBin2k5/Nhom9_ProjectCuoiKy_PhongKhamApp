@@ -32,6 +32,7 @@ public class OtpActivity extends AppCompatActivity {
     private final char[] digits = new char[]{' ', ' ', ' ', ' ', ' ', ' '};
     private int cursor = 0;
     private String phone;
+    private String email;
     private String purpose;
     private TextView[] boxes;
 
@@ -42,14 +43,19 @@ public class OtpActivity extends AppCompatActivity {
         setContentView(R.layout.activity_otp);
 
         phone = getIntent().getStringExtra(IntentExtras.EXTRA_PHONE);
+        email = getIntent().getStringExtra(IntentExtras.EXTRA_EMAIL);
         purpose = getIntent().getStringExtra(IntentExtras.EXTRA_OTP_PURPOSE);
-        if (phone == null || purpose == null) {
+        if (phone == null && email == null || purpose == null) {
             finish();
             return;
         }
 
         TextView sub = findViewById(R.id.tvOtpSubtitle);
-        sub.setText(getString(R.string.otp_sent_to, PhoneDisplay.maskLastThree(phone)));
+        if (email != null) {
+            sub.setText(getString(R.string.otp_sent_to, email));
+        } else {
+            sub.setText(getString(R.string.otp_sent_to, PhoneDisplay.maskLastThree(phone)));
+        }
 
         boxes = new TextView[]{
                 findViewById(R.id.otp0),
@@ -103,7 +109,7 @@ public class OtpActivity extends AppCompatActivity {
 
     private void resendOtp() {
         ApiService api = RetrofitClient.getApiService(this);
-        api.requestOtp(new OtpRequest(phone, purpose)).enqueue(new Callback<MessageResponse>() {
+        api.requestOtp(new OtpRequest(phone, email, purpose)).enqueue(new Callback<MessageResponse>() {
             @Override
             public void onResponse(Call<MessageResponse> call, Response<MessageResponse> response) {
                 ToastUtils.showCenteredToast(OtpActivity.this, getString(R.string.otp_resend));
@@ -123,7 +129,7 @@ public class OtpActivity extends AppCompatActivity {
         }
         String code = new String(digits).replace(" ", "");
         ApiService api = RetrofitClient.getApiService(this);
-        api.verifyOtp(new OtpVerifyRequest(phone, code, purpose)).enqueue(new Callback<OtpVerifyResponse>() {
+        api.verifyOtp(new OtpVerifyRequest(phone, email, code, purpose)).enqueue(new Callback<OtpVerifyResponse>() {
             @Override
             public void onResponse(Call<OtpVerifyResponse> call, Response<OtpVerifyResponse> response) {
                 if (!response.isSuccessful() || response.body() == null) {
@@ -135,6 +141,14 @@ public class OtpActivity extends AppCompatActivity {
                     Intent i = new Intent(OtpActivity.this, RegisterActivity.class);
                     i.putExtra(IntentExtras.EXTRA_PHONE, phone);
                     i.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+                    startActivity(i);
+                    finish();
+                    return;
+                }
+                if ("FORGOT_PASSWORD".equals(purpose)) {
+                    Intent i = new Intent(OtpActivity.this, ResetPasswordActivity.class);
+                    i.putExtra(IntentExtras.EXTRA_EMAIL, email);
+                    i.putExtra(IntentExtras.EXTRA_OTP, code);
                     startActivity(i);
                     finish();
                     return;

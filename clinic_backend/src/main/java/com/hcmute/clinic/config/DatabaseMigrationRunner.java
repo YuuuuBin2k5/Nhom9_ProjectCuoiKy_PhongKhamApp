@@ -29,7 +29,24 @@ public class DatabaseMigrationRunner implements CommandLineRunner {
             jdbcTemplate.execute("ALTER TABLE treatment_plan_steps DROP CONSTRAINT IF EXISTS treatment_plan_steps_status_check");
             log.info("Successfully dropped treatment_plan_steps_status_check constraint.");
         } catch (Exception e) {
-            log.warn("Could not drop treatment_plan_steps_status_check constraint (might not exist or other error): {}", e.getMessage());
+            log.warn("Could not drop treatment_plan_steps_status_check constraint: {}", e.getMessage());
+        }
+
+        try {
+            log.info("Adjusting otp_challenges table for Email support...");
+            // 1. Drop constraints that might block new features
+            jdbcTemplate.execute("ALTER TABLE otp_challenges ALTER COLUMN phone_e164 DROP NOT NULL");
+            jdbcTemplate.execute("ALTER TABLE otp_challenges DROP CONSTRAINT IF EXISTS otp_challenges_purpose_check");
+            
+            // 2. Add email column if not exists
+            jdbcTemplate.execute("ALTER TABLE otp_challenges ADD COLUMN IF NOT EXISTS email VARCHAR(255)");
+            
+            // 3. Create index for email-based lookups
+            jdbcTemplate.execute("CREATE INDEX IF NOT EXISTS idx_otp_email_purpose ON otp_challenges (email, purpose)");
+            
+            log.info("Successfully adjusted otp_challenges table.");
+        } catch (Exception e) {
+            log.warn("Error adjusting otp_challenges table: {}", e.getMessage());
         }
     }
 }

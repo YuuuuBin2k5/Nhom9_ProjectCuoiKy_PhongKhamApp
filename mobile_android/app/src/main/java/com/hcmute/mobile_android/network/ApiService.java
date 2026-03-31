@@ -22,6 +22,7 @@ import com.hcmute.mobile_android.network.models.OtpVerifyRequest;
 import com.hcmute.mobile_android.network.models.OtpVerifyResponse;
 import com.hcmute.mobile_android.network.models.RegisterRequest;
 import com.hcmute.mobile_android.network.models.RegisterResultResponse;
+import com.hcmute.mobile_android.network.models.ResetPasswordRequest;
 import com.hcmute.mobile_android.network.models.RoomItem;
 import com.hcmute.mobile_android.network.models.QueueItem;
 import com.hcmute.mobile_android.network.models.PatientInfo;
@@ -134,6 +135,9 @@ public interface ApiService {
 
     @POST("api/auth/login")
     Call<LoginResponse> login(@Body LoginRequest request);
+
+    @POST("api/auth/reset-password")
+    Call<MessageResponse> resetPassword(@Body ResetPasswordRequest request);
 
     // Admin APIs
 

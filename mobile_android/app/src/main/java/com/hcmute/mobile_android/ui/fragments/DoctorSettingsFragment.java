@@ -13,7 +13,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
+import com.bumptech.glide.Glide;
 import com.google.android.material.switchmaterial.SwitchMaterial;
+import com.hcmute.mobile_android.BuildConfig;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
@@ -68,6 +70,30 @@ public class DoctorSettingsFragment extends Fragment {
                 if (!isAdded() || !response.isSuccessful() || response.body() == null) return;
                 DoctorProfileResponse p = response.body();
                 tvDoctorName.setText(p.getDisplayName());
+                
+                // Load Avatar using Glide
+                String avatarUrl = p.getAvatarUrl();
+                if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                    // Check if URL is relative
+                    String finalUrl = avatarUrl;
+                    if (!avatarUrl.startsWith("http")) {
+                        String baseUrl = BuildConfig.API_BASE_URL;
+                        if (baseUrl.endsWith("/")) {
+                            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+                        }
+                        finalUrl = baseUrl + (avatarUrl.startsWith("/") ? "" : "/") + avatarUrl;
+                    }
+                    
+                    ImageView ivAvatar = view.findViewById(R.id.ivAvatar);
+                    if (ivAvatar != null) {
+                        Glide.with(DoctorSettingsFragment.this)
+                                .load(finalUrl)
+                                .placeholder(R.drawable.ic_doctor)
+                                .circleCrop()
+                                .into(ivAvatar);
+                    }
+                }
+
                 TextView tvDoctorId = view.findViewById(R.id.tvDoctorId);
                 if (tvDoctorId != null) {
                     String bio = p.getBiography() != null ? p.getBiography().trim() : "";
@@ -97,10 +123,18 @@ public class DoctorSettingsFragment extends Fragment {
         setupRow(view, R.id.rowAbout, R.drawable.ic_info, "Về ứng dụng", "Credits: Nhóm 9 - HCMUT, v1.0.0", null);
 
         // Ẩn các mục chưa cần thiết để UI gọn và chuyên nghiệp hơn
-        int[] hiddenRows = new int[]{R.id.rowDiagnosis, R.id.rowVoice, R.id.rowOdontogram, R.id.rowFaceId, R.id.rowDarkMode};
-        for (int id : hiddenRows) {
-            View row = view.findViewById(id);
-            if (row != null) row.setVisibility(View.GONE);
+        int[] hiddenViews = new int[]{
+            R.id.rowDiagnosis, R.id.rowVoice, R.id.rowOdontogram, 
+            R.id.rowFaceId, R.id.rowDarkMode, R.id.rowPrescription,
+            R.id.rowSchedule, R.id.rowLeaveTime, R.id.rowSupport,
+            R.id.rowPush, R.id.rowReminder,
+            R.id.sectionWorkflowTitle, R.id.cardWorkflow,
+            R.id.sectionScheduleTitle, R.id.cardSchedule,
+            R.id.sectionAppTitle, R.id.cardApp
+        };
+        for (int id : hiddenViews) {
+            View v = view.findViewById(id);
+            if (v != null) v.setVisibility(View.GONE);
         }
 
         // Logout

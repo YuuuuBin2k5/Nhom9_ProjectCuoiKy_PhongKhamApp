@@ -38,6 +38,11 @@ public class LoginActivity extends AppCompatActivity {
 
         findViewById(R.id.btnSignIn).setOnClickListener(v -> performLogin());
 
+        findViewById(R.id.tvForgotPassword).setOnClickListener(v -> {
+            Intent intent = new Intent(this, ForgotPasswordActivity.class);
+            startActivity(intent);
+        });
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom);

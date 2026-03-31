@@ -14,7 +14,7 @@
         <item name="android:layout_marginEnd">4dp</item>
         <item name="android:background">@drawable/bg_otp_cell</item>
         <item name="android:gravity">center</item>
-        <item name="android:textColor">@color/toothly_teal_dark</item>
+        <item name="android:textColor">@color/design_dark_blue</item>
         <item name="android:textSize">20sp</item>
         <item name="android:textStyle">bold</item>
     </style>
@@ -26,7 +26,7 @@
         <item name="android:layout_weight">1</item>
         <item name="android:background">@drawable/bg_keypad_key</item>
         <item name="android:gravity">center</item>
-        <item name="android:textColor">@color/toothly_teal_dark</item>
+        <item name="android:textColor">@color/design_dark_blue</item>
         <item name="android:lineSpacingExtra">-2dp</item>
     </style>
 

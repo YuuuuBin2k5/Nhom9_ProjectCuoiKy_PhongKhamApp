@@ -54,6 +54,12 @@
             android:name=".ui.activities.PhoneLoginActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activities.ForgotPasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.ResetPasswordActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activities.WelcomeActivity"
             android:exported="true">
             <intent-filter>

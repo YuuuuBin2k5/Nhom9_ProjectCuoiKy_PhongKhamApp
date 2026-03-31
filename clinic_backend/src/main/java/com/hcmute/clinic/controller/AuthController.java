@@ -114,7 +114,20 @@ public class AuthController {
     public ResponseEntity<?> requestOtp(@RequestBody OtpRequestDto body) {
         try {
             OtpPurpose purpose = OtpPurpose.valueOf(body.getPurpose().trim().toUpperCase());
-            otpService.requestOtp(body.getPhone(), purpose);
+            String phone = PhoneUtils.normalizeVietnam(body.getPhone());
+            
+            if (purpose == OtpPurpose.FORGOT_PASSWORD) {
+                String email = body.getEmail();
+                if (email == null || email.isEmpty()) {
+                    return ResponseEntity.badRequest().body(Map.of("message", "Email is required for forgot password"));
+                }
+                if (patientRepository.findByEmailIgnoreCase(email).isEmpty()) {
+                    return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "User with this email not found"));
+                }
+                otpService.requestOtpByEmail(email, purpose);
+            } else {
+                otpService.requestOtp(phone, purpose);
+            }
             return ResponseEntity.ok(Map.of("message", "OTP sent"));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", "Invalid phone or purpose"));
@@ -250,5 +263,31 @@ public class AuthController {
         }
 
         return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid email or password"));
+    }
+    @PostMapping("/reset-password")
+    public ResponseEntity<?> resetPassword(@RequestBody ResetPasswordRequest request) {
+        String email = request.getEmail();
+        if (email == null || email.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Email is required"));
+        }
+        
+        if (!otpService.verifyAndConsumeByEmail(email, request.getOtp(), OtpPurpose.FORGOT_PASSWORD)) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Invalid or expired OTP"));
+        }
+
+        var patientOptional = patientRepository.findByEmailIgnoreCase(email);
+        if (patientOptional.isEmpty()) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(Map.of("message", "Patient not found"));
+        }
+
+        Patient patient = patientOptional.get();
+        if (request.getNewPassword() == null || request.getNewPassword().length() < 6) {
+            return ResponseEntity.badRequest().body(Map.of("message", "New password must be at least 6 characters"));
+        }
+
+        patient.setPasswordHash(passwordEncoder.encode(request.getNewPassword()));
+        patientRepository.save(patient);
+
+        return ResponseEntity.ok(Map.of("message", "Password reset successfully"));
     }
 }

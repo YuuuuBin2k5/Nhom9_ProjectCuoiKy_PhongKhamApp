@@ -73,7 +73,15 @@ public class MainActivity extends AppCompatActivity
         }
 
         if (isDoctor) {
-            bottomNav.getMenu().findItem(R.id.nav_plan).setVisible(false);
+            bottomNav.getMenu().clear();
+            bottomNav.inflateMenu(R.menu.bottom_nav_menu_doctor);
+            
+            com.google.android.material.bottomappbar.BottomAppBar bar = findViewById(R.id.bottomAppBar);
+            if (bar != null) {
+                bar.setFabCradleMargin(0f);
+                bar.setFabCradleRoundedCornerRadius(0f);
+                bar.setCradleVerticalOffset(0f);
+            }
         }
 
         com.google.android.material.floatingactionbutton.FloatingActionButton fab = findViewById(R.id.fabGlobalQuickBook);

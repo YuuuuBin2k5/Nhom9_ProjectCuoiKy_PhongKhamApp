@@ -13,6 +13,7 @@ import com.bumptech.glide.Glide;
 import com.google.android.material.appbar.MaterialToolbar;
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.imageview.ShapeableImageView;
+import com.hcmute.mobile_android.BuildConfig;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
@@ -158,8 +159,17 @@ public class DoctorProfileActivity extends AppCompatActivity {
                 
                 currentAvatarUrl = p.getAvatarUrl() != null ? p.getAvatarUrl() : "";
                 if (!currentAvatarUrl.isEmpty()) {
+                    String finalUrl = currentAvatarUrl;
+                    if (!currentAvatarUrl.startsWith("http")) {
+                        String baseUrl = BuildConfig.API_BASE_URL;
+                        if (baseUrl.endsWith("/")) {
+                            baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+                        }
+                        finalUrl = baseUrl + (currentAvatarUrl.startsWith("/") ? "" : "/") + currentAvatarUrl;
+                    }
+                    
                     com.bumptech.glide.Glide.with(DoctorProfileActivity.this)
-                            .load(currentAvatarUrl)
+                            .load(finalUrl)
                             .placeholder(R.drawable.ic_doctor)
                             .circleCrop()
                             .into(ivAvatar);
