@@ -133,6 +133,31 @@
             android:insetBottom="0dp"
             android:paddingStart="0dp"
             android:paddingEnd="8dp" />
+        
+        <!-- Treatment Steps Details (NEW) -->
+        <LinearLayout
+            android:id="@+id/layoutTreatmentSteps"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginTop="8dp"
+            android:visibility="gone">
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chi tiết điều trị theo từng bước:"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#546E7A"
+                android:layout_marginBottom="6dp" />
+            
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvTreatmentSteps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" />
+        </LinearLayout>
 
     </LinearLayout>
 

@@ -8,7 +8,15 @@ plugins {
 }
 
 fun resolveBackendBaseUrl(rootDir: java.io.File): String {
-    return "http://172.16.30.55:8081/"
+    val localPropsFile = rootDir.resolve("mobile_android/local.properties")
+    if (localPropsFile.exists()) {
+        val props = Properties()
+        localPropsFile.inputStream().use { props.load(it) }
+        val host = props.getProperty("backend.host", "10.178.143.252")
+        val port = props.getProperty("backend.port", "8081")
+        return "http://$host:$port/"
+    }
+    return "http://10.10.0.22:8081/"
 }
 
 android {
@@ -87,7 +95,7 @@ dependencies {
     // Security
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
 
-    // Firebase Realtime Database
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-database")
 

@@ -56,8 +56,11 @@ public class MedicalHistoryAdapter extends RecyclerView.Adapter<MedicalHistoryAd
         private TextView tvAdvice;
         private LinearLayout layoutSymptoms;
         private LinearLayout layoutAdvice;
+        private LinearLayout layoutTreatmentSteps;
+        private RecyclerView rvTreatmentSteps;
         private MaterialButton btnExpand;
         private boolean isExpanded = false;
+        private TreatmentStepDetailAdapter stepAdapter;
 
         public ViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -68,7 +71,14 @@ public class MedicalHistoryAdapter extends RecyclerView.Adapter<MedicalHistoryAd
             tvAdvice = itemView.findViewById(R.id.tvAdvice);
             layoutSymptoms = itemView.findViewById(R.id.layoutSymptoms);
             layoutAdvice = itemView.findViewById(R.id.layoutAdvice);
+            layoutTreatmentSteps = itemView.findViewById(R.id.layoutTreatmentSteps);
+            rvTreatmentSteps = itemView.findViewById(R.id.rvTreatmentSteps);
             btnExpand = itemView.findViewById(R.id.btnExpand);
+            
+            // Setup treatment steps RecyclerView
+            stepAdapter = new TreatmentStepDetailAdapter();
+            rvTreatmentSteps.setLayoutManager(new androidx.recyclerview.widget.LinearLayoutManager(itemView.getContext()));
+            rvTreatmentSteps.setAdapter(stepAdapter);
         }
 
         public void bind(MedicalRecordResponse record) {
@@ -92,10 +102,19 @@ public class MedicalHistoryAdapter extends RecyclerView.Adapter<MedicalHistoryAd
             } else {
                 layoutAdvice.setVisibility(View.GONE);
             }
+            
+            // NEW: Set treatment steps
+            if (record.getTreatmentSteps() != null && !record.getTreatmentSteps().isEmpty()) {
+                stepAdapter.setSteps(record.getTreatmentSteps());
+                layoutTreatmentSteps.setVisibility(isExpanded ? View.VISIBLE : View.GONE);
+            } else {
+                layoutTreatmentSteps.setVisibility(View.GONE);
+            }
 
             // Show/hide expand button
             boolean hasDetails = (record.getSymptoms() != null && !record.getSymptoms().trim().isEmpty())
-                    || (record.getAdvice() != null && !record.getAdvice().trim().isEmpty());
+                    || (record.getAdvice() != null && !record.getAdvice().trim().isEmpty())
+                    || (record.getTreatmentSteps() != null && !record.getTreatmentSteps().isEmpty());
             
             if (hasDetails) {
                 btnExpand.setVisibility(View.VISIBLE);

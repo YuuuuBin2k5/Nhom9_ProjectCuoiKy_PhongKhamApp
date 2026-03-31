@@ -107,11 +107,11 @@ public class ProfileActivity extends AppCompatActivity {
         btnSave.setOnClickListener(v -> saveProfile());
         ivProfile.setOnClickListener(v -> showAvatarEditDialog());
 
-        // Setup Avatar Edit FAB
-        View fabEdit = findViewById(R.id.fabAvatarEdit);
-        if (fabEdit != null) {
-            fabEdit.setOnClickListener(v -> showAvatarEditDialog());
-        }
+        // Setup Avatar Edit FAB - COMMENTED OUT: fabAvatarEdit not in layout
+        // View fabEdit = findViewById(R.id.fabAvatarEdit);
+        // if (fabEdit != null) {
+        //     fabEdit.setOnClickListener(v -> showAvatarEditDialog());
+        // }
 
         // Logout button
         View btnLogout = findViewById(R.id.btnLogout);

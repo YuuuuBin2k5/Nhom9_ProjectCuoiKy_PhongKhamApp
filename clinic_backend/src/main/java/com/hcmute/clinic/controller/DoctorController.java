@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.format.DateTimeFormatter;
 
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -349,6 +351,24 @@ public class DoctorController {
                     builder.totalAmount("N/A");
                     builder.paymentStatus("N/A");
                 }
+                
+                // NEW: Get treatment step details from TreatmentPlan
+                List<MedicalRecordResponse.TreatmentStepDetail> stepDetails = new ArrayList<>();
+                if (record.getTreatmentPlan() != null) {
+                    DateTimeFormatter stepDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+                    stepDetails = record.getTreatmentPlan().getSteps().stream()
+                        .filter(step -> step.getStatus() == com.hcmute.clinic.enums.StepStatus.COMPLETED)
+                        .filter(step -> step.getDoctorConclusion() != null && !step.getDoctorConclusion().trim().isEmpty())
+                        .sorted(Comparator.comparing(step -> step.getCompletedAt() != null ? step.getCompletedAt() : java.time.LocalDateTime.MIN))
+                        .map(step -> MedicalRecordResponse.TreatmentStepDetail.builder()
+                            .serviceName(step.getService() != null ? step.getService().getName() : "Dịch vụ")
+                            .toothNumber(step.getToothNumber())
+                            .notes(step.getDoctorConclusion())
+                            .completedAt(step.getCompletedAt() != null ? step.getCompletedAt().format(stepDateFormatter) : "")
+                            .build())
+                        .collect(java.util.stream.Collectors.toList());
+                }
+                builder.treatmentSteps(stepDetails);
                 
                 return builder.build();
             })

@@ -320,18 +320,33 @@ public class AppointmentController {
             java.time.LocalDateTime start = localDate.atStartOfDay();
             java.time.LocalDateTime end = localDate.plusDays(1).atStartOfDay();
             
+            log.info("Getting appointments for doctor {} on date {} (from {} to {})", 
+                doctorId, date, start, end);
+            
             List<Appointment> appts = appointmentRepository.findByDoctorIdAndAppointmentDatetimeBetweenOrderByAppointmentDatetimeAsc(
                     doctorId, start, end);
             
-            return ResponseEntity.ok(appts.stream().map(a -> Map.of(
+            log.info("Found {} appointments for doctor {} on {}", appts.size(), doctorId, date);
+            
+            return ResponseEntity.ok(appts.stream().map(a -> {
+                log.info("  - Appointment {}: patient={}, service={}, time={}, status={}", 
+                    a.getId(), 
+                    a.getPatient().getLastName() + " " + a.getPatient().getFirstName(),
+                    a.getService().getName(),
+                    a.getAppointmentDatetime(),
+                    a.getStatus());
+                
+                return Map.of(
                     "id", a.getId(),
                     "patientName", (a.getPatient().getLastName() + " " + a.getPatient().getFirstName()).trim(),
                     "patientPhone", a.getPatient().getPhone() != null ? a.getPatient().getPhone() : "",
                     "serviceName", a.getService().getName(),
                     "datetime", a.getAppointmentDatetime().toString(),
                     "status", a.getStatus().name()
-            )).toList());
+                );
+            }).toList());
         } catch (Exception e) {
+            log.error("Error getting doctor appointments", e);
             return ResponseEntity.badRequest().body(Map.of("message", "Lỗi: " + e.getMessage()));
         }
     }

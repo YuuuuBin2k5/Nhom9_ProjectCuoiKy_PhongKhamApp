@@ -22,6 +22,14 @@ public class CheckInMyStatusResponse {
     private String estimateTitle;
     private String estimateSubtitle;
     private Integer countdownStartSeconds; // For countdown timer (position 1 only)
+    
+    // Treatment context fields (Phase 3 enhancement)
+    private String doctorName;
+    private String serviceName;
+    private Long treatmentPlanId;
+    private String currentStepName;
+    private Integer currentStepNumber;
+    private Integer totalSteps;
 
     public boolean isCheckedIn() {
         return checkedIn;
@@ -70,4 +78,12 @@ public class CheckInMyStatusResponse {
     public String getEstimateTitle() { return estimateTitle; }
     public String getEstimateSubtitle() { return estimateSubtitle; }
     public Integer getCountdownStartSeconds() { return countdownStartSeconds; }
+    
+    // Getters for treatment context fields
+    public String getDoctorName() { return doctorName; }
+    public String getServiceName() { return serviceName; }
+    public Long getTreatmentPlanId() { return treatmentPlanId; }
+    public String getCurrentStepName() { return currentStepName; }
+    public Integer getCurrentStepNumber() { return currentStepNumber; }
+    public Integer getTotalSteps() { return totalSteps; }
 }

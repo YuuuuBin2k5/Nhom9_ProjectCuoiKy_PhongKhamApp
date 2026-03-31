@@ -135,7 +135,8 @@ public class AdminCreateTemplateActivity extends AppCompatActivity {
                     List<TemplateStepEditAdapter.StepEditModel> steps = new ArrayList<>();
                     if (t.getSteps() != null) {
                         for (TreatmentTemplate.TemplateStep ts : t.getSteps()) {
-                            steps.add(new TemplateStepEditAdapter.StepEditModel(ts.getId(), ts.getServiceName(), ts.getMedicationDetails()));
+                            // Use serviceId from backend response
+                            steps.add(new TemplateStepEditAdapter.StepEditModel(ts.getServiceId(), ts.getServiceName(), ts.getMedicationDetails()));
                         }
                     }
                     adapter.setSteps(steps);
@@ -193,9 +194,21 @@ public class AdminCreateTemplateActivity extends AppCompatActivity {
                     String errorMsg = "Lỗi khi lưu mẫu";
                     try {
                         if (response.errorBody() != null) {
-                            errorMsg += ": " + response.errorBody().string();
+                            String errorBody = response.errorBody().string();
+                            // Parse JSON error message
+                            if (errorBody.contains("\"message\"")) {
+                                int start = errorBody.indexOf("\"message\":\"") + 11;
+                                int end = errorBody.indexOf("\"", start);
+                                if (start > 0 && end > start) {
+                                    errorMsg = errorBody.substring(start, end);
+                                }
+                            } else {
+                                errorMsg += ": " + errorBody;
+                            }
                         }
-                    } catch (Exception e) {}
+                    } catch (Exception e) {
+                        errorMsg += " (HTTP " + response.code() + ")";
+                    }
                     Toast.makeText(AdminCreateTemplateActivity.this, errorMsg, Toast.LENGTH_LONG).show();
                 }
             }

@@ -50,6 +50,7 @@ public class PatientDetailActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private TextView tvEmptyHistory;
     private MaterialButton btnStartExamination;
+    private MaterialButton btnViewInvoices;
 
     private PatientInfo patientInfo;
     private MedicalHistoryAdapter historyAdapter;
@@ -94,18 +95,20 @@ public class PatientDetailActivity extends AppCompatActivity {
         progressBar = findViewById(R.id.progressBar);
         tvEmptyHistory = findViewById(R.id.tvEmptyHistory);
         btnStartExamination = findViewById(R.id.btnStartExamination);
+        btnViewInvoices = findViewById(R.id.btnViewInvoices);
 
         // Setup RecyclerView
         historyAdapter = new MedicalHistoryAdapter();
         rvMedicalHistory.setLayoutManager(new LinearLayoutManager(this));
         rvMedicalHistory.setAdapter(historyAdapter);
 
-        // Button click
+        // Button clicks
         btnStartExamination.setOnClickListener(v -> startExamination());
+        btnViewInvoices.setOnClickListener(v -> viewInvoices());
 
         // If opened from workflow, change button text
         if (fromWorkflow) {
-            btnStartExamination.setText("Quay Lại Khám Bệnh");
+            btnStartExamination.setText("Quay Lại");
             btnStartExamination.setIcon(null);
         }
     }
@@ -203,6 +206,13 @@ public class PatientDetailActivity extends AppCompatActivity {
             startActivity(intent);
             finish();
         }
+    }
+
+    private void viewInvoices() {
+        Intent intent = new Intent(this, InvoiceListActivity.class);
+        intent.putExtra("patient_id", patientInfo.getId());
+        intent.putExtra("patient_name", patientInfo.getFullName());
+        startActivity(intent);
     }
 
     private void markPatientVisited() {

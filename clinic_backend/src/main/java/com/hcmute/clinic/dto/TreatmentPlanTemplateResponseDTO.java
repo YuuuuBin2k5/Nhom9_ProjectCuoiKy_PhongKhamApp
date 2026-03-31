@@ -25,6 +25,7 @@ public class TreatmentPlanTemplateResponseDTO {
     @Builder
     public static class StepResponse {
         private Long id;
+        private Long serviceId; // ADDED: For editing templates
         private String serviceName;
         private String description;
         private Integer stepOrder;

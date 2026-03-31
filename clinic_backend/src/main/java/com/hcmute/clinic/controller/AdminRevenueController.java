@@ -1,6 +1,6 @@
 package com.hcmute.clinic.controller;
 
-import com.hcmute.clinic.dto.RevenueReportDTO;
+import com.hcmute.clinic.dto.RevenueReportDto;
 import com.hcmute.clinic.service.RevenueService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -14,7 +14,7 @@ public class AdminRevenueController {
     private final RevenueService revenueService;
 
     @GetMapping("/report")
-    public ResponseEntity<RevenueReportDTO> getRevenueReport(
+    public ResponseEntity<RevenueReportDto> getRevenueReport(
             @RequestParam(required = false) Integer year,
             @RequestParam(required = false) Integer month,
             @RequestParam(required = false) Integer day) {

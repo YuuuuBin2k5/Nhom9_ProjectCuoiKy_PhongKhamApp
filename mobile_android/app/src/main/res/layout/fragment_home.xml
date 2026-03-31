@@ -150,7 +150,7 @@
                         android:id="@+id/btn_new_record"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+                        android:layout_weight="1.5"
                         android:layout_marginEnd="8dp"
                         android:clickable="true"
                         android:focusable="true"
@@ -161,25 +161,25 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
                             android:gravity="center"
+                            android:orientation="vertical"
                             android:padding="16dp">
 
                             <ImageView
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
                                 android:src="@drawable/ic_person"
-                                app:tint="#1565C0"/>
+                                app:tint="#1565C0" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
+                                android:gravity="center"
                                 android:text="Lập hồ sơ\nmới"
                                 android:textColor="#1565C0"
                                 android:textSize="12sp"
-                                android:gravity="center"
-                                android:textStyle="bold"/>
+                                android:textStyle="bold" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
@@ -196,29 +196,6 @@
                         app:cardElevation="4dp"
                         app:cardBackgroundColor="#FFFFFF">
 
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:padding="16dp">
-
-                            <ImageView
-                                android:layout_width="32dp"
-                                android:layout_height="32dp"
-                                android:src="@drawable/ic_qr_code"
-                                app:tint="#1565C0"/>
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="8dp"
-                                android:text="Quét QR\nbệnh nhân"
-                                android:textColor="#1565C0"
-                                android:textSize="12sp"
-                                android:gravity="center"
-                                android:textStyle="bold"/>
-                        </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
                     <!-- Sơ đồ răng nhanh -->
@@ -226,7 +203,7 @@
                         android:id="@+id/btn_tooth_chart"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
+                        android:layout_weight="1.5"
                         android:clickable="true"
                         android:focusable="true"
                         app:cardCornerRadius="16dp"
@@ -236,25 +213,25 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
                             android:gravity="center"
+                            android:orientation="vertical"
                             android:padding="16dp">
 
                             <ImageView
                                 android:layout_width="32dp"
                                 android:layout_height="32dp"
-                                android:src="@drawable/ic_tooth"
-                                app:tint="#1565C0"/>
+                                android:src="@drawable/ic_qr_code"
+                                app:tint="#1565C0" />
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
-                                android:text="Sơ đồ răng\nnhanh"
+                                android:gravity="center"
+                                android:text="Quét QR\nbệnh nhân"
                                 android:textColor="#1565C0"
                                 android:textSize="12sp"
-                                android:gravity="center"
-                                android:textStyle="bold"/>
+                                android:textStyle="bold" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
@@ -424,102 +401,6 @@
                 </LinearLayout>
 
                 <!-- RIGHT: Tooth Chart widget -->
-                <LinearLayout
-                    android:layout_width="110dp"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:gravity="center_horizontal">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Sơ đồ răng tương tác"
-                        android:textColor="#0D1B2A"
-                        android:textSize="10sp"
-                        android:textStyle="bold"
-                        android:gravity="center"
-                        android:layout_marginBottom="6dp"/>
-
-                    <!-- Tooth Chart Visual -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="6dp"
-                        app:cardBackgroundColor="#FFFFFF">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="8dp"
-                            android:gravity="center">
-
-                            <!-- Tooth diagram image placeholder -->
-                            <ImageView
-                                android:id="@+id/iv_tooth_chart"
-                                android:layout_width="90dp"
-                                android:layout_height="80dp"
-                                android:src="@drawable/ic_tooth"
-                                app:tint="#1565C0"
-                                android:scaleType="fitCenter"/>
-
-                            <!-- Legend -->
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:layout_marginTop="6dp"
-                                android:gravity="center">
-
-                                <!-- Filled -->
-                                <View
-                                    android:layout_width="8dp"
-                                    android:layout_height="8dp"
-                                    android:background="@drawable/circle_blue_dot"/>
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Hàn"
-                                    android:textSize="8sp"
-                                    android:textColor="#546E7A"
-                                    android:layout_marginStart="2dp"
-                                    android:layout_marginEnd="4dp"/>
-
-                                <!-- Gap -->
-                                <View
-                                    android:layout_width="8dp"
-                                    android:layout_height="8dp"
-                                    android:background="@drawable/circle_orange_dot"/>
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Gãy"
-                                    android:textSize="8sp"
-                                    android:textColor="#546E7A"
-                                    android:layout_marginStart="2dp"
-                                    android:layout_marginEnd="4dp"/>
-
-                                <!-- Decay -->
-                                <View
-                                    android:layout_width="8dp"
-                                    android:layout_height="8dp"
-                                    android:background="@drawable/circle_red_dot"/>
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Sâu"
-                                    android:textSize="8sp"
-                                    android:textColor="#546E7A"
-                                    android:layout_marginStart="2dp"/>
-
-                            </LinearLayout>
-
-                        </LinearLayout>
-
-                    </com.google.android.material.card.MaterialCardView>
-
-                </LinearLayout>
 
             </LinearLayout>
 

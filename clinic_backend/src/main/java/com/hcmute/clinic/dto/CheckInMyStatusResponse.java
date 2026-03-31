@@ -30,4 +30,12 @@ public class CheckInMyStatusResponse {
     String estimateTitle;
     String estimateSubtitle;
     Integer countdownStartSeconds; // For countdown timer (position 1 only)
+    
+    // Treatment context fields (Phase 3 enhancement)
+    String doctorName;
+    String serviceName;
+    Long treatmentPlanId;
+    String currentStepName;
+    Integer currentStepNumber;
+    Integer totalSteps;
 }

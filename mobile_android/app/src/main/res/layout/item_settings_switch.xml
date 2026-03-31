@@ -4,16 +4,16 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:gravity="center_vertical"
     android:padding="16dp"
-    android:background="?attr/selectableItemBackground">
+    android:gravity="center_vertical">
 
     <ImageView
         android:id="@+id/ivIcon"
         android:layout_width="24dp"
         android:layout_height="24dp"
-        android:src="@drawable/ic_notification"
-        app:tint="#64748B" />
+        android:src="@drawable/ic_search"
+        android:tint="#546E7A"
+        android:contentDescription="Icon" />
 
     <LinearLayout
         android:layout_width="0dp"
@@ -22,52 +22,32 @@
         android:orientation="vertical"
         android:layout_marginStart="16dp">
 
-        <LinearLayout
+        <TextView
+            android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:gravity="center_vertical">
-            
-            <TextView
-                android:id="@+id/tvTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Title"
-                android:textColor="#0F172A"
-                android:textSize="16sp" />
-
-            <TextView
-                android:id="@+id/tvBadge"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Beta"
-                android:textColor="#FFFFFF"
-                android:textSize="10sp"
-                android:textStyle="bold"
-                android:background="@drawable/bg_hcmut_badge"
-                android:backgroundTint="#64748B"
-                android:paddingHorizontal="6dp"
-                android:paddingVertical="2dp"
-                android:layout_marginStart="8dp"
-                android:visibility="gone" />
-        </LinearLayout>
+            android:text="Setting Title"
+            android:textSize="16sp"
+            android:textColor="#0D1B2A"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tvSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Subtitle"
-            android:textColor="#64748B"
+            android:text="Setting subtitle"
             android:textSize="13sp"
-            android:visibility="gone" 
-            android:layout_marginTop="2dp" />
-            
+            android:textColor="#546E7A"
+            android:layout_marginTop="2dp"
+            android:visibility="gone" />
     </LinearLayout>
 
     <com.google.android.material.switchmaterial.SwitchMaterial
         android:id="@+id/switchItem"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginStart="8dp" />
+        android:layout_marginStart="8dp"
+        app:thumbTint="@android:color/white"
+        app:trackTint="#BDBDBD" />
 
 </LinearLayout>

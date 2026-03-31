@@ -471,6 +471,11 @@ public class TreatmentPlanService {
         
         stepRepository.save(currentStep);
         
+        // NEW: Update MedicalRecord with aggregated notes from all completed steps
+        if (plan != null && plan.getMedicalRecord() != null) {
+            updateMedicalRecordFromSteps(plan);
+        }
+        
         // PROFESSIONAL FIX: Nếu đang re-complete một step đã COMPLETED, không auto-advance
         if (isReCompleting) {
             System.out.println("TreatmentPlanService: Re-completing step " + stepId + " - không auto-advance");
@@ -709,6 +714,7 @@ public class TreatmentPlanService {
                 .sorted(Comparator.comparingInt(TreatmentPlanTemplateStep::getSequenceOrder))
                 .map(s -> TreatmentPlanTemplateResponseDTO.StepResponse.builder()
                         .id(s.getId())
+                        .serviceId(s.getService() != null ? s.getService().getId() : null) // ADDED: Return serviceId for editing
                         .serviceName(s.getService() != null ? s.getService().getName() : "")
                         .description(s.getService() != null ? s.getService().getDescription() : "")
                         .stepOrder(s.getSequenceOrder())
@@ -733,5 +739,57 @@ public class TreatmentPlanService {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Template không tồn tại");
         }
         templateRepository.deleteById(id);
+    }
+    
+    /**
+     * NEW: Aggregate all doctor notes from completed treatment steps into MedicalRecord
+     * This ensures patient can see complete treatment history with step-by-step notes
+     */
+    private void updateMedicalRecordFromSteps(TreatmentPlan plan) {
+        MedicalRecord record = plan.getMedicalRecord();
+        if (record == null) {
+            return;
+        }
+        
+        // Aggregate all doctorConclusion from completed steps
+        StringBuilder allNotes = new StringBuilder();
+        List<TreatmentPlanStep> completedSteps = plan.getSteps().stream()
+                .filter(s -> s.getStatus() == StepStatus.COMPLETED && s.getDoctorConclusion() != null && !s.getDoctorConclusion().trim().isEmpty())
+                .sorted(Comparator.comparing(s -> s.getCompletedAt() != null ? s.getCompletedAt() : java.time.LocalDateTime.MIN))
+                .toList();
+        
+        for (TreatmentPlanStep step : completedSteps) {
+            String serviceName = step.getService() != null ? step.getService().getName() : "Dịch vụ";
+            String toothInfo = step.getToothNumber() != null && !step.getToothNumber().isEmpty() 
+                    ? " (Răng " + step.getToothNumber() + ")" 
+                    : "";
+            
+            allNotes.append("• ")
+                    .append(serviceName)
+                    .append(toothInfo)
+                    .append(": ")
+                    .append(step.getDoctorConclusion())
+                    .append("\n");
+        }
+        
+        // Update diagnosis with aggregated notes
+        if (allNotes.length() > 0) {
+            String aggregatedNotes = allNotes.toString().trim();
+            
+            // If diagnosis is empty or just placeholder text, replace it
+            if (record.getDiagnosis() == null || record.getDiagnosis().trim().isEmpty() 
+                    || record.getDiagnosis().equals("Khám tổng quát")) {
+                record.setDiagnosis(aggregatedNotes);
+            } else {
+                // Append to existing diagnosis if it doesn't already contain the notes
+                if (!record.getDiagnosis().contains(aggregatedNotes)) {
+                    record.setDiagnosis(record.getDiagnosis() + "\n\n" + aggregatedNotes);
+                }
+            }
+            
+            medicalRecordRepository.save(record);
+            log.info("Updated MedicalRecord {} with aggregated notes from {} completed steps", 
+                    record.getId(), completedSteps.size());
+        }
     }
 }

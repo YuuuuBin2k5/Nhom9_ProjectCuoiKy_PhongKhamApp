@@ -8,11 +8,23 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.hcmute.mobile_android.R;
+import com.hcmute.mobile_android.adapters.ImagePreviewAdapter;
 
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.Button;
+import android.widget.LinearLayout;
+import android.widget.TextView;
+import android.widget.Toast;
+
+import com.google.android.material.button.MaterialButton;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class FragmentSurgeryChecklist extends Fragment {
 
@@ -21,6 +33,14 @@ public class FragmentSurgeryChecklist extends Fragment {
     private Button btnEditMode;
     private boolean isReadOnly = false;
     private boolean isEditMode = false;
+    
+    // NEW: Image upload components
+    private MaterialButton btnUploadSurgeryImage;
+    private LinearLayout layoutImagePreview;
+    private RecyclerView rvSurgeryImages;
+    private TextView tvImageCount;
+    private List<String> surgeryImageUrls = new ArrayList<>();
+    private ImagePreviewAdapter imageAdapter;
 
     @Nullable
     @Override
@@ -38,6 +58,12 @@ public class FragmentSurgeryChecklist extends Fragment {
         cbAllergy = view.findViewById(R.id.cbAllergy);
         btnEditMode = view.findViewById(R.id.btnEditMode);
         
+        // NEW: Image upload views
+        btnUploadSurgeryImage = view.findViewById(R.id.btnUploadSurgeryImage);
+        layoutImagePreview = view.findViewById(R.id.layoutImagePreview);
+        rvSurgeryImages = view.findViewById(R.id.rvSurgeryImages);
+        tvImageCount = view.findViewById(R.id.tvImageCount);
+        
         // Edit mode toggle button
         if (btnEditMode != null) {
             btnEditMode.setOnClickListener(v -> toggleEditMode());
@@ -48,6 +74,28 @@ public class FragmentSurgeryChecklist extends Fragment {
         if (savedInstanceState != null) {
             isReadOnly = savedInstanceState.getBoolean("isReadOnly", false);
             isEditMode = savedInstanceState.getBoolean("isEditMode", false);
+            ArrayList<String> savedImages = savedInstanceState.getStringArrayList("surgeryImageUrls");
+            if (savedImages != null) {
+                surgeryImageUrls.clear();
+                surgeryImageUrls.addAll(savedImages);
+            }
+        }
+        
+        // Setup image RecyclerView
+        setupImageRecyclerView();
+        
+        // Update preview after restoring state
+        updateImagePreview();
+        
+        // Setup upload button
+        if (btnUploadSurgeryImage != null) {
+            btnUploadSurgeryImage.setOnClickListener(v -> {
+                if (getActivity() instanceof com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) {
+                    ((com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) getActivity()).launchImagePicker();
+                } else {
+                    Toast.makeText(getContext(), "Tính năng tải ảnh chưa được hỗ trợ", Toast.LENGTH_SHORT).show();
+                }
+            });
         }
         
         updateEditableState();
@@ -58,6 +106,7 @@ public class FragmentSurgeryChecklist extends Fragment {
         super.onSaveInstanceState(outState);
         outState.putBoolean("isReadOnly", isReadOnly);
         outState.putBoolean("isEditMode", isEditMode);
+        outState.putStringArrayList("surgeryImageUrls", new ArrayList<>(surgeryImageUrls));
         if (etBloodPressure != null) {
             outState.putString("bloodPressure", etBloodPressure.getText().toString());
         }
@@ -97,6 +146,107 @@ public class FragmentSurgeryChecklist extends Fragment {
             if (cbAllergy != null) {
                 cbAllergy.setChecked(savedInstanceState.getBoolean("allergy", false));
             }
+        }
+    }
+    
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        // Cleanup to prevent memory leaks
+        if (imageAdapter != null) {
+            imageAdapter = null;
+        }
+        if (rvSurgeryImages != null) {
+            rvSurgeryImages.setAdapter(null);
+        }
+    }
+    
+    private void setupImageRecyclerView() {
+        imageAdapter = new ImagePreviewAdapter(surgeryImageUrls, position -> {
+            // On delete click
+            showDeleteImageDialog(position);
+        });
+        
+        if (rvSurgeryImages != null) {
+            rvSurgeryImages.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+            rvSurgeryImages.setAdapter(imageAdapter);
+        }
+    }
+    
+    private void showDeleteImageDialog(int position) {
+        new androidx.appcompat.app.AlertDialog.Builder(requireContext())
+            .setTitle("Xóa ảnh")
+            .setMessage("Bạn có chắc muốn xóa ảnh này?")
+            .setPositiveButton("Xóa", (dialog, which) -> {
+                surgeryImageUrls.remove(position);
+                updateImagePreview();
+                Toast.makeText(getContext(), "Đã xóa ảnh", Toast.LENGTH_SHORT).show();
+            })
+            .setNegativeButton("Hủy", null)
+            .show();
+    }
+    
+    /**
+     * Called by DoctorWorkflowActivity when an image is uploaded successfully
+     */
+    public void onImageUploaded(String imageUrl) {
+        if (imageUrl != null && !imageUrl.isEmpty()) {
+            surgeryImageUrls.add(imageUrl);
+            updateImagePreview();
+            Toast.makeText(getContext(), "Đã thêm ảnh phẫu thuật", Toast.LENGTH_SHORT).show();
+        }
+    }
+    
+    /**
+     * Get all uploaded image URLs
+     */
+    public List<String> getImageUrls() {
+        return new ArrayList<>(surgeryImageUrls);
+    }
+    
+    /**
+     * Set image URLs (when loading existing data)
+     */
+    public void setImageUrls(List<String> urls) {
+        android.util.Log.d("FragmentSurgeryChecklist", "setImageUrls called with " + (urls != null ? urls.size() : 0) + " images");
+        
+        if (urls != null) {
+            surgeryImageUrls.clear();
+            surgeryImageUrls.addAll(urls);
+            
+            android.util.Log.d("FragmentSurgeryChecklist", "Images added to list. Current size: " + surgeryImageUrls.size());
+            
+            // Always schedule update to ensure view and adapter are ready
+            if (getView() != null) {
+                getView().post(() -> {
+                    // Ensure adapter is initialized
+                    if (imageAdapter == null) {
+                        android.util.Log.d("FragmentSurgeryChecklist", "Adapter was null, setting up RecyclerView");
+                        setupImageRecyclerView();
+                    }
+                    updateImagePreview();
+                    android.util.Log.d("FragmentSurgeryChecklist", "Image preview updated");
+                });
+            } else {
+                android.util.Log.w("FragmentSurgeryChecklist", "View is null, cannot update preview");
+            }
+        }
+    }
+    
+    private void updateImagePreview() {
+        // Safety check: ensure adapter is initialized
+        if (imageAdapter == null || rvSurgeryImages == null || layoutImagePreview == null) {
+            return;
+        }
+        
+        if (surgeryImageUrls.isEmpty()) {
+            layoutImagePreview.setVisibility(View.GONE);
+        } else {
+            layoutImagePreview.setVisibility(View.VISIBLE);
+            if (tvImageCount != null) {
+                tvImageCount.setText(surgeryImageUrls.size() + " ảnh");
+            }
+            imageAdapter.notifyDataSetChanged();
         }
     }
     
@@ -148,6 +298,12 @@ public class FragmentSurgeryChecklist extends Fragment {
         if (cbAllergy != null) {
             cbAllergy.setEnabled(canEdit);
             cbAllergy.setAlpha(canEdit ? 1.0f : 0.6f);
+        }
+        
+        // NEW: Upload button
+        if (btnUploadSurgeryImage != null) {
+            btnUploadSurgeryImage.setEnabled(canEdit);
+            btnUploadSurgeryImage.setVisibility(canEdit ? View.VISIBLE : View.GONE);
         }
     }
     
@@ -204,6 +360,11 @@ public class FragmentSurgeryChecklist extends Fragment {
         
         if (!notes.isEmpty()) {
             sb.append("Ghi chú: ").append(notes);
+        }
+        
+        // NEW: Image count
+        if (!surgeryImageUrls.isEmpty()) {
+            sb.append("\nSố ảnh phẫu thuật: ").append(surgeryImageUrls.size());
         }
         
         return sb.toString().trim();

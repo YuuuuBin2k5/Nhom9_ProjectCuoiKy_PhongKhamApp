@@ -41,13 +41,16 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        android:paddingBottom="8dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="16dp"
+            android:paddingBottom="24dp">
 
             <!-- Patient Basic Info Card -->
             <com.google.android.material.card.MaterialCardView
@@ -290,21 +293,46 @@
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Bottom Button -->
+    <!-- Bottom Buttons Container -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
+        android:orientation="horizontal"
         android:padding="16dp"
         android:background="@android:color/white"
-        android:elevation="8dp">
+        android:elevation="12dp"
+        android:gravity="center"
+        android:weightSum="2">
 
+        <!-- Invoice Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnViewInvoices"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="Hóa Đơn"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            android:textAllCaps="false"
+            app:cornerRadius="12dp"
+            app:strokeColor="#1565C0"
+            app:strokeWidth="2dp"
+            app:icon="@drawable/ic_receipt"
+            app:iconGravity="textStart"
+            app:iconTint="#1565C0"
+            android:textColor="#1565C0" />
+
+        <!-- Start Examination Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnStartExamination"
-            android:layout_width="match_parent"
+            android:layout_width="0dp"
             android:layout_height="56dp"
-            android:text="Bắt Đầu Khám Bệnh"
-            android:textSize="16sp"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Khám Bệnh"
+            android:textSize="15sp"
             android:textStyle="bold"
             android:textAllCaps="false"
             app:cornerRadius="12dp"

@@ -20,6 +20,9 @@ public class MedicalRecordResponse {
     private List<String> services;
     private String totalAmount;
     private String paymentStatus;
+    
+    // NEW: Treatment step details for step-by-step view
+    private List<TreatmentStepDetail> treatmentSteps;
 
     public Long getId() { return id; }
     public Long getAppointmentId() { return appointmentId; }
@@ -32,6 +35,7 @@ public class MedicalRecordResponse {
     public List<String> getServices() { return services; }
     public String getTotalAmount() { return totalAmount; }
     public String getPaymentStatus() { return paymentStatus; }
+    public List<TreatmentStepDetail> getTreatmentSteps() { return treatmentSteps; }
     
     // Smart getter for prescription
     public String getPrescriptionText() {
@@ -69,5 +73,18 @@ public class MedicalRecordResponse {
         public String getMedicineName() { return medicineName; }
         public String getDosage() { return dosage; }
         public Integer getQuantity() { return quantity; }
+    }
+    
+    // NEW: Treatment step detail for step-by-step display
+    public static class TreatmentStepDetail {
+        private String serviceName;
+        private String toothNumber;
+        private String notes;
+        private String completedAt;
+        
+        public String getServiceName() { return serviceName; }
+        public String getToothNumber() { return toothNumber; }
+        public String getNotes() { return notes; }
+        public String getCompletedAt() { return completedAt; }
     }
 }

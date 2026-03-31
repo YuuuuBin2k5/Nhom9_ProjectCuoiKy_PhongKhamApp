@@ -330,6 +330,79 @@ public class CheckInQueueService {
         String roomLoc = room != null && room.getDescription() != null ? room.getDescription() : "";
         QueueStatus st = q.getStatus() != null ? q.getStatus() : QueueStatus.WAITING;
         
+        // Extract doctor and service info from appointment
+        String doctorName = null;
+        String serviceName = null;
+        Long treatmentPlanId = null;
+        String currentStepName = null;
+        Integer currentStepNumber = null;
+        Integer totalSteps = null;
+        
+        if (q.getAppointment() != null) {
+            Appointment appt = q.getAppointment();
+            
+            // Get doctor name
+            if (appt.getDoctor() != null) {
+                Doctor doc = appt.getDoctor();
+                String firstName = doc.getFirstName() != null ? doc.getFirstName() : "";
+                String lastName = doc.getLastName() != null ? doc.getLastName() : "";
+                doctorName = "BS. " + (lastName + " " + firstName).trim();
+            }
+            
+            // Get service name
+            if (appt.getService() != null) {
+                serviceName = appt.getService().getName();
+            }
+            
+            // Get treatment plan info if exists
+            try {
+                List<TreatmentPlanStep> steps = treatmentPlanStepRepository.findByAppointmentId(appt.getId());
+                
+                if (!steps.isEmpty()) {
+                    // Get the treatment plan from first step (all steps should belong to same plan)
+                    var treatmentPlan = steps.get(0).getPlan();
+                    
+                    // Only process if plan is IN_PROGRESS (active treatment)
+                    if (treatmentPlan != null && treatmentPlan.getStatus() == com.hcmute.clinic.enums.TreatmentPlanStatus.IN_PROGRESS) {
+                        final Long finalTreatmentPlanId = treatmentPlan.getId(); // Make it effectively final for lambda
+                        treatmentPlanId = finalTreatmentPlanId;
+                        
+                        // Filter steps that belong to this specific plan
+                        List<TreatmentPlanStep> planSteps = steps.stream()
+                            .filter(s -> s.getPlan() != null && s.getPlan().getId().equals(finalTreatmentPlanId))
+                            .sorted((a, b) -> Integer.compare(a.getSequenceOrder(), b.getSequenceOrder()))
+                            .toList();
+                        
+                        totalSteps = planSteps.size();
+                        
+                        // Find current IN_PROGRESS step
+                        var currentStepOpt = planSteps.stream()
+                            .filter(s -> s.getStatus() == StepStatus.IN_PROGRESS)
+                            .findFirst();
+                        
+                        if (currentStepOpt.isPresent()) {
+                            TreatmentPlanStep currentStep = currentStepOpt.get();
+                            currentStepNumber = currentStep.getSequenceOrder() + 1; // 1-indexed for display
+                            currentStepName = currentStep.getService() != null ? currentStep.getService().getName() : "Đang điều trị";
+                        } else {
+                            // Fallback: If no IN_PROGRESS step, find next PENDING step
+                            var nextStepOpt = planSteps.stream()
+                                .filter(s -> s.getStatus() == StepStatus.PENDING)
+                                .findFirst();
+                            
+                            if (nextStepOpt.isPresent()) {
+                                TreatmentPlanStep nextStep = nextStepOpt.get();
+                                currentStepNumber = nextStep.getSequenceOrder() + 1;
+                                currentStepName = "Tiếp theo: " + (nextStep.getService() != null ? nextStep.getService().getName() : "Chờ thực hiện");
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to fetch treatment plan info for appointment {}: {}", appt.getId(), e.getMessage());
+            }
+        }
+        
         // Calculate queue estimate (new feature)
         String estimateDisplayType = null;
         Integer estimatedMinutes = null;
@@ -378,6 +451,12 @@ public class CheckInQueueService {
                 .estimateTitle(estimateTitle)
                 .estimateSubtitle(estimateSubtitle)
                 .countdownStartSeconds(countdownStartSeconds)
+                .doctorName(doctorName)
+                .serviceName(serviceName)
+                .treatmentPlanId(treatmentPlanId)
+                .currentStepName(currentStepName)
+                .currentStepNumber(currentStepNumber)
+                .totalSteps(totalSteps)
                 .build();
     }
 

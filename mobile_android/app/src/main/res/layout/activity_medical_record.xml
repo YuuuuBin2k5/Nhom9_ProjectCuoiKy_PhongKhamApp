@@ -126,27 +126,11 @@
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnInvoiceHistory"
-                    android:layout_width="wrap_content"
-                    android:layout_height="40dp"
-                    android:layout_marginTop="14dp"
-                    android:text="Thanh toán hóa đơn"
-                    android:textAllCaps="false"
-                    android:textSize="13sp"
-                    app:icon="@drawable/ic_payments"
-                    app:iconPadding="6dp"
-                    app:cornerRadius="20dp"
-                    app:backgroundTint="#1D4ED8"
-                    android:textColor="@android:color/white"
-                    app:layout_constraintTop_toBottomOf="@id/tvPatientInfo"
-                    app:layout_constraintStart_toStartOf="parent"
-                    app:layout_constraintEnd_toEndOf="parent"/>
-
             </androidx.constraintlayout.widget.ConstraintLayout>
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
     </com.google.android.material.appbar.AppBarLayout>
+
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
@@ -158,11 +142,27 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
+            <!-- Tiền sử y khoa Group -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnInvoiceHistory"
+                android:layout_width="wrap_content"
+                android:layout_height="40dp"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="14dp"
+                android:text="Thanh toán hóa đơn"
+                android:textAllCaps="false"
+                android:textColor="@android:color/white"
+                android:textSize="13sp"
+                app:backgroundTint="#1D4ED8"
+                app:cornerRadius="20dp"
+                app:icon="@drawable/ic_payments"
+                app:iconPadding="6dp" />
+
             <View
                 android:layout_width="match_parent"
-                android:layout_height="40dp" />
+                android:layout_height="10dp" />
 
-            <!-- Tiền sử y khoa Group -->
+
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

@@ -68,6 +68,7 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
         private TextView tvActualPrice;
         private TextView tvStatus;
         private TextView tvRoomName;
+        private TextView tvDoctorName;
         private TextView tvDoctorConclusion;
         private MaterialButton btnEdit;
         private MaterialButton btnComplete;
@@ -83,6 +84,7 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
             tvActualPrice = itemView.findViewById(R.id.tvActualPrice);
             tvStatus = itemView.findViewById(R.id.tvStatus);
             tvRoomName = itemView.findViewById(R.id.tvRoomName);
+            tvDoctorName = itemView.findViewById(R.id.tvDoctorName);
             tvDoctorConclusion = itemView.findViewById(R.id.tvDoctorConclusion);
             btnEdit = itemView.findViewById(R.id.btnEdit);
             btnComplete = itemView.findViewById(R.id.btnComplete);
@@ -160,6 +162,14 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
             } else {
                 tvRoomName.setVisibility(View.GONE);
             }
+            
+            // Doctor Name
+            if (step.getDoctorName() != null && !step.getDoctorName().isEmpty()) {
+                tvDoctorName.setText(step.getDoctorName());
+                tvDoctorName.setVisibility(View.VISIBLE);
+            } else {
+                tvDoctorName.setVisibility(View.GONE);
+            }
 
             // Doctor Conclusion
             if (step.getDoctorConclusion() != null && !step.getDoctorConclusion().isEmpty()) {
@@ -188,7 +198,6 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
         private void setCardStyle(String status, boolean isEditable, boolean isDraft) {
             if (status == null) status = "PENDING";
             
-            cardStep.setAlpha(1.0f); // Reset alpha
             cardStep.setAlpha(1.0f); // Reset alpha
             
             switch (status.toUpperCase()) {

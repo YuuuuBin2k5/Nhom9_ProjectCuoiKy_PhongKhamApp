@@ -25,4 +25,18 @@ public class MedicalRecordResponse {
     private List<String> services;
     private String totalAmount;
     private String paymentStatus;
+    
+    // NEW: Treatment step details for step-by-step view
+    private List<TreatmentStepDetail> treatmentSteps;
+    
+    @Data
+    @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
+    public static class TreatmentStepDetail {
+        private String serviceName;
+        private String toothNumber;
+        private String notes;
+        private String completedAt;
+    }
 }

@@ -16,6 +16,8 @@ public interface TreatmentPlanStepRepository extends JpaRepository<TreatmentPlan
     // New methods for tooth service calculation
     List<TreatmentPlanStep> findByPlanId(Long planId);
     
+    long countByPlanId(Long planId);
+    
     List<TreatmentPlanStep> findByPlanIdAndToothNumber(Long planId, String toothNumber);
     
     List<TreatmentPlanStep> findByPlanIdOrderBySequenceOrder(Long planId);
@@ -26,6 +28,14 @@ public interface TreatmentPlanStepRepository extends JpaRepository<TreatmentPlan
         Long planId, String toothNumber, Long serviceId);
 
     boolean existsByServiceId(Long serviceId);
+    
+    // Find steps by treatment plan ID ordered by sequence
+    @Query("SELECT s FROM TreatmentPlanStep s WHERE s.plan.id = :treatmentPlanId ORDER BY s.sequenceOrder ASC")
+    List<TreatmentPlanStep> findByTreatmentPlanIdOrderBySequenceOrderAsc(@Param("treatmentPlanId") Long treatmentPlanId);
+    
+    // Find steps by appointment ID
+    @Query("SELECT s FROM TreatmentPlanStep s WHERE s.plan.appointment.id = :appointmentId")
+    List<TreatmentPlanStep> findByAppointmentId(@Param("appointmentId") Long appointmentId);
 
 
     /**

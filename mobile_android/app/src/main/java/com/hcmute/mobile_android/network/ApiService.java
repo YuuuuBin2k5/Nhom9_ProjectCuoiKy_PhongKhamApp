@@ -55,6 +55,9 @@ public interface ApiService {
     @PUT("api/patients/me")
     Call<PatientMeResponse> updatePatientMe(@Body UpdatePatientRequest request);
 
+    @PUT("api/patients/fcm-token")
+    Call<java.util.Map<String, String>> updateFcmToken(@Body java.util.Map<String, String> body);
+
     @GET("api/patients/me/checkin-status")
     Call<CheckInMyStatusResponse> getMyCheckInStatus();
 

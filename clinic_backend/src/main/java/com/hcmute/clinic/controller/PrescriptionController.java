@@ -32,8 +32,8 @@ public class PrescriptionController {
     public ResponseEntity<PrescriptionDTO> createOrUpdatePrescription(
             @RequestBody PrescriptionRequest request,
             Authentication authentication) {
-        String doctorEmail = authentication.getName();
-        PrescriptionDTO dto = prescriptionService.createPrescription(request, doctorEmail);
+        String doctorIdentifier = authentication.getName(); // Can be ID or email
+        PrescriptionDTO dto = prescriptionService.createPrescription(request, doctorIdentifier);
         return ResponseEntity.ok(dto);
     }
 

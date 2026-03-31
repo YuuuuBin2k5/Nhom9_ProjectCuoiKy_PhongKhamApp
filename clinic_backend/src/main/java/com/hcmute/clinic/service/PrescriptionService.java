@@ -10,6 +10,7 @@ import com.hcmute.clinic.repository.PrescriptionRepository;
 import com.hcmute.clinic.repository.TreatmentPlanStepRepository;
 import com.hcmute.clinic.repository.TreatmentPlanRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,6 +25,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PrescriptionService {
 
     private final PrescriptionRepository prescriptionRepository;
@@ -34,9 +36,9 @@ public class PrescriptionService {
     private final TreatmentPlanStepRepository treatmentPlanStepRepository;
 
     @Transactional
-    public PrescriptionDTO createPrescription(PrescriptionRequest request, String doctorEmail) {
-        Doctor doctor = doctorRepository.findByEmailIgnoreCase(doctorEmail)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bác sĩ không tồn tại"));
+    public PrescriptionDTO createPrescription(PrescriptionRequest request, String doctorIdentifier) {
+        // Try to parse as ID first, fallback to email for backward compatibility
+        Doctor doctor = findDoctorByIdentifier(doctorIdentifier);
 
         Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy lịch hẹn"));
@@ -130,7 +132,17 @@ public class PrescriptionService {
                     || step.getPlan().getAppointment() == null
                     || step.getPlan().getAppointment().getId() == null
                     || !step.getPlan().getAppointment().getId().equals(appointment.getId())) {
-                throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Step/dịch vụ không thuộc lịch hẹn này");
+                
+                // Log for debugging
+                log.warn("Step {} does not belong to appointment {}. Step's appointment: {}", 
+                    requestStepId, 
+                    appointment.getId(),
+                    step.getPlan() != null && step.getPlan().getAppointment() != null 
+                        ? step.getPlan().getAppointment().getId() 
+                        : "null");
+                
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                    "Step/dịch vụ không thuộc lịch hẹn này. Vui lòng chọn đúng step hoặc bỏ trống để kê đơn chung.");
             }
 
             BigDecimal basePrice = (step.getService() != null && step.getService().getPrice() != null)
@@ -157,6 +169,18 @@ public class PrescriptionService {
         }
 
         return mapToDTO(prescription);
+    }
+
+    private Doctor findDoctorByIdentifier(String identifier) {
+        try {
+            Long doctorId = Long.parseLong(identifier);
+            return doctorRepository.findById(doctorId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bác sĩ không tồn tại"));
+        } catch (NumberFormatException e) {
+            // If not a number, treat as email
+            return doctorRepository.findByEmailIgnoreCase(identifier)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bác sĩ không tồn tại"));
+        }
     }
 
     private PrescriptionDTO mapToDTO(Prescription prescription) {

@@ -262,8 +262,7 @@ public class PatientDashboardFragment extends Fragment {
                     CheckInMyStatusResponse status = response.body();
                     if (status.isCheckedIn()) {
                         cardCheckInStatus.setVisibility(View.VISIBLE);
-                        tvCheckInStatus.setText("Đã nhận Check-in");
-                        tvQueuePosition.setText("Số thứ tự chờ: " + status.getQueueNumber() + " (Khoảng " + status.getEstimatedWaitTime() + " phút)");
+                        updateCheckInStatusUI(status);
                     } else {
                         cardCheckInStatus.setVisibility(View.GONE);
                     }
@@ -278,6 +277,55 @@ public class PatientDashboardFragment extends Fragment {
                 cardCheckInStatus.setVisibility(View.GONE);
             }
         });
+    }
+    
+    private void updateCheckInStatusUI(CheckInMyStatusResponse status) {
+        // Status title with color based on treatment status
+        String statusText = "✅ Đã nhận Check-in";
+        int statusColor = ContextCompat.getColor(requireContext(), R.color.primary_trust_blue);
+        
+        if ("IN_PROGRESS".equals(status.getStatus())) {
+            statusText = "🏥 Đang điều trị";
+            statusColor = ContextCompat.getColor(requireContext(), R.color.success_green);
+        } else if ("WAITING".equals(status.getStatus()) || "RETURNED_PRIORITY".equals(status.getStatus())) {
+            statusText = "⏳ Đang chờ";
+            statusColor = ContextCompat.getColor(requireContext(), R.color.warning_orange);
+        } else if ("PAUSED_FOR_TEST".equals(status.getStatus())) {
+            statusText = "📸 Đang chụp X-Quang";
+            statusColor = ContextCompat.getColor(requireContext(), R.color.info_blue);
+        }
+        
+        tvCheckInStatus.setText(statusText);
+        tvCheckInStatus.setTextColor(statusColor);
+        
+        // Build detailed info
+        StringBuilder info = new StringBuilder();
+        
+        if (status.getRoomName() != null && !status.getRoomName().isEmpty()) {
+            info.append("📍 Phòng: ").append(status.getRoomName()).append("\n");
+        }
+        
+        if (status.getDoctorName() != null && !status.getDoctorName().isEmpty()) {
+            info.append("👨‍⚕️ Bác sĩ: ").append(status.getDoctorName()).append("\n");
+        }
+        
+        if (status.getServiceName() != null && !status.getServiceName().isEmpty()) {
+            info.append("🦷 Dịch vụ: ").append(status.getServiceName()).append("\n");
+        }
+        
+        if (status.getCurrentStepName() != null && status.getTotalSteps() != null && status.getCurrentStepNumber() != null) {
+            info.append("📊 Bước ").append(status.getCurrentStepNumber())
+                .append("/").append(status.getTotalSteps())
+                .append(": ").append(status.getCurrentStepName()).append("\n");
+        }
+        
+        info.append("🔢 Số thứ tự: ").append(status.getQueueNumber());
+        
+        if (status.getEstimatedWaitTime() != null && status.getEstimatedWaitTime() > 0) {
+            info.append("\n⏱️ Thời gian chờ: ~").append(status.getEstimatedWaitTime()).append(" phút");
+        }
+        
+        tvQueuePosition.setText(info.toString());
     }
 
     private void loadUpcomingAppointments() {

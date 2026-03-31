@@ -1,7 +1,7 @@
 package com.hcmute.clinic.service;
 
 import com.hcmute.clinic.dto.RevenueCategoryDTO;
-import com.hcmute.clinic.dto.RevenueReportDTO;
+import com.hcmute.clinic.dto.RevenueReportDto;
 import com.hcmute.clinic.repository.InvoiceItemRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -17,7 +17,7 @@ public class RevenueService {
 
     private final InvoiceItemRepository invoiceItemRepository;
 
-    public RevenueReportDTO getRevenueReport(Integer year, Integer month, Integer day) {
+    public RevenueReportDto getRevenueReport(Integer year, Integer month, Integer day) {
         LocalDateTime startDate;
         LocalDateTime endDate;
 
@@ -48,7 +48,7 @@ public class RevenueService {
                 .map(RevenueCategoryDTO::getTotalAmount)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        return RevenueReportDTO.builder()
+        return RevenueReportDto.builder()
                 .totalRevenue(total)
                 .categories(categories)
                 .build();
