@@ -17,4 +17,6 @@ public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     
     @Query("SELECT i FROM Invoice i WHERE i.treatmentPlan.appointment.id = :appointmentId")
     java.util.Optional<Invoice> findByAppointmentId(@Param("appointmentId") Long appointmentId);
+    
+    List<Invoice> findByCreatedAtBetween(java.time.LocalDateTime start, java.time.LocalDateTime end);
 }

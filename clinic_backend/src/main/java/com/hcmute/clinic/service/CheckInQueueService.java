@@ -468,6 +468,7 @@ public class CheckInQueueService {
             case RETURNED_PRIORITY -> "Ưu tiên — vui lòng vào phòng";
             case COMPLETED -> "Đã hoàn thành tiếp nhận";
             case SKIPPED -> "Đã bỏ qua";
+            case CANCELLED -> "Đã bị loại bỏ bởi Admin";
         };
     }
 
@@ -478,6 +479,7 @@ public class CheckInQueueService {
             case PAUSED_FOR_TEST -> "Sau khi xong, quay lại phòng khám theo hướng dẫn.";
             case COMPLETED -> "Cảm ơn bạn đã check-in.";
             case SKIPPED -> "Vui lòng liên hệ lễ tân nếu cần hỗ trợ.";
+            case CANCELLED -> "Lượt của bạn đã bị hủy hoặc loại bỏ.";
         };
     }
 

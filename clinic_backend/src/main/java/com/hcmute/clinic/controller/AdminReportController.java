@@ -94,4 +94,18 @@ public class AdminReportController {
         LocalDate now = LocalDate.now();
         return ResponseEntity.ok(adminReportService.getDoctorPerformance(now.getYear(), now.getMonthValue()));
     }
+
+    /**
+     * Get invoices for the selected period
+     */
+    @GetMapping("/invoices")
+    public ResponseEntity<List<InvoiceDto>> getInvoices(
+        @RequestParam(required = false) Integer year,
+        @RequestParam(required = false) Integer month,
+        @RequestParam(required = false) Integer day,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate startDate,
+        @RequestParam(required = false) @DateTimeFormat(pattern = "yyyy-MM-dd") LocalDate endDate
+    ) {
+        return ResponseEntity.ok(adminReportService.getInvoicesByFilters(year, month, day, startDate, endDate));
+    }
 }
