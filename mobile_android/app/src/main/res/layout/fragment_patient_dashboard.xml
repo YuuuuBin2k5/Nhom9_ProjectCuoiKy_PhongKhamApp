@@ -201,50 +201,38 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="ƯU ĐÃI ĐẶC BIỆT"
-                                android:textColor="#FFD54F"
+                                android:text="@string/banner_header"
+                                android:textColor="@color/white"
                                 android:textSize="12sp"
                                 android:textStyle="bold"
+                                android:alpha="0.9"
                                 android:letterSpacing="0.05"/>
-
-                            <LinearLayout
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:orientation="horizontal"
-                                android:gravity="bottom"
-                                android:layout_marginTop="2dp">
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="GIẢM "
-                                    android:textColor="@color/white"
-                                    android:textSize="18sp"
-                                    android:textStyle="bold"
-                                    android:layout_marginBottom="3dp"/>
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="40%"
-                                    android:textColor="#FFB300"
-                                    android:textSize="26sp"
-                                    android:textStyle="bold"
-                                    android:includeFontPadding="false"/>
-                            </LinearLayout>
 
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Dịch vụ Lấy cao răng"
+                                android:text="@string/banner_main_title"
+                                android:textColor="#FFD54F"
+                                android:textSize="26sp"
+                                android:textStyle="bold"
+                                android:layout_marginTop="2dp"
+                                android:includeFontPadding="false"/>
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="@string/banner_description"
                                 android:textColor="@color/white"
                                 android:textSize="14sp"
-                                android:alpha="0.9"/>
+                                android:alpha="0.9"
+                                android:layout_marginTop="2dp"/>
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnBannerAction"
                                 android:layout_width="wrap_content"
                                 android:layout_height="44dp"
                                 android:layout_marginTop="10dp"
-                                android:text="Đặt lịch ưu đãi"
+                                android:text="@string/banner_button_text"
                                 android:textAllCaps="false"
                                 android:textSize="13sp"
                                 app:cornerRadius="20dp"
@@ -262,16 +250,135 @@
                     android:id="@+id/cardCheckInStatus"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="24dp"
+                    android:layout_marginBottom="28dp"
                     app:cardCornerRadius="24dp"
-                    app:cardBackgroundColor="#EAF4FF"
-                    app:cardElevation="0dp"
-                    app:strokeWidth="0dp"
+                    app:cardBackgroundColor="#FFFFFF"
+                    app:cardElevation="4dp"
+                    app:strokeWidth="1dp"
+                    app:strokeColor="#E2E8F0"
                     android:visibility="gone">
-                    <LinearLayout android:layout_width="match_parent" android:layout_height="wrap_content" android:orientation="vertical" android:padding="20dp">
-                        <TextView android:id="@+id/tvCheckInStatus" android:layout_width="wrap_content" android:layout_height="wrap_content" android:textStyle="bold" android:textColor="@color/primary_trust_blue" />
-                        <TextView android:id="@+id/tvQueuePosition" android:layout_width="wrap_content" android:layout_height="wrap_content" android:layout_marginTop="4dp" />
-                        <com.google.android.material.button.MaterialButton android:id="@+id/btnViewQueue" android:layout_width="match_parent" android:layout_height="wrap_content" android:text="Xem hàng đợi" android:layout_marginTop="12dp" app:cornerRadius="12dp" />
+                    
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="20dp">
+                        
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:gravity="center_vertical">
+                            
+                            <!-- Left: Status Badge & Details -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+                                
+                                <TextView
+                                    android:id="@+id/tvCheckInStatus"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:paddingHorizontal="10dp"
+                                    android:paddingVertical="4dp"
+                                    android:background="@drawable/bg_status_pill"
+                                    android:text="ĐANG CHỜ"
+                                    android:textColor="@color/primary_trust_blue"
+                                    android:textStyle="bold"
+                                    android:textSize="11sp"
+                                    android:textAllCaps="true"
+                                    android:letterSpacing="0.05"
+                                    android:layout_marginBottom="12dp"/>
+                                    
+                                <TextView
+                                    android:id="@+id/tvRoomInfo"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Phòng khám 01"
+                                    android:textColor="@color/text_primary"
+                                    android:textStyle="bold"
+                                    android:textSize="16sp"/>
+                                    
+                                <TextView
+                                    android:id="@+id/tvDoctorInfo"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="BS. Trần Đình Trọng"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="14sp"
+                                    android:layout_marginTop="2dp"/>
+
+                                <TextView
+                                    android:id="@+id/tvStepInfo"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Bước 2/3: Chụp X-Quang"
+                                    android:textColor="@color/primary_trust_blue"
+                                    android:textSize="13sp"
+                                    android:textStyle="bold"
+                                    android:layout_marginTop="8dp"/>
+                            </LinearLayout>
+                            
+                            <!-- Vertical Divider -->
+                            <View
+                                android:layout_width="1dp"
+                                android:layout_height="80dp"
+                                android:background="#F1F5F9"
+                                android:layout_marginHorizontal="16dp"/>
+                            
+                            <!-- Right: Ticket Number -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:gravity="center">
+                                
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="SỐ THỨ TỰ"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="10sp"
+                                    android:textStyle="bold"
+                                    android:letterSpacing="0.05"/>
+                                    
+                                <TextView
+                                    android:id="@+id/tvQueueNumberBig"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="01"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="42sp"
+                                    android:textStyle="bold"
+                                    android:includeFontPadding="false"
+                                    android:lineSpacingExtra="0dp"/>
+                                    
+                                <TextView
+                                    android:id="@+id/tvEstimatedTime"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="~15 phút"
+                                    android:textColor="@color/warning_orange"
+                                    android:textSize="12sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+                        </LinearLayout>
+                        
+                        <!-- Bottom Action -->
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnViewQueue"
+                            android:layout_width="match_parent"
+                            android:layout_height="48dp"
+                            android:layout_marginTop="16dp"
+                            android:text="Xem chi tiết hàng đợi"
+                            android:textAllCaps="false"
+                            android:textSize="14sp"
+                            android:textColor="@color/white"
+                            app:cornerRadius="12dp"
+                            app:backgroundTint="@color/primary_trust_blue"
+                            app:elevation="0dp"/>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 

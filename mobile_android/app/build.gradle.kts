@@ -12,11 +12,11 @@ fun resolveBackendBaseUrl(rootDir: java.io.File): String {
     if (localPropsFile.exists()) {
         val props = Properties()
         localPropsFile.inputStream().use { props.load(it) }
-        val host = props.getProperty("backend.host", "10.178.143.252")
+        val host = props.getProperty("backend.host", "10.0.238.106")
         val port = props.getProperty("backend.port", "8081")
         return "http://$host:$port/"
     }
-    return "http://10.10.0.22:8081/"
+    return "http://10.0.238.106:8081/"
 }
 
 android {

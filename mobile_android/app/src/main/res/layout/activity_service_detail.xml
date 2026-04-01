@@ -27,7 +27,6 @@
             app:navigationIconTint="@color/white"
             android:elevation="8dp" />
 
-        <!-- Simple indicator dots if desired, or just use the pager -->
         <com.google.android.material.tabs.TabLayout
             android:id="@+id/tabIndicator"
             android:layout_width="wrap_content"
@@ -140,54 +139,66 @@
                     android:background="@null" />
             </RelativeLayout>
 
-            <!-- Date & Time Picker Row -->
             <TextView
+                android:id="@+id/label_select_date"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Chọn ngày &amp; giờ khám"
-                android:textSize="14sp"
-                android:textColor="@color/text_secondary"
-                android:layout_marginBottom="8dp" />
+                android:text="Chọn ngày khám"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:fontFamily="sans-serif-medium"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="12dp"
+                android:visibility="gone" />
 
-            <LinearLayout
-                android:id="@+id/ll_datetime_picker"
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_dates"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:background="@drawable/bg_spinner_modern"
-                android:paddingHorizontal="16dp"
-                android:layout_marginBottom="120dp"
-                android:clickable="true"
-                android:focusable="true">
+                android:clipToPadding="false"
+                android:layout_marginBottom="24dp"
+                android:visibility="gone" />
 
-                <ImageView
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="12dp">
+                
+                <TextView
+                    android:id="@+id/label_select_time"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Chọn giờ khám"
+                    android:textSize="18sp"
+                    android:textStyle="bold"
+                    android:fontFamily="sans-serif-medium"
+                    android:textColor="@color/text_primary"
+                    android:layout_alignParentStart="true"
+                    android:layout_centerVertical="true"
+                    android:visibility="gone" />
+                    
+                <ProgressBar
+                    android:id="@+id/loading_slots"
                     android:layout_width="20dp"
                     android:layout_height="20dp"
-                    android:src="@drawable/ic_calendar"
-                    app:tint="@color/primary_trust_blue"
-                    android:layout_marginEnd="12dp"/>
+                    android:visibility="gone"
+                    android:layout_alignParentEnd="true"
+                    android:layout_centerVertical="true"
+                    android:indeterminateTint="@color/primary_trust_blue"/>
+            </RelativeLayout>
 
-                <TextView
-                    android:id="@+id/tv_datetime_selected"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Nhấn để chọn ngày &amp; giờ"
-                    android:textSize="15sp"
-                    android:textColor="@color/text_secondary"/>
-
-                <ImageView
-                    android:layout_width="18dp"
-                    android:layout_height="18dp"
-                    android:src="@android:drawable/ic_menu_agenda"
-                    app:tint="#BDBDBD"/>
-            </LinearLayout>
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rv_time_slots"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="120dp"
+                android:nestedScrollingEnabled="false"
+                android:visibility="gone" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-    <!-- Bottom Button -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"

@@ -66,7 +66,7 @@ public class PatientDashboardFragment extends Fragment {
 
     // Check-in
     private MaterialCardView cardCheckInStatus;
-    private TextView tvCheckInStatus, tvQueuePosition;
+    private TextView tvCheckInStatus, tvRoomInfo, tvDoctorInfo, tvStepInfo, tvQueueNumberBig, tvEstimatedTime;
     private MaterialButton btnViewQueue;
 
     // Appointments
@@ -105,7 +105,11 @@ public class PatientDashboardFragment extends Fragment {
         
         cardCheckInStatus = view.findViewById(R.id.cardCheckInStatus);
         tvCheckInStatus = view.findViewById(R.id.tvCheckInStatus);
-        tvQueuePosition = view.findViewById(R.id.tvQueuePosition);
+        tvRoomInfo = view.findViewById(R.id.tvRoomInfo);
+        tvDoctorInfo = view.findViewById(R.id.tvDoctorInfo);
+        tvStepInfo = view.findViewById(R.id.tvStepInfo);
+        tvQueueNumberBig = view.findViewById(R.id.tvQueueNumberBig);
+        tvEstimatedTime = view.findViewById(R.id.tvEstimatedTime);
         btnViewQueue = view.findViewById(R.id.btnViewQueue);
         
         rvUpcomingAppointments = view.findViewById(R.id.rvUpcomingAppointments);
@@ -280,52 +284,55 @@ public class PatientDashboardFragment extends Fragment {
     }
     
     private void updateCheckInStatusUI(CheckInMyStatusResponse status) {
-        // Status title with color based on treatment status
-        String statusText = "✅ Đã nhận Check-in";
+        // Status badge setup
+        String statusText = "Đã Check-in";
         int statusColor = ContextCompat.getColor(requireContext(), R.color.primary_trust_blue);
         
         if ("IN_PROGRESS".equals(status.getStatus())) {
-            statusText = "🏥 Đang điều trị";
+            statusText = "Đang điều trị";
             statusColor = ContextCompat.getColor(requireContext(), R.color.success_green);
         } else if ("WAITING".equals(status.getStatus()) || "RETURNED_PRIORITY".equals(status.getStatus())) {
-            statusText = "⏳ Đang chờ";
+            statusText = "Đang chờ";
             statusColor = ContextCompat.getColor(requireContext(), R.color.warning_orange);
         } else if ("PAUSED_FOR_TEST".equals(status.getStatus())) {
-            statusText = "📸 Đang chụp X-Quang";
+            statusText = "Đang chụp phim";
             statusColor = ContextCompat.getColor(requireContext(), R.color.info_blue);
         }
         
         tvCheckInStatus.setText(statusText);
         tvCheckInStatus.setTextColor(statusColor);
+        tvCheckInStatus.getBackground().setTint(statusColor & 0x22FFFFFF | 0x11000000); // Subtle background tint
         
-        // Build detailed info
-        StringBuilder info = new StringBuilder();
+        // Room & Doctor
+        String room = status.getRoomName() != null ? status.getRoomName() : "Phòng khám";
+        tvRoomInfo.setText(room);
         
-        if (status.getRoomName() != null && !status.getRoomName().isEmpty()) {
-            info.append("📍 Phòng: ").append(status.getRoomName()).append("\n");
-        }
+        String doc = (status.getDoctorName() != null && !status.getDoctorName().isEmpty()) 
+            ? "BS. " + status.getDoctorName() : "Đội ngũ chuyên gia";
+        tvDoctorInfo.setText(doc);
         
-        if (status.getDoctorName() != null && !status.getDoctorName().isEmpty()) {
-            info.append("👨‍⚕️ Bác sĩ: ").append(status.getDoctorName()).append("\n");
-        }
-        
-        if (status.getServiceName() != null && !status.getServiceName().isEmpty()) {
-            info.append("🦷 Dịch vụ: ").append(status.getServiceName()).append("\n");
-        }
-        
+        // Step info
         if (status.getCurrentStepName() != null && status.getTotalSteps() != null && status.getCurrentStepNumber() != null) {
-            info.append("📊 Bước ").append(status.getCurrentStepNumber())
-                .append("/").append(status.getTotalSteps())
-                .append(": ").append(status.getCurrentStepName()).append("\n");
+            tvStepInfo.setText("Bước " + status.getCurrentStepNumber() + "/" + status.getTotalSteps() + ": " + status.getCurrentStepName());
+            tvStepInfo.setVisibility(View.VISIBLE);
+        } else if (status.getServiceName() != null) {
+            tvStepInfo.setText(status.getServiceName());
+            tvStepInfo.setVisibility(View.VISIBLE);
+        } else {
+            tvStepInfo.setVisibility(View.GONE);
         }
         
-        info.append("🔢 Số thứ tự: ").append(status.getQueueNumber());
+        // Queue Number
+        int qNum = status.getQueueNumber() != null ? status.getQueueNumber() : 0;
+        tvQueueNumberBig.setText(String.format(Locale.getDefault(), "%02d", qNum));
         
+        // Estimation
         if (status.getEstimatedWaitTime() != null && status.getEstimatedWaitTime() > 0) {
-            info.append("\n⏱️ Thời gian chờ: ~").append(status.getEstimatedWaitTime()).append(" phút");
+            tvEstimatedTime.setText("~" + status.getEstimatedWaitTime() + " phút nữa");
+            tvEstimatedTime.setVisibility(View.VISIBLE);
+        } else {
+            tvEstimatedTime.setVisibility(View.GONE);
         }
-        
-        tvQueuePosition.setText(info.toString());
     }
 
     private void loadUpcomingAppointments() {

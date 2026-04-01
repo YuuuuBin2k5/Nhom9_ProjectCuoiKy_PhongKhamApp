@@ -11,8 +11,8 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:clipToPadding="false"
-        android:paddingBottom="120dp"
-        app:layout_behavior="@string/appbar_scrolling_view_behavior">
+        android:paddingBottom="100dp"
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -22,7 +22,7 @@
             <!-- Deep Blue Header — LinearLayout vertical, no overlap -->
             <LinearLayout
                 android:layout_width="match_parent"
-                android:layout_height="230dp"
+                android:layout_height="200dp"
                 android:background="@drawable/bg_banner_qr_premium"
                 android:orientation="vertical"
                 android:paddingTop="36dp">
@@ -89,7 +89,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="20dp"
                 android:layout_marginTop="-40dp"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="16dp"
                 app:cardCornerRadius="24dp"
                 app:cardElevation="8dp"
                 app:cardBackgroundColor="#FFFFFF"
@@ -100,7 +100,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="24dp">
+                    android:padding="20dp">
 
                     <!-- Section: Dịch vụ -->
                     <TextView
@@ -117,7 +117,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="56dp"
                         android:background="@drawable/bg_otp_cell" 
-                        android:layout_marginBottom="24dp">
+                        android:layout_marginBottom="16dp">
                         <ProgressBar
                             android:id="@+id/pb_services"
                             android:layout_width="24dp"
@@ -134,55 +134,11 @@
                             android:background="@null"/>
                     </FrameLayout>
 
-                    <!-- Section: Ngày & Giờ -->
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="2. Thời gian khám"
-                        android:textStyle="bold"
-                        android:textColor="#001858"
-                        android:textSize="16sp"
-                        android:layout_marginBottom="12dp"/>
-
-                    <LinearLayout
-                        android:id="@+id/ll_datetime_picker"
-                        android:layout_width="match_parent"
-                        android:layout_height="56dp"
-                        android:orientation="horizontal"
-                        android:gravity="center_vertical"
-                        android:paddingStart="16dp"
-                        android:paddingEnd="16dp"
-                        android:background="@drawable/bg_otp_cell"
-                        android:layout_marginBottom="24dp">
-                        
-                        <ImageView
-                            android:layout_width="22dp"
-                            android:layout_height="22dp"
-                            android:src="@drawable/ic_calendar"
-                            app:tint="#1E54F3"/>
-                            
-                        <TextView
-                            android:id="@+id/tv_datetime"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:layout_marginStart="12dp"
-                            android:text="Chạm để chọn Ngày &amp; Giờ"
-                            android:textColor="#52607A"
-                            android:textSize="15sp"/>
-                            
-                        <ImageView
-                            android:layout_width="16dp"
-                            android:layout_height="16dp"
-                            android:src="@android:drawable/ic_menu_agenda"
-                            app:tint="#A0ABBB"/>
-                    </LinearLayout>
-
                     <!-- Section: Bác sĩ -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="3. Bác sĩ điều trị"
+                        android:text="2. Chọn bác sĩ điều trị"
                         android:textStyle="bold"
                         android:textColor="#001858"
                         android:textSize="16sp"
@@ -199,7 +155,67 @@
                         android:id="@+id/rv_doctors"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:clipToPadding="false"/>
+                        android:clipToPadding="false"
+                        android:layout_marginBottom="24dp"
+                        android:nestedScrollingEnabled="false"/>
+
+                    <!-- Section: Ngày khám -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="3. Chọn ngày khám"
+                        android:textStyle="bold"
+                        android:textColor="#001858"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="12dp"/>
+                    
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_dates"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:clipToPadding="false"
+                        android:layout_marginBottom="24dp"/>
+
+                    <!-- Section: Giờ khám -->
+                    <RelativeLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="12dp">
+                        
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="4. Chọn giờ khám"
+                            android:textStyle="bold"
+                            android:textColor="#001858"
+                            android:textSize="16sp"
+                            android:layout_alignParentStart="true"
+                            android:layout_centerVertical="true"/>
+                            
+                        <ProgressBar
+                            android:id="@+id/loading_slots"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:visibility="gone"
+                            android:layout_alignParentEnd="true"
+                            android:layout_centerVertical="true"
+                            android:indeterminateTint="#1E54F3"/>
+                    </RelativeLayout>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rv_time_slots"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="24dp"
+                        android:nestedScrollingEnabled="false"/>
+
+                    <!-- Hidden legacy text view to maintain compatibility with existing logic if needed -->
+                    <TextView
+                        android:id="@+id/tv_datetime"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:visibility="gone"/>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

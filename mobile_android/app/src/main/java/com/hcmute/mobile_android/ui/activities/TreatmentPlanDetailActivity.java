@@ -1,5 +1,6 @@
 package com.hcmute.mobile_android.ui.activities;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -16,11 +17,13 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.bumptech.glide.Glide;
 import com.google.android.material.appbar.MaterialToolbar;
+import com.google.android.material.button.MaterialButton;
 import com.hcmute.mobile_android.BuildConfig;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
 import com.hcmute.mobile_android.network.models.TreatmentPlan;
+import com.hcmute.mobile_android.network.models.TreatmentPlanSummary;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,9 +36,11 @@ public class TreatmentPlanDetailActivity extends AppCompatActivity {
 
     private Long planId;
     private ProgressBar progressDetail;
-    private TextView tvPlanStatus, tvPlanDate, tvPlanProgress;
+    private com.google.android.material.progressindicator.CircularProgressIndicator cpOverallProgress;
+    private TextView tvProgressPercent, tvProgressBadge;
     private RecyclerView rvTimeline;
     private TimelineAdapter adapter;
+    private MaterialButton btnBottomAction;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -63,14 +68,21 @@ public class TreatmentPlanDetailActivity extends AppCompatActivity {
         toolbar.setNavigationOnClickListener(v -> finish());
 
         progressDetail = findViewById(R.id.progressPlanDetail);
-        tvPlanStatus = findViewById(R.id.tvPlanStatus);
-        tvPlanDate = findViewById(R.id.tvPlanDate);
-        tvPlanProgress = findViewById(R.id.tvPlanProgress);
+        cpOverallProgress = findViewById(R.id.cpOverallProgress);
+        tvProgressPercent = findViewById(R.id.tvProgressPercent);
+        tvProgressBadge = findViewById(R.id.tvProgressBadge);
         rvTimeline = findViewById(R.id.rvTimeline);
+        btnBottomAction = findViewById(R.id.btnBottomAction);
 
         adapter = new TimelineAdapter(new ArrayList<>());
         rvTimeline.setLayoutManager(new LinearLayoutManager(this));
         rvTimeline.setAdapter(adapter);
+
+        btnBottomAction.setOnClickListener(v -> {
+            // Shortcut to chat with doctor/clinic
+            Intent intent = new Intent(this, ChatActivity.class);
+            startActivity(intent);
+        });
     }
 
     private void loadPlanDetails() {
@@ -86,11 +98,10 @@ public class TreatmentPlanDetailActivity extends AppCompatActivity {
                     fallbackToOfflineJson(response.code());
                 }
             }
-
             @Override
             public void onFailure(@NonNull Call<TreatmentPlan> call, @NonNull Throwable t) {
                 progressDetail.setVisibility(View.GONE);
-                Toast.makeText(TreatmentPlanDetailActivity.this, "Lỗi mạng: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(TreatmentPlanDetailActivity.this, "Lỗi mạng", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -98,9 +109,7 @@ public class TreatmentPlanDetailActivity extends AppCompatActivity {
     private void fallbackToOfflineJson(int errorCode) {
         String jsonStr = getIntent().getStringExtra("planFallbackJson");
         if (jsonStr != null && !jsonStr.isEmpty()) {
-            Toast.makeText(this, "Sử dụng dữ liệu offline", Toast.LENGTH_SHORT).show();
-            // Convert Summary to full Plan via Gson equivalent
-            com.hcmute.mobile_android.network.models.TreatmentPlanSummary summary = new com.google.gson.Gson().fromJson(jsonStr, com.hcmute.mobile_android.network.models.TreatmentPlanSummary.class);
+            TreatmentPlanSummary summary = new com.google.gson.Gson().fromJson(jsonStr, TreatmentPlanSummary.class);
             TreatmentPlan fakePlan = new TreatmentPlan();
             fakePlan.setStatus(summary.getStatus());
             fakePlan.setCreatedAt(summary.getCreatedAt());
@@ -111,220 +120,165 @@ public class TreatmentPlanDetailActivity extends AppCompatActivity {
                     fs.setServiceName(sSum.getServiceName());
                     fs.setRoomName(sSum.getRoomName());
                     fs.setStatus(sSum.getStatus());
+                    fs.setDoctorName(sSum.getDoctorName());
                     fakeSteps.add(fs);
                 }
             }
             fakePlan.setSteps(fakeSteps);
             bindData(fakePlan);
-        } else {
-            Toast.makeText(TreatmentPlanDetailActivity.this, "Không thể tải cấu hình (Mã: " + errorCode + ")", Toast.LENGTH_LONG).show();
-            finish();
         }
     }
 
     private void bindData(TreatmentPlan plan) {
-        tvPlanStatus.setText(plan.getStatusDisplay());
-        
-        String created = plan.getCreatedAt();
-        if (created != null && created.length() >= 10) {
-            tvPlanDate.setText(created.substring(0, 10));
-        } else {
-            tvPlanDate.setText("Chưa rõ");
-        }
-
         List<TreatmentPlan.Step> steps = plan.getSteps();
-        if (steps != null) {
-            int completed = 0;
-            for (TreatmentPlan.Step s : steps) {
-                if (s.isCompleted()) completed++;
-            }
-            tvPlanProgress.setText(completed + "/" + steps.size() + " bước hoàn thành");
-            adapter.updateItems(steps);
-        }
+        if (steps == null || steps.isEmpty()) return;
+
+        // Calculate Progress
+        int completed = 0;
+        int total = steps.size();
+        for (TreatmentPlan.Step s : steps) if (s.isCompleted()) completed++;
+        int percentage = (int) ((completed * 100.0) / total);
+
+        cpOverallProgress.setProgress(percentage, true);
+        tvProgressPercent.setText(percentage + "%");
+        tvProgressBadge.setText(percentage == 100 ? "HOÀN THÀNH" : "TỔNG TIẾN ĐỘ");
+
+        // Group into timeline display items
+        List<TimelineItem> displayItems = groupStepsIntoTimeline(steps);
+        adapter.updateItems(displayItems);
     }
 
-    private String resolveMediaUrl(String path) {
-        if (path == null || path.isEmpty()) return null;
-        if (path.startsWith("http://") || path.startsWith("https://")) return path;
-        String base = BuildConfig.API_BASE_URL;
-        if (!base.endsWith("/")) base = base + "/";
-        String p = path.startsWith("/") ? path.substring(1) : path;
-        return base + p;
+    private List<TimelineItem> groupStepsIntoTimeline(List<TreatmentPlan.Step> steps) {
+        List<TimelineItem> items = new ArrayList<>();
+        String lastDate = "";
+        int sessionCount = 0;
+
+        for (TreatmentPlan.Step step : steps) {
+            String date = step.getCreatedAt() != null && step.getCreatedAt().length() >= 10 
+                    ? step.getCreatedAt().substring(0, 10) : "Chưa rõ";
+            
+            // Artificial grouping logic: if date changes, start new session
+            if (!date.equals(lastDate)) {
+                sessionCount++;
+                String title = sessionCount == 1 ? "ĐỢT 1 - KHỞI ĐẦU" : ("ĐỢT " + sessionCount + " - TÁI KHÁM");
+                if (step.isPending() && sessionCount > 1) title = "ĐỢT " + sessionCount + " (DỰ KIẾN)";
+                
+                items.add(new TimelineItem(TimelineItem.TYPE_HEADER, title, date));
+                lastDate = date;
+            }
+            items.add(new TimelineItem(TimelineItem.TYPE_STEP, step));
+        }
+        return items;
     }
 
-    // --- Adapters ---
+    // --- Timeline Adapter & Models ---
 
-    private class TimelineAdapter extends RecyclerView.Adapter<TimelineAdapter.Holder> {
-        private List<TreatmentPlan.Step> items;
+    private static class TimelineItem {
+        static final int TYPE_HEADER = 0;
+        static final int TYPE_STEP = 1;
 
-        TimelineAdapter(List<TreatmentPlan.Step> items) {
-            this.items = items;
-        }
+        int type;
+        String headerTitle, headerDate;
+        TreatmentPlan.Step step;
 
-        void updateItems(List<TreatmentPlan.Step> list) {
-            this.items = list;
-            notifyDataSetChanged();
-        }
+        TimelineItem(int t, String title, String date) { this.type = t; this.headerTitle = title; this.headerDate = date; }
+        TimelineItem(int t, TreatmentPlan.Step s) { this.type = t; this.step = s; }
+    }
 
-        @NonNull
-        @Override
-        public Holder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View v = LayoutInflater.from(parent.getContext()).inflate(R.layout.item_timeline_step, parent, false);
-            return new Holder(v);
-        }
+    private class TimelineAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        private List<TimelineItem> items;
 
-        @Override
-        public void onBindViewHolder(@NonNull Holder holder, int position) {
-            TreatmentPlan.Step step = items.get(position);
-            
-            holder.tvName.setText((position + 1) + ". " + (step.getServiceName() != null ? step.getServiceName() : "Dịch vụ"));
-            
-            String status = step.getStatus();
-            String stDisplay = "Chờ thực hiện";
-            int colorText = android.graphics.Color.parseColor("#64748B"); // slate_500
-            int colorDot = android.graphics.Color.parseColor("#94A3B8"); // slate_400
-            int colorBg = android.graphics.Color.parseColor("#F1F5F9"); // slate_100
-            
-            if ("COMPLETED".equalsIgnoreCase(status)) {
-                stDisplay = "Hoàn thành";
-                colorText = android.graphics.Color.parseColor("#16A34A"); // green_600
-                colorDot = android.graphics.Color.parseColor("#22C55E"); // green_500
-                colorBg = android.graphics.Color.parseColor("#F0FDF4"); // green_50
-            } else if ("IN_PROGRESS".equalsIgnoreCase(status)) {
-                stDisplay = "Đang thực hiện";
-                colorText = android.graphics.Color.parseColor("#D97706"); // amber_600
-                colorDot = android.graphics.Color.parseColor("#F59E0B"); // amber_500
-                colorBg = android.graphics.Color.parseColor("#FFFBEB"); // amber_50
+        TimelineAdapter(List<TimelineItem> items) { this.items = items; }
+        void updateItems(List<TimelineItem> list) { this.items = list; notifyDataSetChanged(); }
+
+        @Override public int getItemViewType(int pos) { return items.get(pos).type; }
+
+        @NonNull @Override
+        public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup p, int vt) {
+            if (vt == TimelineItem.TYPE_HEADER) {
+                return new HeaderHolder(LayoutInflater.from(p.getContext()).inflate(R.layout.item_timeline_session_header, p, false));
             }
-
-            holder.tvStatus.setText(stDisplay);
-            holder.tvStatus.setTextColor(colorText);
-            holder.tvStatus.setBackgroundTintList(android.content.res.ColorStateList.valueOf(colorBg));
-            holder.timelineDot.setColorFilter(colorDot);
-            // Hide the line for the last item
-            if (position == items.size() - 1) {
-                holder.timelineLine.setVisibility(View.INVISIBLE);
-            } else {
-                holder.timelineLine.setVisibility(View.VISIBLE);
-            }
-
-            if (step.getRoomName() != null && !step.getRoomName().isEmpty()) {
-                holder.tvRoom.setVisibility(View.VISIBLE);
-                holder.tvRoom.setText("Phòng khám: " + step.getRoomName());
-            } else {
-                holder.tvRoom.setVisibility(View.GONE);
-            }
-
-            if (step.getDoctorName() != null && !step.getDoctorName().trim().isEmpty()) {
-                holder.tvDoctor.setVisibility(View.VISIBLE);
-                holder.tvDoctor.setText("Bác sĩ: " + step.getDoctorName().trim());
-            } else {
-                holder.tvDoctor.setVisibility(View.GONE);
-            }
-
-            StringBuilder meta = new StringBuilder();
-            if (step.getToothNumber() != null && !step.getToothNumber().trim().isEmpty()) {
-                meta.append("Răng ").append(step.getToothNumber().trim());
-            }
-            if (step.getCompletedAt() != null && !step.getCompletedAt().isEmpty()) {
-                if (meta.length() > 0) meta.append(" • ");
-                meta.append("Hoàn thành: ").append(step.getCompletedAt().replace("T", " "));
-            }
-            if (step.getActualPrice() != null && step.getActualPrice() > 0) {
-                if (meta.length() > 0) meta.append(" • ");
-                meta.append("Chi phí: ").append(String.format("%,.0f VNĐ", step.getActualPrice()));
-            }
-            if (meta.length() > 0) {
-                holder.tvMeta.setVisibility(View.VISIBLE);
-                holder.tvMeta.setText(meta.toString());
-            } else {
-                holder.tvMeta.setVisibility(View.GONE);
-            }
-
-            if (step.getDoctorConclusion() != null && !step.getDoctorConclusion().trim().isEmpty()) {
-                holder.tvNote.setVisibility(View.VISIBLE);
-                holder.tvNote.setText("Ghi chú bác sĩ: " + step.getDoctorConclusion().trim());
-            } else {
-                holder.tvNote.setVisibility(View.GONE);
-            }
-
-            if (step.getImages() != null && !step.getImages().isEmpty()) {
-                holder.rvImages.setVisibility(View.VISIBLE);
-                holder.rvImages.setLayoutManager(new LinearLayoutManager(holder.itemView.getContext(), LinearLayoutManager.HORIZONTAL, false));
-                holder.rvImages.setAdapter(new ImageAdapter(step.getImages()));
-            } else {
-                holder.rvImages.setVisibility(View.GONE);
-            }
+            return new StepHolder(LayoutInflater.from(p.getContext()).inflate(R.layout.item_timeline_step, p, false));
         }
 
         @Override
-        public int getItemCount() {
-            return items.size();
+        public void onBindViewHolder(@NonNull RecyclerView.ViewHolder h, int pos) {
+            TimelineItem item = items.get(pos);
+            if (h instanceof HeaderHolder) {
+                HeaderHolder hh = (HeaderHolder) h;
+                hh.tvTitle.setText(item.headerTitle);
+                hh.tvDate.setText(item.headerDate.substring(5)); // Show MM-DD
+            } else {
+                StepHolder sh = (StepHolder) h;
+                TreatmentPlan.Step step = item.step;
+                
+                sh.tvName.setText(step.getServiceName());
+                sh.tvNumber.setText(String.valueOf(pos)); // Simplified step number logic
+                
+                // Styling based on status
+                boolean isDone = step.isCompleted();
+                sh.tvStatus.setText(isDone ? "Hoàn thành" : (step.isInProgress() ? "Đang thực hiện" : "Chờ"));
+                int color = isDone ? 0xFF10B981 : (step.isInProgress() ? 0xFF3B82F6 : 0xFFD97706);
+                int bg = isDone ? 0xFFD1FAE5 : (step.isInProgress() ? 0xFFDBEAFE : 0xFFFEF3C7);
+                sh.tvStatus.setTextColor(color);
+                sh.tvStatus.setBackgroundTintList(android.content.res.ColorStateList.valueOf(bg));
+                sh.ivStatusIcon.setImageResource(isDone ? R.drawable.ic_check_circle : R.drawable.ic_schedule);
+                sh.ivStatusIcon.setColorFilter(color);
+
+                sh.tvDoctor.setText(step.getDoctorName() != null ? step.getDoctorName() : "Hệ thống chỉ định");
+                sh.tvDuration.setText("30-45 phút"); // Placeholder or dynamic if exists
+                
+                if (step.getDoctorConclusion() != null && !step.getDoctorConclusion().isEmpty()) {
+                    sh.llNote.setVisibility(View.VISIBLE);
+                    sh.tvNote.setText(step.getDoctorConclusion());
+                } else {
+                    sh.llNote.setVisibility(View.GONE);
+                }
+
+                // Node coloring
+                sh.nodeLine.setBackgroundColor(isDone ? 0xFF10B981 : 0xFFCBD5E1);
+                sh.tvNumber.setBackgroundTintList(android.content.res.ColorStateList.valueOf(isDone ? 0xFF10B981 : 0xFFCBD5E1));
+
+                // Icons based on service name
+                String name = step.getServiceName().toLowerCase();
+                if (name.contains("khám")) sh.ivIcon.setImageResource(R.drawable.ic_treatment_plan);
+                else if (name.contains("răng")) sh.ivIcon.setImageResource(R.drawable.ic_clinic);
+                else sh.ivIcon.setImageResource(R.drawable.ic_treatment_plan);
+                
+                sh.btnAction.setVisibility(step.isPending() ? View.VISIBLE : View.GONE);
+                sh.btnAction.setOnClickListener(v -> {
+                    Intent intent = new Intent(TreatmentPlanDetailActivity.this, BookAppointmentActivity.class);
+                    startActivity(intent);
+                });
+            }
         }
 
-        class Holder extends RecyclerView.ViewHolder {
-            ImageView timelineDot;
-            View timelineLine;
-            TextView tvName, tvStatus, tvRoom, tvDoctor, tvMeta, tvNote;
-            RecyclerView rvImages;
+        @Override public int getItemCount() { return items.size(); }
 
-            Holder(View v) {
+        class HeaderHolder extends RecyclerView.ViewHolder {
+            TextView tvTitle, tvDate;
+            HeaderHolder(View v) { super(v); tvTitle = v.findViewById(R.id.tvSessionTitle); tvDate = v.findViewById(R.id.tvSessionDate); }
+        }
+
+        class StepHolder extends RecyclerView.ViewHolder {
+            TextView tvName, tvStatus, tvDoctor, tvDuration, tvNote, tvNumber;
+            ImageView ivIcon, ivStatusIcon;
+            View nodeLine, llNote;
+            MaterialButton btnAction;
+            StepHolder(View v) {
                 super(v);
-                timelineDot = v.findViewById(R.id.timelineDot);
-                timelineLine = v.findViewById(R.id.timelineLine);
                 tvName = v.findViewById(R.id.tvStepName);
                 tvStatus = v.findViewById(R.id.tvStepStatus);
-                tvRoom = v.findViewById(R.id.tvStepRoom);
                 tvDoctor = v.findViewById(R.id.tvStepDoctor);
-                tvMeta = v.findViewById(R.id.tvStepMeta);
+                tvDuration = v.findViewById(R.id.tvStepDuration);
                 tvNote = v.findViewById(R.id.tvDoctorConclusion);
-                rvImages = v.findViewById(R.id.rvStepImages);
+                tvNumber = v.findViewById(R.id.tvStepNumber);
+                ivIcon = v.findViewById(R.id.ivStepIcon);
+                ivStatusIcon = v.findViewById(R.id.ivStepStatusIcon);
+                nodeLine = v.findViewById(R.id.timelineLine);
+                llNote = v.findViewById(R.id.llNoteInfo);
+                btnAction = v.findViewById(R.id.btnStepAction);
             }
-        }
-    }
-
-    private class ImageAdapter extends RecyclerView.Adapter<ImageAdapter.ImgHolder> {
-        private List<TreatmentPlan.Step.ImageItem> images;
-
-        ImageAdapter(List<TreatmentPlan.Step.ImageItem> images) {
-            this.images = images;
-        }
-
-        @NonNull
-        @Override
-        public ImgHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            ImageView iv = new ImageView(parent.getContext());
-            int size = (int) (80 * parent.getContext().getResources().getDisplayMetrics().density);
-            ViewGroup.MarginLayoutParams lp = new ViewGroup.MarginLayoutParams(size, size);
-            lp.setMarginEnd(16);
-            iv.setLayoutParams(lp);
-            iv.setScaleType(ImageView.ScaleType.CENTER_CROP);
-            return new ImgHolder(iv);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull ImgHolder holder, int position) {
-            String url = resolveMediaUrl(images.get(position).getImageUrl());
-            Glide.with(holder.itemView.getContext()).load(url).into(holder.iv);
-
-            holder.iv.setOnClickListener(v -> {
-                // Open dialog to view full image
-                android.app.AlertDialog.Builder builder = new android.app.AlertDialog.Builder(TreatmentPlanDetailActivity.this);
-                ImageView fullIv = new ImageView(TreatmentPlanDetailActivity.this);
-                fullIv.setScaleType(ImageView.ScaleType.FIT_CENTER);
-                Glide.with(fullIv.getContext()).load(url).into(fullIv);
-                builder.setView(fullIv);
-                builder.setPositiveButton("Đóng", null);
-                builder.show();
-            });
-        }
-
-        @Override
-        public int getItemCount() { return images.size(); }
-        
-        class ImgHolder extends RecyclerView.ViewHolder {
-            ImageView iv;
-            ImgHolder(ImageView v) { super(v); iv = v; }
         }
     }
 }

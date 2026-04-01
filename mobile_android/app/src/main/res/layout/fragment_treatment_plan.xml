@@ -8,19 +8,20 @@
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="180dp"
+        android:layout_height="200dp"
         android:background="@android:color/transparent"
         app:elevation="0dp">
 
         <com.google.android.material.appbar.CollapsingToolbarLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            app:layout_scrollFlags="scroll|exitUntilCollapsed">
+            app:layout_scrollFlags="scroll|exitUntilCollapsed"
+            app:titleEnabled="false">
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="@drawable/bg_premium_gradient_blue" />
+                android:background="@drawable/bg_medical_header_gradient" />
 
             <androidx.appcompat.widget.Toolbar
                 android:layout_width="match_parent"
@@ -32,25 +33,27 @@
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
                 android:layout_gravity="bottom"
-                android:padding="24dp">
+                android:padding="28dp">
                 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Your Health"
-                    android:textColor="#BBDEFB"
-                    android:textSize="14sp"
-                    android:textStyle="bold"/>
+                    android:text="SỨC KHỎE CỦA BẠN"
+                    android:textColor="#E3F2FD"
+                    android:textSize="11sp"
+                    android:textStyle="bold"
+                    android:letterSpacing="0.2"/>
 
                 <TextView
                     android:id="@+id/tvTitle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Treatment Plan"
+                    android:layout_marginTop="4dp"
+                    android:text="Phác đồ điều trị"
                     android:textColor="@color/white"
-                    android:textSize="28sp"
+                    android:textSize="32sp"
                     android:textStyle="bold"
-                    android:fontFamily="sans-serif-medium"/>
+                    android:fontFamily="sans-serif-black"/>
             </LinearLayout>
 
         </com.google.android.material.appbar.CollapsingToolbarLayout>
@@ -60,21 +63,142 @@
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         app:layout_behavior="@string/appbar_scrolling_view_behavior"
-        android:fillViewport="true">
+        android:fillViewport="true"
+        android:background="#F9FAFB">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingHorizontal="20dp"
-            android:paddingTop="20dp">
+            android:paddingBottom="100dp">
+
+            <!-- Hero Progress Card (Redesigned) -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardOverallProgress"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="20dp"
+                android:layout_marginVertical="16dp"
+                android:visibility="gone"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="2dp"
+                app:strokeWidth="1dp"
+                app:strokeColor="#EEF2F7">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="20dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical">
+                        
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="24dp"
+                            android:src="@drawable/ic_treatment_plan"
+                            app:tint="@color/primary_trust_blue" />
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="10dp"
+                            android:text="TIẾN ĐỘ ĐIỀU TRỊ"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.05" />
+
+                        <TextView
+                            android:id="@+id/tvOverallProgressLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="ĐANG THỰC HIỆN"
+                            android:textColor="@color/primary_trust_blue"
+                            android:textSize="11sp"
+                            android:textStyle="bold"
+                            android:background="@drawable/bg_pill_soft_blue"
+                            android:paddingHorizontal="10dp"
+                            android:paddingVertical="4dp" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginTop="20dp"
+                        android:gravity="center_vertical">
+
+                        <FrameLayout
+                            android:layout_width="90dp"
+                            android:layout_height="90dp">
+                            
+                            <com.google.android.material.progressindicator.CircularProgressIndicator
+                                android:id="@+id/cpOverall"
+                                android:layout_width="90dp"
+                                android:layout_height="90dp"
+                                app:indicatorSize="90dp"
+                                app:trackThickness="8dp"
+                                app:indicatorColor="@color/primary_trust_blue"
+                                app:trackColor="#F1F5F9"
+                                android:progress="0"
+                                app:trackCornerRadius="10dp" />
+
+                            <TextView
+                                android:id="@+id/tvOverallProgressPercent"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_gravity="center"
+                                android:text="0%"
+                                android:textColor="@color/text_primary"
+                                android:textSize="20sp"
+                                android:textStyle="bold" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:layout_marginStart="24dp"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Hành trình nụ cười"
+                                android:textColor="@color/text_primary"
+                                android:textSize="16sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:text="Hoàn thành các bước để đạt kết quả tốt nhất."
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="56dp"
+                            android:layout_height="56dp"
+                            android:src="@drawable/ic_3d_braces_premium"
+                            android:alpha="0.9" />
+                    </LinearLayout>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <ProgressBar
                 android:id="@+id/progress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
-                android:layout_marginTop="40dp"
+                android:layout_marginTop="20dp"
                 android:visibility="gone" />
 
             <TextView
@@ -83,7 +207,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:textColor="@color/text_secondary"
-                android:layout_marginTop="40dp"
+                android:layout_marginTop="20dp"
                 android:visibility="gone" />
 
             <androidx.recyclerview.widget.RecyclerView
@@ -91,7 +215,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clipToPadding="false"
-                android:paddingBottom="100dp"/>
+                android:nestedScrollingEnabled="false" />
 
             <!-- Premium Empty State -->
             <LinearLayout
@@ -101,32 +225,32 @@
                 android:orientation="vertical"
                 android:gravity="center"
                 android:padding="32dp"
-                android:layout_marginTop="40dp"
+                android:layout_marginTop="20dp"
                 android:background="@drawable/bg_glass_card"
+                android:layout_marginHorizontal="16dp"
                 android:visibility="gone">
 
                 <ImageView
-                    android:layout_width="120dp"
-                    android:layout_height="120dp"
+                    android:layout_width="100dp"
+                    android:layout_height="100dp"
                     android:src="@drawable/ic_3d_tooth_megaphone_offer_v2"
-                    android:layout_marginBottom="24dp"
-                    android:alpha="0.9" />
+                    android:layout_marginBottom="16dp"
+                    android:alpha="0.8" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Chưa có kế hoạch điều trị"
+                    android:text="Chưa có phác đồ"
                     android:textColor="@color/text_primary"
-                    android:textSize="20sp"
-                    android:textStyle="bold"
-                    android:layout_marginBottom="8dp" />
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Kế hoạch của bạn sẽ xuất hiện tại đây sau khi bác sĩ thăm khám."
+                    android:text="Bác sĩ sẽ lập phác đồ sau khi khám."
                     android:textColor="#6B7280"
-                    android:textSize="14sp"
+                    android:textSize="13sp"
                     android:textAlignment="center" />
             </LinearLayout>
 

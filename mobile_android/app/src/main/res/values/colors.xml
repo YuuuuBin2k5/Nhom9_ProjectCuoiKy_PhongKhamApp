@@ -3,7 +3,8 @@
     <!-- Existing colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    
+    <color name="white_trans">#80FFFFFF</color>
+
     <!-- Design System Colors -->
     <color name="primary_trust_blue">#1A56DB</color>
     <color name="primary_trust_blue_light_trans">#261A56DB</color>

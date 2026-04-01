@@ -1,174 +1,177 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8FAFC"
-    android:orientation="vertical"
+    android:background="#F5F7FA"
     android:fitsSystemWindows="true">
 
-    <com.google.android.material.appbar.MaterialToolbar
-        android:id="@+id/toolbar"
-        android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
-        android:background="@android:color/white"
-        app:title="Chi tiết liệu trình"
-        app:titleTextColor="#1E293B"
-        app:titleCentered="true"
-        app:navigationIcon="@drawable/ic_back"
-        app:navigationIconTint="#1E293B"
-        android:elevation="2dp" />
-
     <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollMain"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:layout_above="@+id/btnBottomAction"
         android:clipToPadding="false"
-        android:fillViewport="true"
-        android:paddingBottom="24dp">
+        android:fillViewport="true">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Overview Header Card -->
-            <com.google.android.material.card.MaterialCardView
+            <!-- Premium Header with Gradient & Progress -->
+            <FrameLayout
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                app:cardBackgroundColor="@color/white"
-                app:cardCornerRadius="16dp"
-                app:cardElevation="0dp"
-                app:strokeColor="#E2E8F0"
-                app:strokeWidth="1dp">
+                android:layout_height="wrap_content">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="320dp"
+                    android:background="@drawable/bg_gradient_header" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:gravity="center_horizontal"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:paddingTop="16dp"
+                    android:paddingBottom="48dp">
 
-                    <LinearLayout
+                    <com.google.android.material.appbar.MaterialToolbar
+                        android:id="@+id/toolbar"
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:layout_height="?attr/actionBarSize"
+                        app:navigationIcon="@drawable/ic_back"
+                        app:navigationIconTint="@color/white"
+                        app:title="LỘ TRÌNH ĐIỀU TRỊ"
+                        app:titleCentered="true"
+                        app:titleTextColor="@color/white" />
 
-                        <ImageView
-                            android:layout_width="24dp"
-                            android:layout_height="24dp"
-                            android:src="@drawable/ic_treatment_plan"
-                            app:tint="#3B82F6" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="8dp"
-                            android:letterSpacing="0.02"
-                            android:text="Lộ trình Điều trị"
-                            android:textColor="@color/text_primary"
-                            android:textSize="18sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
-
-                    <TextView
-                        android:id="@+id/tvPlanStatus"
+                    <!-- Circular Progress Visual -->
+                    <FrameLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:background="@drawable/bg_pill_green"
-                        android:paddingHorizontal="12dp"
-                        android:paddingVertical="4dp"
-                        android:textColor="#16A34A"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        tools:text="Đang điều trị" />
+                        android:layout_marginTop="20dp">
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:orientation="horizontal"
-                        android:weightSum="100">
+                        <FrameLayout
+                            android:layout_width="160dp"
+                            android:layout_height="160dp">
 
-                        <!-- Start Date -->
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="50"
-                            android:orientation="vertical">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Tạo ngày"
-                                android:textColor="#64748B"
-                                android:textSize="13sp" />
-                            <TextView
-                                android:id="@+id/tvPlanDate"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textColor="#334155"
-                                android:textSize="15sp"
-                                android:textStyle="bold"
-                                tools:text="12/03/2026" />
-                        </LinearLayout>
+                            <com.google.android.material.progressindicator.CircularProgressIndicator
+                                android:id="@+id/cpOverallProgress"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:layout_gravity="center"
+                                app:indicatorColor="@color/white"
+                                app:indicatorSize="140dp"
+                                app:trackColor="#40FFFFFF"
+                                app:trackThickness="10dp"
+                                app:trackCornerRadius="8dp"
+                                android:progress="45" />
 
-                        <!-- Progress info -->
-                        <LinearLayout
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_weight="50"
-                            android:orientation="vertical">
-                            <TextView
+                            <LinearLayout
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="Tiến độ"
-                                android:textColor="#64748B"
-                                android:textSize="13sp" />
-                            <TextView
-                                android:id="@+id/tvPlanProgress"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:textColor="#334155"
-                                android:textSize="15sp"
-                                android:textStyle="bold"
-                                tools:text="2/5 bước hoàn thành" />
-                        </LinearLayout>
-                    </LinearLayout>
+                                android:layout_gravity="center"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:id="@+id/tvProgressPercent"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="0%"
+                                    android:textColor="@color/white"
+                                    android:textSize="32sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Complete"
+                                    android:textColor="@color/white"
+                                    android:textSize="14sp" />
+
+                                <TextView
+                                    android:id="@+id/tvProgressBadge"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:background="@drawable/bg_pill_generic"
+                                    android:backgroundTint="#80FFFFFF"
+                                    android:paddingHorizontal="10dp"
+                                    android:paddingVertical="2dp"
+                                    android:text="TIẾN ĐỘ TỔNG THỂ"
+                                    android:textColor="@color/white"
+                                    android:textSize="10sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+                        </FrameLayout>
+                    </FrameLayout>
                 </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
 
-            <!-- Timeline Title -->
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="20dp"
-                android:layout_marginTop="16dp"
-                android:layout_marginBottom="8dp"
-                android:text="Các bước thực hiện"
-                android:textColor="#1E293B"
-                android:textSize="16sp"
-                android:textStyle="bold" />
+                <!-- Floating Illustration (Optional but looks like it in the prompt) -->
+                <ImageView
+                    android:layout_width="120dp"
+                    android:layout_height="120dp"
+                    android:layout_gravity="bottom|end"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginBottom="8dp"
+                    android:src="@drawable/ic_clinic"
+                    android:visibility="gone"
+                    app:tint="@color/white_trans" />
+            </FrameLayout>
 
-            <ProgressBar
-                android:id="@+id/progressPlanDetail"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:layout_marginTop="24dp"
-                android:visibility="gone" />
-
-            <!-- Timeline RecyclerView -->
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvTimeline"
+            <!-- Timeline Content -->
+            <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:nestedScrollingEnabled="false"
-                android:clipToPadding="false"
+                android:layout_marginTop="-32dp"
+                android:background="@drawable/bg_sheet_top_rounded"
+                android:elevation="4dp"
+                android:orientation="vertical"
                 android:paddingHorizontal="16dp"
-                android:overScrollMode="never" />
+                android:paddingTop="24dp">
 
+                <ProgressBar
+                    android:id="@+id/progressPlanDetail"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="center"
+                    android:layout_marginTop="24dp"
+                    android:visibility="gone" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvTimeline"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipToPadding="false"
+                    android:nestedScrollingEnabled="false"
+                    android:overScrollMode="never" />
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="40dp" /> <!-- Bottom padding -->
+            </LinearLayout>
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 
-</LinearLayout>
+    <!-- Fixed Bottom Button -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnBottomAction"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:layout_alignParentBottom="true"
+        android:layout_margin="16dp"
+        android:insetTop="0dp"
+        android:insetBottom="0dp"
+        android:text="LIÊN HỆ BÁC SĨ"
+        android:textAllCaps="true"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:cornerRadius="12dp"
+        app:icon="@drawable/ic_message"
+        app:iconGravity="textStart" />
+
+</RelativeLayout>
