@@ -459,8 +459,16 @@ public class BookAppointmentActivity extends AppCompatActivity {
             boolean f = n.contains("hà") || n.contains("thu") || n.contains("mai") || n.contains("lan");
             int fallback = f ? females[pos % females.length] : males[pos % males.length];
 
-            if (d.getAvatarUrl() != null && !d.getAvatarUrl().isEmpty()) {
-                Glide.with(h.ivAvatar.getContext()).load(d.getAvatarUrl()).centerCrop().placeholder(fallback).error(fallback).into(h.ivAvatar);
+            String avatarUrl = d.getAvatarUrl();
+            if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                String finalUrl = avatarUrl;
+                if (!avatarUrl.startsWith("http")) {
+                    String base = com.hcmute.mobile_android.BuildConfig.API_BASE_URL;
+                    if (!base.endsWith("/")) base = base + "/";
+                    String p = avatarUrl.startsWith("/") ? avatarUrl.substring(1) : avatarUrl;
+                    finalUrl = base + "uploads/" + p;
+                }
+                Glide.with(h.ivAvatar.getContext()).load(finalUrl).centerCrop().placeholder(fallback).error(fallback).into(h.ivAvatar);
             } else {
                 h.ivAvatar.setImageResource(fallback);
             }

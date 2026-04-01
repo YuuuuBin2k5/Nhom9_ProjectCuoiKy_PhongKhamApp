@@ -16,6 +16,9 @@ public interface CheckInQueueRepository extends JpaRepository<CheckInQueue, Long
 
     Optional<CheckInQueue> findByAppointmentId(Long appointmentId);
 
+    List<CheckInQueue> findByStatusInAndCheckInTimeBetween(
+            List<QueueStatus> statuses, LocalDateTime start, LocalDateTime end);
+
     List<CheckInQueue> findByClinicRoomIdAndStatusInAndCheckInTimeBetweenOrderByPriorityLevelDescQueueNumberAsc(
             Long clinicRoomId, List<QueueStatus> statuses, LocalDateTime start, LocalDateTime end);
 

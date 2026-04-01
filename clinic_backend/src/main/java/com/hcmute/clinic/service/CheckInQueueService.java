@@ -57,6 +57,44 @@ public class CheckInQueueService {
     private final QueueEstimationService estimationService;
 
     @Transactional
+    public void addToQueue(Long patientId, Long roomId) {
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bệnh nhân không tồn tại"));
+        ClinicRoom room = clinicRoomRepository.findById(roomId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phòng khám không tồn tại"));
+
+        LocalDate today = LocalDate.now();
+        List<CheckInQueue> existingQueues = checkInQueueRepository.findTodayForPatient(patientId, today.atStartOfDay(), today.plusDays(1).atStartOfDay());
+        
+        CheckInQueue activeQueue = existingQueues.stream()
+                .filter(q -> q.getStatus() == QueueStatus.WAITING || 
+                             q.getStatus() == QueueStatus.IN_PROGRESS || 
+                             q.getStatus() == QueueStatus.PAUSED_FOR_TEST ||
+                             q.getStatus() == QueueStatus.RETURNED_PRIORITY)
+                .findFirst()
+                .orElse(null);
+
+        if (activeQueue != null) {
+            // If already in queue, just transfer to next room with priority
+            ClinicRoom oldRoom = activeQueue.getClinicRoom();
+            if (activeQueue.getOriginalRoomId() == null && oldRoom != null) {
+                activeQueue.setOriginalRoomId(oldRoom.getId());
+            }
+            activeQueue.setClinicRoom(room);
+            activeQueue.setStatus(QueueStatus.WAITING);
+            activeQueue.setPriorityLevel((activeQueue.getPriorityLevel() != null ? activeQueue.getPriorityLevel() : 0) + 5);
+            checkInQueueRepository.save(activeQueue);
+            
+            if (oldRoom != null) queueEventService.broadcastQueueUpdated(oldRoom.getId());
+            queueEventService.broadcastQueueUpdated(room.getId());
+        } else {
+            // Cannot create a queue here because CheckInQueue requires an Appointment
+            // A mid-treatment transfer implies the patient MUST already be tracked in a queue
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bệnh nhân chưa check-in hoặc không có trong hàng đợi hôm nay");
+        }
+    }
+
+    @Transactional
     public CheckInResult processScan(String qrData) {
         if (qrData == null || qrData.isBlank()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "QR data is required");
@@ -709,19 +747,37 @@ public class CheckInQueueService {
         }
     }
 
+    /**
+     * Delay a WAITING patient by one position in the queue
+     * Use case: Patient in waiting room wants to give their turn to the next person
+     * 
+     * This is DIFFERENT from skipCurrentPatient which handles IN_PROGRESS patients
+     * 
+     * Logic:
+     * 1. Find patient's position in sorted waiting list (by priority DESC, queueNumber ASC)
+     * 2. Swap queueNumber with next person in line
+     * 3. Broadcast update
+     * 
+     * Note: This does NOT change priorityLevel, only queueNumber
+     */
     @Transactional
     public void delayPatient(Long queueId) {
         CheckInQueue q = checkInQueueRepository.findById(queueId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hàng đợi"));
         
+        // Only allow delaying patients who are WAITING (not being examined)
         if (q.getStatus() != QueueStatus.WAITING && q.getStatus() != QueueStatus.RETURNED_PRIORITY) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ có thể lùi lượt cho bệnh nhân đang chờ");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                "Chỉ có thể lùi lượt cho bệnh nhân đang chờ. Nếu bệnh nhân đang khám, vui lòng dùng chức năng 'Lùi 1 người' (Skip).");
         }
 
         ClinicRoom room = q.getClinicRoom();
-        if (room == null) return;
+        if (room == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy thông tin phòng khám");
+        }
 
         LocalDate today = LocalDate.now();
+        // Get waiting list sorted by priority DESC, queueNumber ASC (same as display order)
         List<CheckInQueue> waitingList = checkInQueueRepository.findByRoomAndDateRange(
                 room.getId(),
                 today.atStartOfDay(),
@@ -729,6 +785,7 @@ public class CheckInQueueService {
                 List.of(QueueStatus.WAITING, QueueStatus.RETURNED_PRIORITY)
         );
 
+        // Find current patient's position in the sorted list
         int index = -1;
         for (int i = 0; i < waitingList.size(); i++) {
             if (waitingList.get(i).getId().equals(q.getId())) {
@@ -737,29 +794,54 @@ public class CheckInQueueService {
             }
         }
 
-        if (index != -1 && index < waitingList.size() - 1) {
-            CheckInQueue nextQ = waitingList.get(index + 1);
-            
-            // Lùi bằng cách: Hoán đổi queue number với người tiếp theo
-            // CHỈ swap queueNumber, KHÔNG swap priorityLevel
-            // Vì priorityLevel có ý nghĩa riêng (X-ray return = +10, room transfer = +5)
-            Integer tempQueueNum = q.getQueueNumber();
-            q.setQueueNumber(nextQ.getQueueNumber());
-            nextQ.setQueueNumber(tempQueueNum);
-
-            checkInQueueRepository.saveAll(List.of(q, nextQ));
-            broadcastRoom(room);
+        // Validate: patient must be in list and not last
+        if (index == -1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy bệnh nhân trong hàng đợi");
         }
+        
+        if (index >= waitingList.size() - 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bệnh nhân đã ở cuối hàng đợi, không thể lùi thêm");
+        }
+
+        CheckInQueue nextQ = waitingList.get(index + 1);
+        
+        // Swap queueNumber to change display order
+        // We only swap queueNumber, NOT priorityLevel
+        // Because priorityLevel has special meaning (X-ray return = +10, room transfer = +5)
+        Integer tempQueueNum = q.getQueueNumber();
+        q.setQueueNumber(nextQ.getQueueNumber());
+        nextQ.setQueueNumber(tempQueueNum);
+
+        checkInQueueRepository.saveAll(List.of(q, nextQ));
+        
+        log.info("[delayPatient] Swapped queue #{} (patient {}) with queue #{} (patient {}) in room {}", 
+                tempQueueNum, q.getId(), nextQ.getQueueNumber(), nextQ.getId(), room.getName());
+        
+        broadcastRoom(room);
     }
 
     /**
      * Skip current patient (IN_PROGRESS) and call next patient
-     * Use case: Doctor needs more time with current patient (waiting for anesthesia, X-ray results, etc.)
+     * 
+     * Use case (from UC_24_ProcessQueue.md):
+     * - Doctor calls patient A into room (IN_PROGRESS)
+     * - Patient A is not present OR needs time (waiting for anesthesia, X-ray results, etc.)
+     * - Doctor wants to see next patient B instead
+     * - System moves A back to waiting with higher priority
+     * - System automatically calls B into room
      * 
      * Workflow:
-     * 1. Current patient (IN_PROGRESS) → WAITING with +5 priority
-     * 2. Next patient (WAITING) → IN_PROGRESS (auto-called)
-     * 3. Broadcast updates to all clients
+     * 1. Validate: current patient must be IN_PROGRESS
+     * 2. Move current patient → WAITING with +5 priority (so they get priority when ready)
+     * 3. Find next waiting patient (by priority DESC, queueNumber ASC)
+     * 4. Auto-call next patient → IN_PROGRESS
+     * 5. Broadcast updates to all clients (doctor app, patient app, TV display)
+     * 
+     * This ensures:
+     * - No patient is lost or forgotten
+     * - Skipped patient gets priority when they return
+     * - Queue keeps moving efficiently
+     * - Real-time updates for all stakeholders
      */
     @Transactional
     public void skipCurrentPatient(Long queueId) {
@@ -768,7 +850,9 @@ public class CheckInQueueService {
         
         // Validate: Only IN_PROGRESS patients can be skipped
         if (current.getStatus() != QueueStatus.IN_PROGRESS) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chỉ có thể lùi bệnh nhân đang khám (IN_PROGRESS)");
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                "Chỉ có thể lùi bệnh nhân đang khám (IN_PROGRESS). " +
+                "Trạng thái hiện tại: " + current.getStatus());
         }
 
         ClinicRoom room = current.getClinicRoom();
@@ -776,41 +860,78 @@ public class CheckInQueueService {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy thông tin phòng khám");
         }
 
+        // Get patient info for logging
+        String patientName = "";
+        if (current.getAppointment() != null && current.getAppointment().getPatient() != null) {
+            Patient p = current.getAppointment().getPatient();
+            patientName = (p.getLastName() + " " + p.getFirstName()).trim();
+        }
+
         // Mark duration tracking as completed (for statistics)
         try {
             durationTracker.markCompleted(current);
         } catch (Exception e) {
-            log.warn("Failed to mark duration for skipped patient: {}", e.getMessage());
+            log.warn("[skipCurrentPatient] Failed to mark duration for skipped patient: {}", e.getMessage());
         }
 
         // Move current patient back to WAITING with +5 priority
+        // This ensures they get priority over new walk-ins but after X-ray returns (+10)
         current.setStatus(QueueStatus.WAITING);
         int currentPriority = current.getPriorityLevel() != null ? current.getPriorityLevel() : 0;
         current.setPriorityLevel(currentPriority + 5); // +5 for each skip
+        current.setStartedAt(null); // Clear started time since they're back to waiting
         checkInQueueRepository.save(current);
         
-        log.info("[skipCurrentPatient] Moved queue #{} back to WAITING with priority {}", 
-                current.getId(), current.getPriorityLevel());
+        log.info("[skipCurrentPatient] Moved queue #{} (patient: {}) back to WAITING with priority {} in room {}", 
+                current.getId(), patientName, current.getPriorityLevel(), room.getName());
 
-        // Find next patient in queue
+        // Find next patient in queue (sorted by priority DESC, queueNumber ASC)
         CheckInQueue next = findNextWaitingPatient(room.getId());
         
         if (next != null) {
+            String nextPatientName = "";
+            if (next.getAppointment() != null && next.getAppointment().getPatient() != null) {
+                Patient p = next.getAppointment().getPatient();
+                nextPatientName = (p.getLastName() + " " + p.getFirstName()).trim();
+            }
+            
             // Call next patient to room
             next.setStatus(QueueStatus.IN_PROGRESS);
+            next.setStartedAt(LocalDateTime.now());
             durationTracker.markStarted(next);
             checkInQueueRepository.save(next);
             
-            log.info("[skipCurrentPatient] Called next patient queue #{} to room", next.getId());
+            log.info("[skipCurrentPatient] Auto-called next patient queue #{} (patient: {}) to room {}", 
+                    next.getId(), nextPatientName, room.getName());
             
-            // Broadcast queue called event
+            // Broadcast queue called event (for TV display and patient app notification)
             queueEventService.broadcastQueueCalled(room.getId(), next.getQueueNumber(), room.getName());
+            
+            // Send notification to next patient
+            if (next.getAppointment() != null && next.getAppointment().getPatient() != null) {
+                Patient nextPatient = next.getAppointment().getPatient();
+                try {
+                    Notification notif = Notification.builder()
+                            .patient(nextPatient)
+                            .title("Đến lượt khám")
+                            .message("Vui lòng vào " + room.getName() + ". Số thứ tự: " + next.getQueueNumber())
+                            .type("QUEUE_CALLED")
+                            .build();
+                    notificationRepository.save(notif);
+                    fcmService.sendNotification(nextPatient.getFcmToken(), notif.getTitle(), notif.getMessage());
+                } catch (Exception e) {
+                    log.warn("[skipCurrentPatient] Failed to send notification to next patient: {}", e.getMessage());
+                }
+            }
         } else {
-            log.info("[skipCurrentPatient] No next patient available in queue");
+            log.info("[skipCurrentPatient] No next patient available in queue for room {}", room.getName());
         }
 
-        // Broadcast queue update to all clients
+        // Broadcast queue update to all clients (doctor app, patient apps, TV)
         broadcastRoom(room);
+        
+        log.info("[skipCurrentPatient] Successfully skipped patient {} and called next patient in room {}", 
+                patientName, room.getName());
     }
 
     /**

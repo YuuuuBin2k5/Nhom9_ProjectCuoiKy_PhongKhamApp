@@ -32,4 +32,5 @@ public class PrescriptionDetail {
     private String frequency;
     private String duration;
     private String unit;
+    private Integer quantity;
 }

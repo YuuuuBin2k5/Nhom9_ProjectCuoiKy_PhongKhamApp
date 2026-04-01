@@ -1,0 +1,23 @@
+@startuml SE_21_ManageInvoices
+title Sequence Diagram: SE_21 Quản lý Hóa đơn
+actor "Admin" as Admin
+participant "View\n(AdminInvoiceActivity)" as View
+participant "InvoiceController" as Controller
+participant "InvoiceService" as Service
+participant "InvoiceRepository" as Repo
+database "PostgreSQL" as DB
+
+Admin -> View: Yêu cầu Refund hóa đơn
+activate View
+View -> Controller: refundInvoice(invoiceId)
+activate Controller
+Controller -> Service: processRefund(invoiceId)
+activate Service
+Service -> Repo: findById(invoiceId)
+Repo -> DB: SELECT * FROM invoice...
+Service -> DB: UPDATE invoice SET status='REFUNDED'
+Service --> Controller: success
+Controller --> View: 200 OK
+View --> Admin: Hiển thị trạng thái Đã hoàn tiền
+deactivate View
+@enduml

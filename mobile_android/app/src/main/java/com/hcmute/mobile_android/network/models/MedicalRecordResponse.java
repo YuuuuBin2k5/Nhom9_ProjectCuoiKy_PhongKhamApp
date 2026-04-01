@@ -68,10 +68,16 @@ public class MedicalRecordResponse {
     public static class PrescriptionDetail {
         private String medicineName;
         private String dosage;
+        private String frequency;
+        private String duration;
+        private String unit;
         private Integer quantity;
 
         public String getMedicineName() { return medicineName; }
         public String getDosage() { return dosage; }
+        public String getFrequency() { return frequency; }
+        public String getDuration() { return duration; }
+        public String getUnit() { return unit; }
         public Integer getQuantity() { return quantity; }
     }
     
@@ -81,10 +87,12 @@ public class MedicalRecordResponse {
         private String toothNumber;
         private String notes;
         private String completedAt;
+        private List<String> imageUrls;
         
         public String getServiceName() { return serviceName; }
         public String getToothNumber() { return toothNumber; }
         public String getNotes() { return notes; }
         public String getCompletedAt() { return completedAt; }
+        public List<String> getImageUrls() { return imageUrls; }
     }
 }

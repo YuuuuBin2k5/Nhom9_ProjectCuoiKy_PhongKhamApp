@@ -30,6 +30,7 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
         void onToothSelected(int toothNumber);
         void onStepSave(TreatmentPlan.Step step);
         void onStepTransfer(TreatmentPlan.Step step);
+        void onViewImages(TreatmentPlan.Step step);
     }
 
     public TreatmentStepAdapter(List<TreatmentPlan.Step> stepList, OnStepActionListener listener) {
@@ -104,6 +105,7 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
         private MaterialButton btnComplete;
         private MaterialButton btnTransfer;
         private MaterialButton btnCancel;
+        private MaterialButton btnViewImages;
         private android.widget.ImageButton btnRemoveStep;
 
         public StepViewHolder(@NonNull View itemView) {
@@ -122,6 +124,7 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
             btnComplete = itemView.findViewById(R.id.btnComplete);
             btnTransfer = itemView.findViewById(R.id.btnTransfer);
             btnCancel = itemView.findViewById(R.id.btnCancel);
+            btnViewImages = itemView.findViewById(R.id.btnViewImages);
             btnRemoveStep = itemView.findViewById(R.id.btnRemoveStep);
         }
 
@@ -200,6 +203,14 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
                     listener.onStepCancel(step);
                 }
             });
+
+            if (btnViewImages != null) {
+                btnViewImages.setOnClickListener(v -> {
+                    if (listener != null) {
+                        listener.onViewImages(step);
+                    }
+                });
+            }
             
             // Room Name
             if (step.getRoomName() != null && !step.getRoomName().isEmpty()) {
@@ -287,6 +298,10 @@ public class TreatmentStepAdapter extends RecyclerView.Adapter<TreatmentStepAdap
             // Default visibility
             btnTransfer.setVisibility(View.GONE);
             btnCancel.setVisibility(View.GONE);
+            if (btnViewImages != null) {
+                boolean hasImages = step.getImageUrls() != null && !step.getImageUrls().isEmpty();
+                btnViewImages.setVisibility(hasImages ? View.VISIBLE : View.GONE);
+            }
 
             if (isDraft) {
                 // Draft mode - everything can be edited or removed (we mock "Edit" as "Change")

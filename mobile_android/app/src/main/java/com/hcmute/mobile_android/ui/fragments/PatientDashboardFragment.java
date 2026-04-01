@@ -606,9 +606,17 @@ public class PatientDashboardFragment extends Fragment {
                 fallbackIndex = isFemale ? femaleAvatars[position % femaleAvatars.length] : maleAvatars[position % maleAvatars.length];
             }
 
-            if (d.getAvatarUrl() != null && !d.getAvatarUrl().isEmpty()) {
+            String avatarUrl = d.getAvatarUrl();
+            if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                String finalUrl = avatarUrl;
+                if (!avatarUrl.startsWith("http")) {
+                    String base = com.hcmute.mobile_android.BuildConfig.API_BASE_URL;
+                    if (!base.endsWith("/")) base = base + "/";
+                    String p = avatarUrl.startsWith("/") ? avatarUrl.substring(1) : avatarUrl;
+                    finalUrl = base + "uploads/" + p;
+                }
                 Glide.with(holder.imgDoctor.getContext())
-                        .load(d.getAvatarUrl())
+                        .load(finalUrl)
                         .centerCrop()
                         .placeholder(fallbackIndex)
                         .error(fallbackIndex)

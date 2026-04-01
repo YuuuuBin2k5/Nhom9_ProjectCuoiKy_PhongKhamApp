@@ -49,6 +49,7 @@ public class AuthController {
                         .token(jwtService.generateToken(String.valueOf(a.getId()), "ADMIN"))
                         .refreshToken(jwtService.generateRefreshToken(String.valueOf(a.getId()), "ADMIN"))
                         .email(a.getEmail())
+                        .fullName((a.getFirstName() + " " + a.getLastName()).trim())
                         .role("ADMIN")
                         .userId(a.getId())
                         .build());
@@ -64,6 +65,7 @@ public class AuthController {
                         .token(jwtService.generateToken(String.valueOf(d.getId()), "DOCTOR"))
                         .refreshToken(jwtService.generateRefreshToken(String.valueOf(d.getId()), "DOCTOR"))
                         .email(d.getEmail())
+                        .fullName((d.getFirstName() + " " + d.getLastName()).trim())
                         .role("DOCTOR")
                         .userId(d.getId())
                         .build());
@@ -88,6 +90,7 @@ public class AuthController {
                         .token(jwtService.generateToken(String.valueOf(p.getId()), "PATIENT"))
                         .refreshToken(jwtService.generateRefreshToken(String.valueOf(p.getId()), "PATIENT"))
                         .email(p.getEmail())
+                        .fullName((p.getFirstName() + " " + p.getLastName()).trim())
                         .role("PATIENT")
                         .userId(p.getId())
                         .build()))
@@ -240,6 +243,7 @@ public class AuthController {
                 return ResponseEntity.ok(AuthResponse.builder()
                         .token(jwtService.generateToken(String.valueOf(a.getId()), "ADMIN"))
                         .email(a.getEmail())
+                        .fullName((a.getFirstName() + " " + a.getLastName()).trim())
                         .role("ADMIN")
                         .userId(a.getId())
                         .build());
@@ -249,13 +253,11 @@ public class AuthController {
         var doctor = doctorRepository.findByEmailIgnoreCase(email);
         if (doctor.isPresent()) {
             Doctor d = doctor.get();
-            if (!d.isActive()) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Account inactive"));
-            }
             if (passwordEncoder.matches(request.getPassword(), d.getPasswordHash())) {
                 return ResponseEntity.ok(AuthResponse.builder()
                         .token(jwtService.generateToken(String.valueOf(d.getId()), "DOCTOR"))
                         .email(d.getEmail())
+                        .fullName((d.getFirstName() + " " + d.getLastName()).trim())
                         .role("DOCTOR")
                         .userId(d.getId())
                         .build());

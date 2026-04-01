@@ -5,7 +5,7 @@ start
 :Bệnh nhân đến quầy tiếp đón phòng khám;
 if (Bệnh nhân đã đặt lịch hẹn trước?) then (Có)
     :Quét qr hoặc nhập mã checkin tại quầy;
-    if (Mã xác thực hợp lệ?) then (Đúng)
+    if (Hợp lệ?) then (Đúng)
         :Hệ thống truy xuất thông tin lịch hẹn;
     else (Sai)
         :Hiển thị lỗi thông báo mã không hợp lệ;

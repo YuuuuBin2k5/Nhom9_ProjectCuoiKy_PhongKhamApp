@@ -10,19 +10,37 @@ import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.bottomsheet.BottomSheetDialog;
+import com.google.android.material.button.MaterialButton;
 import com.hcmute.mobile_android.R;
+import com.hcmute.mobile_android.adapters.ImagePreviewAdapter;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class FragmentGeneralDental extends Fragment {
 
     private TextView tvToothNotes;
-    public EditText etReason, etDiagnosis;
+    private EditText etReason, etDiagnosis;
     private Button btnEditMode;
+    
+    // NEW: Image upload components
+    private MaterialButton btnUploadGeneralImage;
+    private View layoutImagePreview;
+    private RecyclerView rvGeneralImages;
+    private TextView tvImageCount;
+    private List<String> imageUrls = new ArrayList<>();
+    private ImagePreviewAdapter imageAdapter;
     private Map<Integer, String> toothCustomNotesMap = new HashMap<>();
     
     // Edit mode state
@@ -47,10 +65,80 @@ public class FragmentGeneralDental extends Fragment {
         etDiagnosis = view.findViewById(R.id.etDiagnosis);
         btnEditMode = view.findViewById(R.id.btnEditMode);
         
+        // NEW: Image upload views
+        btnUploadGeneralImage = view.findViewById(R.id.btnUploadGeneralImage);
+        layoutImagePreview = view.findViewById(R.id.layoutImagePreview);
+        rvGeneralImages = view.findViewById(R.id.rvGeneralImages);
+        tvImageCount = view.findViewById(R.id.tvImageCount);
+
+        setupImageRecyclerView();
+        setupListeners();
+        
         // Setup edit mode button
         if (btnEditMode != null) {
             btnEditMode.setOnClickListener(v -> toggleEditMode());
             btnEditMode.setVisibility(View.GONE); // Hidden by default
+        }
+    }
+
+    private void setupListeners() {
+        if (btnUploadGeneralImage != null) {
+            btnUploadGeneralImage.setOnClickListener(v -> {
+                if (getActivity() instanceof com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) {
+                    ((com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) getActivity()).launchImagePicker();
+                }
+            });
+        }
+    }
+
+    private void setupImageRecyclerView() {
+        imageAdapter = new ImagePreviewAdapter(imageUrls, position -> {
+            String removedUrl = imageUrls.get(position);
+            imageUrls.remove(position);
+            updateImagePreview();
+            
+            // Notify activity
+            if (getActivity() instanceof com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) {
+                ((com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) getActivity()).onImageDeleted(removedUrl);
+            }
+        });
+        
+        if (rvGeneralImages != null) {
+            rvGeneralImages.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+            rvGeneralImages.setAdapter(imageAdapter);
+        }
+    }
+
+    public void onImageUploaded(String url) {
+        if (url != null && !imageUrls.contains(url)) {
+            imageUrls.add(url);
+            updateImagePreview();
+        }
+    }
+    
+    public void setImageUrls(List<String> urls) {
+        if (urls != null) {
+            imageUrls.clear();
+            imageUrls.addAll(urls);
+            updateImagePreview();
+        }
+    }
+    
+    public List<String> getImageUrls() {
+        return new ArrayList<>(imageUrls);
+    }
+    
+    private void updateImagePreview() {
+        if (layoutImagePreview == null || imageAdapter == null) return;
+        
+        if (imageUrls.isEmpty()) {
+            layoutImagePreview.setVisibility(View.GONE);
+        } else {
+            layoutImagePreview.setVisibility(View.VISIBLE);
+            if (tvImageCount != null) {
+                tvImageCount.setText(imageUrls.size() + " ảnh");
+            }
+            imageAdapter.notifyDataSetChanged();
         }
     }
 
@@ -102,14 +190,6 @@ public class FragmentGeneralDental extends Fragment {
                 toothCustomNotesMap.put(toothNumber, statusText + (customNote.isEmpty() ? "" : " - " + customNote));
             }
             
-            android.util.Log.d("FragmentGeneralDental", "=== Saved tooth note ===");
-            android.util.Log.d("FragmentGeneralDental", "Fragment instance: " + FragmentGeneralDental.this.hashCode());
-            android.util.Log.d("FragmentGeneralDental", "Tooth: " + toothNumber);
-            android.util.Log.d("FragmentGeneralDental", "Status: " + statusText);
-            android.util.Log.d("FragmentGeneralDental", "Custom note: '" + customNote + "'");
-            android.util.Log.d("FragmentGeneralDental", "toothCustomNotesMap size after save: " + toothCustomNotesMap.size());
-            android.util.Log.d("FragmentGeneralDental", "toothCustomNotesMap content: " + toothCustomNotesMap.toString());
-            
             updateToothNotesDisplay();
             dialog.dismiss();
         });
@@ -149,17 +229,9 @@ public class FragmentGeneralDental extends Fragment {
     }
 
     public String getFormDataNotes() {
-        android.util.Log.d("FragmentGeneralDental", "=== getFormDataNotes() called ===");
-        android.util.Log.d("FragmentGeneralDental", "Fragment instance: " + this.hashCode());
-        android.util.Log.d("FragmentGeneralDental", "toothCustomNotesMap size: " + toothCustomNotesMap.size());
-        android.util.Log.d("FragmentGeneralDental", "toothCustomNotesMap content: " + toothCustomNotesMap.toString());
-        
         StringBuilder sb = new StringBuilder();
         String reason = etReason.getText().toString().trim();
         String diagnosis = etDiagnosis.getText().toString().trim();
-        
-        android.util.Log.d("FragmentGeneralDental", "reason: '" + reason + "'");
-        android.util.Log.d("FragmentGeneralDental", "diagnosis: '" + diagnosis + "'");
         
         if (!reason.isEmpty()) sb.append("Lý do: ").append(reason).append("\n");
         if (!diagnosis.isEmpty()) sb.append("Chẩn đoán: ").append(diagnosis).append("\n");
@@ -170,10 +242,7 @@ public class FragmentGeneralDental extends Fragment {
             }
         }
         
-        String result = sb.toString().trim();
-        android.util.Log.d("FragmentGeneralDental", "Final result: '" + result + "'");
-        android.util.Log.d("FragmentGeneralDental", "=== getFormDataNotes() end ===");
-        return result;
+        return sb.toString().trim();
     }
 
     public void setData(String doctorConclusion) {
@@ -181,54 +250,34 @@ public class FragmentGeneralDental extends Fragment {
             return;
         }
         
-        android.util.Log.d("FragmentGeneralDental", "=== setData() called ===");
-        android.util.Log.d("FragmentGeneralDental", "Fragment instance: " + this.hashCode());
-        android.util.Log.d("FragmentGeneralDental", "doctorConclusion: " + doctorConclusion);
-        
-        // Clear existing data first
         toothCustomNotesMap.clear();
         
-        // Parse the conclusion and populate fields
         String[] lines = doctorConclusion.split("\n");
         boolean inToothSection = false;
         
         for (String line : lines) {
             if (line.startsWith("Lý do: ")) {
-                if (etReason != null) {
-                    etReason.setText(line.substring(7).trim());
-                }
+                if (etReason != null) etReason.setText(line.substring(7).trim());
             } else if (line.startsWith("Chẩn đoán: ")) {
-                if (etDiagnosis != null) {
-                    etDiagnosis.setText(line.substring(11).trim());
-                }
+                if (etDiagnosis != null) etDiagnosis.setText(line.substring(11).trim());
             } else if (line.startsWith("Tình trạng răng:")) {
                 inToothSection = true;
             } else if (inToothSection && line.trim().startsWith("- R")) {
-                // Parse tooth data: "- R12: Sâu răng - note text"
                 try {
-                    String toothData = line.trim().substring(2); // Remove "- "
+                    String toothData = line.trim().substring(2);
                     int colonIndex = toothData.indexOf(":");
                     if (colonIndex > 0) {
-                        String toothNumStr = toothData.substring(1, colonIndex).trim(); // Remove "R"
+                        String toothNumStr = toothData.substring(1, colonIndex).trim();
                         String toothNote = toothData.substring(colonIndex + 1).trim();
-                        
                         int toothNumber = Integer.parseInt(toothNumStr);
                         toothCustomNotesMap.put(toothNumber, toothNote);
-                        
-                        android.util.Log.d("FragmentGeneralDental", "Loaded tooth R" + toothNumber + ": " + toothNote);
                     }
                 } catch (Exception e) {
                     android.util.Log.e("FragmentGeneralDental", "Error parsing tooth line: " + line, e);
                 }
             }
         }
-        
-        // Update display
         updateToothNotesDisplay();
-        
-        android.util.Log.d("FragmentGeneralDental", "toothCustomNotesMap size after setData: " + toothCustomNotesMap.size());
-        android.util.Log.d("FragmentGeneralDental", "toothCustomNotesMap content: " + toothCustomNotesMap.toString());
-        android.util.Log.d("FragmentGeneralDental", "=== setData() end ===");
     }
 
     private void toggleEditMode() {
@@ -240,7 +289,6 @@ public class FragmentGeneralDental extends Fragment {
         }
         
         if (!isEditMode) {
-            // Save mode - notify parent activity
             android.widget.Toast.makeText(getContext(), "Đã lưu thay đổi", android.widget.Toast.LENGTH_SHORT).show();
         }
     }
@@ -248,7 +296,6 @@ public class FragmentGeneralDental extends Fragment {
     private void updateEditableState() {
         boolean canEdit = !isReadOnly || isEditMode;
         
-        // EditText fields
         if (etReason != null) {
             etReason.setEnabled(canEdit);
             etReason.setFocusable(canEdit);
@@ -262,17 +309,20 @@ public class FragmentGeneralDental extends Fragment {
             etDiagnosis.setFocusableInTouchMode(canEdit);
             etDiagnosis.setTextColor(canEdit ? 0xFF000000 : 0xFF757575);
         }
-        
-        // Note: Tooth notes are always read-only in this view
-        // User must use the odontogram dialog to edit tooth notes
     }
     
     public void setReadOnlyMode(boolean readOnly) {
         this.isReadOnly = readOnly;
-        this.isEditMode = false; // Reset edit mode
-        updateEditableState();
+        this.isEditMode = false;
         
-        // Show/hide edit button
+        boolean canEdit = !readOnly;
+        if (etReason != null) etReason.setEnabled(canEdit);
+        if (etDiagnosis != null) etDiagnosis.setEnabled(canEdit);
+        if (btnUploadGeneralImage != null) {
+            btnUploadGeneralImage.setEnabled(canEdit);
+            btnUploadGeneralImage.setVisibility(canEdit ? View.VISIBLE : View.GONE);
+        }
+        
         if (btnEditMode != null) {
             btnEditMode.setVisibility(readOnly ? View.VISIBLE : View.GONE);
             btnEditMode.setText("Chỉnh sửa");

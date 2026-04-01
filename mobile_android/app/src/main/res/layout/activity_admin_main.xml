@@ -213,6 +213,20 @@
                             android:textStyle="bold"
                             android:textSize="18sp"/>
                     </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnViewDetailedInvoices"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:text="Xem chi tiết hóa đơn"
+                        android:textAllCaps="false"
+                        android:textColor="#1976D2"
+                        app:icon="@drawable/ic_arrow_forward"
+                        app:iconGravity="textEnd"
+                        app:iconSize="16dp"
+                        app:iconTint="#1976D2" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
@@ -319,7 +333,7 @@
                     </com.google.android.material.card.MaterialCardView>
                 </LinearLayout>
 
-                <!-- Row 2: Doctors & Protocol -->
+                <!-- Row 2: Doctors & Logout -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -358,46 +372,6 @@
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
-                    <!-- Phác đồ Card (Treatment Plan) -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/cardTreatmentPlan"
-                        android:layout_width="0dp"
-                        android:layout_height="145dp"
-                        android:layout_weight="1"
-                        android:layout_margin="8dp"
-                        app:cardCornerRadius="20dp"
-                        app:cardElevation="3dp"
-                        app:strokeWidth="0dp"
-                        app:cardBackgroundColor="@android:color/white">
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:orientation="vertical"
-                            android:gravity="center"
-                            android:padding="16dp">
-                            <ImageView
-                                android:layout_width="48dp"
-                                android:layout_height="48dp"
-                                android:src="@drawable/ic_list"
-                                app:tint="#1976D2"
-                                android:layout_marginBottom="12dp"/>
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Phác đồ"
-                                android:textColor="#000000"
-                                android:textStyle="bold"
-                                android:textSize="16sp"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-
-                <!-- Row 3: Logout & Empty Space -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-
                     <!-- Logout Card -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/cardLogout"
@@ -430,13 +404,6 @@
                                 android:textSize="16sp"/>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Empty filler -->
-                    <View
-                        android:layout_width="0dp"
-                        android:layout_height="145dp"
-                        android:layout_margin="8dp"
-                        android:layout_weight="1"/>
                 </LinearLayout>
             </LinearLayout>
         </LinearLayout>

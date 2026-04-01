@@ -28,5 +28,5 @@ public class TreatmentPlanTemplate {
     private boolean active = true;
 
     @OneToMany(mappedBy = "template", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<TreatmentPlanTemplateStep> steps;
+    private java.util.Set<TreatmentPlanTemplateStep> steps;
 }

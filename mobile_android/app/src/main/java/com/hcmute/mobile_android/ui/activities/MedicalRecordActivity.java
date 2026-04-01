@@ -8,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
@@ -159,18 +160,15 @@ public class MedicalRecordActivity extends AppCompatActivity {
 
     private void setupPastAppointments() {
         ApiService api = RetrofitClient.getApiService(this);
-        api.getMyMedicalRecords().enqueue(new Callback<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>>() {
+        api.getMyMedicalRecords().enqueue(new Callback<com.hcmute.mobile_android.network.models.PagedResponse<com.hcmute.mobile_android.network.models.MedicalRecordResponse>>() {
             @Override
-            public void onResponse(Call<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> call, Response<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> response) {
+            public void onResponse(Call<com.hcmute.mobile_android.network.models.PagedResponse<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> call, Response<com.hcmute.mobile_android.network.models.PagedResponse<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> response) {
                 if (response.isSuccessful() && response.body() != null) {
-                    List<com.hcmute.mobile_android.network.models.MedicalRecordResponse> records = response.body();
+                    List<com.hcmute.mobile_android.network.models.MedicalRecordResponse> records = response.body().getContent();
                     
-                    if (records.isEmpty()) {
-                        layoutEmptyHistory.setVisibility(View.GONE); // Hide empty state and show mock data instead for polished look
-                        rvPastAppointments.setVisibility(View.VISIBLE);
-                        List<PastApptItem> list = new ArrayList<>();
-                        list.add(new PastApptItem(1001L, "BS. Nguyễn Văn A", "Nha khoa tổng quát", "20/03/2026", "Lấy cao răng, đánh bóng"));
-                        rvPastAppointments.setAdapter(createAdapter(list));
+                    if (records == null || records.isEmpty()) {
+                        layoutEmptyHistory.setVisibility(View.VISIBLE);
+                        rvPastAppointments.setVisibility(View.GONE);
                     } else {
                         if (layoutEmptyHistory != null) layoutEmptyHistory.setVisibility(View.GONE);
                         rvPastAppointments.setVisibility(View.VISIBLE);
@@ -182,7 +180,8 @@ public class MedicalRecordActivity extends AppCompatActivity {
                                     r.getDoctorName() != null ? r.getDoctorName() : "Bác sĩ",
                                     r.getDoctorSpecialty() != null ? r.getDoctorSpecialty() : "Nha sĩ",
                                     r.getDate() != null ? r.getDate().split("T")[0] : "",
-                                    r.getDiagnosis() != null ? r.getDiagnosis() : "Chưa có chẩn đoán"
+                                    r.getDiagnosis() != null ? r.getDiagnosis() : "Chưa có chẩn đoán",
+                                    r.getPrescription() != null ? r.getPrescription().getId() : -1L
                             ));
                         }
 
@@ -192,7 +191,7 @@ public class MedicalRecordActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> call, Throwable t) {
+            public void onFailure(Call<com.hcmute.mobile_android.network.models.PagedResponse<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> call, Throwable t) {
             }
         });
     }
@@ -202,14 +201,18 @@ public class MedicalRecordActivity extends AppCompatActivity {
             @Override
             public void onDetailClick(PastApptItem appt) {
                 Intent intent = new Intent(MedicalRecordActivity.this, MedicalRecordDetailActivity.class);
-                intent.putExtra("recordId", appt.id);
+                intent.putExtra("medicalRecordId", appt.id);
                 startActivity(intent);
             }
 
             @Override
             public void onPrescriptionClick(PastApptItem appt) {
+                if (appt.prescriptionId == -1L) {
+                    Toast.makeText(MedicalRecordActivity.this, "Không có đơn thuốc cho lần khám này", Toast.LENGTH_SHORT).show();
+                    return;
+                }
                 Intent intent = new Intent(MedicalRecordActivity.this, PrescriptionDetailActivity.class);
-                intent.putExtra("recordId", appt.id);
+                intent.putExtra("prescriptionId", appt.prescriptionId);
                 intent.putExtra("doctorName", appt.doctorName);
                 intent.putExtra("date", appt.date);
                 startActivity(intent);
@@ -222,8 +225,10 @@ public class MedicalRecordActivity extends AppCompatActivity {
     private static class PastApptItem {
         Long id;
         String doctorName, doctorSpec, date, diagnosis;
-        PastApptItem(Long id, String n, String s, String d, String diag) {
+        Long prescriptionId;
+        PastApptItem(Long id, String n, String s, String d, String diag, Long pId) {
             this.id = id; doctorName = n; doctorSpec = s; date = d; diagnosis = diag;
+            this.prescriptionId = pId;
         }
     }
 

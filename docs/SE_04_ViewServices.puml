@@ -1,0 +1,28 @@
+@startuml SE_04_ViewServices
+title Sequence Diagram: SE_04 Xem và tìm kiếm dịch vụ
+actor "Người dùng" as User
+participant "View\n(CategoryServicesActivity)" as View
+participant "ServiceController" as Controller
+participant "AdminServiceManagementService" as Service
+participant "ServiceRepository" as Repo
+database "PostgreSQL" as DB
+
+User -> View: Mở danh sách dịch vụ
+activate View
+View -> Controller: getAllServices(categoryId, keyword)
+activate Controller
+Controller -> Service: getServices(categoryId, keyword)
+activate Service
+Service -> Repo: findByFilters(...)
+activate Repo
+Repo -> DB: SELECT * FROM service...
+DB --> Repo: listServices
+Repo --> Service: list
+deactivate Repo
+Service --> Controller: List<ServiceResponse>
+deactivate Service
+Controller --> View: 200 OK (data)
+deactivate Controller
+View --> User: Hiển thị danh sách dịch vụ
+deactivate View
+@enduml

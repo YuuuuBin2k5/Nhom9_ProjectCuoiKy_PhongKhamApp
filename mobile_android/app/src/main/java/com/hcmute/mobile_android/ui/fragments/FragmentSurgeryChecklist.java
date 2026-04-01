@@ -174,10 +174,15 @@ public class FragmentSurgeryChecklist extends Fragment {
     }
     
     private void showDeleteImageDialog(int position) {
+        String imageUrl = surgeryImageUrls.get(position);
         new androidx.appcompat.app.AlertDialog.Builder(requireContext())
             .setTitle("Xóa ảnh")
             .setMessage("Bạn có chắc muốn xóa ảnh này?")
             .setPositiveButton("Xóa", (dialog, which) -> {
+                // Notify parent activity to keep lists in sync
+                if (getActivity() instanceof com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) {
+                    ((com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) getActivity()).onImageDeleted(imageUrl);
+                }
                 surgeryImageUrls.remove(position);
                 updateImagePreview();
                 Toast.makeText(getContext(), "Đã xóa ảnh", Toast.LENGTH_SHORT).show();

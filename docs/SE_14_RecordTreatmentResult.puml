@@ -1,0 +1,65 @@
+@startuml SE_14_RecordTreatmentResult
+title Sequence Diagram: SE_14 Ghi nhận kết quả điều trị
+
+actor "Bác sĩ" as Doctor
+participant "View\n(DoctorWorkflowActivity)" as View
+participant "TreatmentPlanController" as Controller
+participant "TreatmentPlanService" as Service
+participant "TreatmentPlanStepRepository" as StepRepo
+participant "MedicalRecordRepository" as RecordRepo
+database "PostgreSQL" as DB
+
+Doctor -> View: Nhập chẩn đoán, kết luận (và hình ảnh/thuốc)
+activate View
+Doctor -> View: Nhấn "Lưu kết quả điều trị"
+
+View -> Controller: saveTreatmentResult(stepId, resultRequest)
+activate Controller
+
+Controller -> Service: updateStepResult(stepId, resultRequest)
+activate Service
+
+Service -> StepRepo: findById(stepId)
+activate StepRepo
+StepRepo -> DB: SELECT * FROM treatment_plan_step WHERE id=?
+activate DB
+DB --> StepRepo: stepEntity
+deactivate DB
+StepRepo --> Service: step
+deactivate StepRepo
+
+Service -> Service: update step status = COMPLETED, notes = ...
+
+opt Có thêm hình ảnh
+    Service -> DB: INSERT INTO step_image...
+end
+
+Service -> StepRepo: save(step)
+activate StepRepo
+StepRepo -> DB: UPDATE treatment_plan_step...
+activate DB
+DB --> StepRepo: success
+deactivate DB
+StepRepo --> Service: updatedStep
+deactivate StepRepo
+
+opt Cập nhật bệnh án
+    Service -> RecordRepo: save(MedicalRecord)
+    activate RecordRepo
+    RecordRepo -> DB: UPDATE medical_record...
+    activate DB
+    DB --> RecordRepo: success
+    deactivate DB
+    RecordRepo --> Service: updatedRecord
+    deactivate RecordRepo
+end
+
+Service --> Controller: TreatmentResultResponse
+deactivate Service
+
+Controller --> View: 200 OK (TreatmentResultResponse)
+deactivate Controller
+
+View --> Doctor: Hiển thị thông báo lưu thành công
+deactivate View
+@enduml

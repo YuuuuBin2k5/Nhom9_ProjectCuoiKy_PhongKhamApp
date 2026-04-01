@@ -33,8 +33,20 @@ public class Invoice {
     @SerializedName("createdAt")
     private String createdAt;
     
+    @SerializedName("prescriptionId")
+    private Long prescriptionId;
+    
+    @SerializedName("diagnosis")
+    private String diagnosis;
+    
+    @SerializedName("advice")
+    private String advice;
+
     @SerializedName("items")
     private List<InvoiceItem> items;
+    
+    @SerializedName("prescriptionDetails")
+    private List<PrescriptionDetail> prescriptionDetails;
     
     // Getters and setters
     public Long getId() { return id; }
@@ -64,8 +76,15 @@ public class Invoice {
     public String getCreatedAt() { return createdAt; }
     public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
     
+    public Long getPrescriptionId() { return prescriptionId; }
+    public String getDiagnosis() { return diagnosis; }
+    public String getAdvice() { return advice; }
+    
     public List<InvoiceItem> getItems() { return items; }
     public void setItems(List<InvoiceItem> items) { this.items = items; }
+    
+    public List<PrescriptionDetail> getPrescriptionDetails() { return prescriptionDetails; }
+    public void setPrescriptionDetails(List<PrescriptionDetail> prescriptionDetails) { this.prescriptionDetails = prescriptionDetails; }
     
     public static class InvoiceItem {
         @SerializedName("id")
@@ -110,5 +129,27 @@ public class Invoice {
         
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
+    }
+
+    public static class PrescriptionDetail {
+        @SerializedName("id")
+        private Long id;
+        @SerializedName("medicineName")
+        private String medicineName;
+        @SerializedName("dosage")
+        private String dosage;
+        @SerializedName("frequency")
+        private String frequency;
+        @SerializedName("duration")
+        private String duration;
+        @SerializedName("unit")
+        private String unit;
+
+        public Long getId() { return id; }
+        public String getMedicineName() { return medicineName; }
+        public String getDosage() { return dosage; }
+        public String getFrequency() { return frequency; }
+        public String getDuration() { return duration; }
+        public String getUnit() { return unit; }
     }
 }

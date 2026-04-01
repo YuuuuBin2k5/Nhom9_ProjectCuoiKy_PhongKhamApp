@@ -1,0 +1,283 @@
+@startuml
+skinparam classAttributeIconSize 0
+skinparam linetype ortho
+skinparam nodesep 60
+skinparam ranksep 80
+skinparam packageStyle rectangle
+package "model.enums" {
+    enum AppointmentStatus {
+        PENDING
+        CONFIRMED
+        COMPLETED
+        CANCELLED
+    }
+    enum BookingType {
+        ONLINE
+        WALK_IN
+    }
+    enum InvoiceStatus {
+        UNPAID
+        PARTIAL
+        PAID
+    }
+    enum PaymentStatus {
+        PENDING
+        SUCCESS
+        FAILED
+        REFUNDED
+    }
+    enum QueueStatus {
+        WAITING
+        SERVING
+        COMPLETED
+        SKIPPED
+        CANCELLED
+    }
+    enum TreatmentPlanStatus {
+        ACTIVE
+        COMPLETED
+        CANCELLED
+    }
+}
+
+package "model.entity" {
+    package "Profiles & Users" <<Folder>> {
+        class User {
+            - Long id
+            - String username
+            - String password
+            - String email
+            - String phone
+            - String role
+        }
+        class Patient {
+            - String patientCode
+        }
+        class Doctor {
+            - String doctorCode
+            - String specialty
+            - String degree
+        }
+        class Admin {
+            - String adminCode
+        }
+        class PatientProfile
+        class Notification
+    }
+
+    package "Appointment & Queue" <<Folder>> {
+        class Appointment {
+            - Long id
+            - LocalDateTime appointmentDate
+            - AppointmentStatus status
+            - String notes
+        }
+        class CheckInQueue {
+            - Long id
+            - Integer queueNumber
+            - QueueStatus status
+            - LocalDateTime checkInTime
+        }
+        class ClinicRoom {
+            - Long id
+            - String roomName
+            - String roomType
+        }
+    }
+
+    package "Medical Services" <<Folder>> {
+        class ServiceCategory {
+            - Long id
+            - String name
+            - String description
+        }
+        class Service {
+            - Long id
+            - String name
+            - BigDecimal price
+            - String description
+            - Boolean isActive
+        }
+        class ServiceImage
+        class ServiceReview
+    }
+
+    package "Clinical Records" <<Folder>> {
+        class MedicalRecord {
+            - Long id
+            - String diagnosis
+            - String notes
+        }
+        class MedicalRecordDetail
+        class Prescription {
+            - Long id
+            - String instructions
+        }
+        class PrescriptionDetail
+    }
+
+    package "Treatment & Billing" <<Folder>> {
+        class TreatmentPlan {
+            - Long id
+            - TreatmentPlanStatus status
+            - String description
+        }
+        class TreatmentPlanStep
+        class StepImage
+        class TreatmentPlanTemplate
+        class TreatmentPlanTemplateStep
+        class Invoice {
+            - Long id
+            - BigDecimal totalAmount
+            - InvoiceStatus status
+        }
+        class Payment {
+            - Long id
+            - BigDecimal amount
+            - PaymentStatus status
+            - LocalDateTime paymentDate
+        }
+    }
+}
+
+package "repository" {
+    interface UserRepository
+    interface PatientRepository
+    interface DoctorRepository
+    interface AdminRepository
+    interface AppointmentRepository
+    interface ServiceRepository
+    interface ServiceCategoryRepository
+    interface MedicalRecordRepository
+    interface PrescriptionRepository
+    interface TreatmentPlanRepository
+    interface CheckInQueueRepository
+    interface ClinicRoomRepository
+}
+
+package "service" {
+    interface AuthService
+    interface FcmService
+    interface AdminDoctorService
+    interface AdminServiceManagementService
+    interface CheckInQueueService
+    interface PrescriptionService
+    interface TreatmentPlanService
+    interface QueueEventService
+    interface FileStorageService
+}
+
+package "controller" {
+    class AuthController
+    class AppointmentController
+    class CheckInController
+    class DoctorController
+    class PatientController
+    class ServiceController
+    class AdminDoctorController
+    class AdminServiceController
+    class TreatmentPlanController
+    class PrescriptionController
+}
+
+package "view" {
+    class LoginActivity
+    class RegisterActivity
+    class MainActivity
+    class AdminMainActivity
+    class BookAppointmentActivity
+    class MedicalRecordActivity
+    class PatientQueueActivity
+    class DoctorDetailActivity
+    class ServiceDetailActivity
+}
+
+' Inheritance
+User <|-- Patient
+User <|-- Doctor
+User <|-- Admin
+
+' === Entity Relationships ===
+' Appointment
+Patient "1" <-- "0..*" Appointment : patient
+Doctor "1" <-- "0..*" Appointment : doctor
+Service "1" <-- "0..*" Appointment : service
+
+' CheckInQueue
+Appointment "1" <-- "1" CheckInQueue : appointment
+ClinicRoom "1" <-- "0..*" CheckInQueue : clinicRoom
+TreatmentPlanStep "1" <-- "1" CheckInQueue : treatmentPlanStep
+
+' Doctor
+ClinicRoom "1" <-- "0..*" Doctor : clinicRoom
+
+' Invoice & Payment
+Patient "1" <-- "0..*" Invoice : patient
+TreatmentPlan "1" <-- "0..*" Invoice : treatmentPlan
+MedicalRecord "1" <-- "1" Invoice : medicalRecord
+Invoice "1" <-- "0..*" Payment : payments
+
+' MedicalRecord & Details
+Appointment "1" <-- "1" MedicalRecord : appointment
+Patient "1" <-- "0..*" MedicalRecord : patient
+Doctor "1" <-- "0..*" MedicalRecord : doctor
+MedicalRecord "1" <-- "0..*" MedicalRecordDetail : details
+Prescription "1" <-- "1" MedicalRecord : prescription
+Service "1" <-- "0..*" MedicalRecordDetail : service
+
+' Notification
+Patient "1" <-- "0..*" Notification : patient
+
+' Patient & Profile
+Patient "1" <-- "1" PatientProfile : profile
+
+' Prescription & Details
+Doctor "1" <-- "0..*" Prescription : doctor
+Prescription "1" <-- "0..*" PrescriptionDetail : details
+
+' Service & Category & Images
+ServiceCategory "1" <-- "0..*" Service : category
+Service "1" <-- "0..*" ServiceImage : service
+
+' ServiceReview
+Patient "1" <-- "0..*" ServiceReview : patient
+Doctor "1" <-- "0..*" ServiceReview : doctor
+MedicalRecord "1" <-- "0..*" ServiceReview : medicalRecord
+Service "1" <-- "0..*" ServiceReview : service
+Appointment "1" <-- "1" ServiceReview : appointment
+
+' TreatmentPlan & Steps & Images
+Patient "1" <-- "0..*" TreatmentPlan : patient
+MedicalRecord "1" <-- "0..*" TreatmentPlan : medicalRecord
+TreatmentPlan "1" <-- "0..*" TreatmentPlanStep : steps
+Service "1" <-- "0..*" TreatmentPlanStep : service
+ClinicRoom "1" <-- "0..*" TreatmentPlanStep : clinicRoom
+TreatmentPlanStep "1" <-- "0..*" StepImage : step
+
+' TreatmentPlanTemplate
+TreatmentPlanTemplate "1" <-- "0..*" TreatmentPlanTemplateStep : steps
+Service "1" <-- "0..*" TreatmentPlanTemplateStep : service
+ClinicRoom "1" <-- "0..*" TreatmentPlanTemplateStep : clinicRoom
+
+
+' === Component Relationships ===
+AuthController --> AuthService
+AppointmentController --> AppointmentService
+CheckInController --> CheckInQueueService
+PatientController --> PatientService
+DoctorController --> DoctorService
+ServiceController --> ServiceRepository
+
+AuthService --> UserRepository
+CheckInQueueService --> CheckInQueueRepository
+AppointmentService --> AppointmentRepository
+PatientService --> PatientRepository
+DoctorService --> DoctorRepository
+
+LoginActivity --> AuthController
+MainActivity --> PatientController
+MainActivity --> AppointmentController
+BookAppointmentActivity --> AppointmentController
+AdminMainActivity --> AdminDoctorController
+PatientQueueActivity --> CheckInController
+@enduml

@@ -1,0 +1,10 @@
+@startuml AC_25_UpdateQueueStatus
+title Activity Diagram: AC_25 Cập nhật trạng thái Hàng đợi
+
+start
+:Nhận thay đổi (Ví dụ: Bác sĩ bắt đầu khám);
+:Chuyển QueueStatus từ WAITING -> SERVING;
+:Ghi nhận kết quả;
+:Trạng thái -> COMPLETED;
+stop
+@enduml

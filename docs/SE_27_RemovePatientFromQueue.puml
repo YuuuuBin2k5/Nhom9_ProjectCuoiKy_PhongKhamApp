@@ -1,0 +1,21 @@
+@startuml SE_27_RemovePatientFromQueue
+title Sequence Diagram: SE_27 Xóa bệnh nhân khỏi hàng đợi
+actor "Bác sĩ / Lễ tân" as Staff
+participant "View\n(QueueActivity)" as View
+participant "CheckInController" as Controller
+participant "CheckInQueueService" as Service
+participant "CheckInQueueRepository" as Repo
+database "PostgreSQL" as DB
+
+Staff -> View: Hủy lịch xếp hàng (Vắng mặt)
+activate View
+View -> Controller: removePatientFromQueue(queueId)
+activate Controller
+Controller -> Service: markAsSkippedOrCancelled(queueId)
+activate Service
+Service -> DB: UPDATE check_in_queue SET status='CANCELLED'
+Service --> Controller: success
+Controller --> View: 200 OK
+View --> Staff: Xóa thành công, gọi người kế
+deactivate View
+@enduml

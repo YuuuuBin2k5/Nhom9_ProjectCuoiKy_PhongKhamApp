@@ -50,6 +50,6 @@ public class TreatmentPlan {
     @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private List<TreatmentPlanStep> steps;
+    private java.util.Set<TreatmentPlanStep> steps;
 
 }

@@ -172,16 +172,44 @@
                     android:textColor="#212121"
                     android:layout_marginBottom="8dp"/>
                 
-                <TextView
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnUploadBasicImage"
+                    style="@style/Widget.Material3.Button.OutlinedButton"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Để tải ảnh đính kèm, vui lòng sử dụng phần 'Ảnh Kết Quả' ở cuối màn hình."
-                    android:textSize="14sp"
-                    android:textColor="#757575"
-                    android:layout_marginBottom="8dp"
-                    android:textStyle="italic" />
+                    android:text="📷 Tải ảnh quá trình"
+                    android:textAllCaps="false"
+                    app:icon="@drawable/ic_camera"
+                    app:iconGravity="textStart"
+                    android:layout_marginBottom="12dp"/>
 
-                <!-- Chúng ta vẫn có thể dùng RecyclerView ở cấp độ Fragment nếu sau này muốn tách hẳn Upload vào từng form, nhưng hiện tại DoctorWorkflowActivity đang quản lý Upload Image thông qua ImageLauncher -->
+                <!-- Image Preview Section -->
+                <LinearLayout
+                    android:id="@+id/layoutImagePreview"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:background="#F5F7FA"
+                    android:padding="8dp">
+
+                    <TextView
+                        android:id="@+id/tvImageCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 ảnh"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        android:textColor="#1565C0"
+                        android:layout_marginBottom="8dp"/>
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvBasicImages"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:clipToPadding="false"/>
+                </LinearLayout>
 
             </LinearLayout>
 

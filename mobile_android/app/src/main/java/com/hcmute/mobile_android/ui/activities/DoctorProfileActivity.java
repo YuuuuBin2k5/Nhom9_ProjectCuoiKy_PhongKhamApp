@@ -165,7 +165,7 @@ public class DoctorProfileActivity extends AppCompatActivity {
                         if (baseUrl.endsWith("/")) {
                             baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
                         }
-                        finalUrl = baseUrl + (currentAvatarUrl.startsWith("/") ? "" : "/") + currentAvatarUrl;
+                        finalUrl = baseUrl + "/uploads/" + (currentAvatarUrl.startsWith("/") ? currentAvatarUrl.substring(1) : currentAvatarUrl);
                     }
                     
                     com.bumptech.glide.Glide.with(DoctorProfileActivity.this)

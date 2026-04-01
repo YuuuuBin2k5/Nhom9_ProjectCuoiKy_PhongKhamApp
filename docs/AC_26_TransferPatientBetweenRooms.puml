@@ -1,0 +1,12 @@
+@startuml AC_26_TransferPatientBetweenRooms
+title Activity Diagram: AC_26 Chuyển bệnh nhân sang phòng thiết bị / phòng khám khác
+
+start
+|Bác sĩ / Hệ thống|
+:Kết thúc dịch vụ phòng hiện tại;
+:Xác định dịch vụ tiếp theo yêu cầu phòng khác (Phòng X-quang, Chụp chiếu);
+:Lấy bệnh nhân khỏi hàng đợi phòng cũ;
+:Đưa vào Queue phòng mới với mức ưu tiên Cao (chuyển tiếp);
+:Thông báo bệnh nhân di chuyển sang phòng mới;
+stop
+@enduml

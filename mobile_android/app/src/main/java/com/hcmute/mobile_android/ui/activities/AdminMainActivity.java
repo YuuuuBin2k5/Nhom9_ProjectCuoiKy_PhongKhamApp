@@ -38,9 +38,10 @@ import retrofit2.Response;
 
 public class AdminMainActivity extends AppCompatActivity {
 
-    private MaterialCardView cardServices, cardRooms, cardDoctors, cardTreatmentPlan, cardLogout;
+    private MaterialCardView cardServices, cardRooms, cardDoctors, cardLogout;
     private AutoCompleteTextView spinnerYear, spinnerMonth, spinnerDay;
     private TextView tvTotalRevenue;
+    private android.widget.Button btnViewDetailedInvoices;
     private LinearLayout layoutRevenueItems;
     private String selectedYear, selectedMonth = "Tất cả", selectedDay = "Tất cả";
     private ApiService apiService;
@@ -67,13 +68,13 @@ public class AdminMainActivity extends AppCompatActivity {
         cardServices = findViewById(R.id.cardServices);
         cardRooms = findViewById(R.id.cardRooms);
         cardDoctors = findViewById(R.id.cardDoctors);
-        cardTreatmentPlan = findViewById(R.id.cardTreatmentPlan);
         cardLogout = findViewById(R.id.cardLogout);
         
         spinnerYear = findViewById(R.id.spinnerYear);
         spinnerMonth = findViewById(R.id.spinnerMonth);
         spinnerDay = findViewById(R.id.spinnerDay);
         tvTotalRevenue = findViewById(R.id.tvTotalRevenue);
+        btnViewDetailedInvoices = findViewById(R.id.btnViewDetailedInvoices);
         layoutRevenueItems = findViewById(R.id.layoutRevenueItems);
         
         setupFilterSpinners();
@@ -146,12 +147,16 @@ public class AdminMainActivity extends AppCompatActivity {
             startActivity(new Intent(this, AdminDoctorActivity.class));
         });
 
-        cardTreatmentPlan.setOnClickListener(v -> {
-            startActivity(new Intent(this, AdminTreatmentTemplateActivity.class));
-        });
-
         cardLogout.setOnClickListener(v -> {
             logout();
+        });
+
+        btnViewDetailedInvoices.setOnClickListener(v -> {
+            Intent intent = new Intent(this, AdminInvoiceListActivity.class);
+            intent.putExtra("extra_year", selectedYear);
+            intent.putExtra("extra_month", selectedMonth);
+            intent.putExtra("extra_day", selectedDay);
+            startActivity(intent);
         });
     }
 

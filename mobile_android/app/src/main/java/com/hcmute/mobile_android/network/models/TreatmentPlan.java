@@ -12,6 +12,9 @@ public class TreatmentPlan {
     private Double totalEstimatedCost;
     private Double totalActualCost;
     private boolean isDraft;
+    private Long prescriptionId;
+    private String diagnosis;
+    private String advice;
     private List<Step> steps;
 
     // Constructors
@@ -54,6 +57,15 @@ public class TreatmentPlan {
     public List<Step> getSteps() { return steps; }
     public void setSteps(List<Step> steps) { this.steps = steps; }
 
+    public Long getPrescriptionId() { return prescriptionId; }
+    public void setPrescriptionId(Long prescriptionId) { this.prescriptionId = prescriptionId; }
+
+    public String getDiagnosis() { return diagnosis; }
+    public void setDiagnosis(String diagnosis) { this.diagnosis = diagnosis; }
+
+    public String getAdvice() { return advice; }
+    public void setAdvice(String advice) { this.advice = advice; }
+
     // Helper methods
     public String getStatusDisplay() {
         if (status == null) return "Không xác định";
@@ -86,14 +98,11 @@ public class TreatmentPlan {
         private String uiTemplateType;
         private boolean editable;
         private String medicationDetails;
-        private List<ImageItem> images;
-
-        public static class ImageItem {
-            private Long id;
-            private String imageUrl;
-            public String getImageUrl() { return imageUrl; }
-            public void setImageUrl(String imageUrl) { this.imageUrl = imageUrl; }
-        }
+        private Long prescriptionId;
+        private String diagnosis;
+        private String advice;
+        private List<PrescriptionDetail> prescriptionDetails;
+        private List<String> imageUrls;
 
         // Constructors
         public Step() {}
@@ -104,6 +113,13 @@ public class TreatmentPlan {
 
         public String getMedicationDetails() { return medicationDetails; }
         public void setMedicationDetails(String medicationDetails) { this.medicationDetails = medicationDetails; }
+
+        public Long getPrescriptionId() { return prescriptionId; }
+        public String getDiagnosis() { return diagnosis; }
+        public String getAdvice() { return advice; }
+
+        public List<PrescriptionDetail> getPrescriptionDetails() { return prescriptionDetails; }
+        public void setPrescriptionDetails(List<PrescriptionDetail> prescriptionDetails) { this.prescriptionDetails = prescriptionDetails; }
 
         public Long getTreatmentPlanId() { return treatmentPlanId; }
         public void setTreatmentPlanId(Long treatmentPlanId) { this.treatmentPlanId = treatmentPlanId; }
@@ -128,8 +144,8 @@ public class TreatmentPlan {
         public String getToothNumber() { return toothNumber; }
         public void setToothNumber(String toothNumber) { this.toothNumber = toothNumber; }
 
-        public List<ImageItem> getImages() { return images; }
-        public void setImages(List<ImageItem> images) { this.images = images; }
+        public List<String> getImageUrls() { return imageUrls; }
+        public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }
 
         public Double getEstimatedPrice() { return estimatedPrice; }
         public void setEstimatedPrice(Double estimatedPrice) { this.estimatedPrice = estimatedPrice; }
@@ -167,5 +183,21 @@ public class TreatmentPlan {
 
         public boolean isEditable() { return editable; }
         public void setEditable(boolean editable) { this.editable = editable; }
+
+        public static class PrescriptionDetail {
+            private Long id;
+            private String medicineName;
+            private String dosage;
+            private String frequency;
+            private String duration;
+            private String unit;
+
+            public Long getId() { return id; }
+            public String getMedicineName() { return medicineName; }
+            public String getDosage() { return dosage; }
+            public String getFrequency() { return frequency; }
+            public String getDuration() { return duration; }
+            public String getUnit() { return unit; }
+        }
     }
 }

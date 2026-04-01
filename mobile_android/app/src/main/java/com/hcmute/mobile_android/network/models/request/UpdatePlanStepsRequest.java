@@ -19,6 +19,7 @@ public class UpdatePlanStepsRequest {
         private Integer sequenceOrder;
         private String toothNumber;
         private String doctorConclusion;
+        private List<String> imageUrls;
         private String status;
 
         public StepItem() {}
@@ -43,5 +44,8 @@ public class UpdatePlanStepsRequest {
 
         public String getDoctorConclusion() { return doctorConclusion; }
         public void setDoctorConclusion(String doctorConclusion) { this.doctorConclusion = doctorConclusion; }
+
+        public List<String> getImageUrls() { return imageUrls; }
+        public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }
     }
 }

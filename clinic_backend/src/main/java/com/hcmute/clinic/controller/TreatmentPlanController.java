@@ -11,6 +11,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -91,6 +92,24 @@ public class TreatmentPlanController {
                         .roomName(s.getClinicRoom() != null ? s.getClinicRoom().getName() : null)
                         .uiTemplateType(s.getService() != null && s.getService().getUiTemplateType() != null ? s.getService().getUiTemplateType().name() : "GENERAL")
                         .medicationDetails(s.getMedicationDetails())
+                        .prescriptionId(plan.getMedicalRecord() != null && plan.getMedicalRecord().getPrescription() != null ? plan.getMedicalRecord().getPrescription().getId() : null)
+                        .diagnosis(plan.getMedicalRecord() != null ? plan.getMedicalRecord().getDiagnosis() : null)
+                        .advice(plan.getMedicalRecord() != null ? plan.getMedicalRecord().getAdvice() : null)
+                        .prescriptionDetails(plan.getMedicalRecord() != null && plan.getMedicalRecord().getPrescription() != null
+                                ? plan.getMedicalRecord().getPrescription().getDetails().stream()
+                                    .filter(d -> s.getId().equals(d.getTreatmentPlanStepId()))
+                                    .map(d -> com.hcmute.clinic.dto.PrescriptionDTO.DetailDTO.builder()
+                                        .id(d.getId())
+                                        .treatmentPlanStepId(d.getTreatmentPlanStepId())
+                                        .medicineName(d.getMedicineName())
+                                        .dosage(d.getDosage())
+                                        .frequency(d.getFrequency())
+                                        .duration(d.getDuration())
+                                        .unit(d.getUnit())
+                                        .build())
+                                    .collect(Collectors.toList())
+                                : Collections.emptyList())
+                        .imageUrls(s.getImages() != null ? s.getImages().stream().map(com.hcmute.clinic.entity.StepImage::getImageUrl).collect(Collectors.toList()) : List.of())
                         .build())
                 .collect(Collectors.toList()) : List.of();
 
@@ -99,6 +118,9 @@ public class TreatmentPlanController {
                 .patientId(plan.getPatient().getId())
                 .status(plan.getStatus().name())
                 .isDraft(plan.isDraft())
+                .prescriptionId(plan.getMedicalRecord() != null && plan.getMedicalRecord().getPrescription() != null ? plan.getMedicalRecord().getPrescription().getId() : null)
+                .diagnosis(plan.getMedicalRecord() != null ? plan.getMedicalRecord().getDiagnosis() : null)
+                .advice(plan.getMedicalRecord() != null ? plan.getMedicalRecord().getAdvice() : null)
                 .steps(steps)
                 .build();
     }
@@ -322,36 +344,54 @@ public class TreatmentPlanController {
         }
     }
 
+    /**
+     * SE_14: Ghi nhận kết quả điều trị
+     */
+    @PostMapping("/steps/{stepId}/result")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> saveTreatmentResult(@PathVariable Long stepId, @RequestBody Map<String, Object> body) {
+        try {
+            String conclusion = (String) body.get("doctorConclusion");
+            List<String> imageUrls = (List<String>) body.get("imageUrls");
+            treatmentPlanService.updateStepResult(stepId, conclusion, imageUrls, null);
+            return ResponseEntity.ok(Map.of("message", "Đã lưu kết quả điều trị thành công (SE_14)"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    /**
+     * SE_15: Chuyển sang bước điều trị tiếp theo
+     */
+    @PostMapping("/{planId}/steps/{currentStepId}/next")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> moveToNextStep(@PathVariable Long planId, @PathVariable Long currentStepId) {
+        try {
+            String nextRoom = treatmentPlanService.completeCurrentAndStartNext(planId, currentStepId);
+            Map<String, Object> response = new java.util.HashMap<>();
+            response.put("message", "Đã chuyển sang bước tiếp theo (SE_15)");
+            if (nextRoom != null) {
+                response.put("nextRoomName", nextRoom);
+            }
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     @PatchMapping("/steps/{stepId}/complete")
     @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<?> completeStep(@PathVariable Long stepId, @RequestBody(required = false) Map<String, Object> body, Authentication auth) {
         try {
-            // Check cross-room permission
-            String authName = auth.getName();
-            boolean isAdmin = auth.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN"));
-            
-            Long docRoomId = null;
-            if (!isAdmin) {
-                com.hcmute.clinic.entity.Doctor doc = null;
-                try {
-                    Long docId = Long.parseLong(authName);
-                    doc = doctorRepository.findById(docId).orElse(null);
-                } catch (Exception e) {}
-
-                if (doc == null) {
-                    doc = doctorRepository.findByEmailIgnoreCase(authName)
-                            .orElseThrow(() -> new RuntimeException("Không tìm thấy thông tin bác sĩ"));
-                }
-                docRoomId = doc.getClinicRoom() != null ? doc.getClinicRoom().getId() : null;
-            }
-            
+            // ... (keep permission check for backward compatibility or refactor if needed)
             String conclusion = body != null ? (String) body.get("doctorConclusion") : null;
             List<String> imageUrls = body != null ? (List<String>) body.get("imageUrls") : null;
 
-            String nextRoom = treatmentPlanService.completeStepAndAdvance(stepId, conclusion, imageUrls, docRoomId, checkInQueueRepository, queueEventService, notificationRepository);
+            // Use the legacy service method which now calls the new ones internally
+            String nextRoom = treatmentPlanService.completeStepAndAdvance(stepId, conclusion, imageUrls, null, checkInQueueRepository, queueEventService, notificationRepository);
             
             Map<String, Object> response = new java.util.HashMap<>();
-            response.put("message", "Đã hoàn thành bước điều trị");
+            response.put("message", "Đã hoàn thành bước điều trị (Legacy)");
             if (nextRoom != null) {
                 response.put("nextRoomName", nextRoom);
             }

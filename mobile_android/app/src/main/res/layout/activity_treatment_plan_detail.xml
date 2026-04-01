@@ -142,6 +142,75 @@
                     android:layout_marginTop="24dp"
                     android:visibility="gone" />
 
+                <!-- Medical Summary Section -->
+                <LinearLayout
+                    android:id="@+id/llMedicalSummary"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    android:layout_marginBottom="16dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        app:cardCornerRadius="12dp"
+                        app:cardElevation="0dp"
+                        app:strokeWidth="1dp"
+                        app:strokeColor="#E2E8F0"
+                        app:cardBackgroundColor="#F8FAFC">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:padding="16dp">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="TỔNG QUAN Y KHOA"
+                                android:textColor="@color/primary_trust_blue"
+                                android:textStyle="bold"
+                                android:textSize="12sp"
+                                android:layout_marginBottom="12dp"/>
+
+                            <TextView
+                                android:id="@+id/labelDiagnosisMain"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Chẩn đoán:"
+                                android:textColor="#64748B"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                            <TextView
+                                android:id="@+id/tvDiagnosisMain"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                android:layout_marginBottom="12dp"
+                                tools:text="Sâu răng số 36, viêm lợi cấp."/>
+
+                            <TextView
+                                android:id="@+id/labelAdviceMain"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Lời dặn bác sĩ:"
+                                android:textColor="#64748B"
+                                android:textSize="12sp"
+                                android:textStyle="bold" />
+                            <TextView
+                                android:id="@+id/tvAdviceMain"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp"
+                                tools:text="Vệ sinh răng miệng kỹ sau khi ăn, tái khám sau 1 tuần."/>
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
+                </LinearLayout>
+
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvTimeline"
                     android:layout_width="match_parent"

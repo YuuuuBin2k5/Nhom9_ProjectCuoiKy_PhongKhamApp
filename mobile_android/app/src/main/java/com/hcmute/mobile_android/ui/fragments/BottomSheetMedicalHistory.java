@@ -84,13 +84,16 @@ public class BottomSheetMedicalHistory extends BottomSheetDialogFragment {
         rvMedicalHistory.setVisibility(View.GONE);
         tvEmpty.setVisibility(View.GONE);
         
-        apiService.getPatientMedicalRecords(patientId).enqueue(new Callback<List<MedicalRecordResponse>>() {
+        apiService.getPatientMedicalRecords(patientId).enqueue(new Callback<com.hcmute.mobile_android.network.models.PagedResponse<MedicalRecordResponse>>() {
             @Override
-            public void onResponse(Call<List<MedicalRecordResponse>> call, Response<List<MedicalRecordResponse>> response) {
+            public void onResponse(Call<com.hcmute.mobile_android.network.models.PagedResponse<MedicalRecordResponse>> call, Response<com.hcmute.mobile_android.network.models.PagedResponse<MedicalRecordResponse>> response) {
                 progressBar.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null) {
                     recordList.clear();
-                    recordList.addAll(response.body());
+                    List<MedicalRecordResponse> content = response.body().getContent();
+                    if (content != null) {
+                        recordList.addAll(content);
+                    }
                     adapter.notifyDataSetChanged();
                     
                     if (recordList.isEmpty()) {
@@ -104,7 +107,7 @@ public class BottomSheetMedicalHistory extends BottomSheetDialogFragment {
             }
 
             @Override
-            public void onFailure(Call<List<MedicalRecordResponse>> call, Throwable t) {
+            public void onFailure(Call<com.hcmute.mobile_android.network.models.PagedResponse<MedicalRecordResponse>> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 Toast.makeText(getContext(), "Lỗi kết nối", Toast.LENGTH_SHORT).show();
             }

@@ -11,6 +11,10 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.hcmute.mobile_android.adapters.ImagePreviewAdapter;
 
 import com.google.android.material.button.MaterialButton;
 
@@ -32,6 +36,14 @@ public class FragmentBasicService extends Fragment {
     private boolean isSelectingTeeth = false;
     private Long currentStepId;
     private String serviceName;
+    
+    // NEW: Image upload components
+    private MaterialButton btnUploadBasicImage;
+    private View layoutImagePreview;
+    private RecyclerView rvBasicImages;
+    private TextView tvImageCount;
+    private List<String> imageUrls = new ArrayList<>();
+    private ImagePreviewAdapter imageAdapter;
 
     // State modes
     private boolean isReadOnly = false;
@@ -61,7 +73,14 @@ public class FragmentBasicService extends Fragment {
         btnSelectTeeth = view.findViewById(com.hcmute.mobile_android.R.id.btnSelectTeeth);
         etBasicDiagnosis = view.findViewById(com.hcmute.mobile_android.R.id.etBasicDiagnosis);
         etBasicNotes = view.findViewById(com.hcmute.mobile_android.R.id.etBasicNotes);
+        
+        // NEW: Image upload views
+        btnUploadBasicImage = view.findViewById(com.hcmute.mobile_android.R.id.btnUploadBasicImage);
+        layoutImagePreview = view.findViewById(com.hcmute.mobile_android.R.id.layoutImagePreview);
+        rvBasicImages = view.findViewById(com.hcmute.mobile_android.R.id.rvBasicImages);
+        tvImageCount = view.findViewById(com.hcmute.mobile_android.R.id.tvImageCount);
 
+        setupImageRecyclerView();
         updateSelectedTeethDisplay();
     }
 
@@ -75,6 +94,65 @@ public class FragmentBasicService extends Fragment {
                 btnSelectTeeth.setText("Chọn răng trên sơ đồ");
             }
         });
+
+        if (btnUploadBasicImage != null) {
+            btnUploadBasicImage.setOnClickListener(v -> {
+                if (getActivity() instanceof com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) {
+                    ((com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) getActivity()).launchImagePicker();
+                }
+            });
+        }
+    }
+
+    private void setupImageRecyclerView() {
+        imageAdapter = new ImagePreviewAdapter(imageUrls, position -> {
+            String removedUrl = imageUrls.get(position);
+            imageUrls.remove(position);
+            updateImagePreview();
+            
+            // Notify activity
+            if (getActivity() instanceof com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) {
+                ((com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) getActivity()).onImageDeleted(removedUrl);
+            }
+        });
+        
+        if (rvBasicImages != null) {
+            rvBasicImages.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+            rvBasicImages.setAdapter(imageAdapter);
+        }
+    }
+    
+    public void onImageUploaded(String url) {
+        if (url != null && !imageUrls.contains(url)) {
+            imageUrls.add(url);
+            updateImagePreview();
+        }
+    }
+    
+    public void setImageUrls(List<String> urls) {
+        if (urls != null) {
+            imageUrls.clear();
+            imageUrls.addAll(urls);
+            updateImagePreview();
+        }
+    }
+    
+    public List<String> getImageUrls() {
+        return new ArrayList<>(imageUrls);
+    }
+    
+    private void updateImagePreview() {
+        if (layoutImagePreview == null || imageAdapter == null) return;
+        
+        if (imageUrls.isEmpty()) {
+            layoutImagePreview.setVisibility(View.GONE);
+        } else {
+            layoutImagePreview.setVisibility(View.VISIBLE);
+            if (tvImageCount != null) {
+                tvImageCount.setText(imageUrls.size() + " ảnh");
+            }
+            imageAdapter.notifyDataSetChanged();
+        }
     }
 
     /**
@@ -184,6 +262,10 @@ public class FragmentBasicService extends Fragment {
         if (btnSelectTeeth != null) {
             btnSelectTeeth.setEnabled(canEdit);
             btnSelectTeeth.setVisibility(canEdit ? View.VISIBLE : View.GONE);
+        }
+        if (btnUploadBasicImage != null) {
+            btnUploadBasicImage.setEnabled(canEdit);
+            btnUploadBasicImage.setVisibility(canEdit ? View.VISIBLE : View.GONE);
         }
     }
     /**

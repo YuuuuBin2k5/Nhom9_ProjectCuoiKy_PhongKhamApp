@@ -216,6 +216,31 @@
                     android:visibility="gone"
                     tools:visibility="visible" />
 
+                <LinearLayout
+                    android:id="@+id/llPrescriptionInfo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:orientation="vertical"
+                    android:visibility="gone">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Đơn thuốc: "
+                        android:textColor="#64748B"
+                        android:textSize="13sp" />
+                    <LinearLayout
+                        android:id="@+id/llPrescriptionItems"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
+                        android:orientation="vertical"
+                        android:background="@drawable/bg_pill_generic"
+                        android:backgroundTint="#F0F9FF"
+                        android:paddingHorizontal="10dp"
+                        android:paddingVertical="8dp" />
+                </LinearLayout>
+
                 <!-- Media Attachments Grid -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvStepImages"

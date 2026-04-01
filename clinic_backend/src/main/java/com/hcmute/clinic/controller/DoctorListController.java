@@ -95,11 +95,12 @@ public class DoctorListController {
                         d.getSpecialization() != null ? d.getSpecialization() : "",
                         d.getClinicRoom() != null ? d.getClinicRoom().getName() : null,
                         d.getExperienceYears(),
-                        d.isActive()
+                        d.isActive(),
+                        d.getAvatarUrl()
                 ))
                 .collect(Collectors.toList());
         return ResponseEntity.ok(dtos);
     }
 
-    public record DoctorDto(Long id, String firstName, String lastName, String specialization, String roomName, Integer experienceYears, boolean active) {}
+    public record DoctorDto(Long id, String firstName, String lastName, String specialization, String roomName, Integer experienceYears, boolean active, String avatarUrl) {}
 }

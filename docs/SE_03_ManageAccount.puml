@@ -1,0 +1,25 @@
+@startuml SE_03_ManageAccount
+title Sequence Diagram: SE_03 Quản lý tài khoản
+actor "Người dùng" as User
+participant "View\n(ProfileActivity)" as View
+participant "PatientController" as Controller
+participant "PatientService" as Service
+participant "PatientRepository" as Repo
+database "PostgreSQL" as DB
+
+User -> View: Sửa thông tin & Lưu
+activate View
+View -> Controller: updateProfile(token, profileRequest)
+activate Controller
+Controller -> Service: updatePatientInfo(patientId, req)
+activate Service
+Service -> Repo: findById(patientId)
+Repo -> DB: SELECT * FROM patient...
+DB --> Repo: entity
+Service -> DB: UPDATE patient_profile...
+Service --> Controller: updatedProfile
+Controller --> View: 200 OK
+View --> User: Đã lưu thành công
+deactivate Controller
+deactivate View
+@enduml

@@ -65,7 +65,7 @@ public interface ApiService {
     Call<CheckInMyStatusResponse> getMyCheckInStatus();
 
     @GET("api/patients/me/medical-records")
-    Call<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> getMyMedicalRecords();
+    Call<com.hcmute.mobile_android.network.models.PagedResponse<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> getMyMedicalRecords();
 
     @GET("api/patients/me/medical-records/{id}")
     Call<com.hcmute.mobile_android.network.models.MedicalRecordDetailResponse> getMedicalRecordDetail(@Path("id") Long id);
@@ -187,8 +187,21 @@ public interface ApiService {
     @POST("api/queue/{id}/transfer-surgery")
     Call<Void> transferToSurgery(@Path("id") Long queueId, @Body java.util.Map<String, Long> body);
 
+    // Skip current patient (IN_PROGRESS) - moves back to WAITING and auto-calls next patient
+    // Use case: Doctor called patient but they're not present or need time
+    // Available at both endpoints for backward compatibility:
     @POST("api/reception/queue/{id}/skip")
     Call<Void> skipPatient(@Path("id") Long queueId);
+    
+    // Alternative endpoint (same functionality, different path for DOCTOR/ADMIN role)
+    @POST("api/queue/{id}/skip")
+    Call<Void> skipPatientAlt(@Path("id") Long queueId);
+    
+    // Delay waiting patient by one position (swap with next person)
+    // Use case: Patient in waiting room wants to give their turn to next person
+    // Only works for WAITING/RETURNED_PRIORITY status
+    @POST("api/queue/{id}/delay")
+    Call<Void> delayWaitingPatient(@Path("id") Long queueId);
 
     @PUT("api/queue/{id}/status")
     Call<Void> completePatient(@Path("id") Long queueId);
@@ -218,7 +231,7 @@ public interface ApiService {
     Call<PatientInfo> lookupPatientByQR(@Query("qr") String qrCode);
 
     @GET("api/doctor/patients/{id}/medical-records")
-    Call<List<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> getPatientMedicalRecords(@Path("id") Long patientId);
+    Call<com.hcmute.mobile_android.network.models.PagedResponse<com.hcmute.mobile_android.network.models.MedicalRecordResponse>> getPatientMedicalRecords(@Path("id") Long patientId);
 
     @GET("api/treatment-plans/patient/{patientId}")
     Call<List<TreatmentPlan>> getTreatmentPlansByPatient(@Path("patientId") Long patientId);
@@ -252,6 +265,12 @@ public interface ApiService {
 
     @PATCH("api/treatment-plans/steps/{stepId}/complete")
     Call<MessageResponse> completeTreatmentStep(@Path("stepId") Long stepId, @Body java.util.Map<String, Object> body);
+
+    @POST("api/treatment-plans/steps/{stepId}/result")
+    Call<MessageResponse> saveTreatmentResult(@Path("stepId") Long stepId, @Body java.util.Map<String, Object> body);
+
+    @POST("api/treatment-plans/{planId}/steps/{currentStepId}/next")
+    Call<MessageResponse> moveToNextStep(@Path("planId") Long planId, @Path("currentStepId") Long currentStepId);
 
     // Prescription APIs
     @POST("api/prescriptions")
@@ -406,6 +425,13 @@ public interface ApiService {
 
     @GET("api/admin/revenue/report")
     Call<com.hcmute.mobile_android.network.models.AdminRevenueReport> getAdminRevenueReport(
+        @Query("year") Integer year,
+        @Query("month") Integer month,
+        @Query("day") Integer day
+    );
+
+    @GET("api/admin/reports/invoices")
+    Call<List<com.hcmute.mobile_android.network.models.Invoice>> getAdminInvoices(
         @Query("year") Integer year,
         @Query("month") Integer month,
         @Query("day") Integer day

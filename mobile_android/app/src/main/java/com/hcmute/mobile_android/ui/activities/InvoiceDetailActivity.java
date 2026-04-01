@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -15,6 +16,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
+import com.hcmute.mobile_android.BuildConfig;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
@@ -36,8 +38,11 @@ public class InvoiceDetailActivity extends AppCompatActivity {
     private TextView tvStatus, tvTotalAmount, tvInvoiceId, tvDate, tvPatientName;
     private ImageView ivStatusIcon;
     private RecyclerView rvItems;
+    private LinearLayout llPrescriptionContainer, llPrescriptionInfo;
+    private TextView tvPrescriptionHeader, tvDiagnosis, tvAdvice;
+    private View prescriptionDivider;
     private View layoutPaymentAction;
-    private MaterialButton btnPay;
+    private MaterialButton btnPay, btnDownloadPrescription;
 
     private ApiService apiService;
     private Long invoiceId;
@@ -82,8 +87,15 @@ public class InvoiceDetailActivity extends AppCompatActivity {
         tvPatientName = findViewById(R.id.tvPatientName);
         ivStatusIcon = findViewById(R.id.ivStatusIcon);
         rvItems = findViewById(R.id.rvItems);
+        llPrescriptionContainer = findViewById(R.id.llPrescriptionContainer);
+        llPrescriptionInfo = findViewById(R.id.llPrescriptionInfo);
+        tvPrescriptionHeader = findViewById(R.id.tvPrescriptionHeader);
+        tvDiagnosis = findViewById(R.id.tvDiagnosis);
+        tvAdvice = findViewById(R.id.tvAdvice);
+        prescriptionDivider = findViewById(R.id.prescriptionDivider);
         layoutPaymentAction = findViewById(R.id.layoutPaymentAction);
         btnPay = findViewById(R.id.btnPay);
+        btnDownloadPrescription = findViewById(R.id.btnDownloadPrescription);
 
         rvItems.setLayoutManager(new LinearLayoutManager(this));
 
@@ -164,6 +176,72 @@ public class InvoiceDetailActivity extends AppCompatActivity {
             rvItems.setAdapter(new InvoiceItemAdapter(items));
         } else {
             rvItems.setAdapter(null);
+        }
+
+        // Display Prescription Details
+        List<Invoice.PrescriptionDetail> prescriptions = invoice.getPrescriptionDetails();
+        boolean hasPrescription = (prescriptions != null && !prescriptions.isEmpty()) 
+                                || (invoice.getDiagnosis() != null && !invoice.getDiagnosis().isEmpty())
+                                || (invoice.getAdvice() != null && !invoice.getAdvice().isEmpty());
+
+        if (hasPrescription) {
+            prescriptionDivider.setVisibility(View.VISIBLE);
+            tvPrescriptionHeader.setVisibility(View.VISIBLE);
+            
+            // Diagnosis and Advice
+            if ((invoice.getDiagnosis() != null && !invoice.getDiagnosis().isEmpty()) 
+                || (invoice.getAdvice() != null && !invoice.getAdvice().isEmpty())) {
+                llPrescriptionInfo.setVisibility(View.VISIBLE);
+                tvDiagnosis.setText(invoice.getDiagnosis() != null ? invoice.getDiagnosis() : "Chưa có chẩn đoán");
+                tvAdvice.setText(invoice.getAdvice() != null ? invoice.getAdvice() : "Không có lời dặn");
+                findViewById(R.id.labelDiagnosis).setVisibility(invoice.getDiagnosis() != null ? View.VISIBLE : View.GONE);
+                tvDiagnosis.setVisibility(invoice.getDiagnosis() != null ? View.VISIBLE : View.GONE);
+                findViewById(R.id.labelAdvice).setVisibility(invoice.getAdvice() != null ? View.VISIBLE : View.GONE);
+                tvAdvice.setVisibility(invoice.getAdvice() != null ? View.VISIBLE : View.GONE);
+            } else {
+                llPrescriptionInfo.setVisibility(View.GONE);
+            }
+
+            // Medicines
+            if (prescriptions != null && !prescriptions.isEmpty()) {
+                llPrescriptionContainer.setVisibility(View.VISIBLE);
+                llPrescriptionContainer.removeAllViews();
+                for (Invoice.PrescriptionDetail detail : prescriptions) {
+                    View medView = LayoutInflater.from(this).inflate(android.R.layout.simple_list_item_2, llPrescriptionContainer, false);
+                    TextView text1 = medView.findViewById(android.R.id.text1);
+                    TextView text2 = medView.findViewById(android.R.id.text2);
+                    text1.setText("💊 " + detail.getMedicineName());
+                    text1.setTextColor(getResources().getColor(R.color.text_primary));
+                    text1.setTextSize(14f);
+                    String info = detail.getDosage() + " " + detail.getUnit() + " - " + detail.getFrequency() + " (" + detail.getDuration() + ")";
+                    text2.setText(info);
+                    text2.setTextColor(getResources().getColor(R.color.text_secondary));
+                    text2.setTextSize(12f);
+                    llPrescriptionContainer.addView(medView);
+                }
+            } else {
+                llPrescriptionContainer.setVisibility(View.GONE);
+            }
+
+            // Download Button
+            if (invoice.getPrescriptionId() != null) {
+                btnDownloadPrescription.setVisibility(View.VISIBLE);
+                btnDownloadPrescription.setOnClickListener(v -> {
+                    String url = BuildConfig.API_BASE_URL;
+                    if (!url.endsWith("/")) url += "/";
+                    url += "api/prescriptions/" + invoice.getPrescriptionId() + "/pdf";
+                    Intent intent = new Intent(Intent.ACTION_VIEW, android.net.Uri.parse(url));
+                    startActivity(intent);
+                });
+            } else {
+                btnDownloadPrescription.setVisibility(View.GONE);
+            }
+        } else {
+            prescriptionDivider.setVisibility(View.GONE);
+            tvPrescriptionHeader.setVisibility(View.GONE);
+            llPrescriptionInfo.setVisibility(View.GONE);
+            llPrescriptionContainer.setVisibility(View.GONE);
+            btnDownloadPrescription.setVisibility(View.GONE);
         }
     }
 

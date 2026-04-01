@@ -150,7 +150,7 @@
                         android:id="@+id/btn_new_record"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1.5"
+                        android:layout_weight="1"
                         android:layout_marginEnd="8dp"
                         android:clickable="true"
                         android:focusable="true"
@@ -183,27 +183,12 @@
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
-                    <!-- Quét QR bệnh nhân (fallback) -->
+                    <!-- Quét QR bệnh nhân -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/btn_scan_qr"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:layout_marginEnd="8dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="4dp"
-                        app:cardBackgroundColor="#FFFFFF">
-
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Sơ đồ răng nhanh -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/btn_tooth_chart"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1.5"
                         android:clickable="true"
                         android:focusable="true"
                         app:cardCornerRadius="16dp"

@@ -1,5 +1,6 @@
 package com.hcmute.mobile_android.ui.fragments;
 
+import com.hcmute.mobile_android.BuildConfig;
 import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
@@ -232,9 +233,17 @@ public class DoctorListFragment extends Fragment {
                 fallbackIndex = isFemale ? femaleAvatars[position % femaleAvatars.length] : maleAvatars[position % maleAvatars.length];
             }
 
-            if (d.getAvatarUrl() != null && !d.getAvatarUrl().isEmpty()) {
+            String avatarUrl = d.getAvatarUrl();
+            if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                String finalUrl = avatarUrl;
+                if (!avatarUrl.startsWith("http")) {
+                    String base = BuildConfig.API_BASE_URL;
+                    if (!base.endsWith("/")) base = base + "/";
+                    String p = avatarUrl.startsWith("/") ? avatarUrl.substring(1) : avatarUrl;
+                    finalUrl = base + "uploads/" + p;
+                }
                 com.bumptech.glide.Glide.with(holder.imgDoctor.getContext())
-                        .load(d.getAvatarUrl())
+                        .load(finalUrl)
                         .centerCrop()
                         .placeholder(fallbackIndex)
                         .error(fallbackIndex)

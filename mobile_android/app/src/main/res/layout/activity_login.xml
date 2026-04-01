@@ -19,7 +19,7 @@
             android:layout_width="match_parent"
             android:layout_height="320dp"
             android:scaleType="centerCrop"
-            android:src="@drawable/bg_wave_white"
+            android:src="@drawable/anhlogin"
             app:layout_constraintTop_toTopOf="parent" />
 
         <!-- Artistic Wave Overlay at the bottom of the image -->

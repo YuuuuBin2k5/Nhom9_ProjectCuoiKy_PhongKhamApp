@@ -14,9 +14,12 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.button.MaterialButton;
 import com.hcmute.mobile_android.R;
+import com.hcmute.mobile_android.adapters.ImagePreviewAdapter;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -36,6 +39,14 @@ public class FragmentCrownService extends Fragment {
     private EditText etCrownNotes;
     private Button btnEditMode;
     private MaterialButton btnAddCrownService;
+    
+    // NEW: Image upload components
+    private MaterialButton btnUploadCrownImage;
+    private View layoutImagePreview;
+    private RecyclerView rvCrownImages;
+    private TextView tvImageCount;
+    private List<String> imageUrls = new ArrayList<>();
+    private ImagePreviewAdapter imageAdapter;
     
     private Set<Integer> selectedTeeth = new HashSet<>();
     private boolean isReadOnly = false;
@@ -78,6 +89,14 @@ public class FragmentCrownService extends Fragment {
         btnEditMode = view.findViewById(R.id.btnEditMode);
         btnAddCrownService = view.findViewById(R.id.btnAddCrownService);
         
+        // NEW: Image upload views
+        btnUploadCrownImage = view.findViewById(R.id.btnUploadCrownImage);
+        layoutImagePreview = view.findViewById(R.id.layoutImagePreview);
+        rvCrownImages = view.findViewById(R.id.rvCrownImages);
+        tvImageCount = view.findViewById(R.id.tvImageCount);
+
+        setupImageRecyclerView();
+        
         // Setup crown type spinner
         String[] crownTypeNames = new String[CROWN_TYPES.length];
         for (int i = 0; i < CROWN_TYPES.length; i++) {
@@ -113,6 +132,14 @@ public class FragmentCrownService extends Fragment {
             btnEditMode.setVisibility(View.GONE);
         }
         
+        if (btnUploadCrownImage != null) {
+            btnUploadCrownImage.setOnClickListener(v -> {
+                if (getActivity() instanceof com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) {
+                    ((com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) getActivity()).launchImagePicker();
+                }
+            });
+        }
+
         // Restore state if available
         if (savedInstanceState != null) {
             isReadOnly = savedInstanceState.getBoolean("isReadOnly", false);
@@ -137,6 +164,57 @@ public class FragmentCrownService extends Fragment {
         
         updateSelectedTeethDisplay();
         updateEditableState();
+    }
+
+    private void setupImageRecyclerView() {
+        imageAdapter = new ImagePreviewAdapter(imageUrls, position -> {
+            String removedUrl = imageUrls.get(position);
+            imageUrls.remove(position);
+            updateImagePreview();
+            
+            // Notify activity
+            if (getActivity() instanceof com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) {
+                ((com.hcmute.mobile_android.ui.activities.staff.DoctorWorkflowActivity) getActivity()).onImageDeleted(removedUrl);
+            }
+        });
+        
+        if (rvCrownImages != null) {
+            rvCrownImages.setLayoutManager(new LinearLayoutManager(getContext(), LinearLayoutManager.HORIZONTAL, false));
+            rvCrownImages.setAdapter(imageAdapter);
+        }
+    }
+
+    public void onImageUploaded(String url) {
+        if (url != null && !imageUrls.contains(url)) {
+            imageUrls.add(url);
+            updateImagePreview();
+        }
+    }
+    
+    public void setImageUrls(List<String> urls) {
+        if (urls != null) {
+            imageUrls.clear();
+            imageUrls.addAll(urls);
+            updateImagePreview();
+        }
+    }
+    
+    public List<String> getImageUrls() {
+        return new ArrayList<>(imageUrls);
+    }
+    
+    private void updateImagePreview() {
+        if (layoutImagePreview == null || imageAdapter == null) return;
+        
+        if (imageUrls.isEmpty()) {
+            layoutImagePreview.setVisibility(View.GONE);
+        } else {
+            layoutImagePreview.setVisibility(View.VISIBLE);
+            if (tvImageCount != null) {
+                tvImageCount.setText(imageUrls.size() + " ảnh");
+            }
+            imageAdapter.notifyDataSetChanged();
+        }
     }
 
     @Override
@@ -363,6 +441,11 @@ public class FragmentCrownService extends Fragment {
             etCrownNotes.setFocusable(canEdit);
             etCrownNotes.setFocusableInTouchMode(canEdit);
             etCrownNotes.setTextColor(canEdit ? 0xFF000000 : 0xFF757575);
+        }
+        
+        if (btnUploadCrownImage != null) {
+            btnUploadCrownImage.setEnabled(canEdit);
+            btnUploadCrownImage.setVisibility(canEdit ? View.VISIBLE : View.GONE);
         }
     }
 

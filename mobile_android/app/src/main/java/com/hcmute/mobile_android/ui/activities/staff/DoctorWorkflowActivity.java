@@ -80,11 +80,13 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     private View fragmentContainerView;
     private RecyclerView rvTemplates, rvTreatmentSteps, rvPriceBreakdown;
     private com.google.android.material.button.MaterialButtonToggleGroup toggleFormType;
+    private RecyclerView rvResultImages;
     
     // Adapters
     private TreatmentTemplateAdapter templateAdapter;
     private TreatmentStepAdapter stepAdapter;
     private PriceBreakdownAdapter priceBreakdownAdapter;
+    private ImagePreviewAdapter resultImageAdapter;
     
     // Data
     private List<TreatmentTemplate> templateList = new ArrayList<>();
@@ -104,12 +106,15 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     private List<String> currentStepImageUrls = new ArrayList<>();
 
     private boolean isSaving = false;
+    private boolean isCompletingTreatment = false; // Flag to prevent onPause auto-save during completion
+    private android.app.ProgressDialog completionProgressDialog = null; // Track dialog for cleanup on save failure
 
     @Override
     protected void onPause() {
         super.onPause();
-        // Auto-save when leaving the form
-        if (currentTreatmentPlanId != null && currentPatient != null) {
+        // Auto-save when leaving the form, but NOT if we're in the middle of completing treatment
+        // (completing treatment already saves before locking the plan)
+        if (currentTreatmentPlanId != null && currentPatient != null && !isCompletingTreatment) {
             saveTreatmentPlanInternal(true);
         }
     }
@@ -155,6 +160,18 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             currentStep.setDoctorConclusion(finalNotes);
         }
 
+        // Synchronize images from fragment or activity
+        List<String> imageUrlsToSave = new java.util.ArrayList<>();
+        if (fragment instanceof com.hcmute.mobile_android.ui.fragments.FragmentXray) {
+            imageUrlsToSave.addAll(((com.hcmute.mobile_android.ui.fragments.FragmentXray) fragment).getImageUrls());
+        } else {
+            imageUrlsToSave.addAll(currentStepImageUrls);
+        }
+
+        if (currentStep != null) {
+            currentStep.setImageUrls(new java.util.ArrayList<>(imageUrlsToSave));
+        }
+
         List<com.hcmute.mobile_android.network.models.request.UpdatePlanStepsRequest.StepItem> apiItems = new java.util.ArrayList<>();
         int order = 0;
         
@@ -170,6 +187,11 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             item.setSequenceOrder(order++);
             item.setToothNumber(s.getToothNumber());
             item.setDoctorConclusion(s.getDoctorConclusion());
+            
+            // Include image URLs in the update request
+            if (s.getImageUrls() != null) {
+                item.setImageUrls(new java.util.ArrayList<>(s.getImageUrls()));
+            }
             
             // CRITICAL FIX: Preserve status of steps that aren't being actively worked on
             // Only allow status changes for editingStep or currentStep
@@ -217,12 +239,26 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                         if (onDone != null) onDone.run();
                     } else {
                         Toast.makeText(DoctorWorkflowActivity.this, "Lỗi lưu phác đồ: " + response.code(), Toast.LENGTH_SHORT).show();
+                        // Don't call onDone on failure
                     }
-                } else if (onDone != null) {
+                } else {
+                    // Silent mode - still call onDone to notify caller of result
                     if (response.isSuccessful()) {
-                        onDone.run();
+                        if (onDone != null) onDone.run();
                     } else {
-                        Toast.makeText(DoctorWorkflowActivity.this, "Đồng bộ phác đồ thất bại: " + response.code(), Toast.LENGTH_SHORT).show();
+                        // Show error even in silent mode if there's a callback waiting
+                        if (onDone != null) {
+                            Toast.makeText(DoctorWorkflowActivity.this, "Không thể lưu hồ sơ: " + response.code(), Toast.LENGTH_SHORT).show();
+                            // Reset completion state if we're in the middle of completing
+                            if (isCompletingTreatment) {
+                                isCompletingTreatment = false;
+                                if (completionProgressDialog != null && completionProgressDialog.isShowing()) {
+                                    completionProgressDialog.dismiss();
+                                    completionProgressDialog = null;
+                                }
+                            }
+                        }
+                        // Don't call onDone on failure - this prevents completing when save fails
                     }
                 }
             }
@@ -232,7 +268,19 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                 isSaving = false;
                 if (!silent) {
                     Toast.makeText(DoctorWorkflowActivity.this, "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                } else if (onDone != null) {
+                    // Show error even in silent mode if there's a callback waiting
+                    Toast.makeText(DoctorWorkflowActivity.this, "Lỗi kết nối khi lưu: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                    // Reset completion state if we're in the middle of completing
+                    if (isCompletingTreatment) {
+                        isCompletingTreatment = false;
+                        if (completionProgressDialog != null && completionProgressDialog.isShowing()) {
+                            completionProgressDialog.dismiss();
+                            completionProgressDialog = null;
+                        }
+                    }
                 }
+                // Don't call onDone on failure
             }
         });
     }
@@ -435,6 +483,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         fragmentContainerView = findViewById(R.id.fragmentContainerForm);
         cardOdontogram = findViewById(R.id.cardOdontogram);
         toggleFormType = findViewById(R.id.toggleFormType);
+        rvResultImages = findViewById(R.id.rvResultImages);
         
         // Disable các tab chuyên biệt ban đầu – chỉ mở khóa khi có dịch vụ tương ứng 'Bắt đầu'
         setSpecialTabsEnabled(false);
@@ -620,6 +669,18 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         rvPriceBreakdown.setLayoutManager(new LinearLayoutManager(this));
         priceBreakdownAdapter = new PriceBreakdownAdapter(treatmentSteps);
         rvPriceBreakdown.setAdapter(priceBreakdownAdapter);
+
+        // Result images adapter (Horizontal)
+        if (rvResultImages != null) {
+            rvResultImages.setLayoutManager(new LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false));
+            resultImageAdapter = new ImagePreviewAdapter(currentStepImageUrls, position -> {
+                if (position >= 0 && position < currentStepImageUrls.size()) {
+                    String imageUrl = currentStepImageUrls.get(position);
+                    onImageDeleted(imageUrl);
+                }
+            });
+            rvResultImages.setAdapter(resultImageAdapter);
+        }
     }
 
     public void launchImagePicker() {
@@ -635,8 +696,13 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         new Thread(() -> {
             try {
                 java.io.InputStream inputStream = getContentResolver().openInputStream(uri);
-                byte[] bytes = new byte[inputStream.available()];
-                inputStream.read(bytes);
+                java.io.ByteArrayOutputStream byteBuffer = new java.io.ByteArrayOutputStream();
+                byte[] buffer = new byte[1024];
+                int len;
+                while ((len = inputStream.read(buffer)) != -1) {
+                    byteBuffer.write(buffer, 0, len);
+                }
+                byte[] bytes = byteBuffer.toByteArray();
                 inputStream.close();
                 
                 // Switch back to main thread for network call
@@ -684,8 +750,23 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     }
 
     private void updateImagePreview() {
-        // Image preview is handled by individual fragments (e.g., FragmentXray)
-        // This method is kept for compatibility but doesn't update UI
+        if (resultImageAdapter != null) {
+            resultImageAdapter.notifyDataSetChanged();
+            
+            android.view.View layout = findViewById(R.id.layout_result_images);
+            if (layout != null) {
+                // Determine if we should show the activity's preview
+                Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainerForm);
+                boolean isXrayFragment = currentFragment instanceof com.hcmute.mobile_android.ui.fragments.FragmentXray;
+                
+                // Hide activity preview if XOR (X-ray fragment active OR list empty)
+                if (isXrayFragment || currentStepImageUrls.isEmpty()) {
+                    layout.setVisibility(android.view.View.GONE);
+                } else {
+                    layout.setVisibility(android.view.View.VISIBLE);
+                }
+            }
+        }
     }
     
     public void onImageDeleted(String imageUrl) {
@@ -703,12 +784,8 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         // Find the step and get its images
         for (TreatmentPlan.Step s : treatmentSteps) {
             if (s.getId() != null && s.getId().equals(stepId)) {
-                if (s.getImages() != null) {
-                    for (TreatmentPlan.Step.ImageItem img : s.getImages()) {
-                        if (img.getImageUrl() != null) {
-                            currentStepImageUrls.add(img.getImageUrl());
-                        }
-                    }
+                if (s.getImageUrls() != null) {
+                    currentStepImageUrls.addAll(s.getImageUrls());
                 }
                 break;
             }
@@ -919,12 +996,8 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                 // Lấy dữ liệu
                 String conclusion = step.getDoctorConclusion();
                 List<String> imageUrls = new ArrayList<>();
-                if (step.getImages() != null) {
-                    for (TreatmentPlan.Step.ImageItem img : step.getImages()) {
-                        if (img.getImageUrl() != null) {
-                            imageUrls.add(img.getImageUrl());
-                        }
-                    }
+                if (step.getImageUrls() != null) {
+                    imageUrls.addAll(step.getImageUrls());
                 }
                 
                 // Lưu vào cache theo template type
@@ -1343,14 +1416,8 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                 } else if (currentFragment instanceof com.hcmute.mobile_android.ui.fragments.FragmentXray) {
                     ((com.hcmute.mobile_android.ui.fragments.FragmentXray) currentFragment).setData(step.getDoctorConclusion());
                     // Load images
-                    if (step.getImages() != null && !step.getImages().isEmpty()) {
-                        List<String> imageUrls = new ArrayList<>();
-                        for (TreatmentPlan.Step.ImageItem img : step.getImages()) {
-                            if (img.getImageUrl() != null) {
-                                imageUrls.add(img.getImageUrl());
-                            }
-                        }
-                        ((com.hcmute.mobile_android.ui.fragments.FragmentXray) currentFragment).setImageUrls(imageUrls);
+                    if (step.getImageUrls() != null && !step.getImageUrls().isEmpty()) {
+                        ((com.hcmute.mobile_android.ui.fragments.FragmentXray) currentFragment).setImageUrls(step.getImageUrls());
                     }
                     // Ensure editable mode when editing (status is already IN_PROGRESS)
                     ((com.hcmute.mobile_android.ui.fragments.FragmentXray) currentFragment).setReadOnlyMode(false);
@@ -1736,7 +1803,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                 } else if (finalFragment instanceof com.hcmute.mobile_android.ui.fragments.FragmentXray) {
                     android.util.Log.d("DoctorWorkflow", "Loading data for FragmentXray");
                     android.util.Log.d("DoctorWorkflow", "  - Conclusion: " + (existingConclusion != null ? existingConclusion.substring(0, Math.min(100, existingConclusion.length())) : "null"));
-                    android.util.Log.d("DoctorWorkflow", "  - Images: " + (step.getImages() != null ? step.getImages().size() : 0));
+                    android.util.Log.d("DoctorWorkflow", "  - Images: " + (step.getImageUrls() != null ? step.getImageUrls().size() : 0));
                     
                     // Always call setData, even if conclusion is null/empty
                     if (existingConclusion != null && !existingConclusion.trim().isEmpty()) {
@@ -1747,25 +1814,15 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                     }
                     
                     // Load images for X-ray fragment
-                    if (step.getImages() != null && !step.getImages().isEmpty()) {
-                        List<String> imageUrls = new ArrayList<>();
-                        for (TreatmentPlan.Step.ImageItem img : step.getImages()) {
-                            if (img.getImageUrl() != null) {
-                                imageUrls.add(img.getImageUrl());
-                                android.util.Log.d("DoctorWorkflow", "  - Image URL: " + img.getImageUrl());
-                            }
-                        }
+                    if (step.getImageUrls() != null && !step.getImageUrls().isEmpty()) {
+                        android.util.Log.d("DoctorWorkflow", "Loading " + step.getImageUrls().size() + " images for FragmentXray");
+                        final List<String> imageUrls = step.getImageUrls();
                         
-                        if (!imageUrls.isEmpty()) {
-                            android.util.Log.d("DoctorWorkflow", "Loading " + imageUrls.size() + " images for FragmentXray");
-                            final List<String> finalImageUrls = imageUrls;
-                            
-                            // Use single post - FragmentXray now handles adapter initialization
-                            finalFragment.getView().post(() -> {
-                                ((com.hcmute.mobile_android.ui.fragments.FragmentXray) finalFragment).setImageUrls(finalImageUrls);
-                                android.util.Log.d("DoctorWorkflow", "✓ Called setImageUrls for FragmentXray");
-                            });
-                        }
+                        // Use single post - FragmentXray now handles adapter initialization
+                        finalFragment.getView().post(() -> {
+                            ((com.hcmute.mobile_android.ui.fragments.FragmentXray) finalFragment).setImageUrls(imageUrls);
+                            android.util.Log.d("DoctorWorkflow", "✓ Called setImageUrls for FragmentXray");
+                        });
                     } else {
                         android.util.Log.w("DoctorWorkflow", "⚠️ No images to load for FragmentXray");
                     }
@@ -1789,7 +1846,7 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
                 }
                 
                 // Load images if this step has any
-                if (step.getId() != null && step.getImages() != null && !step.getImages().isEmpty()) {
+                if (step.getId() != null && step.getImageUrls() != null && !step.getImageUrls().isEmpty()) {
                     loadStepImages(step.getId());
                 }
             });
@@ -2200,62 +2257,46 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     @Override
     public void onStepSave(TreatmentPlan.Step step) {
         android.util.Log.d("DoctorWorkflow", "onStepSave called for step: " + step.getServiceName() + " (ID: " + step.getId() + ")");
-        android.util.Log.d("DoctorWorkflow", "  - editingStep: " + (editingStep != null ? editingStep.getServiceName() : "null"));
-        android.util.Log.d("DoctorWorkflow", "  - currentStep: " + (currentStep != null ? currentStep.getServiceName() : "null"));
         
-        // CRITICAL: Lưu currentStep ban đầu (bước đang trong quy trình)
-        // Sau khi lưu editingStep, chúng ta sẽ restore lại currentStep
-        final Long originalCurrentStepId = (currentStep != null) ? currentStep.getId() : null;
-        final Long editingStepId = step.getId();
+        // SE_14: Extract data and save
+        StepData data = getStepDataFromFragment();
+        Map<String, Object> body = new HashMap<>();
+        body.put("doctorConclusion", data.notes);
+        body.put("imageUrls", data.imageUrls);
         
-        // Save changes when editing a COMPLETED step
-        saveTreatmentPlanInternal(false, () -> {
-            Toast.makeText(this, "Đã lưu thay đổi", Toast.LENGTH_SHORT).show();
-            
-            // Reload to refresh UI
-            loadTreatmentPlanForRoom(currentTreatmentPlanId);
-            
-            // CRITICAL FIX: Restore currentStep to the ORIGINAL step (not the edited step)
-            // This ensures the workflow continues with the correct step
-            if (originalCurrentStepId != null && !originalCurrentStepId.equals(editingStepId)) {
-                // Editing a different step than currentStep
-                // Restore currentStep to the original workflow step
-                for (TreatmentPlan.Step s : treatmentSteps) {
-                    if (originalCurrentStepId.equals(s.getId())) {
-                        currentStep = s;
-                        android.util.Log.d("DoctorWorkflow", "✓ Restored currentStep to original workflow step: " + s.getServiceName());
-                        break;
-                    }
-                }
-            } else if (editingStepId != null) {
-                // Editing the same step as currentStep, or no original currentStep
-                // Keep currentStep as the edited step
-                for (TreatmentPlan.Step s : treatmentSteps) {
-                    if (editingStepId.equals(s.getId())) {
-                        currentStep = s;
-                        android.util.Log.d("DoctorWorkflow", "✓ Kept currentStep as edited step: " + s.getServiceName());
-                        break;
-                    }
+        apiService.saveTreatmentResult(step.getId(), body).enqueue(new Callback<com.hcmute.mobile_android.network.models.MessageResponse>() {
+            @Override
+            public void onResponse(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Response<com.hcmute.mobile_android.network.models.MessageResponse> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(DoctorWorkflowActivity.this, "Đã lưu kết quả (SE_14)", Toast.LENGTH_SHORT).show();
+                    loadTreatmentPlanForRoom(currentTreatmentPlanId);
+                    editingStep = null;
+                } else {
+                    Toast.makeText(DoctorWorkflowActivity.this, "Lỗi khi lưu kết quả", Toast.LENGTH_SHORT).show();
                 }
             }
-            
-            // Clear editingStep
-            editingStep = null;
+
+            @Override
+            public void onFailure(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Throwable t) {
+                Toast.makeText(DoctorWorkflowActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
+            }
         });
     }
-    
-    @Override
-    public void onStepComplete(TreatmentPlan.Step step) {
-        android.util.Log.d("DoctorWorkflow", "=== onStepComplete ===");
-        android.util.Log.d("DoctorWorkflow", "Step: " + step.getServiceName() + " (ID: " + step.getId() + ")");
-        android.util.Log.d("DoctorWorkflow", "editingPreviouslyCompletedStep: " + editingPreviouslyCompletedStep);
-        
-        // CRITICAL FIX: Get data from CURRENT fragment BEFORE switching tabs
+
+    private static class StepData {
+        String notes;
+        List<String> imageUrls;
+        StepData(String notes, List<String> imageUrls) {
+            this.notes = notes;
+            this.imageUrls = imageUrls;
+        }
+    }
+
+    private StepData getStepDataFromFragment() {
         Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainerForm);
         String currentData = "";
         List<String> currentImages = new ArrayList<>();
         
-        // Extract data from current fragment
         if (currentFragment instanceof FragmentGeneralDental) {
             currentData = ((FragmentGeneralDental) currentFragment).getFormDataNotes();
         } else if (currentFragment instanceof FragmentSurgeryChecklist) {
@@ -2265,91 +2306,124 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
         } else if (currentFragment instanceof FragmentOrthodontics) {
             currentData = ((FragmentOrthodontics) currentFragment).getFormDataNotes();
         } else if (currentFragment instanceof com.hcmute.mobile_android.ui.fragments.FragmentXray) {
-            // Validate BEFORE extracting data
-            if (!((com.hcmute.mobile_android.ui.fragments.FragmentXray) currentFragment).validateForm()) {
-                return; // Validation failed, don't proceed
-            }
             currentData = ((com.hcmute.mobile_android.ui.fragments.FragmentXray) currentFragment).getFormDataNotes();
             currentImages = ((com.hcmute.mobile_android.ui.fragments.FragmentXray) currentFragment).getImageUrls();
         } else if (currentFragment instanceof FragmentBasicService) {
             currentData = ((FragmentBasicService) currentFragment).getFormDataNotes();
-            
-            // Xử lý răng được chọn từ Basic Service
+        }
+        
+        if (currentImages.isEmpty() && currentStepImageUrls != null) {
+            currentImages = currentStepImageUrls;
+        }
+        
+        return new StepData(currentData, currentImages);
+    }
+    
+    @Override
+    public void onStepComplete(TreatmentPlan.Step step) {
+        android.util.Log.d("DoctorWorkflow", "=== onStepComplete (Aligned) ===");
+        
+        // 1. Extract data & Validate
+        Fragment currentFragment = getSupportFragmentManager().findFragmentById(R.id.fragmentContainerForm);
+        StepData data = getStepDataFromFragment();
+        
+        // Perform fragment-specific validation
+        if (currentFragment instanceof com.hcmute.mobile_android.ui.fragments.FragmentXray) {
+            if (!((com.hcmute.mobile_android.ui.fragments.FragmentXray) currentFragment).validateForm()) return;
+        } else if (currentFragment instanceof FragmentSurgeryChecklist) {
+            if (!((FragmentSurgeryChecklist) currentFragment).validateForm()) return;
+        } else if (currentFragment instanceof FragmentCrownService) {
+            if (!((FragmentCrownService) currentFragment).validateForm()) return;
+        } else if (currentFragment instanceof FragmentOrthodontics) {
+            if (!((FragmentOrthodontics) currentFragment).validateForm()) return;
+        } else if (currentFragment instanceof FragmentBasicService) {
             List<Integer> teeth = ((FragmentBasicService) currentFragment).getSelectedTeeth();
             if (teeth != null && !teeth.isEmpty()) {
-                StringBuilder teethStr = new StringBuilder();
+                StringBuilder sb = new StringBuilder();
                 for (int i = 0; i < teeth.size(); i++) {
-                    if (i > 0) teethStr.append(",");
-                    teethStr.append(teeth.get(i));
+                    if (i > 0) sb.append(",");
+                    sb.append(teeth.get(i));
                 }
-                step.setToothNumber(teethStr.toString());
-            } else {
-                step.setToothNumber("");
+                step.setToothNumber(sb.toString());
             }
         }
         
-        // Validate other fragment types
-        if (currentFragment instanceof FragmentSurgeryChecklist) {
-            if (!((FragmentSurgeryChecklist) currentFragment).validateForm()) {
-                return;
-            }
-        } else if (currentFragment instanceof FragmentCrownService) {
-            if (!((FragmentCrownService) currentFragment).validateForm()) {
-                return;
-            }
-        } else if (currentFragment instanceof FragmentOrthodontics) {
-            if (!((FragmentOrthodontics) currentFragment).validateForm()) {
-                return;
-            }
-        }
-        
-        // Store data in step BEFORE any operations
-        step.setDoctorConclusion(currentData);
+        step.setDoctorConclusion(data.notes);
         this.currentStep = step;
-        
-        // Check if step has ID
+
         if (step.getId() == null) {
-            Toast.makeText(this, "Lỗi: Bước chưa được lưu vào hệ thống. Vui lòng thử lại.", Toast.LENGTH_LONG).show();
+            Toast.makeText(this, "Lỗi: Bước chưa được lưu. Thử lại.", Toast.LENGTH_SHORT).show();
             return;
         }
+
+        Map<String, Object> body = new HashMap<>();
+        body.put("doctorConclusion", data.notes);
+        body.put("imageUrls", data.imageUrls);
+
+        // SE_14: Ghi nhận kết quả điều trị
+        apiService.saveTreatmentResult(step.getId(), body).enqueue(new Callback<com.hcmute.mobile_android.network.models.MessageResponse>() {
+            @Override
+            public void onResponse(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Response<com.hcmute.mobile_android.network.models.MessageResponse> response) {
+                if (response.isSuccessful()) {
+                    if (editingPreviouslyCompletedStep) {
+                        Toast.makeText(DoctorWorkflowActivity.this, "Đã cập nhật kết quả", Toast.LENGTH_SHORT).show();
+                        loadTreatmentPlanForRoom(currentTreatmentPlanId);
+                        editingPreviouslyCompletedStep = false;
+                        currentStep = null;
+                    } else {
+                        // SE_15: Chuyển bước
+                        performMoveToNextStep(step, data.notes);
+                    }
+                } else {
+                    Toast.makeText(DoctorWorkflowActivity.this, "Lỗi khi lưu kết quả (SE_14)", Toast.LENGTH_SHORT).show();
+                }
+            }
+
+            @Override
+            public void onFailure(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Throwable t) {
+                Toast.makeText(DoctorWorkflowActivity.this, "Lỗi kết nối (SE_14)", Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
+
+    private void performMoveToNextStep(TreatmentPlan.Step step, String conclusion) {
+        if (currentTreatmentPlanId == null) return;
         
-        // Save the data we just extracted
-        final String finalData = currentData;
-        final List<String> finalImages = new ArrayList<>(currentImages);
-        
-        // CRITICAL FIX: If this step was previously COMPLETED (being re-edited),
-        // just save the data WITHOUT calling /complete API to avoid auto-advancing
-        if (editingPreviouslyCompletedStep) {
-            android.util.Log.d("DoctorWorkflow", "✓ Re-completing previously COMPLETED step - saving without auto-advance");
-            
-            // PROFESSIONAL FIX: Set status to COMPLETED BEFORE saving
-            step.setStatus("COMPLETED");
-            step.setDoctorConclusion(finalData);
-            
-            // Save data with COMPLETED status
-            saveTreatmentPlanInternal(true, () -> {
-                // Update UI
-                stepAdapter.notifyDataSetChanged();
-                currentStep = null;
-                
-                // Clear flag
-                editingPreviouslyCompletedStep = false;
-                editingStep = null;
-                
-                Toast.makeText(this, "Đã lưu thay đổi", Toast.LENGTH_SHORT).show();
-                
-                // Reload to get fresh data from server
-                loadTreatmentPlanForRoom(currentTreatmentPlanId);
-            });
-        } else {
-            android.util.Log.d("DoctorWorkflow", "✓ Completing step for FIRST time - calling /complete API");
-            
-            // Normal flow: Save then call /complete API (which may auto-advance)
-            saveTreatmentPlanInternal(true, () -> {
-                // After save, complete the step with the data we extracted
-                completeStepWithData(step, finalData, finalImages);
-            });
-        }
+        android.util.Log.d("DoctorWorkflow", "SE_15: Advancing to next step...");
+        apiService.moveToNextStep(currentTreatmentPlanId, step.getId()).enqueue(new Callback<com.hcmute.mobile_android.network.models.MessageResponse>() {
+            @Override
+            public void onResponse(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Response<com.hcmute.mobile_android.network.models.MessageResponse> response) {
+                if (response.isSuccessful() && response.body() != null) {
+                    String nextRoom = response.body().getNextRoomName();
+                    
+                    // Update UI
+                    step.setStatus("COMPLETED");
+                    step.setDoctorConclusion(conclusion);
+                    stepAdapter.notifyDataSetChanged();
+                    currentStep = null;
+
+                    if (nextRoom != null) {
+                        new androidx.appcompat.app.AlertDialog.Builder(DoctorWorkflowActivity.this)
+                            .setTitle("Chuyển phòng")
+                            .setMessage("Hồ sơ đã được lưu. Vui lòng hướng dẫn bệnh nhân di chuyển đến " + nextRoom + " để tiếp tục điều trị.")
+                            .setPositiveButton("OK", (dialog, id) -> finish())
+                            .setCancelable(false)
+                            .show();
+                    } else {
+                        Toast.makeText(DoctorWorkflowActivity.this, "Đã hoàn tất bước điều trị", Toast.LENGTH_SHORT).show();
+                        loadTreatmentPlanForRoom(currentTreatmentPlanId);
+                    }
+                } else {
+                    Toast.makeText(DoctorWorkflowActivity.this, "Lỗi chuyển bước (SE_15)", Toast.LENGTH_SHORT).show();
+                    loadTreatmentPlanForRoom(currentTreatmentPlanId);
+                }
+            }
+
+            @Override
+            public void onFailure(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Throwable t) {
+                Toast.makeText(DoctorWorkflowActivity.this, "Lỗi kết nối (SE_15)", Toast.LENGTH_SHORT).show();
+            }
+        });
     }
     
     @Override
@@ -2379,54 +2453,6 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
      * Called from FragmentCrownService when user clicks "Add Service" button
      */
 
-    private void completeStepWithData(TreatmentPlan.Step step, String doctorConclusion, List<String> imageUrls) {
-        Map<String, Object> body = new HashMap<>();
-        body.put("doctorConclusion", doctorConclusion);
-        body.put("imageUrls", imageUrls);
-        
-        apiService.completeTreatmentStep(step.getId(), body).enqueue(new Callback<com.hcmute.mobile_android.network.models.MessageResponse>() {
-            @Override
-            public void onResponse(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Response<com.hcmute.mobile_android.network.models.MessageResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    String msg = response.body().getMessage();
-                    String nextRoom = response.body().getNextRoomName();
-                    
-                    // Update local step status immediately
-                    step.setStatus("COMPLETED");
-                    step.setDoctorConclusion(doctorConclusion);
-                    stepAdapter.notifyDataSetChanged();
-                    currentStep = null;
-                    
-                    if (nextRoom != null) {
-                        // Reload data first, then show dialog
-                        loadTreatmentPlanForRoom(currentTreatmentPlanId);
-                        
-                        new androidx.appcompat.app.AlertDialog.Builder(DoctorWorkflowActivity.this)
-                            .setTitle("Chuyển phòng")
-                            .setMessage("Bệnh nhân cần được chuyển sang " + nextRoom + " để tiếp tục.\nHệ thống đã tự động đẩy hồ sơ.")
-                            .setPositiveButton("OK", (dialog, which) -> {
-                                finish(); // Done for this doctor
-                            })
-                            .setCancelable(false)
-                            .show();
-                    } else {
-                        Toast.makeText(DoctorWorkflowActivity.this, "Hoàn tất bước khám", Toast.LENGTH_SHORT).show();
-                        loadTreatmentPlanForRoom(currentTreatmentPlanId); // reload step states
-                    }
-                } else {
-                    try {
-                        String errorBody = response.errorBody().string();
-                        Toast.makeText(DoctorWorkflowActivity.this, "Lỗi: " + errorBody, Toast.LENGTH_SHORT).show();
-                    } catch (Exception e) {}
-                }
-            }
-
-            @Override
-            public void onFailure(Call<com.hcmute.mobile_android.network.models.MessageResponse> call, Throwable t) {
-                Toast.makeText(DoctorWorkflowActivity.this, "Lỗi kết nối", Toast.LENGTH_SHORT).show();
-            }
-        });
-    }
 
     @Override
     public void onStepCancel(TreatmentPlan.Step step) {
@@ -2469,6 +2495,18 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
             })
             .setNegativeButton("Không", null)
             .show();
+    }
+
+    @Override
+    public void onViewImages(TreatmentPlan.Step step) {
+        if (step.getImageUrls() != null && !step.getImageUrls().isEmpty()) {
+            Intent intent = new Intent(this, com.hcmute.mobile_android.ui.activities.ImageViewerActivity.class);
+            intent.putStringArrayListExtra("images", new java.util.ArrayList<>(step.getImageUrls()));
+            intent.putExtra("position", 0);
+            startActivity(intent);
+        } else {
+            Toast.makeText(this, "Không có ảnh đính kèm", Toast.LENGTH_SHORT).show();
+        }
     }
 
 
@@ -2583,45 +2621,70 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     }
     
     private void completeAndGenerateInvoice() {
-        // Show loading
-        android.app.ProgressDialog progressDialog = new android.app.ProgressDialog(this);
-        progressDialog.setMessage("Đang tạo hóa đơn...");
-        progressDialog.setCancelable(false);
-        progressDialog.show();
+        // CRITICAL FIX: Save treatment plan BEFORE completing to prevent image loss
+        // Issue: If we complete first, the plan becomes locked and any pending images cannot be saved
+        // Solution: Force save first, then complete only after save succeeds
         
-        apiService.completeAndGenerateInvoice(currentTreatmentPlanId).enqueue(new Callback<com.hcmute.mobile_android.network.models.Invoice>() {
-            @Override
-            public void onResponse(Call<com.hcmute.mobile_android.network.models.Invoice> call, Response<com.hcmute.mobile_android.network.models.Invoice> response) {
-                progressDialog.dismiss();
-                
-                if (response.isSuccessful() && response.body() != null) {
-                    com.hcmute.mobile_android.network.models.Invoice invoice = response.body();
+        // Set flag to prevent onPause from triggering duplicate save
+        isCompletingTreatment = true;
+        
+        // Show loading
+        completionProgressDialog = new android.app.ProgressDialog(this);
+        completionProgressDialog.setMessage("Đang lưu hồ sơ...");
+        completionProgressDialog.setCancelable(false);
+        completionProgressDialog.show();
+        
+        // Step 1: Save treatment plan with any pending changes (including images)
+        saveTreatmentPlanInternal(true, () -> {
+            // Step 2: After save succeeds, proceed with completing and generating invoice
+            completionProgressDialog.setMessage("Đang tạo hóa đơn...");
+            
+            apiService.completeAndGenerateInvoice(currentTreatmentPlanId).enqueue(new Callback<com.hcmute.mobile_android.network.models.Invoice>() {
+                @Override
+                public void onResponse(Call<com.hcmute.mobile_android.network.models.Invoice> call, Response<com.hcmute.mobile_android.network.models.Invoice> response) {
+                    if (completionProgressDialog != null && completionProgressDialog.isShowing()) {
+                        completionProgressDialog.dismiss();
+                    }
+                    completionProgressDialog = null;
                     
-                    // Show success message
-                    Toast.makeText(DoctorWorkflowActivity.this, 
-                        "Đã lập hóa đơn và kết thúc hồ sơ khám thành công!", Toast.LENGTH_LONG).show();
-                    
-                    // Close this activity
-                    finish();
-                } else {
-                    try {
-                        String errorBody = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
+                    if (response.isSuccessful() && response.body() != null) {
+                        com.hcmute.mobile_android.network.models.Invoice invoice = response.body();
+                        
+                        // Show success message
                         Toast.makeText(DoctorWorkflowActivity.this, 
-                            "Lỗi: " + errorBody, Toast.LENGTH_LONG).show();
-                    } catch (Exception e) {
-                        Toast.makeText(DoctorWorkflowActivity.this, 
-                            "Lỗi tạo hóa đơn: " + response.code(), Toast.LENGTH_SHORT).show();
+                            "Đã lập hóa đơn và kết thúc hồ sơ khám thành công!", Toast.LENGTH_LONG).show();
+                        
+                        // Close this activity (onPause will not trigger auto-save due to flag)
+                        finish();
+                    } else {
+                        // Reset flag on error so user can try again
+                        isCompletingTreatment = false;
+                        
+                        try {
+                            String errorBody = response.errorBody() != null ? response.errorBody().string() : "Unknown error";
+                            Toast.makeText(DoctorWorkflowActivity.this, 
+                                "Lỗi: " + errorBody, Toast.LENGTH_LONG).show();
+                        } catch (Exception e) {
+                            Toast.makeText(DoctorWorkflowActivity.this, 
+                                "Lỗi tạo hóa đơn: " + response.code(), Toast.LENGTH_SHORT).show();
+                        }
                     }
                 }
-            }
-            
-            @Override
-            public void onFailure(Call<com.hcmute.mobile_android.network.models.Invoice> call, Throwable t) {
-                progressDialog.dismiss();
-                Toast.makeText(DoctorWorkflowActivity.this, 
-                    "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
-            }
+                
+                @Override
+                public void onFailure(Call<com.hcmute.mobile_android.network.models.Invoice> call, Throwable t) {
+                    if (completionProgressDialog != null && completionProgressDialog.isShowing()) {
+                        completionProgressDialog.dismiss();
+                    }
+                    completionProgressDialog = null;
+                    isCompletingTreatment = false; // Reset flag on failure
+                    Toast.makeText(DoctorWorkflowActivity.this, 
+                        "Lỗi kết nối: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         });
+        
+        // Note: If save fails, the error handlers will dismiss completionProgressDialog and reset flags
     }
 
     /**

@@ -200,6 +200,19 @@
                     android:contentDescription="Xóa" />
 
                 <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnViewImages"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Xem ảnh"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="8dp"
+                    app:backgroundTint="#2196F3"
+                    app:icon="@drawable/ic_eye"
+                    app:iconSize="16dp"
+                    android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnTransfer"
                     style="@style/Widget.Material3.Button.TonalButton"
                     android:layout_width="wrap_content"

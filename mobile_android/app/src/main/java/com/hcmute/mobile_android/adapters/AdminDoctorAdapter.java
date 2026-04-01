@@ -1,5 +1,6 @@
 package com.hcmute.mobile_android.adapters;
 
+import com.hcmute.mobile_android.BuildConfig;
 import android.content.Intent;
 import android.graphics.Color;
 import android.view.LayoutInflater;
@@ -103,11 +104,24 @@ public class AdminDoctorAdapter extends RecyclerView.Adapter<AdminDoctorAdapter.
             }
             
             // Load Avatar
-            Glide.with(itemView.getContext())
-                .load(doctor.getAvatarUrl())
-                .placeholder(R.drawable.ic_doctor)
-                .error(R.drawable.ic_doctor)
-                .into(ivAvatar);
+            String avatarUrl = doctor.getAvatarUrl();
+            if (avatarUrl != null && !avatarUrl.isEmpty()) {
+                String finalUrl = avatarUrl;
+                if (!avatarUrl.startsWith("http")) {
+                    String base = BuildConfig.API_BASE_URL;
+                    if (!base.endsWith("/")) base = base + "/";
+                    String p = avatarUrl.startsWith("/") ? avatarUrl.substring(1) : avatarUrl;
+                    finalUrl = base + "uploads/" + p;
+                }
+                Glide.with(itemView.getContext())
+                        .load(finalUrl)
+                        .placeholder(R.drawable.ic_doctor)
+                        .error(R.drawable.ic_doctor)
+                        .circleCrop()
+                        .into(ivAvatar);
+            } else {
+                ivAvatar.setImageResource(R.drawable.ic_doctor);
+            }
 
             // Set Active Status
             updateStatusBadge(doctor.isActive());

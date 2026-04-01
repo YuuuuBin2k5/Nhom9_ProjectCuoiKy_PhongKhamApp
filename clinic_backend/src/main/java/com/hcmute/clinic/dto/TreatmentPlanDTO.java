@@ -16,6 +16,9 @@ public class TreatmentPlanDTO {
     private Long patientId;
     private String status;
     private boolean isDraft;
+    private Long prescriptionId;
+    private String diagnosis;
+    private String advice;
     private List<StepDTO> steps;
 
     @Data
@@ -39,6 +42,11 @@ public class TreatmentPlanDTO {
         private String uiTemplateType;
         private String roomName;
         private String medicationDetails;
+        private Long prescriptionId;
+        private String diagnosis;
+        private String advice;
+        private List<PrescriptionDTO.DetailDTO> prescriptionDetails;
+        private List<String> imageUrls;
         private boolean editable;
     }
 }

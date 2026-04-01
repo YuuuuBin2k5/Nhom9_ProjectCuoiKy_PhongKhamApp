@@ -1,0 +1,41 @@
+@startuml
+title Activity Diagram: AC_18 Quản lý Danh sách Bác sĩ
+
+|Quản trị viên|
+start
+:Vào trang Quản lý Bác sĩ;
+:Hệ thống hiển thị danh sách bác sĩ hiện có;
+
+if (Chọn hành động?) then (Đăng ký mới)
+    :Nhập thông tin cá nhân, chuyên khoa, \nemail và cấp mật khẩu;
+    :Hệ thống kiểm tra email trùng lặp;
+    :Thông báo đăng ký thành công;
+
+elseif (Xóa bác sĩ)
+    :Chọn bác sĩ muốn xóa khỏi danh sách;
+    if (Đã có Lịch hẹn hoặc Hồ sơ bệnh án?) then (Có dữ liệu liên quan)
+        :Thông báo: "Không thể xóa bác sĩ đã có dữ liệu lịch sử";
+        :Gợi ý chuyển sang "Khóa tài khoản" để bảo toàn dữ liệu;
+        if (Xác nhận khóa?) then (Đồng ý)
+            goto lock_label
+        else (Hủy)
+            stop
+        endif
+    else (Không có dữ liệu)
+        :Hiển thị xác nhận xóa vĩnh viễn;
+        if (Xác nhận xóa?) then (Đồng ý)
+            :Thông báo xóa thành công;
+        else (Hủy)
+            stop
+        endif
+    endif
+
+else (Khóa tài khoản)
+    label lock_label
+    :Chọn bác sĩ cần xử lý trạng thái;
+    :Cập nhật trạng thái [Status = LOCKED / INACTIVE];
+    :Thông báo: "Tài khoản bác sĩ đã bị vô hiệu hóa";
+endif
+
+stop
+@enduml

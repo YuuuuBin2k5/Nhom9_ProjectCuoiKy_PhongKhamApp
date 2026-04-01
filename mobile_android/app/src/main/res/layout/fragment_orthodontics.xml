@@ -72,6 +72,35 @@
             style="@style/Widget.MaterialComponents.Button.OutlinedButton"
             android:layout_marginStart="8dp"/>
     </LinearLayout>
+
+    <!-- Image Preview Section (NEW) -->
+    <LinearLayout
+        android:id="@+id/layoutImagePreview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:background="#F5F7FA"
+        android:padding="8dp"
+        android:layout_marginBottom="12dp">
+
+        <TextView
+            android:id="@+id/tvImageCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0 ảnh"
+            android:textSize="12sp"
+            android:textStyle="bold"
+            android:textColor="#1565C0"
+            android:layout_marginBottom="8dp"/>
+
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvOrthoImages"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:clipToPadding="false"/>
+    </LinearLayout>
     
     <TextView
         android:layout_width="match_parent"

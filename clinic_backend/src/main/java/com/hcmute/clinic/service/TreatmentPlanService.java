@@ -119,11 +119,11 @@ public class TreatmentPlanService {
                 .build();
         plan = planRepository.save(plan);
         if (plan.getSteps() == null) {
-            plan.setSteps(new ArrayList<>());
+            plan.setSteps(new java.util.LinkedHashSet<>());
         }
 
         if (template != null) {
-            List<TreatmentPlanTemplateStep> templateSteps = template.getSteps();
+            java.util.Set<TreatmentPlanTemplateStep> templateSteps = template.getSteps();
         if (templateSteps != null && !templateSteps.isEmpty()) {
             List<TreatmentPlanTemplateStep> sorted = new ArrayList<>(templateSteps);
             sorted.sort(Comparator.comparingInt(TreatmentPlanTemplateStep::getSequenceOrder));
@@ -178,7 +178,7 @@ public class TreatmentPlanService {
             return plan;
         }
 
-        List<TreatmentPlanStep> existingSteps = plan.getSteps();
+        java.util.Set<TreatmentPlanStep> existingSteps = plan.getSteps();
         List<Long> requestedIds = request.getSteps().stream()
                 .filter(s -> s.getId() != null)
                 .map(UpdatePlanStepsRequest.StepItem::getId)
@@ -206,6 +206,16 @@ public class TreatmentPlanService {
                                 try {
                                     step.setStatus(StepStatus.valueOf(item.getStatus().toUpperCase()));
                                 } catch (IllegalArgumentException ignored) {}
+                            }
+                            
+                            // Update images if provided
+                            if (item.getImageUrls() != null) {
+                                if (step.getImages() == null) step.setImages(new java.util.LinkedHashSet<>());
+                                // Simple approach: clear and re-add for draft updates
+                                step.getImages().clear();
+                                for (String url : item.getImageUrls()) {
+                                    step.getImages().add(StepImage.builder().step(step).imageUrl(url).build());
+                                }
                             }
                         });
             } else {
@@ -251,6 +261,14 @@ public class TreatmentPlanService {
                         .toothNumber(item.getToothNumber())
                         .doctorConclusion(item.getDoctorConclusion())
                         .build();
+                
+                if (item.getImageUrls() != null) {
+                    step.setImages(new java.util.LinkedHashSet<>());
+                    for (String url : item.getImageUrls()) {
+                        step.getImages().add(StepImage.builder().step(step).imageUrl(url).build());
+                    }
+                }
+                
                 existingSteps.add(step);
             }
             order++;
@@ -510,41 +528,38 @@ public class TreatmentPlanService {
         log.info("activatePlan called for plan {} - NO-OP (plans are auto-activated)", planId);
     }
 
+
     /**
-     * FIX 4: Method đã được đơn giản hóa - Xóa logic tự động sinh bước
-     * Hoàn thành bước điều trị hiện tại và chuyển sang bước tiếp theo
+     * SE_14: Ghi nhận kết quả điều trị
+     * Cập nhật kết luận, hình ảnh và đánh dấu hoàn thành bước này.
      */
     @Transactional
-    public String completeStepAndAdvance(Long stepId, String doctorConclusion, List<String> imageUrls, Long doctorRoomId, 
-                                         com.hcmute.clinic.repository.CheckInQueueRepository queueRepo, 
-                                         com.hcmute.clinic.service.QueueEventService queueEventService, 
-                                         com.hcmute.clinic.repository.NotificationRepository notifRepo) {
-        TreatmentPlanStep currentStep = stepRepository.findById(stepId)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bước không tồn tại"));
+    public void updateStepResult(Long stepId, String conclusion, List<String> imageUrls, Long doctorRoomId) {
+        log.info("[SE_14] Recording treatment result for step #{}", stepId);
+        TreatmentPlanStep step = stepRepository.findById(stepId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bước điều trị"));
 
-        TreatmentPlan plan = currentStep.getPlan();
+        TreatmentPlan plan = step.getPlan();
         
         if (plan != null && plan.getStatus() == TreatmentPlanStatus.COMPLETED) {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Hồ sơ đã hoàn tất và bị khóa");
         }
 
         // Kiểm tra quyền: Bác sĩ phải ở đúng phòng
-        if (doctorRoomId != null && currentStep.getClinicRoom() != null) {
-            if (!doctorRoomId.equals(currentStep.getClinicRoom().getId())) {
+        if (doctorRoomId != null && step.getClinicRoom() != null) {
+            if (!doctorRoomId.equals(step.getClinicRoom().getId())) {
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
                     "Bạn không có quyền hoàn thành bước này. Bước này thuộc về phòng khác.");
             }
         }
 
-        // PROFESSIONAL FIX: Cho phép re-complete một step đã COMPLETED (để edit)
-        // NHƯNG: Không auto-advance sang step tiếp theo nếu đang re-complete
-        boolean isReCompleting = (currentStep.getStatus() == StepStatus.COMPLETED);
+        boolean isReCompleting = (step.getStatus() == StepStatus.COMPLETED);
         
         // VALIDATION: Kiểm tra các bước trước đó đã hoàn thành chưa (chỉ khi không phải re-complete)
         if (!isReCompleting) {
             boolean hasPreviousIncomplete = plan.getSteps().stream()
-                    .filter(s -> s.getSequenceOrder() != null && currentStep.getSequenceOrder() != null)
-                    .filter(s -> s.getSequenceOrder() < currentStep.getSequenceOrder())
+                    .filter(s -> s.getSequenceOrder() != null && step.getSequenceOrder() != null)
+                    .filter(s -> s.getSequenceOrder() < step.getSequenceOrder())
                     .anyMatch(s -> s.getStatus() != StepStatus.COMPLETED && s.getStatus() != StepStatus.SKIPPED);
             
             if (hasPreviousIncomplete) {
@@ -555,7 +570,6 @@ public class TreatmentPlanService {
 
         // FIX: Đảm bảo MedicalRecord tồn tại trước khi complete
         if (plan != null && plan.getMedicalRecord() == null && plan.getAppointment() != null) {
-            // Tự động tạo MedicalRecord nếu chưa có
             MedicalRecord medicalRecord = medicalRecordRepository.findByAppointmentId(plan.getAppointment().getId())
                     .orElseGet(() -> {
                         MedicalRecord newRecord = MedicalRecord.builder()
@@ -570,238 +584,190 @@ public class TreatmentPlanService {
             planRepository.save(plan);
         }
 
-        // Hoàn thành bước hiện tại
-        currentStep.setStatus(StepStatus.COMPLETED);
-        currentStep.setCompletedAt(java.time.LocalDateTime.now());
-        if (doctorConclusion != null) {
-            currentStep.setDoctorConclusion(doctorConclusion);
+        step.setDoctorConclusion(conclusion);
+        step.setStatus(StepStatus.COMPLETED);
+        if (step.getCompletedAt() == null) {
+            step.setCompletedAt(java.time.LocalDateTime.now());
         }
-        
-        // Lưu ảnh
-        if (imageUrls != null && !imageUrls.isEmpty()) {
-            if (currentStep.getImages() == null) currentStep.setImages(new ArrayList<>());
+
+        // Handle images
+        if (imageUrls != null) {
+            if (step.getImages() == null) {
+                step.setImages(new java.util.LinkedHashSet<>());
+            } else {
+                step.getImages().clear();
+            }
             for (String url : imageUrls) {
-                StepImage img = StepImage.builder()
-                        .step(currentStep)
-                        .imageUrl(url)
-                        .build();
-                currentStep.getImages().add(img);
+                step.getImages().add(StepImage.builder().step(step).imageUrl(url).build());
             }
         }
-        
-        stepRepository.save(currentStep);
-        
-        // NEW: Update MedicalRecord with aggregated notes from all completed steps
-        if (plan != null && plan.getMedicalRecord() != null) {
-            updateMedicalRecordFromSteps(plan);
+
+        stepRepository.save(step);
+
+        // Update MedicalRecord
+        if (step.getPlan() != null && step.getPlan().getMedicalRecord() != null) {
+            updateMedicalRecordFromSteps(step.getPlan());
         }
-        
-        // PROFESSIONAL FIX: Nếu đang re-complete một step đã COMPLETED, không auto-advance
-        if (isReCompleting) {
-            System.out.println("TreatmentPlanService: Re-completing step " + stepId + " - không auto-advance");
-            return null; // Không chuyển phòng, không advance
-        }
-        
-        // Tìm bước tiếp theo (chỉ PENDING, không IN_PROGRESS)
+    }
+
+    @Transactional
+    public String completeCurrentAndStartNext(Long planId, Long currentStepId) {
+        log.info("[SE_15] Moving patient to next step in plan #{} after step #{}", planId, currentStepId);
+        TreatmentPlan plan = planRepository.findById(planId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy phác đồ"));
+
+        // 1. Tìm bước tiếp theo (PENDING)
         TreatmentPlanStep nextStep = plan.getSteps().stream()
                 .filter(s -> s.getStatus() == StepStatus.PENDING)
                 .min(Comparator.comparingInt(s -> s.getSequenceOrder() != null ? s.getSequenceOrder() : 0))
                 .orElse(null);
 
-        if (nextStep == null) {
-            // Không còn PENDING steps
-            // CHECK: Có step nào còn IN_PROGRESS không?
-            boolean hasInProgress = plan.getSteps().stream()
-                    .anyMatch(s -> s.getStatus() == StepStatus.IN_PROGRESS);
-            
-            // REMOVED AUTO-COMPLETE LOGIC:
-            // Plan should only be completed when user explicitly clicks "Hoàn thành" button
-            // NOT automatically when all steps are done
-            // 
-            // Old logic (removed):
-            // if (!hasInProgress) {
-            //     plan.setStatus(TreatmentPlanStatus.COMPLETED);
-            //     planRepository.save(plan);
-            //     ... cleanup queues and send notification ...
-            // }
-            
-            // Now: Just return null, don't auto-complete the plan
-            return null;
+        if (nextStep != null) {
+            nextStep.setStatus(StepStatus.IN_PROGRESS);
+            stepRepository.save(nextStep);
         }
 
-        // CRITICAL FIX: Do NOT auto-start next step
-        // The next step should remain PENDING until doctor explicitly clicks "Bắt đầu"
-        // This prevents automatic room transfers when completing a step
-        //
-        // OLD LOGIC (REMOVED):
-        // nextStep.setStatus(StepStatus.IN_PROGRESS);
-        // stepRepository.save(nextStep);
+        // 2. Tra cứu hàng đợi hiện tại
+        java.time.LocalDate today = java.time.LocalDate.now();
+        java.util.List<CheckInQueue> queues = checkInQueueRepository.findTodayForPatient(
+            plan.getPatient().getId(), today.atStartOfDay(), today.plusDays(1).atStartOfDay()
+        );
         
-        // NEW LOGIC: Just identify the next room for notification, but don't change step status
-        // The step will be started when doctor clicks "Bắt đầu" button in the UI
+        CheckInQueue activeQueue = queues.stream()
+            .filter(q -> q.getStatus() == com.hcmute.clinic.enums.QueueStatus.IN_PROGRESS 
+                      || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.WAITING
+                      || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.PAUSED_FOR_TEST
+                      || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY)
+            .findFirst()
+            .orElse(null);
 
-        // Chuyển phòng nếu bước tiếp theo thuộc phòng khác
-        // NHƯNG: Không chuyển phòng nếu bước TIẾP THEO là step đầu tiên (sequenceOrder = 0)
-        // Vì đó là lần đầu tiên bắt đầu điều trị, bệnh nhân vẫn ở phòng ban đầu
-        boolean isNextStepFirst = nextStep.getSequenceOrder() != null && nextStep.getSequenceOrder() == 0;
+        if (activeQueue == null) return null;
+
+        ClinicRoom nextRoom = nextStep != null ? nextStep.getClinicRoom() : null;
+        ClinicRoom currentRoom = activeQueue.getClinicRoom();
         
-        ClinicRoom nextRoom = nextStep.getClinicRoom();
-        if (nextRoom != null && !isNextStepFirst) {
-            // Lấy hàng đợi hiện tại của bệnh nhân
-            java.util.List<com.hcmute.clinic.entity.CheckInQueue> queues = queueRepo.findTodayForPatient(
-                plan.getPatient().getId(), 
-                java.time.LocalDate.now().atStartOfDay(), 
-                java.time.LocalDate.now().plusDays(1).atStartOfDay()
-            );
-            com.hcmute.clinic.entity.CheckInQueue activeQueue = queues.stream()
-                .filter(q -> q.getStatus() == com.hcmute.clinic.enums.QueueStatus.IN_PROGRESS 
-                          || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.WAITING
-                          || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.PAUSED_FOR_TEST
-                          || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY)
-                .findFirst()
-                .orElse(null);
+        // C1: Có bước tiếp theo và phải sang phòng khác
+        if (nextRoom != null && !nextRoom.getId().equals(currentRoom.getId())) {
+            Long oldRoomId = currentRoom.getId();
+            if (activeQueue.getOriginalRoomId() == null) {
+                activeQueue.setOriginalRoomId(oldRoomId);
+            }
+            activeQueue.setClinicRoom(nextRoom);
             
-            // CRITICAL FIX: Do NOT transfer if patient is PAUSED_FOR_TEST (at X-Ray)
-            if (activeQueue != null && activeQueue.getStatus() == com.hcmute.clinic.enums.QueueStatus.PAUSED_FOR_TEST) {
-                log.info("Patient is at X-Ray (PAUSED_FOR_TEST), skipping room transfer in completeStepAndAdvance");
-                return null;
+            // Check if returning to original room
+            if (nextRoom.getId().equals(activeQueue.getOriginalRoomId())) {
+                activeQueue.setStatus(com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY);
+                activeQueue.setPriorityLevel((activeQueue.getPriorityLevel() != null ? activeQueue.getPriorityLevel() : 0) + 10);
+            } else if (activeQueue.getStatus() != com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY) {
+                activeQueue.setStatus(com.hcmute.clinic.enums.QueueStatus.WAITING);
+                activeQueue.setPriorityLevel((activeQueue.getPriorityLevel() != null ? activeQueue.getPriorityLevel() : 0) + 5);
             }
             
-            if (activeQueue != null && !nextRoom.getId().equals(activeQueue.getClinicRoom().getId())) {
-                Long oldRoomId = activeQueue.getClinicRoom().getId();
-                
-                // Lưu originalRoomId nếu chưa có
-                if (activeQueue.getOriginalRoomId() == null) {
-                    activeQueue.setOriginalRoomId(oldRoomId);
-                }
-                
-                activeQueue.setClinicRoom(nextRoom);
-                // Preserve RETURNED_PRIORITY status if applicable
-                if (activeQueue.getStatus() != com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY) {
-                    activeQueue.setStatus(com.hcmute.clinic.enums.QueueStatus.WAITING);
-                }
-                activeQueue.setPriorityLevel(activeQueue.getPriorityLevel() + 5); 
-                queueRepo.save(activeQueue);
+            checkInQueueRepository.save(activeQueue);
+            sendQueueNotification(plan, activeQueue, nextRoom, nextStep, nextRoom.getId().equals(activeQueue.getOriginalRoomId()));
+            broadcastQueueUpdates(oldRoomId, nextRoom.getId());
+            return nextRoom.getName();
 
-                // Calculate estimated wait time
-                int estimatedWaitTime = 0;
-                java.time.LocalDate today = java.time.LocalDate.now();
-                java.util.List<com.hcmute.clinic.entity.CheckInQueue> waitingList = queueRepo.findByRoomAndDateRange(
-                        nextRoom.getId(),
-                        today.atStartOfDay(),
-                        today.plusDays(1).atStartOfDay(),
-                        java.util.List.of(com.hcmute.clinic.enums.QueueStatus.WAITING, com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY));
-                
-                for (com.hcmute.clinic.entity.CheckInQueue q : waitingList) {
-                    if (q.getId().equals(activeQueue.getId())) {
-                        break;
-                    }
-                    if (q.getAppointment() != null && q.getAppointment().getService() != null && q.getAppointment().getService().getDurationMinutes() != null) {
-                        estimatedWaitTime += q.getAppointment().getService().getDurationMinutes();
-                    } else {
-                        estimatedWaitTime += 15;
-                    }
-                }
-
-                // Build detailed notification message
-                String roomLocation = nextRoom.getDescription() != null && !nextRoom.getDescription().isBlank() 
-                        ? nextRoom.getDescription() 
-                        : "Vui lòng hỏi nhân viên";
-                
-                String message = String.format(
-                    "Vui lòng di chuyển đến %s (%s) để tiếp tục điều trị.\n\n" +
-                    "📋 Dịch vụ tiếp theo: %s\n" +
-                    "🔢 Số thứ tự: %d\n" +
-                    "⏱️ Thời gian chờ dự kiến: ~%d phút\n\n" +
-                    "Bạn được ưu tiên trong hàng đợi.",
-                    nextRoom.getName(),
-                    roomLocation,
-                    nextStep.getService().getName(),
-                    activeQueue.getQueueNumber(),
-                    estimatedWaitTime
-                );
-
-                com.hcmute.clinic.entity.Notification notif = com.hcmute.clinic.entity.Notification.builder()
-                        .patient(plan.getPatient())
-                        .title("🏥 Chuyển phòng khám")
-                        .message(message)
-                        .type("ROOM_TRANSFER")
-                        .build();
-                notifRepo.save(notif);
-                
-                if (plan.getPatient().getFcmToken() != null && !plan.getPatient().getFcmToken().isBlank()) {
-                    fcmService.sendNotification(plan.getPatient().getFcmToken(), notif.getTitle(), notif.getMessage());
-                }
-
-                try {
-                    queueEventService.broadcastQueueUpdated(oldRoomId);
-                    queueEventService.broadcastQueueUpdated(nextRoom.getId());
-                } catch (Exception e) {}
-
-                return nextRoom.getName();
-            }
-        } else if (!isNextStepFirst) {
-            // Trả bệnh nhân về phòng khám gốc sau khi làm xong dịch vụ nhánh (dangling queue fix)
-            java.util.List<com.hcmute.clinic.entity.CheckInQueue> queuesReturn = queueRepo.findTodayForPatient(
-                plan.getPatient().getId(), 
-                java.time.LocalDate.now().atStartOfDay(), 
-                java.time.LocalDate.now().plusDays(1).atStartOfDay()
-            );
-            com.hcmute.clinic.entity.CheckInQueue activeQueue = queuesReturn.stream()
-                .filter(q -> q.getStatus() == com.hcmute.clinic.enums.QueueStatus.IN_PROGRESS 
-                          || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.WAITING
-                          || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.PAUSED_FOR_TEST
-                          || q.getStatus() == com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY)
-                .findFirst()
-                .orElse(null);
+        // C2: Không có bước tiếp theo ở phòng khác, trả về phòng khám gốc
+        } else if ((nextRoom == null || nextRoom.getId().equals(currentRoom.getId())) 
+                    && activeQueue.getOriginalRoomId() != null 
+                    && !activeQueue.getOriginalRoomId().equals(currentRoom.getId())) {
             
-            // CRITICAL FIX: Do NOT transfer if patient is PAUSED_FOR_TEST (at X-Ray)
-            if (activeQueue != null && activeQueue.getStatus() == com.hcmute.clinic.enums.QueueStatus.PAUSED_FOR_TEST) {
-                log.info("Patient is at X-Ray (PAUSED_FOR_TEST), skipping return to original room");
-                return null;
-            }
+            Long oldRoomId = currentRoom.getId();
+            ClinicRoom origRoom = clinicRoomRepository.findById(activeQueue.getOriginalRoomId()).orElse(null);
+            if (origRoom != null) {
+                activeQueue.setClinicRoom(origRoom);
+                activeQueue.setStatus(com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY);
+                activeQueue.setPriorityLevel((activeQueue.getPriorityLevel() != null ? activeQueue.getPriorityLevel() : 0) + 10);
+                checkInQueueRepository.save(activeQueue);
                 
-            if (activeQueue != null && activeQueue.getOriginalRoomId() != null && 
-                !activeQueue.getOriginalRoomId().equals(activeQueue.getClinicRoom().getId())) {
-                
-                Long oldRoomId = activeQueue.getClinicRoom().getId();
-                ClinicRoom origRoom = clinicRoomRepository.findById(activeQueue.getOriginalRoomId()).orElse(null);
-                
-                if (origRoom != null) {
-                    activeQueue.setClinicRoom(origRoom);
-                    activeQueue.setStatus(com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY);
-                    activeQueue.setPriorityLevel(activeQueue.getPriorityLevel() + 10);
-                    queueRepo.save(activeQueue);
-                    
-                    com.hcmute.clinic.entity.Notification notifRet = com.hcmute.clinic.entity.Notification.builder()
-                            .patient(plan.getPatient())
-                            .title("🏥 Trở lại phòng khám ban đầu")
-                            .message("Vui lòng quay lại: " + origRoom.getName() + " để tiếp tục điều trị. Bạn được ưu tiên gọi vào phòng.")
-                            .type("ROOM_TRANSFER")
-                            .build();
-                    notifRepo.save(notifRet);
-                    
-                    if (plan.getPatient().getFcmToken() != null && !plan.getPatient().getFcmToken().isBlank()) {
-                        fcmService.sendNotification(plan.getPatient().getFcmToken(), notifRet.getTitle(), notifRet.getMessage());
-                    }
-
-                    try {
-                        queueEventService.broadcastQueueUpdated(oldRoomId);
-                        queueEventService.broadcastQueueUpdated(origRoom.getId());
-                    } catch (Exception e) {}
-                    
-                    return origRoom.getName();
-                }
+                sendQueueNotification(plan, activeQueue, origRoom, nextStep, true);
+                broadcastQueueUpdates(oldRoomId, origRoom.getId());
+                return origRoom.getName();
             }
         }
         
         return null;
     }
+
+    private void broadcastQueueUpdates(Long oldRoomId, Long newRoomId) {
+        try {
+            queueEventService.broadcastQueueUpdated(oldRoomId);
+            queueEventService.broadcastQueueUpdated(newRoomId);
+        } catch (Exception e) {}
+    }
+
+    private void sendQueueNotification(TreatmentPlan plan, CheckInQueue queue, ClinicRoom room, TreatmentPlanStep nextStep, boolean isReturn) {
+        String title = isReturn ? "🏥 Trở lại phòng khám ban đầu" : "🏥 Chuyển phòng khám";
+        String roomLocation = room.getDescription() != null && !room.getDescription().isBlank() ? room.getDescription() : "Vui lòng hỏi nhân viên";
+        String serviceName = nextStep != null && nextStep.getService() != null ? nextStep.getService().getName() : "Khám tổng quát / Đọc kết quả";
+        
+        String message;
+        if (isReturn) {
+            message = "Vui lòng quay lại: " + room.getName() + " để tiếp tục điều trị. Bạn được ưu tiên gọi vào phòng.";
+        } else {
+            int estimatedWaitTime = 0;
+            java.time.LocalDate today = java.time.LocalDate.now();
+            java.util.List<CheckInQueue> waitingList = checkInQueueRepository.findByRoomAndDateRange(
+                    room.getId(), today.atStartOfDay(), today.plusDays(1).atStartOfDay(),
+                    java.util.List.of(com.hcmute.clinic.enums.QueueStatus.WAITING, com.hcmute.clinic.enums.QueueStatus.RETURNED_PRIORITY));
+            
+            for (CheckInQueue q : waitingList) {
+                if (q.getId().equals(queue.getId())) break;
+                estimatedWaitTime += (q.getAppointment() != null && q.getAppointment().getService() != null && q.getAppointment().getService().getDurationMinutes() != null) 
+                        ? q.getAppointment().getService().getDurationMinutes() : 15;
+            }
+            
+            message = String.format(
+                "Vui lòng di chuyển đến %s (%s) để tiếp tục điều trị.\n\n" +
+                "📋 Dịch vụ tiếp theo: %s\n" +
+                "🔢 Số thứ tự: %d\n" +
+                "⏱️ Thời gian chờ dự kiến: ~%d phút\n\n" +
+                "Bạn được ưu tiên trong hàng đợi.",
+                room.getName(), roomLocation, serviceName, queue.getQueueNumber(), estimatedWaitTime
+            );
+        }
+
+        Notification notif = Notification.builder()
+                .patient(plan.getPatient())
+                .title(title)
+                .message(message)
+                .type("ROOM_TRANSFER")
+                .build();
+        notificationRepository.save(notif);
+        
+        if (plan.getPatient().getFcmToken() != null && !plan.getPatient().getFcmToken().isBlank()) {
+            fcmService.sendNotification(plan.getPatient().getFcmToken(), notif.getTitle(), notif.getMessage());
+        }
+    }
+
+    @Transactional
+    public String completeStepAndAdvance(Long stepId, String conclusion, java.util.List<String> imageUrls, 
+                                        Long doctorRoomId, 
+                                        com.hcmute.clinic.repository.CheckInQueueRepository queueRepo,
+                                        QueueEventService queueEventService,
+                                        com.hcmute.clinic.repository.NotificationRepository notifRepo) {
+        TreatmentPlanStep currentStep = stepRepository.findById(stepId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Step not found"));
+        
+        TreatmentPlan plan = currentStep.getPlan();
+        
+        // Use the new updateStepResult logic
+        updateStepResult(stepId, conclusion, imageUrls, doctorRoomId);
+        
+        // Re-fetch step after update
+        currentStep = stepRepository.findById(stepId).get();
+        
+        // If re-completing, don't advance
+        if (currentStep.getCompletedAt() != null && currentStep.getCompletedAt().isBefore(java.time.LocalDateTime.now().minusSeconds(5))) {
+             return null;
+        }
+        
+        // Advance logic using the newly aligned method, but handle legacy dependencies
+        // Actually, completeCurrentAndStartNext covers exactly what we need
+        return completeCurrentAndStartNext(plan.getId(), stepId);
+    }
     
-    /**
-     * Auto-assign clinic room based on service name/type
-     * This allows manually added services to be assigned to the correct room
-     */
     /**
      * DEPRECATED: Use ServiceRoomAssignmentService.determineRoomForService() instead
      * This method is kept for backward compatibility but delegates to the centralized service
@@ -823,7 +789,7 @@ public class TreatmentPlanService {
             template.getSteps().clear(); // Clear existing steps
         } else {
             template = new TreatmentPlanTemplate();
-            template.setSteps(new ArrayList<>());
+            template.setSteps(new java.util.LinkedHashSet<>());
         }
 
         template.setName(req.getName());

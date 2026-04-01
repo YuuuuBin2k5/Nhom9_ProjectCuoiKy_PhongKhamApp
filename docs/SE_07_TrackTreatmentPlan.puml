@@ -1,0 +1,24 @@
+@startuml SE_07_TrackTreatmentPlan
+title Sequence Diagram: SE_07 Theo dõi liệu trình
+actor "Bệnh nhân" as Patient
+participant "View\n(TreatmentHistoryActivity)" as View
+participant "TreatmentPlanController" as Controller
+participant "TreatmentPlanService" as Service
+participant "TreatmentPlanRepository" as Repo
+database "PostgreSQL" as DB
+
+Patient -> View: Xem liệu trình của tôi
+activate View
+View -> Controller: getPatientPlans(patientId)
+activate Controller
+Controller -> Service: getPlansByPatient(patientId)
+activate Service
+Service -> Repo: findByPatientId(patientId)
+Repo -> DB: SELECT * FROM treatment_plan...
+DB --> Repo: plan list
+Repo --> Service: plans
+Service --> Controller: List<PlanResponse>
+Controller --> View: 200 OK
+View --> Patient: Hiển thị tiến độ và nhắc nhở
+deactivate View
+@enduml

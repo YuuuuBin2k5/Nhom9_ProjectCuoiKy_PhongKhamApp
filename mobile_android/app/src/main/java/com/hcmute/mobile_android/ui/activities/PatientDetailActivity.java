@@ -178,14 +178,14 @@ public class PatientDetailActivity extends AppCompatActivity {
         tvEmptyHistory.setVisibility(View.GONE);
         rvMedicalHistory.setVisibility(View.GONE);
 
-        apiService.getPatientMedicalRecords(patientInfo.getId()).enqueue(new Callback<List<MedicalRecordResponse>>() {
+        apiService.getPatientMedicalRecords(patientInfo.getId()).enqueue(new Callback<com.hcmute.mobile_android.network.models.PagedResponse<MedicalRecordResponse>>() {
             @Override
-            public void onResponse(Call<List<MedicalRecordResponse>> call, Response<List<MedicalRecordResponse>> response) {
+            public void onResponse(Call<com.hcmute.mobile_android.network.models.PagedResponse<MedicalRecordResponse>> call, Response<com.hcmute.mobile_android.network.models.PagedResponse<MedicalRecordResponse>> response) {
                 progressBar.setVisibility(View.GONE);
                 
                 if (response.isSuccessful() && response.body() != null) {
-                    List<MedicalRecordResponse> records = response.body();
-                    if (records.isEmpty()) {
+                    List<MedicalRecordResponse> records = response.body().getContent();
+                    if (records == null || records.isEmpty()) {
                         tvEmptyHistory.setVisibility(View.VISIBLE);
                     } else {
                         rvMedicalHistory.setVisibility(View.VISIBLE);
@@ -198,7 +198,7 @@ public class PatientDetailActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<List<MedicalRecordResponse>> call, Throwable t) {
+            public void onFailure(Call<com.hcmute.mobile_android.network.models.PagedResponse<MedicalRecordResponse>> call, Throwable t) {
                 progressBar.setVisibility(View.GONE);
                 tvEmptyHistory.setVisibility(View.VISIBLE);
                 tvEmptyHistory.setText("Lỗi kết nối: " + t.getMessage());

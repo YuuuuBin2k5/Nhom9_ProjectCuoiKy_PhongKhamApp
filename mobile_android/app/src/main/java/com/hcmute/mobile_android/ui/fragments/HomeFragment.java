@@ -129,9 +129,6 @@ public class HomeFragment extends Fragment {
             intent.putExtra("OPEN_SCANNER", true);
             startActivity(intent);
         });
-        view.findViewById(R.id.btn_tooth_chart).setOnClickListener(v -> {
-            ToastUtils.showCenteredToast(requireContext(), "Sơ đồ răng nhanh - Đang phát triển");
-        });
 
         // Notification click
         view.findViewById(R.id.iv_notification).setOnClickListener(v -> {

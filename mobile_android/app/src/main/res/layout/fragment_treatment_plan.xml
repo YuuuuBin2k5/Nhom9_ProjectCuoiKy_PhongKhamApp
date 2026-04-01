@@ -39,7 +39,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="SỨC KHỎE CỦA BẠN"
-                    android:textColor="#E3F2FD"
+                    android:textColor="@color/premium_blue"
                     android:textSize="11sp"
                     android:textStyle="bold"
                     android:letterSpacing="0.2"/>
@@ -50,7 +50,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:text="Phác đồ điều trị"
-                    android:textColor="@color/white"
+                    android:textColor="@color/premium_blue"
                     android:textSize="32sp"
                     android:textStyle="bold"
                     android:fontFamily="sans-serif-black"/>

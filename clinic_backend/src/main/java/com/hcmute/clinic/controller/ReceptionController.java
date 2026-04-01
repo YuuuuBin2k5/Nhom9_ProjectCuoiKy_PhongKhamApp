@@ -16,7 +16,7 @@ import java.util.Map;
 @RestController
 @RequestMapping("/api/reception")
 @RequiredArgsConstructor
-@PreAuthorize("hasRole('RECEPTIONIST')")
+@PreAuthorize("hasAnyRole('RECEPTIONIST', 'DOCTOR', 'ADMIN')")
 @Slf4j
 public class ReceptionController {
     

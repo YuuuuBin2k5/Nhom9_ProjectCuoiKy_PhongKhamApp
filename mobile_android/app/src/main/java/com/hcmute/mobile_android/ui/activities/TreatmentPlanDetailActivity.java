@@ -6,6 +6,7 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -39,6 +40,8 @@ public class TreatmentPlanDetailActivity extends AppCompatActivity {
     private com.google.android.material.progressindicator.CircularProgressIndicator cpOverallProgress;
     private TextView tvProgressPercent, tvProgressBadge;
     private RecyclerView rvTimeline;
+    private View llMedicalSummary;
+    private TextView tvDiagnosisMain, tvAdviceMain;
     private TimelineAdapter adapter;
     private MaterialButton btnBottomAction;
 
@@ -72,6 +75,9 @@ public class TreatmentPlanDetailActivity extends AppCompatActivity {
         tvProgressPercent = findViewById(R.id.tvProgressPercent);
         tvProgressBadge = findViewById(R.id.tvProgressBadge);
         rvTimeline = findViewById(R.id.rvTimeline);
+        llMedicalSummary = findViewById(R.id.llMedicalSummary);
+        tvDiagnosisMain = findViewById(R.id.tvDiagnosisMain);
+        tvAdviceMain = findViewById(R.id.tvAdviceMain);
         btnBottomAction = findViewById(R.id.btnBottomAction);
 
         adapter = new TimelineAdapter(new ArrayList<>());
@@ -93,7 +99,7 @@ public class TreatmentPlanDetailActivity extends AppCompatActivity {
             public void onResponse(@NonNull Call<TreatmentPlan> call, @NonNull Response<TreatmentPlan> response) {
                 progressDetail.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null) {
-                    bindData(response.body());
+                    displayPlan(response.body());
                 } else {
                     fallbackToOfflineJson(response.code());
                 }
@@ -125,11 +131,22 @@ public class TreatmentPlanDetailActivity extends AppCompatActivity {
                 }
             }
             fakePlan.setSteps(fakeSteps);
-            bindData(fakePlan);
+            displayPlan(fakePlan);
         }
     }
 
-    private void bindData(TreatmentPlan plan) {
+    private void displayPlan(TreatmentPlan plan) {
+        // Display Main Summary
+        if ((plan.getDiagnosis() != null && !plan.getDiagnosis().isEmpty())
+            || (plan.getAdvice() != null && !plan.getAdvice().isEmpty())) {
+            llMedicalSummary.setVisibility(View.VISIBLE);
+            tvDiagnosisMain.setText(plan.getDiagnosis() != null ? plan.getDiagnosis() : "Chưa có chẩn đoán");
+            tvAdviceMain.setText(plan.getAdvice() != null ? plan.getAdvice() : "Không có lời dặn");
+        } else {
+            llMedicalSummary.setVisibility(View.GONE);
+        }
+
+        // Progress logic
         List<TreatmentPlan.Step> steps = plan.getSteps();
         if (steps == null || steps.isEmpty()) return;
 
@@ -235,6 +252,23 @@ public class TreatmentPlanDetailActivity extends AppCompatActivity {
                     sh.llNote.setVisibility(View.GONE);
                 }
 
+                // Medicines
+                if (step.getPrescriptionDetails() != null && !step.getPrescriptionDetails().isEmpty()) {
+                    sh.llPrescription.setVisibility(View.VISIBLE);
+                    sh.llPrescriptionItems.removeAllViews();
+                    for (TreatmentPlan.Step.PrescriptionDetail detail : step.getPrescriptionDetails()) {
+                        TextView tv = new TextView(TreatmentPlanDetailActivity.this);
+                        String instr = "• " + detail.getMedicineName() + ": " + detail.getDosage() + " " + detail.getUnit() 
+                                + " (" + detail.getFrequency() + (detail.getDuration() != null ? " - " + detail.getDuration() : "") + ")";
+                        tv.setText(instr);
+                        tv.setTextColor(0xFF334155);
+                        tv.setTextSize(12);
+                        sh.llPrescriptionItems.addView(tv);
+                    }
+                } else {
+                    sh.llPrescription.setVisibility(View.GONE);
+                }
+
                 // Node coloring
                 sh.nodeLine.setBackgroundColor(isDone ? 0xFF10B981 : 0xFFCBD5E1);
                 sh.tvNumber.setBackgroundTintList(android.content.res.ColorStateList.valueOf(isDone ? 0xFF10B981 : 0xFFCBD5E1));
@@ -263,7 +297,8 @@ public class TreatmentPlanDetailActivity extends AppCompatActivity {
         class StepHolder extends RecyclerView.ViewHolder {
             TextView tvName, tvStatus, tvDoctor, tvDuration, tvNote, tvNumber;
             ImageView ivIcon, ivStatusIcon;
-            View nodeLine, llNote;
+            View nodeLine, llNote, llPrescription;
+            LinearLayout llPrescriptionItems;
             MaterialButton btnAction;
             StepHolder(View v) {
                 super(v);
@@ -277,6 +312,8 @@ public class TreatmentPlanDetailActivity extends AppCompatActivity {
                 ivStatusIcon = v.findViewById(R.id.ivStepStatusIcon);
                 nodeLine = v.findViewById(R.id.timelineLine);
                 llNote = v.findViewById(R.id.llNoteInfo);
+                llPrescription = v.findViewById(R.id.llPrescriptionInfo);
+                llPrescriptionItems = v.findViewById(R.id.llPrescriptionItems);
                 btnAction = v.findViewById(R.id.btnStepAction);
             }
         }

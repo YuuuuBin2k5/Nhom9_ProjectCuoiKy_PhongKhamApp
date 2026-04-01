@@ -285,6 +285,6 @@ public class DoctorDetailActivity extends AppCompatActivity {
         String base = BuildConfig.API_BASE_URL;
         if (!base.endsWith("/")) base = base + "/";
         String p = path.startsWith("/") ? path.substring(1) : path;
-        return base + p;
+        return base + "uploads/" + p;
     }
 }

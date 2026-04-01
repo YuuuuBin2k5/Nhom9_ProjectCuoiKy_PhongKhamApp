@@ -338,9 +338,34 @@ public class InvoiceService {
             .totalAmount(invoice.getTotalAmount())
             .paymentStatus(invoice.getPaymentStatus().toString())
             .paymentMethod(invoice.getPaymentMethod() != null ? invoice.getPaymentMethod().toString() : null)
-            .paidAt(invoice.getPaidAt())
             .createdAt(invoice.getCreatedAt())
+            .prescriptionId(invoice.getTreatmentPlan() != null 
+                    && invoice.getTreatmentPlan().getMedicalRecord() != null
+                    && invoice.getTreatmentPlan().getMedicalRecord().getPrescription() != null
+                ? invoice.getTreatmentPlan().getMedicalRecord().getPrescription().getId()
+                : null)
+            .diagnosis(invoice.getTreatmentPlan() != null && invoice.getTreatmentPlan().getMedicalRecord() != null
+                ? invoice.getTreatmentPlan().getMedicalRecord().getDiagnosis()
+                : null)
+            .advice(invoice.getTreatmentPlan() != null && invoice.getTreatmentPlan().getMedicalRecord() != null
+                ? invoice.getTreatmentPlan().getMedicalRecord().getAdvice()
+                : null)
             .items(itemDtos)
+            .prescriptionDetails(invoice.getTreatmentPlan() != null 
+                    && invoice.getTreatmentPlan().getMedicalRecord() != null
+                    && invoice.getTreatmentPlan().getMedicalRecord().getPrescription() != null
+                ? invoice.getTreatmentPlan().getMedicalRecord().getPrescription().getDetails().stream()
+                    .map(d -> com.hcmute.clinic.dto.PrescriptionDTO.DetailDTO.builder()
+                        .id(d.getId())
+                        .treatmentPlanStepId(d.getTreatmentPlanStepId())
+                        .medicineName(d.getMedicineName())
+                        .dosage(d.getDosage())
+                        .frequency(d.getFrequency())
+                        .duration(d.getDuration())
+                        .unit(d.getUnit())
+                        .build())
+                    .collect(Collectors.toList())
+                : Collections.emptyList())
             .build();
     }
 }

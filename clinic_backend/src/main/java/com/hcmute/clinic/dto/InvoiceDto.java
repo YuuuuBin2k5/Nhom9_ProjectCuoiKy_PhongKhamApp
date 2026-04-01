@@ -21,7 +21,11 @@ public class InvoiceDto {
     private String paymentMethod;
     private LocalDateTime paidAt;
     private LocalDateTime createdAt;
+    private Long prescriptionId;
+    private String diagnosis;
+    private String advice;
     private List<InvoiceItemDto> items;
+    private List<PrescriptionDTO.DetailDTO> prescriptionDetails;
     
     @Data
     @Builder

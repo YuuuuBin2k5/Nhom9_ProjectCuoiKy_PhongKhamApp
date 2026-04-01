@@ -130,6 +130,10 @@
             android:theme="@style/Theme.AdminPanel"
             android:exported="false" />
         <activity
+            android:name=".ui.activities.AdminInvoiceListActivity"
+            android:theme="@style/Theme.AdminPanel"
+            android:exported="false" />
+        <activity
             android:name=".ui.activities.AdminCreateTemplateActivity"
             android:theme="@style/Theme.AdminPanel"
             android:exported="false" />

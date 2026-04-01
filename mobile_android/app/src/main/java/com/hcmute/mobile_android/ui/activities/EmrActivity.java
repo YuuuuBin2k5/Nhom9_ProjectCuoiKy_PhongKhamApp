@@ -95,13 +95,13 @@ public class EmrActivity extends AppCompatActivity {
         tvEmpty.setVisibility(View.GONE);
 
         ApiService api = RetrofitClient.getApiService(this);
-        api.getMyMedicalRecords().enqueue(new Callback<List<MedicalRecordResponse>>() {
+        api.getMyMedicalRecords().enqueue(new Callback<com.hcmute.mobile_android.network.models.PagedResponse<MedicalRecordResponse>>() {
             @Override
-            public void onResponse(Call<List<MedicalRecordResponse>> call, Response<List<MedicalRecordResponse>> response) {
+            public void onResponse(Call<com.hcmute.mobile_android.network.models.PagedResponse<MedicalRecordResponse>> call, Response<com.hcmute.mobile_android.network.models.PagedResponse<MedicalRecordResponse>> response) {
                 progress.setVisibility(View.GONE);
                 if (response.isSuccessful() && response.body() != null) {
-                    List<MedicalRecordResponse> list = response.body();
-                    if (list.isEmpty()) {
+                    List<MedicalRecordResponse> list = response.body().getContent();
+                    if (list == null || list.isEmpty()) {
                         tvEmpty.setVisibility(View.VISIBLE);
                     } else {
                         adapter.setItems(list);
@@ -114,12 +114,12 @@ public class EmrActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onFailure(Call<List<MedicalRecordResponse>> call, Throwable t) {
+            public void onFailure(Call<com.hcmute.mobile_android.network.models.PagedResponse<MedicalRecordResponse>> call, Throwable t) {
                 progress.setVisibility(View.GONE);
                 tvEmpty.setText("Lỗi kết nối: " + t.getMessage());
                 tvEmpty.setVisibility(View.VISIBLE);
             }
-        });
+        }       );
     }
 
     private static String formatDate(String iso) {

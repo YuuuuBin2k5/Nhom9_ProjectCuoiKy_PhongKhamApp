@@ -101,14 +101,18 @@ public class LoginActivity extends AppCompatActivity {
                             android.util.Log.d("LoginActivity", "Verified saved role: " + savedRole);
                         }
 
-                        // Save email as display name (shown in doctor greeting)
-                        if (body.getEmail() != null) {
-                            String emailStr = body.getEmail();
-                            // Use part before @ as name
-                            String displayName = emailStr.contains("@")
-                                    ? emailStr.substring(0, emailStr.indexOf('@')) : emailStr;
-                            tm.saveUserName(displayName);
+                        // Save display name (shown in doctor greeting)
+                        String displayName = body.getFullName();
+                        if (displayName == null || displayName.isEmpty()) {
+                            if (body.getEmail() != null) {
+                                String emailStr = body.getEmail();
+                                displayName = emailStr.contains("@")
+                                        ? emailStr.substring(0, emailStr.indexOf('@')) : emailStr;
+                            } else {
+                                displayName = "User";
+                            }
                         }
+                        tm.saveUserName(displayName);
                         
                         // Save patient ID if not admin
                         if (body.getUserId() != null && !"ADMIN".equals(body.getRole())) {

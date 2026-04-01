@@ -63,10 +63,10 @@ public class TreatmentPlanStep {
     // true = dịch vụ tổng quát (toothNumber = null)
     // false = dịch vụ cụ thể cho một răng (toothNumber != null)
 
-    @OneToMany(mappedBy = "step", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "step", cascade = CascadeType.ALL, orphanRemoval = true)
     @ToString.Exclude
     @EqualsAndHashCode.Exclude
-    private List<StepImage> images;
+    private java.util.Set<StepImage> images;
 
     @OneToOne(mappedBy = "step", cascade = CascadeType.ALL)
     @ToString.Exclude

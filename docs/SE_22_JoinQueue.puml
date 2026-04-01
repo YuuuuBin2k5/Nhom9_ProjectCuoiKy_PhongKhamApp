@@ -1,0 +1,50 @@
+@startuml SE_22_JoinQueue
+title Sequence Diagram: SE_22 Tham gia hàng đợi (Join Queue)
+
+actor "Hệ thống / Lễ tân" as System
+participant "View\n(QueueManagement)" as View
+participant "CheckInController" as Controller
+participant "CheckInQueueService" as QueueService
+participant "CheckInQueueRepository" as QueueRepo
+database "PostgreSQL" as DB
+
+System -> View: Thêm bệnh nhân vào hàng đợi (Join Queue)
+activate View
+View -> Controller: joinQueue(joinQueueRequest)
+activate Controller
+
+Controller -> QueueService: processJoinQueue(patientId, roomId, appointmentId)
+activate QueueService
+
+QueueService -> QueueService: determinePriority(appointmentId)
+note right: Tùy thuộc vào việc có hẹn,\nđi trễ hay bệnh nhân Returning
+
+QueueService -> QueueRepo: findMaxQueueNumber(roomId)
+activate QueueRepo
+QueueRepo -> DB: SELECT MAX(queue_number) FROM check_in_queue WHERE room_id=?
+activate DB
+DB --> QueueRepo: currentMax
+deactivate DB
+QueueRepo --> QueueService: currentMax
+deactivate QueueRepo
+
+QueueService -> QueueService: build CheckInQueue entity (queueNumber = currentMax + 1)
+
+QueueService -> QueueRepo: save(checkInQueue)
+activate QueueRepo
+QueueRepo -> DB: INSERT INTO check_in_queue...
+activate DB
+DB --> QueueRepo: success
+deactivate DB
+QueueRepo --> QueueService: savedQueue
+deactivate QueueRepo
+
+QueueService --> Controller: QueueResponse(queueNumber, estimatedWaitTime)
+deactivate QueueService
+
+Controller --> View: 200 OK (QueueResponse)
+deactivate Controller
+
+View --> System: Hiển thị số thứ tự & thời gian chờ
+deactivate View
+@enduml

@@ -67,10 +67,9 @@ public class ReminderSchedulerService {
         LocalDateTime startOfDay = now.toLocalDate().atStartOfDay();
         LocalDateTime endOfDay = now.toLocalDate().plusDays(1).atStartOfDay();
 
-        List<CheckInQueue> waitingQueues = checkInQueueRepository.findAll().stream()
-                .filter(q -> (q.getStatus() == QueueStatus.WAITING || q.getStatus() == QueueStatus.RETURNED_PRIORITY))
-                .filter(q -> q.getCheckInTime().isAfter(startOfDay) && q.getCheckInTime().isBefore(endOfDay))
-                .toList();
+        List<CheckInQueue> waitingQueues = checkInQueueRepository.findByStatusInAndCheckInTimeBetween(
+                List.of(QueueStatus.WAITING, QueueStatus.RETURNED_PRIORITY),
+                startOfDay, endOfDay);
 
         for (CheckInQueue q : waitingQueues) {
             String trackingType = "QUEUE_ALERT_" + q.getId();

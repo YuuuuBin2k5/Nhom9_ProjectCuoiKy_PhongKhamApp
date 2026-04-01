@@ -86,4 +86,20 @@ public class QueueController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+
+    @PostMapping("/{id}/skip")
+    public ResponseEntity<?> skipCurrentPatient(@PathVariable Long id) {
+        try {
+            checkInQueueService.skipCurrentPatient(id);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Đã lùi bệnh nhân và gọi người tiếp theo"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", e.getMessage()
+            ));
+        }
+    }
 }

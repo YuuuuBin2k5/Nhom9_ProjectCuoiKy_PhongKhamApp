@@ -5,7 +5,6 @@ title Activity Diagram: AC_14 Ghi nhận kết quả điều trị (Trong liệu
 start
 :Thực hiện khám theo bước điều trị;
 :Nhập chẩn đoán và kết luận vào bệnh án;
-
 if (Có hình ảnh kèm theo?) then (Có)
     :Chụp / tải lên ảnh;
 else (Không)
