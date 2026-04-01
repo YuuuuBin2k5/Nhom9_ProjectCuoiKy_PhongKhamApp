@@ -162,13 +162,13 @@ public class PrescriptionActivity extends AppCompatActivity {
                 if (!response.isSuccessful()) {
                     if (response.code() == 404) {
                         // No treatment plan found - allow general prescription without steps
-                        Log.w("PrescriptionActivity", "No treatment plan found for appointment " + appointmentId + ". Allowing general prescription.");
+                        android.util.Log.w("PrescriptionActivity", "No treatment plan found for appointment " + appointmentId + ". Allowing general prescription.");
                         treatmentPlanId = null;
                         treatmentSteps = new ArrayList<>();
-                        populateStepSpinner();
+                        setupServiceSpinner();
                         // Disable step selection since there are no steps
-                        swStepSpecific.setEnabled(false);
-                        swStepSpecific.setChecked(false);
+                        swEnablePrescription.setEnabled(false);
+                        swEnablePrescription.setChecked(false);
                         Toast.makeText(PrescriptionActivity.this, 
                             "Chưa có phác đồ điều trị. Bạn có thể kê đơn chung.", 
                             Toast.LENGTH_LONG).show();
@@ -201,62 +201,14 @@ public class PrescriptionActivity extends AppCompatActivity {
                 
                 treatmentSteps = plan.getSteps() != null ? plan.getSteps() : new ArrayList<>();
                 if (treatmentSteps.isEmpty()) {
-                    Log.w("PrescriptionActivity", "Treatment plan exists but has no steps. Allowing general prescription.");
-                    swStepSpecific.setEnabled(false);
-                    swStepSpecific.setChecked(false);
+                    android.util.Log.w("PrescriptionActivity", "Treatment plan exists but has no steps. Allowing general prescription.");
+                    swEnablePrescription.setEnabled(false);
+                    swEnablePrescription.setChecked(false);
                     Toast.makeText(PrescriptionActivity.this, "Phác đồ chưa có dịch vụ. Bạn có thể kê đơn chung.", Toast.LENGTH_SHORT).show();
-                    finish();
-                    return;
                 }
 
-                List<String> labels = new ArrayList<>();
-                for (TreatmentPlan.Step step : treatmentSteps) {
-                    String label = step.getServiceName() != null ? step.getServiceName() : "";
-                    if (step.getToothNumber() != null && !step.getToothNumber().isEmpty()) {
-                        label += " (Răng " + step.getToothNumber() + ")";
-                    }
-                    labels.add(label);
-                }
-
-                ArrayAdapter<String> adapter = new ArrayAdapter<>(PrescriptionActivity.this, android.R.layout.simple_spinner_dropdown_item, labels);
-                spService.setAdapter(adapter);
-
-                spService.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-                    @Override
-                    public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
-                        if (position < 0 || position >= treatmentSteps.size()) return;
-                        TreatmentPlan.Step step = treatmentSteps.get(position);
-                        selectedStepId = step.getId();
-
-                        // Load saved data state for this step (switch dựa trên dữ liệu có sẵn)
-                        boolean hasSavedMedicine = medicineDetailsByStep.containsKey(selectedStepId)
-                                && medicineDetailsByStep.get(selectedStepId) != null
-                                && !medicineDetailsByStep.get(selectedStepId).isEmpty();
-
-                        // Sync amount from current step state
-                        Double base = step.getEstimatedPrice() != null ? step.getEstimatedPrice() : 0.0;
-                        Double actual = step.getActualPrice() != null ? step.getActualPrice() : base;
-                        // amount nhập vào là phần "cần cộng thêm" vào giá dịch vụ
-                        Double extra = actual - base;
-                        if (extra < 0) extra = 0.0;
-                        etServiceAmount.setText(String.valueOf(extra.intValue() == extra ? extra.intValue() : extra));
-
-                        boolean shouldEnable = hasSavedMedicine;
-                        if (swEnablePrescription.isChecked() != shouldEnable) {
-                            swEnablePrescription.setChecked(shouldEnable);
-                        } else if (shouldEnable) {
-                            loadSelectedStepPrescriptionUI();
-                        }
-                    }
-
-                    @Override
-                    public void onNothingSelected(android.widget.AdapterView<?> parent) {}
-                });
-
-                // Select first by default
-                TreatmentPlan.Step firstStep = treatmentSteps.get(0);
-                selectedStepId = firstStep.getId();
-
+                setupServiceSpinner();
+                
                 // Then load prescription details from appointment
                 loadExistingPrescription();
             }
@@ -267,6 +219,71 @@ public class PrescriptionActivity extends AppCompatActivity {
                 finish();
             }
         });
+    }
+
+    private void setupServiceSpinner() {
+        if (treatmentSteps.isEmpty()) {
+            // No steps available - disable spinner
+            spService.setEnabled(false);
+            ArrayAdapter<String> emptyAdapter = new ArrayAdapter<>(this, 
+                android.R.layout.simple_spinner_item, 
+                new String[]{"Không có dịch vụ"});
+            emptyAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            spService.setAdapter(emptyAdapter);
+            return;
+        }
+
+        // Build step names for spinner
+        List<String> stepNames = new ArrayList<>();
+        for (TreatmentPlan.Step step : treatmentSteps) {
+            String name = step.getServiceName() != null ? step.getServiceName() : "Dịch vụ #" + step.getId();
+            stepNames.add(name);
+        }
+
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this, 
+            android.R.layout.simple_spinner_item, 
+            stepNames);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spService.setAdapter(adapter);
+
+        spService.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
+                if (position < 0 || position >= treatmentSteps.size()) return;
+                
+                TreatmentPlan.Step step = treatmentSteps.get(position);
+                selectedStepId = step.getId();
+
+                // Load saved data state for this step (switch dựa trên dữ liệu có sẵn)
+                boolean hasSavedMedicine = medicineDetailsByStep.containsKey(selectedStepId)
+                        && medicineDetailsByStep.get(selectedStepId) != null
+                        && !medicineDetailsByStep.get(selectedStepId).isEmpty();
+
+                // Sync amount from current step state
+                Double base = step.getEstimatedPrice() != null ? step.getEstimatedPrice() : 0.0;
+                Double actual = step.getActualPrice() != null ? step.getActualPrice() : base;
+                // amount nhập vào là phần "cần cộng thêm" vào giá dịch vụ
+                Double extra = actual - base;
+                if (extra < 0) extra = 0.0;
+                etServiceAmount.setText(String.valueOf(extra.intValue() == extra ? extra.intValue() : extra));
+
+                boolean shouldEnable = hasSavedMedicine;
+                if (swEnablePrescription.isChecked() != shouldEnable) {
+                    swEnablePrescription.setChecked(shouldEnable);
+                } else if (shouldEnable) {
+                    loadSelectedStepPrescriptionUI();
+                }
+            }
+
+            @Override
+            public void onNothingSelected(android.widget.AdapterView<?> parent) {}
+        });
+
+        // Select first by default
+        if (!treatmentSteps.isEmpty()) {
+            TreatmentPlan.Step firstStep = treatmentSteps.get(0);
+            selectedStepId = firstStep.getId();
+        }
     }
 
     private void loadExistingPrescription() {

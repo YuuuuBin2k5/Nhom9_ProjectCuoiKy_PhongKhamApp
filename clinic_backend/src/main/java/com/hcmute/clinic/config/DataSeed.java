@@ -238,11 +238,33 @@ public class DataSeed implements ApplicationRunner {
         String firstName = docName.substring(0, docName.length() - lastName.length()).trim();
         String bio = "Bác sĩ có hơn 10 năm kinh nghiệm trong lĩnh vực răng hàm mặt, chuyên sâu về "
                 + spec + ". Tốt nghiệp loại giỏi Đại học Y Dược TP.HCM.";
+        
+        // Generate avatar URL based on doctor name
+        String avatarUrl = generateDoctorAvatarUrl(email);
+        
         return doctorRepository.save(Doctor.builder()
                 .email(email).passwordHash(pass).firstName(firstName).lastName(lastName)
                 .specialization(spec).licenseNumber("BS-" + email.split("@")[0].toUpperCase())
                 .biography(bio)
+                .avatarUrl(avatarUrl)
                 .clinicRoom(room).experienceYears(5).isActive(true).build());
+    }
+    
+    private String generateDoctorAvatarUrl(String email) {
+        // Map email to avatar filename
+        String prefix = email.split("@")[0];
+        return switch (prefix) {
+            case "doc_tongquat1" -> "doctor_avatar_1.jpg";
+            case "doc_tongquat2" -> "doctor_avatar_2.jpg";
+            case "doc_tongquat3" -> "doctor_avatar_3.jpg";
+            case "doc_tongquat4" -> "doctor_avatar_4.jpg";
+            case "doc_tongquat5" -> "doctor_avatar_5.jpg";
+            case "doc_xray" -> "doctor_avatar_xray.jpg";
+            case "doc_surg" -> "doctor_avatar_surgery.jpg";
+            case "doc_ortho" -> "doctor_avatar_ortho.jpg";
+            case "doc_cosm" -> "doctor_avatar_cosm.jpg";
+            default -> "doctor_avatar_default.jpg";
+        };
     }
 
     private Patient createPatient(String name, String email, String phone, String pass) {
