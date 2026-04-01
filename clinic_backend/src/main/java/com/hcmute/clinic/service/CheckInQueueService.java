@@ -886,7 +886,8 @@ public class CheckInQueueService {
                 current.getId(), patientName, current.getPriorityLevel(), room.getName());
 
         // Find next patient in queue (sorted by priority DESC, queueNumber ASC)
-        CheckInQueue next = findNextWaitingPatient(room.getId());
+        // EXCLUDING the patient we just skipped to prevent immediate re-call
+        CheckInQueue next = findNextWaitingPatient(room.getId(), current.getId());
         
         if (next != null) {
             String nextPatientName = "";
@@ -939,20 +940,36 @@ public class CheckInQueueService {
      * Priority: RETURNED_PRIORITY (highest priority) > WAITING (by queue number)
      */
     private CheckInQueue findNextWaitingPatient(Long roomId) {
+        return findNextWaitingPatient(roomId, null);
+    }
+
+    private CheckInQueue findNextWaitingPatient(Long roomId, Long excludingQueueId) {
         LocalDate today = LocalDate.now();
-        List<CheckInQueue> waiting = checkInQueueRepository.findByRoomAndDateRange(
+        List<CheckInQueue> waitingList = checkInQueueRepository.findByRoomAndDateRange(
                 roomId,
                 today.atStartOfDay(),
                 today.plusDays(1).atStartOfDay(),
                 List.of(QueueStatus.WAITING, QueueStatus.RETURNED_PRIORITY)
         );
 
-        if (waiting.isEmpty()) {
+        if (waitingList.isEmpty()) {
+            return null;
+        }
+
+        // Filter out the excluded queue if provided
+        List<CheckInQueue> filteredWaiting = waitingList;
+        if (excludingQueueId != null) {
+            filteredWaiting = waitingList.stream()
+                    .filter(q -> !q.getId().equals(excludingQueueId))
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
+        if (filteredWaiting.isEmpty()) {
             return null;
         }
 
         // Sort by priority DESC, then queueNumber ASC
-        waiting.sort((a, b) -> {
+        filteredWaiting.sort((a, b) -> {
             int priorityA = a.getPriorityLevel() != null ? a.getPriorityLevel() : 0;
             int priorityB = b.getPriorityLevel() != null ? b.getPriorityLevel() : 0;
             int priorityCompare = Integer.compare(priorityB, priorityA);
@@ -962,7 +979,7 @@ public class CheckInQueueService {
             return Integer.compare(a.getQueueNumber(), b.getQueueNumber());
         });
 
-        return waiting.get(0);
+        return filteredWaiting.get(0);
     }
 
     private void broadcastRoom(ClinicRoom r) {

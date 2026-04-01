@@ -167,6 +167,16 @@ public class PrescriptionActivity extends AppCompatActivity {
                 }
 
                 TreatmentPlan plan = response.body();
+                
+                // CRITICAL FIX: Validate that treatment plan belongs to current appointment
+                if (plan.getAppointmentId() != null && !plan.getAppointmentId().equals(appointmentId)) {
+                    Toast.makeText(PrescriptionActivity.this, 
+                        "Phác đồ không thuộc lịch hẹn này. Vui lòng kiểm tra lại.", 
+                        Toast.LENGTH_LONG).show();
+                    finish();
+                    return;
+                }
+                
                 treatmentSteps = plan.getSteps() != null ? plan.getSteps() : new ArrayList<>();
                 if (treatmentSteps.isEmpty()) {
                     Toast.makeText(PrescriptionActivity.this, "Phác đồ không có dịch vụ", Toast.LENGTH_SHORT).show();

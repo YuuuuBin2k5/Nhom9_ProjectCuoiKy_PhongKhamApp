@@ -107,12 +107,22 @@ public class AdminDoctorAdapter extends RecyclerView.Adapter<AdminDoctorAdapter.
             String avatarUrl = doctor.getAvatarUrl();
             if (avatarUrl != null && !avatarUrl.isEmpty()) {
                 String finalUrl = avatarUrl;
+                // If URL doesn't start with http, build full URL
                 if (!avatarUrl.startsWith("http")) {
                     String base = BuildConfig.API_BASE_URL;
                     if (!base.endsWith("/")) base = base + "/";
-                    String p = avatarUrl.startsWith("/") ? avatarUrl.substring(1) : avatarUrl;
-                    finalUrl = base + "uploads/" + p;
+                    // Remove leading slash if present
+                    String path = avatarUrl.startsWith("/") ? avatarUrl.substring(1) : avatarUrl;
+                    // Don't add "uploads/" if path already contains it
+                    if (path.startsWith("uploads/")) {
+                        finalUrl = base + path;
+                    } else {
+                        finalUrl = base + "uploads/" + path;
+                    }
                 }
+                
+                android.util.Log.d("AdminDoctorAdapter", "Loading avatar: " + finalUrl);
+                
                 Glide.with(itemView.getContext())
                         .load(finalUrl)
                         .placeholder(R.drawable.ic_doctor)
@@ -120,6 +130,7 @@ public class AdminDoctorAdapter extends RecyclerView.Adapter<AdminDoctorAdapter.
                         .circleCrop()
                         .into(ivAvatar);
             } else {
+                android.util.Log.d("AdminDoctorAdapter", "No avatar URL for doctor: " + doctor.getFullName());
                 ivAvatar.setImageResource(R.drawable.ic_doctor);
             }
 

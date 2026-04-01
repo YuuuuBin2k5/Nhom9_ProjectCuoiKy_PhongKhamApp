@@ -5,6 +5,7 @@ import java.util.List;
 public class TreatmentPlan {
     private Long id;
     private Long patientId;
+    private Long appointmentId; // ADDED: To validate prescription belongs to correct appointment
     private String patientName;
     private String status; // DRAFT, ACTIVE, COMPLETED, CANCELLED
     private String createdAt;
@@ -32,6 +33,9 @@ public class TreatmentPlan {
 
     public Long getPatientId() { return patientId; }
     public void setPatientId(Long patientId) { this.patientId = patientId; }
+
+    public Long getAppointmentId() { return appointmentId; }
+    public void setAppointmentId(Long appointmentId) { this.appointmentId = appointmentId; }
 
     public String getPatientName() { return patientName; }
     public void setPatientName(String patientName) { this.patientName = patientName; }

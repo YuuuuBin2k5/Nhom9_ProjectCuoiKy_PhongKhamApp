@@ -116,6 +116,7 @@ public class TreatmentPlanController {
         return TreatmentPlanDTO.builder()
                 .id(plan.getId())
                 .patientId(plan.getPatient().getId())
+                .appointmentId(plan.getAppointment() != null ? plan.getAppointment().getId() : null) // ADDED
                 .status(plan.getStatus().name())
                 .isDraft(plan.isDraft())
                 .prescriptionId(plan.getMedicalRecord() != null && plan.getMedicalRecord().getPrescription() != null ? plan.getMedicalRecord().getPrescription().getId() : null)

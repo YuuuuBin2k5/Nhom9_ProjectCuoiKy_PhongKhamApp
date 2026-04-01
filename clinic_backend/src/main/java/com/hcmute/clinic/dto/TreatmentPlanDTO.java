@@ -14,6 +14,7 @@ import java.util.List;
 public class TreatmentPlanDTO {
     private Long id;
     private Long patientId;
+    private Long appointmentId; // ADDED: To validate prescription belongs to correct appointment
     private String status;
     private boolean isDraft;
     private Long prescriptionId;

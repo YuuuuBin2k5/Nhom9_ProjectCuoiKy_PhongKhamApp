@@ -59,6 +59,19 @@ public class HomeFragment extends Fragment {
     private HomeQueueAdapter queueAdapter;
     private HomeQueueAdapter transferredAdapter;
     private HomeAppointmentAdapter appointmentAdapter;
+    
+    // Auto-refresh
+    private final android.os.Handler refreshHandler = new android.os.Handler();
+    private final Runnable refreshRunnable = new Runnable() {
+        @Override
+        public void run() {
+            if (isAdded() && !isDetached()) {
+                loadData();
+                // Schedule next refresh in 30 seconds
+                refreshHandler.postDelayed(this, 30000);
+            }
+        }
+    };
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -144,12 +157,25 @@ public class HomeFragment extends Fragment {
 
         // Load data
         loadData();
+        
+        // Start auto-refresh
+        refreshHandler.postDelayed(refreshRunnable, 30000);
     }
 
     @Override
     public void onResume() {
         super.onResume();
         if (getView() != null) loadData();
+        
+        // Restart refresh if stopped
+        refreshHandler.removeCallbacks(refreshRunnable);
+        refreshHandler.postDelayed(refreshRunnable, 30000);
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        refreshHandler.removeCallbacks(refreshRunnable);
     }
 
     // ─── Navigation helpers ────────────────────────────────────────────────────
@@ -391,11 +417,11 @@ public class HomeFragment extends Fragment {
                         .setMessage("Bệnh nhân " + name + " sẽ quay lại hàng đợi với độ ưu tiên cao.\n\nNgười tiếp theo sẽ được gọi vào phòng.\n\nXác nhận?")
                         .setPositiveButton("Xác nhận", (dialog, which) -> {
                             ApiService api = RetrofitClient.getApiService(holder.itemView.getContext());
-                            api.skipPatient(q.getId()).enqueue(new Callback<Void>() {
+                            api.delayWaitingPatient(q.getId()).enqueue(new Callback<Void>() {
                                 @Override
                                 public void onResponse(Call<Void> call, Response<Void> res) {
                                     ToastUtils.showCenteredToast(holder.itemView.getContext(),
-                                            res.isSuccessful() ? "Đã lùi " + name + " và gọi người tiếp theo" : "Lỗi khi lùi");
+                                            res.isSuccessful() ? "Đã lùi " + name : "Lỗi khi lùi");
                                     if (res.isSuccessful() && isAdded()) loadData();
                                 }
                                 @Override
