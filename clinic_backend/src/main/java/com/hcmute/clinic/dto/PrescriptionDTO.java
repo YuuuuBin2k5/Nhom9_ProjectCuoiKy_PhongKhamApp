@@ -18,6 +18,9 @@ public class PrescriptionDTO {
     private Long doctorId;
     private String doctorName;
     private LocalDateTime createdAt;
+    private String diagnosis;
+    private String symptoms;
+    private String advice;
     private List<DetailDTO> details;
 
     @Data
@@ -26,6 +29,7 @@ public class PrescriptionDTO {
     @AllArgsConstructor
     public static class DetailDTO {
         private Long id;
+        private Long treatmentPlanStepId;
         private String medicineName;
         private String dosage;
         private String frequency;

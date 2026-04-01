@@ -14,6 +14,9 @@ public interface OtpChallengeRepository extends JpaRepository<OtpChallenge, Long
     Optional<OtpChallenge> findFirstByPhoneE164AndPurposeAndConsumedFalseOrderByIdDesc(
             String phoneE164, OtpPurpose purpose);
 
+    Optional<OtpChallenge> findFirstByEmailAndPurposeAndConsumedFalseOrderByIdDesc(
+            String email, OtpPurpose purpose);
+
     @Query("select count(o) > 0 from OtpChallenge o where o.phoneE164 = :phone and o.purpose = :purpose " +
             "and o.consumed = true and o.consumedAt >= :since")
     boolean existsVerifiedSince(

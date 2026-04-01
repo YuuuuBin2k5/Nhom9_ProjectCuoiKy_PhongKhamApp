@@ -1,0 +1,19 @@
+@startuml AC_03_ManageAccount
+title Activity Diagram: AC_03 Quản lý tài khoản (Hồ sơ)
+
+start
+:Người dùng vào trang cá nhân;
+:Chọn chỉnh sửa thông tin;
+:Cập nhật các trường thông tin (Tên, ngày sinh, địa chỉ,...);
+if (Có ảnh thẻ/ảnh đại diện mới?) then (Có)
+    :Tải ảnh lên hệ thống;
+endif
+:Nhấn Lưu thay đổi;
+if (Kiểm tra dữ liệu hợp lệ?) then (Có)
+    :Cập nhật vào Database;
+    :Hiển thị thông báo lưu thành công;
+else (Không)
+    :Báo lỗi định dạng dữ liệu;
+endif
+stop
+@enduml

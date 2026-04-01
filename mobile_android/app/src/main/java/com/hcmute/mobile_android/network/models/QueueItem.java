@@ -98,4 +98,42 @@ public class QueueItem {
             default: return status;
         }
     }
+
+    // Queue estimation fields
+    private String estimateDisplayType; // IN_PROGRESS, SOFT_COUNTDOWN, RANGE
+    private Integer estimatedMinutes;
+    private Integer minMinutes;
+    private Integer maxMinutes;
+    private String estimateMessage;
+    private String estimateConfidence;
+    private Boolean showApproximateLabel;
+    private String estimateTitle;
+    private String estimateSubtitle;
+
+    public String getEstimateDisplayType() { return estimateDisplayType; }
+    public void setEstimateDisplayType(String estimateDisplayType) { this.estimateDisplayType = estimateDisplayType; }
+
+    public Integer getEstimatedMinutes() { return estimatedMinutes; }
+    public void setEstimatedMinutes(Integer estimatedMinutes) { this.estimatedMinutes = estimatedMinutes; }
+
+    public Integer getMinMinutes() { return minMinutes; }
+    public void setMinMinutes(Integer minMinutes) { this.minMinutes = minMinutes; }
+
+    public Integer getMaxMinutes() { return maxMinutes; }
+    public void setMaxMinutes(Integer maxMinutes) { this.maxMinutes = maxMinutes; }
+
+    public String getEstimateMessage() { return estimateMessage; }
+    public void setEstimateMessage(String estimateMessage) { this.estimateMessage = estimateMessage; }
+
+    public String getEstimateConfidence() { return estimateConfidence; }
+    public void setEstimateConfidence(String estimateConfidence) { this.estimateConfidence = estimateConfidence; }
+
+    public Boolean getShowApproximateLabel() { return showApproximateLabel; }
+    public void setShowApproximateLabel(Boolean showApproximateLabel) { this.showApproximateLabel = showApproximateLabel; }
+
+    public String getEstimateTitle() { return estimateTitle; }
+    public void setEstimateTitle(String estimateTitle) { this.estimateTitle = estimateTitle; }
+
+    public String getEstimateSubtitle() { return estimateSubtitle; }
+    public void setEstimateSubtitle(String estimateSubtitle) { this.estimateSubtitle = estimateSubtitle; }
 }

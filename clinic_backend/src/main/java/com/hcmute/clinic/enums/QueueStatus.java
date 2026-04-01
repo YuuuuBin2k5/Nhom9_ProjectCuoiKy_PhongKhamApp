@@ -6,5 +6,6 @@ public enum QueueStatus {
     PAUSED_FOR_TEST,   // Đi chụp X-Quang / xét nghiệm
     RETURNED_PRIORITY, // Đã về, ưu tiên lên đầu
     COMPLETED,
-    SKIPPED
+    SKIPPED,
+    CANCELLED
 }

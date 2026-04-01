@@ -8,9 +8,10 @@ public class CreateDoctorRequest {
     private String specialty;
     private int experienceYears;
     private String bio;
+    private Long assignedRoomId;
 
     public CreateDoctorRequest(String firstName, String lastName, String email, 
-                              String password, String specialty, int experienceYears, String bio) {
+                              String password, String specialty, int experienceYears, String bio, Long assignedRoomId) {
         this.firstName = firstName;
         this.lastName = lastName;
         this.email = email;
@@ -18,6 +19,7 @@ public class CreateDoctorRequest {
         this.specialty = specialty;
         this.experienceYears = experienceYears;
         this.bio = bio;
+        this.assignedRoomId = assignedRoomId;
     }
 
     // Getters
@@ -28,4 +30,5 @@ public class CreateDoctorRequest {
     public String getSpecialty() { return specialty; }
     public int getExperienceYears() { return experienceYears; }
     public String getBio() { return bio; }
+    public Long getAssignedRoomId() { return assignedRoomId; }
 }

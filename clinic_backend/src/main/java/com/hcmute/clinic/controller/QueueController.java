@@ -55,6 +55,17 @@ public class QueueController {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
     }
+    
+    @PostMapping("/{id}/transfer-surgery")
+    public ResponseEntity<?> transferToSurgery(@PathVariable Long id, @RequestBody(required = false) Map<String, Long> body) {
+        Long surgeryRoomId = body != null && body.containsKey("surgeryRoomId") ? body.get("surgeryRoomId") : null;
+        try {
+            checkInQueueService.transferToSurgery(id, surgeryRoomId);
+            return ResponseEntity.ok(Map.of("message", "Đã chuyển đi Tiểu phẫu"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
 
     @PostMapping("/{id}/complete-xray")
     public ResponseEntity<?> completeXRay(@PathVariable Long id) {
@@ -63,6 +74,32 @@ public class QueueController {
             return ResponseEntity.ok(Map.of("message", "Bệnh nhân đã về, ưu tiên"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{id}/delay")
+    public ResponseEntity<?> delayPatient(@PathVariable Long id) {
+        try {
+            checkInQueueService.delayPatient(id);
+            return ResponseEntity.ok(Map.of("message", "Đã đẩy lùi bệnh nhân xuống 1 vị trí"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PostMapping("/{id}/skip")
+    public ResponseEntity<?> skipCurrentPatient(@PathVariable Long id) {
+        try {
+            checkInQueueService.skipCurrentPatient(id);
+            return ResponseEntity.ok(Map.of(
+                "success", true,
+                "message", "Đã lùi bệnh nhân và gọi người tiếp theo"
+            ));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of(
+                "success", false,
+                "message", e.getMessage()
+            ));
         }
     }
 }

@@ -5,77 +5,20 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <!-- Odontogram Container -->
-    <com.google.android.material.card.MaterialCardView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+    <!-- Edit Button (Hidden by default, shown when in read-only mode) -->
+    <Button
+        android:id="@+id/btnEditMode"
+        android:layout_width="wrap_content"
+        android:layout_height="36dp"
+        android:text="Chỉnh sửa"
+        android:textSize="13sp"
+        android:paddingStart="12dp"
+        android:paddingEnd="12dp"
+        android:visibility="gone"
         android:layout_marginBottom="12dp"
-        app:cardCornerRadius="12dp"
-        app:cardElevation="2dp"
-        app:cardBackgroundColor="@android:color/white">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:padding="12dp">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Sơ đồ răng (FDI) - Khám tổng quát"
-                android:textSize="15sp"
-                android:textStyle="bold"
-                android:textColor="#0D1B2A"
-                android:layout_marginBottom="8dp" />
-
-            <com.hcmute.mobile_android.ui.views.OdontogramView
-                android:id="@+id/odontogramView"
-                android:layout_width="match_parent"
-                android:layout_height="320dp"
-                android:background="#FAFAFA" />
-                
-            <!-- Legend -->
-            <HorizontalScrollView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
-                android:scrollbars="none">
-                
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:orientation="horizontal">
-                    
-                    <!-- Sâu răng -->
-                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginEnd="12dp" android:background="@drawable/bg_status_waiting" android:paddingHorizontal="8dp" android:paddingVertical="4dp">
-                        <View android:layout_width="8dp" android:layout_height="8dp" android:background="@drawable/circle_red_dot" android:layout_marginEnd="4dp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Sâu răng" android:textSize="11sp" android:textColor="#D32F2F"/>
-                    </LinearLayout>
-                    
-                    <!-- Đã trám -->
-                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginEnd="12dp" android:background="@drawable/bg_hcmut_badge" android:paddingHorizontal="8dp" android:paddingVertical="4dp">
-                        <View android:layout_width="8dp" android:layout_height="8dp" android:background="@drawable/circle_blue_dot" android:layout_marginEnd="4dp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Đã trám" android:textSize="11sp" android:textColor="#1565C0"/>
-                    </LinearLayout>
-                    
-                    <!-- BN yêu cầu -->
-                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:layout_marginEnd="12dp" android:background="@drawable/bg_status_in_progress" android:paddingHorizontal="8dp" android:paddingVertical="4dp">
-                        <View android:layout_width="8dp" android:layout_height="8dp" android:background="#4CAF50" android:layout_marginEnd="4dp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="BN yêu cầu" android:textSize="11sp" android:textColor="#2E7D32"/>
-                    </LinearLayout>
-                    
-                    <!-- Cần chữa tủy -->
-                    <LinearLayout android:layout_width="wrap_content" android:layout_height="wrap_content" android:gravity="center_vertical" android:background="#FFF3E0" android:paddingHorizontal="8dp" android:paddingVertical="4dp">
-                        <View android:layout_width="8dp" android:layout_height="8dp" android:background="@drawable/circle_orange_dot" android:layout_marginEnd="4dp"/>
-                        <TextView android:layout_width="wrap_content" android:layout_height="wrap_content" android:text="Cần chữa tủy" android:textSize="11sp" android:textColor="#E65100"/>
-                    </LinearLayout>
-
-                </LinearLayout>
-            </HorizontalScrollView>
-
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
+        android:drawableStart="@android:drawable/ic_menu_edit"
+        android:drawablePadding="6dp"
+        style="@style/Widget.Material3.Button.TonalButton" />
 
     <!-- Clinical Details Card -->
     <com.google.android.material.card.MaterialCardView
@@ -153,6 +96,72 @@
                 android:padding="12dp"
                 android:textSize="14sp" />
 
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Clinical Images Card (NEW) -->
+    <com.google.android.material.card.MaterialCardView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp"
+        app:cardBackgroundColor="@android:color/white">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Hình ảnh lâm sàng"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#0D1B2A"
+                android:layout_marginBottom="12dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnUploadGeneralImage"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="📷 Tải ảnh lên"
+                android:textAllCaps="false"
+                app:icon="@drawable/ic_camera"
+                app:iconSize="20dp"
+                app:iconGravity="textStart"
+                android:layout_marginBottom="12dp"/>
+
+            <!-- Image Preview Section -->
+            <LinearLayout
+                android:id="@+id/layoutImagePreview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone"
+                android:background="#F5F7FA"
+                android:padding="8dp">
+
+                <TextView
+                    android:id="@+id/tvImageCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="0 ảnh"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    android:textColor="#1565C0"
+                    android:layout_marginBottom="8dp"/>
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvGeneralImages"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:clipToPadding="false"/>
+            </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 </LinearLayout>

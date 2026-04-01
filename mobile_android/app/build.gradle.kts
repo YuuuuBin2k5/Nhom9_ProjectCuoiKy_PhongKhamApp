@@ -7,72 +7,16 @@ plugins {
     alias(libs.plugins.android.application)
 }
 
-/** IPv4 private: 192.168.x, 10.x, 172.16–31.x (bỏ loopback / link-local). */
-fun collectLanIPv4(): List<String> {
-    return try {
-        Collections.list(NetworkInterface.getNetworkInterfaces())
-            .asSequence()
-            .filter { it.isUp && !it.isLoopback }
-            .flatMap { Collections.list(it.inetAddresses).asSequence() }
-            .filterIsInstance<Inet4Address>()
-            .filter { !it.isLoopbackAddress && !it.isLinkLocalAddress }
-            .map { it.hostAddress }
-            .filter { ha ->
-                when {
-                    ha.startsWith("192.168.") -> true
-                    ha.startsWith("10.") -> true
-                    ha.startsWith("172.") -> {
-                        val octet = ha.substringAfter("172.").substringBefore(".").toIntOrNull() ?: return@filter false
-                        octet in 16..31
-                    }
-                    else -> false
-                }
-            }
-            .distinct()
-            .toList()
-    } catch (_: Exception) {
-        emptyList()
-    }
-}
-
-fun pickBestLanIp(candidates: List<String>): String? {
-    if (candidates.isEmpty()) return null
-    return candidates.firstOrNull { it.startsWith("192.168.") }
-        ?: candidates.firstOrNull { it.startsWith("10.") }
-        ?: candidates.firstOrNull { it.startsWith("172.") }
-}
-
-/**
- * Mặc định: tự đoán IP LAN máy build → điện thoại thật + emulator (qua IP máy) đều dùng được.
- * Không tìm thấy LAN → fallback http://10.0.2.2 (emulator classic).
- *
- * Ghi đè (local.properties), khi cần:
- * - backend.base.url=http://x.x.x.x:8081/
- * - backend.host=EMULATOR  → luôn 10.0.2.2
- * - backend.host=1.2.3.4   → IP cố định
- * - backend.port=8081
- */
 fun resolveBackendBaseUrl(rootDir: java.io.File): String {
-    val props = Properties()
-    val lp = rootDir.resolve("local.properties")
-    if (lp.isFile) lp.inputStream().use { props.load(it) }
-
-    val explicit = props.getProperty("backend.base.url")?.trim()
-    if (!explicit.isNullOrEmpty()) {
-        return if (explicit.endsWith("/")) explicit else "$explicit/"
-    }
-    val port = props.getProperty("backend.port")?.trim()?.takeIf { it.isNotEmpty() } ?: "8081"
-    val hostRaw = props.getProperty("backend.host")?.trim()
-
-    if (hostRaw.equals("EMULATOR", ignoreCase = true)) {
-        return "http://10.0.2.2:$port/"
-    }
-    if (!hostRaw.isNullOrBlank() && !hostRaw.equals("AUTO", ignoreCase = true)) {
-        val host = hostRaw.removePrefix("http://").removePrefix("https://").substringBefore("/").substringBefore(":")
+    val localPropsFile = rootDir.resolve("mobile_android/local.properties")
+    if (localPropsFile.exists()) {
+        val props = Properties()
+        localPropsFile.inputStream().use { props.load(it) }
+        val host = props.getProperty("backend.host", "192.168.1.6")
+        val port = props.getProperty("backend.port", "8081")
         return "http://$host:$port/"
     }
-    val lan = pickBestLanIp(collectLanIPv4())
-    return if (lan != null) "http://$lan:$port/" else "http://10.0.2.2:$port/"
+    return "http://192.168.1.6:8081/"
 }
 
 android {
@@ -85,7 +29,7 @@ android {
 
     defaultConfig {
         applicationId = "com.hcmute.mobile_android"
-        minSdk = 24
+        minSdk = 26
         targetSdk = 36
         versionCode = 1
         versionName = "1.0"
@@ -125,6 +69,9 @@ dependencies {
     // Glide
     implementation(libs.glide)
     
+    // PhotoView for pinch-to-zoom images
+    implementation("com.github.chrisbanes:PhotoView:2.3.0")
+    
     // SwipeRefreshLayout
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
     
@@ -142,15 +89,26 @@ dependencies {
     implementation("com.squareup.retrofit2:retrofit:2.9.0")
     implementation("com.squareup.retrofit2:converter-scalars:2.9.0")
     implementation("com.squareup.retrofit2:converter-gson:2.9.0")
-    implementation("com.squareup.okhttp3:logging-interceptor:4.9.3")
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+    implementation("com.squareup.okhttp3:okhttp:4.12.0")
     
     // Security
     implementation("androidx.security:security-crypto:1.1.0-alpha06")
-    implementation(libs.glide)
-    
-    // Firebase Realtime Database
+
+    // Firebase
     implementation(platform("com.google.firebase:firebase-bom:32.7.0"))
     implementation("com.google.firebase:firebase-database")
+
+    // Animations (Phase 3)
+    implementation("com.airbnb.android:lottie:6.3.0")
+    
+    // Charts (Phase 4)
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+    
+    // Excel & PDF Export (Phase 4)
+    implementation("org.apache.poi:poi:5.2.3")
+    implementation("org.apache.poi:poi-ooxml:5.2.3")
+    implementation("com.itextpdf:itext7-core:7.2.5")
     
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

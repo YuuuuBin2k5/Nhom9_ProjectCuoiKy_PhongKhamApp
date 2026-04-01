@@ -5,6 +5,7 @@ import java.util.List;
 public class TreatmentPlan {
     private Long id;
     private Long patientId;
+    private Long appointmentId; // ADDED: To validate prescription belongs to correct appointment
     private String patientName;
     private String status; // DRAFT, ACTIVE, COMPLETED, CANCELLED
     private String createdAt;
@@ -12,6 +13,9 @@ public class TreatmentPlan {
     private Double totalEstimatedCost;
     private Double totalActualCost;
     private boolean isDraft;
+    private Long prescriptionId;
+    private String diagnosis;
+    private String advice;
     private List<Step> steps;
 
     // Constructors
@@ -29,6 +33,9 @@ public class TreatmentPlan {
 
     public Long getPatientId() { return patientId; }
     public void setPatientId(Long patientId) { this.patientId = patientId; }
+
+    public Long getAppointmentId() { return appointmentId; }
+    public void setAppointmentId(Long appointmentId) { this.appointmentId = appointmentId; }
 
     public String getPatientName() { return patientName; }
     public void setPatientName(String patientName) { this.patientName = patientName; }
@@ -54,6 +61,15 @@ public class TreatmentPlan {
     public List<Step> getSteps() { return steps; }
     public void setSteps(List<Step> steps) { this.steps = steps; }
 
+    public Long getPrescriptionId() { return prescriptionId; }
+    public void setPrescriptionId(Long prescriptionId) { this.prescriptionId = prescriptionId; }
+
+    public String getDiagnosis() { return diagnosis; }
+    public void setDiagnosis(String diagnosis) { this.diagnosis = diagnosis; }
+
+    public String getAdvice() { return advice; }
+    public void setAdvice(String advice) { this.advice = advice; }
+
     // Helper methods
     public String getStatusDisplay() {
         if (status == null) return "Không xác định";
@@ -72,10 +88,11 @@ public class TreatmentPlan {
         private Long treatmentPlanId;
         private Long serviceId;
         private String serviceName;
+        private String doctorName;
         private String description;
         private Integer stepOrder;
         private String status; // PENDING, IN_PROGRESS, COMPLETED, CANCELLED
-        private Integer toothNumber;
+        private String toothNumber;
         private Double estimatedPrice;
         private Double actualPrice;
         private String doctorConclusion;
@@ -84,6 +101,12 @@ public class TreatmentPlan {
         private String roomName;
         private String uiTemplateType;
         private boolean editable;
+        private String medicationDetails;
+        private Long prescriptionId;
+        private String diagnosis;
+        private String advice;
+        private List<PrescriptionDetail> prescriptionDetails;
+        private List<String> imageUrls;
 
         // Constructors
         public Step() {}
@@ -91,6 +114,16 @@ public class TreatmentPlan {
         // Getters and Setters
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
+
+        public String getMedicationDetails() { return medicationDetails; }
+        public void setMedicationDetails(String medicationDetails) { this.medicationDetails = medicationDetails; }
+
+        public Long getPrescriptionId() { return prescriptionId; }
+        public String getDiagnosis() { return diagnosis; }
+        public String getAdvice() { return advice; }
+
+        public List<PrescriptionDetail> getPrescriptionDetails() { return prescriptionDetails; }
+        public void setPrescriptionDetails(List<PrescriptionDetail> prescriptionDetails) { this.prescriptionDetails = prescriptionDetails; }
 
         public Long getTreatmentPlanId() { return treatmentPlanId; }
         public void setTreatmentPlanId(Long treatmentPlanId) { this.treatmentPlanId = treatmentPlanId; }
@@ -100,6 +133,8 @@ public class TreatmentPlan {
 
         public String getServiceName() { return serviceName; }
         public void setServiceName(String serviceName) { this.serviceName = serviceName; }
+        public String getDoctorName() { return doctorName; }
+        public void setDoctorName(String doctorName) { this.doctorName = doctorName; }
 
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
@@ -110,8 +145,11 @@ public class TreatmentPlan {
         public String getStatus() { return status; }
         public void setStatus(String status) { this.status = status; }
 
-        public Integer getToothNumber() { return toothNumber; }
-        public void setToothNumber(Integer toothNumber) { this.toothNumber = toothNumber; }
+        public String getToothNumber() { return toothNumber; }
+        public void setToothNumber(String toothNumber) { this.toothNumber = toothNumber; }
+
+        public List<String> getImageUrls() { return imageUrls; }
+        public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }
 
         public Double getEstimatedPrice() { return estimatedPrice; }
         public void setEstimatedPrice(Double estimatedPrice) { this.estimatedPrice = estimatedPrice; }
@@ -136,11 +174,11 @@ public class TreatmentPlan {
 
         // Helper methods
         public boolean isCompleted() {
-            return "COMPLETED".equals(status);
+            return "COMPLETED".equalsIgnoreCase(status);
         }
 
         public boolean isInProgress() {
-            return "IN_PROGRESS".equals(status);
+            return "IN_PROGRESS".equalsIgnoreCase(status);
         }
 
         public boolean isPending() {
@@ -149,5 +187,21 @@ public class TreatmentPlan {
 
         public boolean isEditable() { return editable; }
         public void setEditable(boolean editable) { this.editable = editable; }
+
+        public static class PrescriptionDetail {
+            private Long id;
+            private String medicineName;
+            private String dosage;
+            private String frequency;
+            private String duration;
+            private String unit;
+
+            public Long getId() { return id; }
+            public String getMedicineName() { return medicineName; }
+            public String getDosage() { return dosage; }
+            public String getFrequency() { return frequency; }
+            public String getDuration() { return duration; }
+            public String getUnit() { return unit; }
+        }
     }
 }

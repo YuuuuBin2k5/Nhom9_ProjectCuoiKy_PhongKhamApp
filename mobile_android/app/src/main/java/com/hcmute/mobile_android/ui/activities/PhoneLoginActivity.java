@@ -3,6 +3,7 @@ package com.hcmute.mobile_android.ui.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.Toast;
+import com.hcmute.mobile_android.util.ToastUtils;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -44,7 +45,7 @@ public class PhoneLoginActivity extends AppCompatActivity {
         findViewById(R.id.btnContinue).setOnClickListener(v -> {
             String phone = ((android.widget.EditText) findViewById(R.id.etPhone)).getText().toString().trim();
             if (phone.isEmpty()) {
-                Toast.makeText(this, R.string.mobile_number, Toast.LENGTH_SHORT).show();
+                ToastUtils.showCenteredToast(this, getString(R.string.mobile_number));
                 return;
             }
             requestOtp(phone);
@@ -69,14 +70,13 @@ public class PhoneLoginActivity extends AppCompatActivity {
                     i.putExtra(IntentExtras.EXTRA_OTP_PURPOSE, purpose);
                     startActivity(i);
                 } else {
-                    Toast.makeText(PhoneLoginActivity.this, "Could not send code: " + response.code(),
-                            Toast.LENGTH_SHORT).show();
+                    ToastUtils.showCenteredToast(PhoneLoginActivity.this, "Could not send code: " + response.code());
                 }
             }
 
             @Override
             public void onFailure(Call<MessageResponse> call, Throwable t) {
-                Toast.makeText(PhoneLoginActivity.this, t.getMessage(), Toast.LENGTH_LONG).show();
+                ToastUtils.showCenteredToastLong(PhoneLoginActivity.this, t.getMessage());
             }
         });
     }

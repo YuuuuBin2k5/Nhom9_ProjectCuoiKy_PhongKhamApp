@@ -25,11 +25,20 @@ public class FirebaseQueueManager {
 
     public FirebaseQueueManager(Long roomId, QueueUpdateListener listener) {
         this.updateListener = listener;
-        // Lắng nghe nhánh dữ liệu của phòng khám tương ứng
-        queueRef = FirebaseDatabase.getInstance().getReference("clinic").child("rooms").child(String.valueOf(roomId)).child("queue");
+        try {
+            // Lắng nghe nhánh dữ liệu của phòng khám tương ứng
+            queueRef = FirebaseDatabase.getInstance().getReference("clinic").child("rooms").child(String.valueOf(roomId)).child("queue");
+        } catch (Exception e) {
+            Log.w(TAG, "Firebase not configured, real-time updates disabled: " + e.getMessage());
+            queueRef = null;
+        }
     }
 
     public void startListening() {
+        if (queueRef == null) {
+            Log.w(TAG, "Firebase not configured, cannot start listening");
+            return;
+        }
         if (queueListener == null) {
             queueListener = new ValueEventListener() {
                 @Override

@@ -26,6 +26,9 @@ public class CheckInQueue {
     @JoinColumn(name = "clinic_room_id", nullable = false)
     private ClinicRoom clinicRoom;
 
+    @Column(name = "original_room_id")
+    private Long originalRoomId;
+
     @OneToOne
     @JoinColumn(name = "treatment_plan_step_id")
     private TreatmentPlanStep treatmentPlanStep;
@@ -43,5 +46,11 @@ public class CheckInQueue {
     @Builder.Default
     @Column(name = "priority_level")
     private Integer priorityLevel = 0;
+
+    @Column(name = "started_at")
+    private LocalDateTime startedAt;
+
+    @Column(name = "completed_at")
+    private LocalDateTime completedAt;
 
 }

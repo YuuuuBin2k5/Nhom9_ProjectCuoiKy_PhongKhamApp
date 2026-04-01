@@ -73,6 +73,61 @@ public class AdminServiceController {
         }
     }
 
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateService(@PathVariable("id") Long id, @RequestBody ServiceRequest request) {
+        try {
+            com.hcmute.clinic.entity.Service service = adminService.updateService(
+                    id,
+                    request.getCategoryId(),
+                    request.getName(),
+                    request.getDescription(),
+                    request.getPrice(),
+                    request.getDurationMinutes()
+            );
+            return ResponseEntity.ok(Map.of(
+                    "id", service.getId(),
+                    "name", service.getName(),
+                    "message", "Service updated successfully"
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<?> deleteService(@PathVariable("id") Long id) {
+        try {
+            adminService.deleteService(id);
+            return ResponseEntity.ok(Map.of("message", "Service deleted successfully"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @PutMapping("/categories/{id}")
+    public ResponseEntity<?> updateCategory(@PathVariable("id") Long id, @RequestBody CategoryRequest request) {
+        try {
+            ServiceCategory category = adminService.updateCategory(id, request.getName(), request.getDescription());
+            return ResponseEntity.ok(Map.of(
+                    "id", category.getId(),
+                    "name", category.getName(),
+                    "message", "Category updated successfully"
+            ));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
+    @DeleteMapping("/categories/{id}")
+    public ResponseEntity<?> deleteCategory(@PathVariable("id") Long id) {
+        try {
+            adminService.deleteCategory(id);
+            return ResponseEntity.ok(Map.of("message", "Category deleted successfully"));
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     private ServiceDto toDto(Service s) {
         List<String> imageUrls = s.getImages().stream()
                 .map(img -> ServletUriComponentsBuilder.fromCurrentContextPath()

@@ -5,11 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="12dp"
-    app:cardCornerRadius="20dp"
-    app:cardElevation="0dp"
-    app:strokeWidth="1dp"
-    app:strokeColor="#EEF2F6"
-    app:cardBackgroundColor="#FDFDFE">
+    app:cardCornerRadius="24dp"
+    app:cardElevation="4dp"
+    app:cardMaxElevation="6dp"
+    app:cardBackgroundColor="#FFFFFF"
+    app:strokeWidth="0dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -117,7 +117,7 @@
                     app:drawableTint="@color/text_secondary"
                     android:visibility="gone" />
 
-                <!-- Price & Room -->
+                <!-- Price -->
                 <TextView
                     android:id="@+id/tvActualPrice"
                     android:layout_width="wrap_content"
@@ -130,14 +130,38 @@
                     app:drawableTint="@color/text_secondary"
                     android:layout_marginEnd="16dp" />
 
+            </LinearLayout>
+            
+            <!-- Room & Doctor Row -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:layout_marginBottom="12dp">
+
                 <TextView
                     android:id="@+id/tvRoomName"
-                    android:layout_width="wrap_content"
+                    android:layout_width="0dp"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text="Phòng X-Quang"
                     android:textSize="12sp"
                     android:textColor="@color/text_secondary"
                     android:drawableStart="@drawable/ic_location_pin"
+                    android:drawablePadding="4dp"
+                    app:drawableTint="@color/text_secondary"
+                    android:visibility="gone" />
+                    
+                <TextView
+                    android:id="@+id/tvDoctorName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="BS. Nguyễn Văn A"
+                    android:textSize="12sp"
+                    android:textColor="@color/text_secondary"
+                    android:drawableStart="@drawable/ic_doctor"
                     android:drawablePadding="4dp"
                     app:drawableTint="@color/text_secondary"
                     android:visibility="gone" />
@@ -165,6 +189,42 @@
                 android:orientation="horizontal"
                 android:gravity="end">
 
+                <ImageButton
+                    android:id="@+id/btnRemoveStep"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:src="@android:drawable/ic_menu_delete"
+                    android:layout_marginEnd="8dp"
+                    app:tint="#D32F2F"
+                    android:contentDescription="Xóa" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnViewImages"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Xem ảnh"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="8dp"
+                    app:backgroundTint="#2196F3"
+                    app:icon="@drawable/ic_eye"
+                    app:iconSize="16dp"
+                    android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnTransfer"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Chuyển phòng"
+                    android:textSize="12sp"
+                    android:layout_marginEnd="8dp"
+                    app:backgroundTint="#FF9800"
+                    app:icon="@drawable/ic_location_pin"
+                    app:iconSize="16dp"
+                    android:visibility="gone" />
+
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnEdit"
                     style="@style/Widget.Material3.Button.TonalButton"
@@ -186,6 +246,19 @@
                     android:textSize="12sp"
                     app:backgroundTint="@color/success_green"
                     app:icon="@drawable/ic_check"
+                    app:iconSize="16dp"
+                    android:visibility="gone" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnCancel"
+                    style="@style/Widget.Material3.Button.TonalButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="36dp"
+                    android:text="Hủy"
+                    android:textSize="12sp"
+                    android:layout_marginStart="8dp"
+                    app:backgroundTint="#D32F2F"
+                    app:icon="@android:drawable/ic_menu_close_clear_cancel"
                     app:iconSize="16dp"
                     android:visibility="gone" />
 

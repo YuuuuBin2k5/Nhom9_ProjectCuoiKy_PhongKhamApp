@@ -17,5 +17,6 @@ public class UpdatePlanStepsRequest {
         private String toothNumber; // FDI, e.g. "38" for SURGERY
         private String doctorConclusion; // JSON for form data (SURGERY: bloodPressure, signedConsent; ORTHO: trayProgress; etc.)
         private String status; // PENDING, IN_PROGRESS, COMPLETED, CANCELLED
+        private List<String> imageUrls;
     }
 }

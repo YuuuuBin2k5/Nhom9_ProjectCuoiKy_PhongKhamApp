@@ -31,4 +31,7 @@ public class TreatmentPlanTemplateStep {
 
     @Column(name = "sequence_order", nullable = false)
     private Integer sequenceOrder;
+
+    @Column(name = "medication_details", columnDefinition = "TEXT")
+    private String medicationDetails;
 }

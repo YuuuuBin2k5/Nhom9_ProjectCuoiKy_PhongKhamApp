@@ -3,23 +3,25 @@
     <!-- Existing colors -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    
+    <color name="white_trans">#80FFFFFF</color>
+
     <!-- Design System Colors -->
     <color name="primary_trust_blue">#1A56DB</color>
+    <color name="primary_trust_blue_light_trans">#261A56DB</color>
     <color name="secondary_calm_teal">#0E9F6E</color>
     <color name="alert_coral">#F05252</color>
     <color name="warning_amber">#FF5A1F</color>
     <color name="success_green">#10B981</color>
     
     <!-- Background Colors -->
-    <color name="background_gray">#F9FAFB</color>
+    <color name="background_gray">#FFFFFF</color>
     <color name="priority_background">#FEF3C7</color>
     <color name="success_background">#D1FAE5</color>
     <color name="error_background">#FEE2E2</color>
     
     <!-- Template Type Colors -->
     <color name="surgery_background">#FEF3C7</color>
-    <color name="ortho_background">#E0F2FE</color>
+    <color name="ortho_background">#E3F2FD</color>
     <color name="implant_background">#F3E8FF</color>
     <color name="perio_background">#ECFDF5</color>
     
@@ -33,7 +35,8 @@
     <!-- Legacy Toothly colors (keep for compatibility) -->
     <color name="toothly_teal">#0d9488</color>
     <color name="toothly_teal_dark">#0f766e</color>
-    <color name="toothly_pearl">#f8fafc</color>
+    <color name="toothly_teal_light">#2dd4bf</color>
+    <color name="toothly_pearl">#FFFFFF</color>
     <color name="toothly_gold">#d97706</color>
     <color name="toothly_text_body">#374151</color>
     <color name="toothly_link">#1d4ed8</color>
@@ -44,16 +47,16 @@
 
     <!-- Missing color references -->
     <color name="primary_blue">#1A56DB</color>
-    <color name="background">#F9FAFB</color>
+    <color name="background">#FFFFFF</color>
     <color name="medical_primary">#1A56DB</color>
     <color name="toothly_text_muted">#64748B</color>
     
     <!-- Additional medical theme colors -->
     <color name="medical_text_on_primary">#FFFFFF</color>
-    <color name="medical_primary_soft">#E0F2FE</color>
+    <color name="medical_primary_soft">#E3F2FD</color>
     <color name="medical_primary_dark">#0F3460</color>
     <color name="medical_card_elevated">#FFFFFF</color>
-    <color name="medical_background">#F9FAFB</color>
+    <color name="medical_background">#FFFFFF</color>
     <color name="medical_text_primary">#1A3C40</color>
     <color name="medical_nav_background">#FFFFFF</color>
     <color name="text_on_primary">#FFFFFF</color>
@@ -74,4 +77,36 @@
     <color name="gray_600">#4B5563</color>
     <color name="gray_700">#374151</color>
     <color name="secondary">#0E9F6E</color>
+
+    <!-- Premium Design Palette -->
+    <color name="premium_blue">#4A90E2</color>
+    <color name="premium_mint">#50E3C2</color>
+    <color name="premium_bg">#FFFFFF</color>
+    <color name="navy_blue_text">#1E293B</color>
+    <color name="label_grey">#94A3B8</color>
+
+    <!-- Refined UI: neutral clinical (slate / white — không tông mint) -->
+    <color name="screen_background_soft">#F8FAFC</color>
+    <color name="surface_icon_soft">#F8FAFC</color>
+    <color name="service_icon_halo">#E2E8F0</color>
+    <color name="duration_pill_bg">#F1F5F9</color>
+    <color name="card_stroke_subtle">#E2E8F0</color>
+    <color name="profile_header_teal_soft">#E8EEF5</color>
+    <color name="profile_header_fade">#F8FAFC</color>
+
+    <!-- Refined Design Colors (Login/Register) -->
+    <color name="design_dark_blue">#003366</color>
+    <color name="design_input_bg">#EDF2F7</color>
+    <color name="design_text_gray">#718096</color>
+    <color name="design_icon_color">#4A5568</color>
+
+    <!-- Queue Status Background Colors -->
+    <color name="status_waiting_bg">#E8F5E9</color>
+    <color name="status_in_progress_bg">#E3F2FD</color>
+    <color name="status_priority_bg">#FFF3E0</color>
+    <color name="status_paused_bg">#F3E5F5</color>
+
+    <!-- Check-in Status Colors -->
+    <color name="warning_orange">#F59E0B</color>
+    <color name="info_blue">#3B82F6</color>
 </resources>

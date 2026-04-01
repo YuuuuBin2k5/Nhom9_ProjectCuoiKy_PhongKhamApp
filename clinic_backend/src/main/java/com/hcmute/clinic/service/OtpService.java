@@ -57,10 +57,54 @@ public class OtpService {
     }
 
     @Transactional
+    public void requestOtpByEmail(String email, OtpPurpose purpose) {
+        String code = String.format("%06d", random.nextInt(1_000_000));
+        String hash = passwordEncoder.encode(code);
+
+        OtpChallenge challenge = OtpChallenge.builder()
+                .email(email)
+                .purpose(purpose)
+                .codeHash(hash)
+                .expiresAt(LocalDateTime.now().plusMinutes(ttlMinutes))
+                .attempts(0)
+                .consumed(false)
+                .createdAt(LocalDateTime.now())
+                .build();
+        otpChallengeRepository.save(challenge);
+
+        log.info("[DEV] OTP for {} ({}) = {}", email, purpose, code);
+    }
+
+    @Transactional
     public boolean verifyAndConsume(String rawPhone, String code, OtpPurpose purpose) {
         String phone = PhoneUtils.normalizeVietnam(rawPhone);
         OtpChallenge challenge = otpChallengeRepository
                 .findFirstByPhoneE164AndPurposeAndConsumedFalseOrderByIdDesc(phone, purpose)
+                .orElse(null);
+        if (challenge == null) {
+            return false;
+        }
+        if (challenge.getExpiresAt().isBefore(LocalDateTime.now())) {
+            return false;
+        }
+        if (challenge.getAttempts() >= maxAttempts) {
+            return false;
+        }
+        challenge.setAttempts(challenge.getAttempts() + 1);
+        if (!passwordEncoder.matches(code, challenge.getCodeHash())) {
+            otpChallengeRepository.save(challenge);
+            return false;
+        }
+        challenge.setConsumed(true);
+        challenge.setConsumedAt(LocalDateTime.now());
+        otpChallengeRepository.save(challenge);
+        return true;
+    }
+
+    @Transactional
+    public boolean verifyAndConsumeByEmail(String email, String code, OtpPurpose purpose) {
+        OtpChallenge challenge = otpChallengeRepository
+                .findFirstByEmailAndPurposeAndConsumedFalseOrderByIdDesc(email, purpose)
                 .orElse(null);
         if (challenge == null) {
             return false;

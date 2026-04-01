@@ -1,20 +1,28 @@
 package com.hcmute.clinic.controller;
 
 import com.hcmute.clinic.entity.Appointment;
+import com.hcmute.clinic.entity.Doctor;
 import com.hcmute.clinic.entity.Patient;
 import com.hcmute.clinic.enums.AppointmentStatus;
+import com.hcmute.clinic.enums.StepStatus;
 import com.hcmute.clinic.repository.AppointmentRepository;
 import com.hcmute.clinic.repository.CheckInQueueRepository;
 import com.hcmute.clinic.repository.PatientRepository;
+import com.hcmute.clinic.repository.MedicalRecordRepository;
+import com.hcmute.clinic.repository.InvoiceRepository;
 import com.hcmute.clinic.entity.CheckInQueue;
+import com.hcmute.clinic.dto.MedicalRecordResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -30,7 +38,105 @@ public class DoctorController {
     private final PatientRepository patientRepository;
     private final AppointmentRepository appointmentRepository;
     private final CheckInQueueRepository checkInQueueRepository;
+    private final MedicalRecordRepository medicalRecordRepository;
+    private final InvoiceRepository invoiceRepository;
+    private final com.hcmute.clinic.repository.DoctorRepository doctorRepository;
+    private final com.hcmute.clinic.repository.TreatmentPlanRepository treatmentPlanRepository;
+    private final com.hcmute.clinic.service.CheckInQueueService checkInQueueService;
     private final com.hcmute.clinic.security.JwtService jwtService;
+
+    @GetMapping("/me/profile")
+    public ResponseEntity<?> getMyProfile(org.springframework.security.core.Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        Doctor doctor = resolveDoctorFromAuth(auth.getName());
+        if (doctor == null) return ResponseEntity.status(404).body(Map.of("message", "Không tìm thấy bác sĩ"));
+
+        return ResponseEntity.ok(Map.of(
+                "id", doctor.getId(),
+                "firstName", doctor.getFirstName() != null ? doctor.getFirstName() : "",
+                "lastName", doctor.getLastName() != null ? doctor.getLastName() : "",
+                "email", doctor.getEmail() != null ? doctor.getEmail() : "",
+                "specialization", doctor.getSpecialization() != null ? doctor.getSpecialization() : "",
+                "licenseNumber", doctor.getLicenseNumber() != null ? doctor.getLicenseNumber() : "",
+                "experienceYears", doctor.getExperienceYears() != null ? doctor.getExperienceYears() : 0,
+                "biography", doctor.getBiography() != null ? doctor.getBiography() : "",
+                "avatarUrl", doctor.getAvatarUrl() != null ? doctor.getAvatarUrl() : "",
+                "roomName", doctor.getClinicRoom() != null ? doctor.getClinicRoom().getName() : ""
+        ));
+    }
+
+    @PatchMapping("/me/profile")
+    public ResponseEntity<?> updateMyProfile(
+            @RequestBody Map<String, Object> body,
+            org.springframework.security.core.Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        Doctor doctor = resolveDoctorFromAuth(auth.getName());
+        if (doctor == null) return ResponseEntity.status(404).body(Map.of("message", "Không tìm thấy bác sĩ"));
+
+        String biography = body.get("biography") instanceof String ? ((String) body.get("biography")).trim() : null;
+        String specialization = body.get("specialization") instanceof String ? ((String) body.get("specialization")).trim() : null;
+        String avatarUrl = body.get("avatarUrl") instanceof String ? ((String) body.get("avatarUrl")).trim() : null;
+        Integer experienceYears = null;
+        if (body.get("experienceYears") instanceof Number number) {
+            experienceYears = number.intValue();
+        }
+
+        if (biography != null) doctor.setBiography(biography);
+        if (specialization != null && !specialization.isEmpty()) doctor.setSpecialization(specialization);
+        if (avatarUrl != null && !avatarUrl.isEmpty()) doctor.setAvatarUrl(avatarUrl);
+        if (experienceYears != null && experienceYears >= 0) doctor.setExperienceYears(experienceYears);
+        doctorRepository.save(doctor);
+
+        return ResponseEntity.ok(Map.of("message", "Đã cập nhật hồ sơ bác sĩ"));
+    }
+
+    @GetMapping("/me/queue")
+    public ResponseEntity<?> getMyQueue(org.springframework.security.core.Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        long doctorId = Long.parseLong(auth.getName());
+        com.hcmute.clinic.entity.Doctor doctor = doctorRepository.findById(doctorId).orElse(null);
+        if (doctor == null || doctor.getClinicRoom() == null) {
+            return ResponseEntity.ok(List.of()); // No room or doctor -> empty queue
+        }
+        return ResponseEntity.ok(checkInQueueService.getDoctorDashboardQueue(doctor.getClinicRoom().getId()));
+    }
+
+    @GetMapping("/me/appointments/upcoming")
+    public ResponseEntity<?> getMyAppointments(org.springframework.security.core.Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        long doctorId = Long.parseLong(auth.getName());
+        
+        // Get appointments for the next 7 days (not just today)
+        LocalDateTime from = LocalDate.now().atStartOfDay();
+        LocalDateTime to = LocalDate.now().plusDays(7).atTime(23, 59, 59);
+        
+        List<Appointment> list = appointmentRepository
+                .findByDoctorIdAndAppointmentDatetimeBetweenOrderByAppointmentDatetimeAsc(doctorId, from, to)
+                .stream()
+                .filter(a -> a.getStatus() == AppointmentStatus.SCHEDULED 
+                        || a.getStatus() == AppointmentStatus.CONFIRMED 
+                        || a.getStatus() == AppointmentStatus.IN_PROGRESS)
+                .collect(java.util.stream.Collectors.toList());
+                
+        List<Map<String, Object>> items = list.stream()
+                .map(a -> Map.<String, Object>of(
+                        "id", a.getId(),
+                        "datetime", a.getAppointmentDatetime() != null ? a.getAppointmentDatetime().toString() : "",
+                        "serviceName", a.getService() != null ? a.getService().getName() : "",
+                        "patientName", a.getPatient() != null ? (a.getPatient().getLastName() + " " + a.getPatient().getFirstName()).trim() : "",
+                        "status", a.getStatus() != null ? a.getStatus().name() : ""
+                ))
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(items);
+    }
 
     @GetMapping("/patient")
     public ResponseEntity<?> getPatientByQr(@RequestParam String qr) {
@@ -122,16 +228,181 @@ public class DoctorController {
             }
         }
 
-        return ResponseEntity.ok(Map.of(
-                "id", p.getId(),
-                "firstName", p.getFirstName() != null ? p.getFirstName() : "",
-                "lastName", p.getLastName() != null ? p.getLastName() : "",
-                "email", p.getEmail() != null ? p.getEmail() : "",
-                "phone", p.getPhone() != null ? p.getPhone() : "",
-                "bookedService", serviceName,
-                "appointmentStatus", status,
-                "queueId", queueId != null ? queueId : -1,
-                "appointmentId", finalAppointmentId != null ? finalAppointmentId : -1
-        ));
+        // FIX 1: Tìm TreatmentPlan liên kết với appointment
+        Long treatmentPlanId = null;
+        String treatmentPlanStatus = "NONE";
+        boolean hasTreatmentPlan = false;
+        
+        if (finalAppointmentId != null) {
+            Optional<com.hcmute.clinic.entity.TreatmentPlan> planOpt = treatmentPlanRepository
+                .findFirstByAppointmentIdOrderByCreatedAtDesc(finalAppointmentId);
+            
+            if (planOpt.isPresent()) {
+                com.hcmute.clinic.entity.TreatmentPlan plan = planOpt.get();
+                treatmentPlanId = plan.getId();
+                treatmentPlanStatus = plan.getStatus().name();
+                hasTreatmentPlan = true;
+            }
+        }
+
+        java.util.Map<String, Object> response = new java.util.HashMap<>();
+        response.put("id", p.getId());
+        response.put("firstName", p.getFirstName() != null ? p.getFirstName() : "");
+        response.put("lastName", p.getLastName() != null ? p.getLastName() : "");
+        response.put("email", p.getEmail() != null ? p.getEmail() : "");
+        response.put("phone", p.getPhone() != null ? p.getPhone() : "");
+        response.put("address", p.getAddress() != null ? p.getAddress() : "");
+        response.put("gender", p.getGender() != null ? p.getGender() : "");
+        response.put("dob", p.getDob() != null ? p.getDob().toString() : "");
+        response.put("avatarUrl", p.getAvatarUrl() != null ? p.getAvatarUrl() : "");
+        
+        // Add patient profile fields
+        if (p.getProfile() != null) {
+            response.put("bloodType", p.getProfile().getBloodType() != null ? p.getProfile().getBloodType() : "");
+            response.put("allergies", p.getProfile().getAllergies() != null ? p.getProfile().getAllergies() : "");
+            response.put("underlyingConditions", p.getProfile().getUnderlyingConditions() != null ? p.getProfile().getUnderlyingConditions() : "");
+            response.put("notes", p.getProfile().getNotes() != null ? p.getProfile().getNotes() : "");
+        } else {
+            response.put("bloodType", "");
+            response.put("allergies", "");
+            response.put("underlyingConditions", "");
+            response.put("notes", "");
+        }
+        
+        response.put("bookedService", serviceName);
+        response.put("appointmentStatus", status);
+        response.put("queueId", queueId != null ? queueId : -1);
+        response.put("appointmentId", finalAppointmentId != null ? finalAppointmentId : -1);
+        response.put("treatmentPlanId", treatmentPlanId != null ? treatmentPlanId : -1);
+        response.put("hasTreatmentPlan", hasTreatmentPlan);
+        response.put("treatmentPlanStatus", treatmentPlanStatus);
+        
+        return ResponseEntity.ok(response);
+    }
+
+    private Doctor resolveDoctorFromAuth(String authName) {
+        try {
+            Long id = Long.parseLong(authName);
+            return doctorRepository.findById(id).orElse(null);
+        } catch (Exception ignored) {
+            return doctorRepository.findByEmailIgnoreCase(authName).orElse(null);
+        }
+    }
+    
+    @GetMapping("/patients/{id}/medical-records")
+    public ResponseEntity<?> getPatientMedicalRecords(@PathVariable Long id) {
+        Optional<Patient> patientOpt = patientRepository.findById(id);
+        if (patientOpt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        
+        // Get medical records with optimized fetching (avoid MultipleBagFetchException)
+        // Step 1: Get basic medical records
+        List<com.hcmute.clinic.entity.MedicalRecord> medicalRecords = 
+            medicalRecordRepository.findByPatientIdWithBasicRelations(id);
+        
+        if (medicalRecords.isEmpty()) {
+            return ResponseEntity.ok(List.of());
+        }
+        
+        // Step 2: Fetch details and prescription details separately
+        medicalRecordRepository.fetchDetails(medicalRecords);
+        medicalRecordRepository.fetchPrescriptionDetails(medicalRecords);
+        
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        
+        List<MedicalRecordResponse> records = medicalRecords.stream()
+            .map(record -> {
+                MedicalRecordResponse.MedicalRecordResponseBuilder builder = MedicalRecordResponse.builder()
+                    .id(record.getId())
+                    .appointmentId(record.getAppointment() != null ? record.getAppointment().getId() : null)
+                    .date(record.getCreatedAt() != null ? 
+                        record.getCreatedAt().format(dateFormatter) : "");
+                
+                // Doctor info
+                if (record.getDoctor() != null) {
+                    Doctor doctor = record.getDoctor();
+                    builder.doctorName((doctor.getLastName() + " " + doctor.getFirstName()).trim());
+                    builder.doctorSpecialty(doctor.getSpecialization() != null ? 
+                        doctor.getSpecialization() : "Nha khoa tổng quát");
+                } else {
+                    builder.doctorName("");
+                    builder.doctorSpecialty("");
+                }
+                
+                // Diagnosis, symptoms, advice from medical record
+                builder.diagnosis(record.getDiagnosis() != null ? record.getDiagnosis() : "Khám tổng quát");
+                builder.symptoms(record.getSymptoms());
+                builder.advice(record.getAdvice());
+                
+                // Get services from medical record details
+                List<String> services = record.getDetails() != null ? 
+                    record.getDetails().stream()
+                        .filter(detail -> detail.getService() != null)
+                        .map(detail -> {
+                            String serviceName = detail.getService().getName();
+                            if (detail.getToothNumber() != null && !detail.getToothNumber().isEmpty()) {
+                                return serviceName + " (Răng " + detail.getToothNumber() + ")";
+                            }
+                            return serviceName;
+                        })
+                        .collect(java.util.stream.Collectors.toList())
+                    : List.of();
+                
+                builder.services(services);
+                
+                // Prescription info
+                if (record.getPrescription() != null) {
+                    com.hcmute.clinic.entity.Prescription prescription = record.getPrescription();
+                    int medicineCount = prescription.getDetails() != null ? 
+                        prescription.getDetails().size() : 0;
+                    builder.prescription(medicineCount > 0 ? 
+                        medicineCount + " loại thuốc" : "Không có đơn thuốc");
+                } else {
+                    builder.prescription("Không có đơn thuốc");
+                }
+                
+                // Get invoice info if exists
+                if (record.getAppointment() != null) {
+                    Optional<com.hcmute.clinic.entity.Invoice> invoiceOpt = 
+                        invoiceRepository.findByAppointmentId(record.getAppointment().getId());
+                    
+                    if (invoiceOpt.isPresent()) {
+                        com.hcmute.clinic.entity.Invoice invoice = invoiceOpt.get();
+                        builder.totalAmount(String.format("%,.0f VNĐ", invoice.getTotalAmount()));
+                        builder.paymentStatus(invoice.getPaymentStatus() != null ? 
+                            invoice.getPaymentStatus().toString() : "N/A");
+                    } else {
+                        builder.totalAmount("N/A");
+                        builder.paymentStatus("N/A");
+                    }
+                } else {
+                    builder.totalAmount("N/A");
+                    builder.paymentStatus("N/A");
+                }
+                
+                // NEW: Get treatment step details from TreatmentPlan
+                List<MedicalRecordResponse.TreatmentStepDetail> stepDetails = new ArrayList<>();
+                if (record.getTreatmentPlan() != null) {
+                    DateTimeFormatter stepDateFormatter = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+                    stepDetails = record.getTreatmentPlan().getSteps().stream()
+                        .filter(step -> step.getStatus() == com.hcmute.clinic.enums.StepStatus.COMPLETED)
+                        .filter(step -> step.getDoctorConclusion() != null && !step.getDoctorConclusion().trim().isEmpty())
+                        .sorted(Comparator.comparing(step -> step.getCompletedAt() != null ? step.getCompletedAt() : java.time.LocalDateTime.MIN))
+                        .map(step -> MedicalRecordResponse.TreatmentStepDetail.builder()
+                            .serviceName(step.getService() != null ? step.getService().getName() : "Dịch vụ")
+                            .toothNumber(step.getToothNumber())
+                            .notes(step.getDoctorConclusion())
+                            .completedAt(step.getCompletedAt() != null ? step.getCompletedAt().format(stepDateFormatter) : "")
+                            .build())
+                        .collect(java.util.stream.Collectors.toList());
+                }
+                builder.treatmentSteps(stepDetails);
+                
+                return builder.build();
+            })
+            .collect(java.util.stream.Collectors.toList());
+        
+        return ResponseEntity.ok(records);
     }
 }

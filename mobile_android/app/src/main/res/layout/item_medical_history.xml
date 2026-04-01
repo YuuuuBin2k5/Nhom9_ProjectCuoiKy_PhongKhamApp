@@ -1,55 +1,164 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:gravity="center_vertical"
-    android:paddingHorizontal="20dp"
-    android:paddingVertical="12dp"
-    android:background="?android:attr/selectableItemBackground">
-
-    <com.google.android.material.imageview.ShapeableImageView
-        android:id="@+id/ivHistoryIcon"
-        android:layout_width="40dp"
-        android:layout_height="40dp"
-        android:padding="8dp"
-        android:src="@android:drawable/ic_dialog_info"
-        app:shapeAppearanceOverlay="@style/CircleAppearance"
-        android:background="#F0FDFA"
-        app:tint="#0D9488" />
+    android:layout_marginBottom="12dp"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="1dp"
+    app:cardBackgroundColor="#F9FAFB"
+    app:strokeColor="#E0E0E0"
+    app:strokeWidth="1dp">
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
         android:orientation="vertical"
-        android:layout_marginStart="16dp">
+        android:padding="16dp">
 
-        <TextView
-            android:id="@+id/tvHistoryTitle"
-            android:layout_width="wrap_content"
+        <!-- Date and Doctor -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Dị ứng"
-            android:textColor="#64748B"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <TextView
+                android:id="@+id/tvDate"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="15/03/2026"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                android:textColor="#1565C0" />
+
+            <TextView
+                android:id="@+id/tvDoctorName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="BS. Trần Văn B"
+                android:textSize="13sp"
+                android:textColor="#546E7A" />
+        </LinearLayout>
+
+        <!-- Diagnosis -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="6dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chẩn đoán: "
+                android:textSize="13sp"
+                android:textColor="#546E7A" />
+
+            <TextView
+                android:id="@+id/tvDiagnosis"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Sâu răng số 6"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                android:textColor="#0D1B2A" />
+        </LinearLayout>
+
+        <!-- Symptoms -->
+        <LinearLayout
+            android:id="@+id/layoutSymptoms"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="6dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Triệu chứng: "
+                android:textSize="13sp"
+                android:textColor="#546E7A" />
+
+            <TextView
+                android:id="@+id/tvSymptoms"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text=""
+                android:textSize="13sp"
+                android:textColor="#0D1B2A" />
+        </LinearLayout>
+
+        <!-- Advice -->
+        <LinearLayout
+            android:id="@+id/layoutAdvice"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Lời khuyên: "
+                android:textSize="13sp"
+                android:textColor="#546E7A" />
+
+            <TextView
+                android:id="@+id/tvAdvice"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text=""
+                android:textSize="13sp"
+                android:textColor="#0D1B2A" />
+        </LinearLayout>
+
+        <!-- Expand button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnExpand"
+            style="@style/Widget.MaterialComponents.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="32dp"
+            android:text="Xem chi tiết"
             android:textSize="12sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:id="@+id/tvHistoryValue"
-            android:layout_width="wrap_content"
+            android:textAllCaps="false"
+            android:textColor="#1565C0"
+            android:layout_marginTop="4dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingStart="0dp"
+            android:paddingEnd="8dp" />
+        
+        <!-- Treatment Steps Details (NEW) -->
+        <LinearLayout
+            android:id="@+id/layoutTreatmentSteps"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="2dp"
-            android:text="Không có"
-            android:textColor="#0F172A"
-            android:textSize="14sp"
-            android:textStyle="bold" />
+            android:orientation="vertical"
+            android:layout_marginTop="8dp"
+            android:visibility="gone">
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Chi tiết điều trị theo từng bước:"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:textColor="#546E7A"
+                android:layout_marginBottom="6dp" />
+            
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvTreatmentSteps"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" />
+        </LinearLayout>
+
     </LinearLayout>
 
-    <ImageView
-        android:layout_width="16dp"
-        android:layout_height="16dp"
-        android:src="@android:drawable/ic_media_next"
-        app:tint="#CBD5E1" />
-
-</LinearLayout>
+</com.google.android.material.card.MaterialCardView>

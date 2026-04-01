@@ -1,0 +1,10 @@
+@startuml AC_27_RemovePatientFromQueue
+title Activity Diagram: AC_27 Admin xóa bệnh nhân khỏi hàng đợi
+
+start
+:Chọn bệnh nhân từ hàng đợi;
+:Chọn nút Xóa khỏi hàng đợi / Bỏ qua;
+:Cập nhật trạng thái Queue -> SKIPPED / CANCELLED;
+:Giải phóng chỗ và gọi bệnh nhân tiếp theo;
+stop
+@enduml

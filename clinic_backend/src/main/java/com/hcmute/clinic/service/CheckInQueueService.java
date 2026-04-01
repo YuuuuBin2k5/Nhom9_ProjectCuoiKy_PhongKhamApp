@@ -12,6 +12,14 @@ import com.hcmute.clinic.repository.CheckInQueueRepository;
 import com.hcmute.clinic.repository.ClinicRoomRepository;
 import com.hcmute.clinic.repository.NotificationRepository;
 import com.hcmute.clinic.repository.PatientRepository;
+import com.hcmute.clinic.repository.ServiceRepository;
+import com.hcmute.clinic.repository.DoctorRepository;
+import com.hcmute.clinic.repository.TreatmentPlanStepRepository;
+import com.hcmute.clinic.entity.TreatmentPlanStep;
+import com.hcmute.clinic.entity.Doctor;
+import com.hcmute.clinic.enums.AppointmentStatus;
+import com.hcmute.clinic.enums.BookingType;
+import com.hcmute.clinic.enums.StepStatus;
 import com.hcmute.clinic.security.JwtService;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
@@ -42,6 +50,49 @@ public class CheckInQueueService {
     private final NotificationRepository notificationRepository;
     private final QueueEventService queueEventService;
     private final FcmService fcmService;
+    private final ServiceRepository serviceRepository;
+    private final DoctorRepository doctorRepository;
+    private final TreatmentPlanStepRepository treatmentPlanStepRepository;
+    private final ServiceDurationTracker durationTracker;
+    private final QueueEstimationService estimationService;
+
+    @Transactional
+    public void addToQueue(Long patientId, Long roomId) {
+        Patient patient = patientRepository.findById(patientId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bệnh nhân không tồn tại"));
+        ClinicRoom room = clinicRoomRepository.findById(roomId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Phòng khám không tồn tại"));
+
+        LocalDate today = LocalDate.now();
+        List<CheckInQueue> existingQueues = checkInQueueRepository.findTodayForPatient(patientId, today.atStartOfDay(), today.plusDays(1).atStartOfDay());
+        
+        CheckInQueue activeQueue = existingQueues.stream()
+                .filter(q -> q.getStatus() == QueueStatus.WAITING || 
+                             q.getStatus() == QueueStatus.IN_PROGRESS || 
+                             q.getStatus() == QueueStatus.PAUSED_FOR_TEST ||
+                             q.getStatus() == QueueStatus.RETURNED_PRIORITY)
+                .findFirst()
+                .orElse(null);
+
+        if (activeQueue != null) {
+            // If already in queue, just transfer to next room with priority
+            ClinicRoom oldRoom = activeQueue.getClinicRoom();
+            if (activeQueue.getOriginalRoomId() == null && oldRoom != null) {
+                activeQueue.setOriginalRoomId(oldRoom.getId());
+            }
+            activeQueue.setClinicRoom(room);
+            activeQueue.setStatus(QueueStatus.WAITING);
+            activeQueue.setPriorityLevel((activeQueue.getPriorityLevel() != null ? activeQueue.getPriorityLevel() : 0) + 5);
+            checkInQueueRepository.save(activeQueue);
+            
+            if (oldRoom != null) queueEventService.broadcastQueueUpdated(oldRoom.getId());
+            queueEventService.broadcastQueueUpdated(room.getId());
+        } else {
+            // Cannot create a queue here because CheckInQueue requires an Appointment
+            // A mid-treatment transfer implies the patient MUST already be tracked in a queue
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bệnh nhân chưa check-in hoặc không có trong hàng đợi hôm nay");
+        }
+    }
 
     @Transactional
     public CheckInResult processScan(String qrData) {
@@ -58,18 +109,32 @@ public class CheckInQueueService {
             throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Tài khoản không hoạt động");
         }
 
-        List<Appointment> todayAppointments = appointmentRepository.findTodayByPatientId(patientId);
-        if (todayAppointments.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không có lịch hẹn hôm nay. Vui lòng gặp Lễ tân.");
-        }
-
-        Appointment appointment = todayAppointments.get(0);
-        var existing = checkInQueueRepository.findByAppointmentId(appointment.getId());
-        if (existing.isPresent()) {
-            CheckInQueue q = existing.get();
+        LocalDate today = LocalDate.now();
+        List<CheckInQueue> existingQueues = checkInQueueRepository.findTodayForPatient(patientId, today.atStartOfDay(), today.plusDays(1).atStartOfDay());
+        
+        var activeQueue = existingQueues.stream()
+                .filter(q -> q.getStatus() == QueueStatus.WAITING || 
+                             q.getStatus() == QueueStatus.IN_PROGRESS || 
+                             q.getStatus() == QueueStatus.PAUSED_FOR_TEST ||
+                             q.getStatus() == QueueStatus.RETURNED_PRIORITY)
+                .findFirst();
+                
+        if (activeQueue.isPresent()) {
+            CheckInQueue q = activeQueue.get();
             int waitTime = calculateEstimatedWaitTime(q);
             int pos = calculateQueuePosition(q);
             return CheckInResult.alreadyCheckedIn(q.getQueueNumber(), pos, getRoomName(q), waitTime);
+        }
+
+        List<Appointment> todayAppointments = appointmentRepository.findTodayByPatientId(patientId);
+        Appointment appointment;
+        if (todayAppointments.isEmpty()) {
+            appointment = createWalkInAppointment(patient);
+        } else {
+            appointment = todayAppointments.stream()
+                .filter(a -> a.getStatus() == AppointmentStatus.SCHEDULED || a.getStatus() == AppointmentStatus.CONFIRMED)
+                .findFirst()
+                .orElse(todayAppointments.get(0));
         }
 
         ClinicRoom room = appointment.getDoctor() != null ? appointment.getDoctor().getClinicRoom() : null;
@@ -82,6 +147,7 @@ public class CheckInQueueService {
         CheckInQueue queue = CheckInQueue.builder()
                 .appointment(appointment)
                 .clinicRoom(room)
+                .originalRoomId(room.getId())
                 .queueNumber(nextNumber)
                 .checkInTime(LocalDateTime.now())
                 .status(QueueStatus.WAITING)
@@ -168,7 +234,29 @@ public class CheckInQueueService {
         }
     }
 
-    private int calculateEstimatedWaitTime(CheckInQueue current) {
+    private Appointment createWalkInAppointment(Patient patient) {
+        com.hcmute.clinic.entity.Service defaultService = serviceRepository.findAll().stream()
+                .filter(s -> s.getName() != null && s.getName().toLowerCase().contains("khám"))
+                .findFirst()
+                .orElse(serviceRepository.findAll().stream().findFirst()
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Chưa cấu hình dịch vụ khám")));
+
+        Doctor defaultDoctor = doctorRepository.findAll().stream().findFirst()
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR, "Chưa cấu hình bác sĩ"));
+
+        Appointment walkInAppt = Appointment.builder()
+                .patient(patient)
+                .doctor(defaultDoctor)
+                .service(defaultService)
+                .appointmentDatetime(LocalDateTime.now())
+                .bookingType(BookingType.WALK_IN)
+                .status(AppointmentStatus.SCHEDULED)
+                .build();
+
+        return appointmentRepository.save(walkInAppt);
+    }
+
+    public int calculateEstimatedWaitTime(CheckInQueue current) {
         if (current == null || current.getClinicRoom() == null) return 0;
         
         LocalDate today = LocalDate.now();
@@ -257,7 +345,13 @@ public class CheckInQueueService {
         LocalDateTime start = today.atStartOfDay();
         LocalDateTime end = today.plusDays(1).atStartOfDay();
         List<CheckInQueue> rows = checkInQueueRepository.findTodayForPatient(patientId, start, end);
-        if (rows.isEmpty()) {
+        
+        // Filter out COMPLETED and SKIPPED queues - patient shouldn't see these
+        var activeQueue = rows.stream()
+                .filter(q -> q.getStatus() != QueueStatus.COMPLETED && q.getStatus() != QueueStatus.SKIPPED)
+                .findFirst();
+        
+        if (activeQueue.isEmpty()) {
             return CheckInMyStatusResponse.builder()
                     .checkedIn(false)
                     .queueNumber(null)
@@ -268,11 +362,113 @@ public class CheckInQueueService {
                     .hint("Đưa mã QR qua máy quét tại quầy tiếp nhận khi đến phòng khám.")
                     .build();
         }
-        CheckInQueue q = rows.get(0);
+        CheckInQueue q = activeQueue.get();
         ClinicRoom room = q.getClinicRoom();
         String roomName = room != null ? room.getName() : "";
         String roomLoc = room != null && room.getDescription() != null ? room.getDescription() : "";
         QueueStatus st = q.getStatus() != null ? q.getStatus() : QueueStatus.WAITING;
+        
+        // Extract doctor and service info from appointment
+        String doctorName = null;
+        String serviceName = null;
+        Long treatmentPlanId = null;
+        String currentStepName = null;
+        Integer currentStepNumber = null;
+        Integer totalSteps = null;
+        
+        if (q.getAppointment() != null) {
+            Appointment appt = q.getAppointment();
+            
+            // Get doctor name
+            if (appt.getDoctor() != null) {
+                Doctor doc = appt.getDoctor();
+                String firstName = doc.getFirstName() != null ? doc.getFirstName() : "";
+                String lastName = doc.getLastName() != null ? doc.getLastName() : "";
+                doctorName = "BS. " + (lastName + " " + firstName).trim();
+            }
+            
+            // Get service name
+            if (appt.getService() != null) {
+                serviceName = appt.getService().getName();
+            }
+            
+            // Get treatment plan info if exists
+            try {
+                List<TreatmentPlanStep> steps = treatmentPlanStepRepository.findByAppointmentId(appt.getId());
+                
+                if (!steps.isEmpty()) {
+                    // Get the treatment plan from first step (all steps should belong to same plan)
+                    var treatmentPlan = steps.get(0).getPlan();
+                    
+                    // Only process if plan is IN_PROGRESS (active treatment)
+                    if (treatmentPlan != null && treatmentPlan.getStatus() == com.hcmute.clinic.enums.TreatmentPlanStatus.IN_PROGRESS) {
+                        final Long finalTreatmentPlanId = treatmentPlan.getId(); // Make it effectively final for lambda
+                        treatmentPlanId = finalTreatmentPlanId;
+                        
+                        // Filter steps that belong to this specific plan
+                        List<TreatmentPlanStep> planSteps = steps.stream()
+                            .filter(s -> s.getPlan() != null && s.getPlan().getId().equals(finalTreatmentPlanId))
+                            .sorted((a, b) -> Integer.compare(a.getSequenceOrder(), b.getSequenceOrder()))
+                            .toList();
+                        
+                        totalSteps = planSteps.size();
+                        
+                        // Find current IN_PROGRESS step
+                        var currentStepOpt = planSteps.stream()
+                            .filter(s -> s.getStatus() == StepStatus.IN_PROGRESS)
+                            .findFirst();
+                        
+                        if (currentStepOpt.isPresent()) {
+                            TreatmentPlanStep currentStep = currentStepOpt.get();
+                            currentStepNumber = currentStep.getSequenceOrder() + 1; // 1-indexed for display
+                            currentStepName = currentStep.getService() != null ? currentStep.getService().getName() : "Đang điều trị";
+                        } else {
+                            // Fallback: If no IN_PROGRESS step, find next PENDING step
+                            var nextStepOpt = planSteps.stream()
+                                .filter(s -> s.getStatus() == StepStatus.PENDING)
+                                .findFirst();
+                            
+                            if (nextStepOpt.isPresent()) {
+                                TreatmentPlanStep nextStep = nextStepOpt.get();
+                                currentStepNumber = nextStep.getSequenceOrder() + 1;
+                                currentStepName = "Tiếp theo: " + (nextStep.getService() != null ? nextStep.getService().getName() : "Chờ thực hiện");
+                            }
+                        }
+                    }
+                }
+            } catch (Exception e) {
+                log.warn("Failed to fetch treatment plan info for appointment {}: {}", appt.getId(), e.getMessage());
+            }
+        }
+        
+        // Calculate queue estimate (new feature)
+        String estimateDisplayType = null;
+        Integer estimatedMinutes = null;
+        Integer minMinutes = null;
+        Integer maxMinutes = null;
+        String estimateMessage = null;
+        String estimateConfidence = null;
+        Boolean showApproximateLabel = null;
+        String estimateTitle = null;
+        String estimateSubtitle = null;
+        Integer countdownStartSeconds = null;
+        
+        try {
+            com.hcmute.clinic.dto.queue.QueueEstimateDTO estimate = estimationService.calculateEstimate(q);
+            estimateDisplayType = estimate.getDisplayType();
+            estimatedMinutes = estimate.getEstimatedMinutes();
+            minMinutes = estimate.getMinMinutes();
+            maxMinutes = estimate.getMaxMinutes();
+            estimateMessage = estimate.getMessage();
+            estimateConfidence = estimate.getConfidence();
+            showApproximateLabel = estimate.getShowApproximateLabel();
+            estimateTitle = estimate.getTitle();
+            estimateSubtitle = estimate.getSubtitle();
+            countdownStartSeconds = estimate.getCountdownStartSeconds();
+        } catch (Exception e) {
+            log.error("Failed to calculate estimate for patient {}", patientId, e);
+        }
+        
         return CheckInMyStatusResponse.builder()
                 .checkedIn(true)
                 .queueNumber(q.getQueueNumber())
@@ -283,6 +479,22 @@ public class CheckInQueueService {
                 .queuePosition(q != null ? calculateQueuePosition(q) : 0)
                 .estimatedWaitTime(q != null ? calculateEstimatedWaitTime(q) : 0)
                 .hint(patientQueueHint(st))
+                .estimateDisplayType(estimateDisplayType)
+                .estimatedMinutes(estimatedMinutes)
+                .minMinutes(minMinutes)
+                .maxMinutes(maxMinutes)
+                .estimateMessage(estimateMessage)
+                .estimateConfidence(estimateConfidence)
+                .showApproximateLabel(showApproximateLabel)
+                .estimateTitle(estimateTitle)
+                .estimateSubtitle(estimateSubtitle)
+                .countdownStartSeconds(countdownStartSeconds)
+                .doctorName(doctorName)
+                .serviceName(serviceName)
+                .treatmentPlanId(treatmentPlanId)
+                .currentStepName(currentStepName)
+                .currentStepNumber(currentStepNumber)
+                .totalSteps(totalSteps)
                 .build();
     }
 
@@ -294,6 +506,7 @@ public class CheckInQueueService {
             case RETURNED_PRIORITY -> "Ưu tiên — vui lòng vào phòng";
             case COMPLETED -> "Đã hoàn thành tiếp nhận";
             case SKIPPED -> "Đã bỏ qua";
+            case CANCELLED -> "Đã bị loại bỏ bởi Admin";
         };
     }
 
@@ -304,47 +517,102 @@ public class CheckInQueueService {
             case PAUSED_FOR_TEST -> "Sau khi xong, quay lại phòng khám theo hướng dẫn.";
             case COMPLETED -> "Cảm ơn bạn đã check-in.";
             case SKIPPED -> "Vui lòng liên hệ lễ tân nếu cần hỗ trợ.";
+            case CANCELLED -> "Lượt của bạn đã bị hủy hoặc loại bỏ.";
         };
     }
 
     @Transactional(readOnly = true)
     public List<QueueItemDto> getRoomQueue(Long roomId) {
         var queues = checkInQueueRepository.findTodayByClinicRoomId(roomId);
-        return queues.stream()
-                .map(q -> {
-                    String patientName = "";
-                    String patientPhone = "";
-                    String serviceName = "";
-                    String appTime = "";
-                    Long patientId = null;
+        return queues.stream().map(this::mapToQueueItemDto).toList();
+    }
 
-                    if (q.getAppointment() != null) {
-                        Appointment app = q.getAppointment();
-                        serviceName = app.getService() != null ? app.getService().getName() : "";
-                        appTime = app.getAppointmentDatetime() != null ? 
-                            app.getAppointmentDatetime().toLocalTime().toString().substring(0, 5) : "";
-                        
-                        if (app.getPatient() != null) {
-                            Patient p = app.getPatient();
-                            patientName = (p.getLastName() + " " + p.getFirstName()).trim();
-                            patientPhone = p.getPhone() != null ? p.getPhone() : "";
-                            patientId = p.getId();
-                        }
-                    }
+    @Transactional(readOnly = true)
+    public java.util.Map<String, List<QueueItemDto>> getDoctorDashboardQueue(Long roomId) {
+        var activeQueues = checkInQueueRepository.findTodayByClinicRoomId(roomId);
+        
+        LocalDate today = LocalDate.now();
+        var transferredQueues = checkInQueueRepository.findTransferredByRoomAndDateRange(
+                roomId,
+                today.atStartOfDay(),
+                today.plusDays(1).atStartOfDay(),
+                List.of(QueueStatus.WAITING, QueueStatus.IN_PROGRESS, QueueStatus.PAUSED_FOR_TEST, QueueStatus.RETURNED_PRIORITY)
+        );
 
-                    return new QueueItemDto(
-                            q.getId(),
-                            q.getQueueNumber(),
-                            q.getStatus().name(),
-                            q.getPriorityLevel() != null ? q.getPriorityLevel() : 0,
-                            patientName,
-                            patientPhone,
-                            serviceName,
-                            appTime,
-                            patientId
-                    );
-                })
-                .toList();
+        return java.util.Map.of(
+                "queuedPatients", activeQueues.stream().map(this::mapToQueueItemDto).toList(),
+                "transferredPatients", transferredQueues.stream().map(this::mapToQueueItemDto).toList()
+        );
+    }
+
+    private QueueItemDto mapToQueueItemDto(CheckInQueue q) {
+        String patientName = "";
+        String patientPhone = "";
+        String serviceName = "";
+        String appTime = "";
+        Long patientId = null;
+
+        if (q.getAppointment() != null) {
+            Appointment app = q.getAppointment();
+            serviceName = app.getService() != null ? app.getService().getName() : "";
+            appTime = app.getAppointmentDatetime() != null ? 
+                app.getAppointmentDatetime().toLocalTime().toString().substring(0, 5) : "";
+            
+            if (app.getPatient() != null) {
+                Patient p = app.getPatient();
+                patientName = (p.getLastName() + " " + p.getFirstName()).trim();
+                patientPhone = p.getPhone() != null ? p.getPhone() : "";
+                patientId = p.getId();
+            }
+        }
+
+        // Calculate queue estimate
+        String estimateDisplayType = null;
+        Integer estimatedMinutes = null;
+        Integer minMinutes = null;
+        Integer maxMinutes = null;
+        String estimateMessage = null;
+        String estimateConfidence = null;
+        Boolean showApproximateLabel = null;
+        String estimateTitle = null;
+        String estimateSubtitle = null;
+
+        try {
+            com.hcmute.clinic.dto.queue.QueueEstimateDTO estimate = estimationService.calculateEstimate(q);
+            estimateDisplayType = estimate.getDisplayType();
+            estimatedMinutes = estimate.getEstimatedMinutes();
+            minMinutes = estimate.getMinMinutes();
+            maxMinutes = estimate.getMaxMinutes();
+            estimateMessage = estimate.getMessage();
+            estimateConfidence = estimate.getConfidence();
+            showApproximateLabel = estimate.getShowApproximateLabel();
+            estimateTitle = estimate.getTitle();
+            estimateSubtitle = estimate.getSubtitle();
+        } catch (Exception e) {
+            log.error("Failed to calculate estimate for queue {}", q.getId(), e);
+            // Graceful degradation: continue without estimate
+        }
+
+        return new QueueItemDto(
+                q.getId(),
+                q.getQueueNumber(),
+                q.getStatus().name(),
+                q.getPriorityLevel() != null ? q.getPriorityLevel() : 0,
+                patientName,
+                patientPhone,
+                serviceName,
+                appTime,
+                patientId,
+                estimateDisplayType,
+                estimatedMinutes,
+                minMinutes,
+                maxMinutes,
+                estimateMessage,
+                estimateConfidence,
+                showApproximateLabel,
+                estimateTitle,
+                estimateSubtitle
+        );
     }
 
     @Transactional
@@ -362,6 +630,7 @@ public class CheckInQueueService {
         CheckInQueue q = checkInQueueRepository.findById(queueId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hàng đợi"));
         q.setStatus(QueueStatus.IN_PROGRESS);
+        durationTracker.markStarted(q); // Track start time
         checkInQueueRepository.save(q);
         ClinicRoom r = q.getClinicRoom();
         if (r != null) {
@@ -384,11 +653,49 @@ public class CheckInQueueService {
         if (xrayRoom == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chưa cấu hình phòng X-Quang");
         }
+        
+        // Lưu originalRoomId nếu chưa có (lần đầu chuyển phòng)
+        if (q.getOriginalRoomId() == null && oldRoom != null) {
+            q.setOriginalRoomId(oldRoom.getId());
+        }
+        
         q.setStatus(QueueStatus.PAUSED_FOR_TEST);
         q.setClinicRoom(xrayRoom);
         checkInQueueRepository.save(q);
         if (oldRoom != null) queueEventService.broadcastQueueUpdated(oldRoom.getId());
         queueEventService.broadcastQueueUpdated(xrayRoom.getId());
+    }
+    
+    @Transactional
+    public void transferToSurgery(Long queueId, Long surgeryRoomId) {
+        CheckInQueue q = checkInQueueRepository.findById(queueId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hàng đợi"));
+        ClinicRoom oldRoom = q.getClinicRoom();
+        ClinicRoom surgeryRoom = surgeryRoomId != null
+                ? clinicRoomRepository.findById(surgeryRoomId).orElse(null)
+                : clinicRoomRepository.findAll().stream()
+                        .filter(r -> r.getName() != null && 
+                                (r.getName().toLowerCase().contains("tiểu phẫu") ||
+                                 r.getName().toLowerCase().contains("tieu phau") ||
+                                 r.getName().toLowerCase().contains("phẫu thuật") ||
+                                 r.getName().toLowerCase().contains("phau thuat") ||
+                                 r.getName().toLowerCase().contains("surgery")))
+                        .findFirst()
+                        .orElse(clinicRoomRepository.findAll().stream().findFirst().orElse(null));
+        if (surgeryRoom == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Chưa cấu hình phòng Tiểu phẫu");
+        }
+        
+        // Lưu originalRoomId nếu chưa có (lần đầu chuyển phòng)
+        if (q.getOriginalRoomId() == null && oldRoom != null) {
+            q.setOriginalRoomId(oldRoom.getId());
+        }
+        
+        q.setStatus(QueueStatus.PAUSED_FOR_TEST);
+        q.setClinicRoom(surgeryRoom);
+        checkInQueueRepository.save(q);
+        if (oldRoom != null) queueEventService.broadcastQueueUpdated(oldRoom.getId());
+        queueEventService.broadcastQueueUpdated(surgeryRoom.getId());
     }
 
     @Transactional
@@ -397,13 +704,40 @@ public class CheckInQueueService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hàng đợi"));
         q.setStatus(QueueStatus.RETURNED_PRIORITY);
         q.setPriorityLevel((q.getPriorityLevel() != null ? q.getPriorityLevel() : 0) + 10);
-        var examRoom = q.getAppointment() != null && q.getAppointment().getDoctor() != null
-                ? q.getAppointment().getDoctor().getClinicRoom()
-                : null;
+        
+        // Ưu tiên dùng originalRoomId, fallback về doctor's room
+        ClinicRoom examRoom = null;
+        if (q.getOriginalRoomId() != null) {
+            examRoom = clinicRoomRepository.findById(q.getOriginalRoomId()).orElse(null);
+        }
+        if (examRoom == null && q.getAppointment() != null && q.getAppointment().getDoctor() != null) {
+            examRoom = q.getAppointment().getDoctor().getClinicRoom();
+        }
+        
         if (examRoom != null) {
             q.setClinicRoom(examRoom);
         }
         checkInQueueRepository.save(q);
+        
+        // ====== ROOT FIX: Mark the X-Ray TreatmentPlanStep as COMPLETED ======
+        // Without this, the hasPreviousIncomplete check in startStep() will always
+        // block the next treatment step from starting after the patient returns.
+        if (q.getAppointment() != null) {
+            Long appointmentId = q.getAppointment().getId();
+            // Find the X-Ray step that is IN_PROGRESS for this appointment
+            treatmentPlanStepRepository.findInProgressXRayStepByAppointmentId(appointmentId)
+                .ifPresent(xrayStep -> {
+                    xrayStep.setStatus(StepStatus.COMPLETED);
+                    if (xrayStep.getCompletedAt() == null) {
+                        xrayStep.setCompletedAt(java.time.LocalDateTime.now());
+                    }
+                    treatmentPlanStepRepository.save(xrayStep);
+                    log.info("[completeXRay] Marked TreatmentPlanStep #{} as COMPLETED for appointment #{}",
+                        xrayStep.getId(), appointmentId);
+                });
+        }
+        // ====== END ROOT FIX ======
+        
         if (examRoom != null) {
             String pn = q.getAppointment() != null && q.getAppointment().getPatient() != null
                     ? (q.getAppointment().getPatient().getLastName() + " " + q.getAppointment().getPatient().getFirstName()).trim()
@@ -411,6 +745,241 @@ public class CheckInQueueService {
             queueEventService.broadcastPriorityReturned(examRoom.getId(), q.getId(), pn);
             queueEventService.broadcastQueueUpdated(examRoom.getId());
         }
+    }
+
+    /**
+     * Delay a WAITING patient by one position in the queue
+     * Use case: Patient in waiting room wants to give their turn to the next person
+     * 
+     * This is DIFFERENT from skipCurrentPatient which handles IN_PROGRESS patients
+     * 
+     * Logic:
+     * 1. Find patient's position in sorted waiting list (by priority DESC, queueNumber ASC)
+     * 2. Swap queueNumber with next person in line
+     * 3. Broadcast update
+     * 
+     * Note: This does NOT change priorityLevel, only queueNumber
+     */
+    @Transactional
+    public void delayPatient(Long queueId) {
+        CheckInQueue q = checkInQueueRepository.findById(queueId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hàng đợi"));
+        
+        // Only allow delaying patients who are WAITING (not being examined)
+        if (q.getStatus() != QueueStatus.WAITING && q.getStatus() != QueueStatus.RETURNED_PRIORITY) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                "Chỉ có thể lùi lượt cho bệnh nhân đang chờ. Nếu bệnh nhân đang khám, vui lòng dùng chức năng 'Lùi 1 người' (Skip).");
+        }
+
+        ClinicRoom room = q.getClinicRoom();
+        if (room == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy thông tin phòng khám");
+        }
+
+        LocalDate today = LocalDate.now();
+        // Get waiting list sorted by priority DESC, queueNumber ASC (same as display order)
+        List<CheckInQueue> waitingList = checkInQueueRepository.findByRoomAndDateRange(
+                room.getId(),
+                today.atStartOfDay(),
+                today.plusDays(1).atStartOfDay(),
+                List.of(QueueStatus.WAITING, QueueStatus.RETURNED_PRIORITY)
+        );
+
+        // Find current patient's position in the sorted list
+        int index = -1;
+        for (int i = 0; i < waitingList.size(); i++) {
+            if (waitingList.get(i).getId().equals(q.getId())) {
+                index = i;
+                break;
+            }
+        }
+
+        // Validate: patient must be in list and not last
+        if (index == -1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy bệnh nhân trong hàng đợi");
+        }
+        
+        if (index >= waitingList.size() - 1) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bệnh nhân đã ở cuối hàng đợi, không thể lùi thêm");
+        }
+
+        CheckInQueue nextQ = waitingList.get(index + 1);
+        
+        // Swap queueNumber to change display order
+        // We only swap queueNumber, NOT priorityLevel
+        // Because priorityLevel has special meaning (X-ray return = +10, room transfer = +5)
+        Integer tempQueueNum = q.getQueueNumber();
+        q.setQueueNumber(nextQ.getQueueNumber());
+        nextQ.setQueueNumber(tempQueueNum);
+
+        checkInQueueRepository.saveAll(List.of(q, nextQ));
+        
+        log.info("[delayPatient] Swapped queue #{} (patient {}) with queue #{} (patient {}) in room {}", 
+                tempQueueNum, q.getId(), nextQ.getQueueNumber(), nextQ.getId(), room.getName());
+        
+        broadcastRoom(room);
+    }
+
+    /**
+     * Skip current patient (IN_PROGRESS) and call next patient
+     * 
+     * Use case (from UC_24_ProcessQueue.md):
+     * - Doctor calls patient A into room (IN_PROGRESS)
+     * - Patient A is not present OR needs time (waiting for anesthesia, X-ray results, etc.)
+     * - Doctor wants to see next patient B instead
+     * - System moves A back to waiting with higher priority
+     * - System automatically calls B into room
+     * 
+     * Workflow:
+     * 1. Validate: current patient must be IN_PROGRESS
+     * 2. Move current patient → WAITING with +5 priority (so they get priority when ready)
+     * 3. Find next waiting patient (by priority DESC, queueNumber ASC)
+     * 4. Auto-call next patient → IN_PROGRESS
+     * 5. Broadcast updates to all clients (doctor app, patient app, TV display)
+     * 
+     * This ensures:
+     * - No patient is lost or forgotten
+     * - Skipped patient gets priority when they return
+     * - Queue keeps moving efficiently
+     * - Real-time updates for all stakeholders
+     */
+    @Transactional
+    public void skipCurrentPatient(Long queueId) {
+        CheckInQueue current = checkInQueueRepository.findById(queueId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy hàng đợi"));
+        
+        // Validate: Only IN_PROGRESS patients can be skipped
+        if (current.getStatus() != QueueStatus.IN_PROGRESS) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, 
+                "Chỉ có thể lùi bệnh nhân đang khám (IN_PROGRESS). " +
+                "Trạng thái hiện tại: " + current.getStatus());
+        }
+
+        ClinicRoom room = current.getClinicRoom();
+        if (room == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Không tìm thấy thông tin phòng khám");
+        }
+
+        // Get patient info for logging
+        String patientName = "";
+        if (current.getAppointment() != null && current.getAppointment().getPatient() != null) {
+            Patient p = current.getAppointment().getPatient();
+            patientName = (p.getLastName() + " " + p.getFirstName()).trim();
+        }
+
+        // Mark duration tracking as completed (for statistics)
+        try {
+            durationTracker.markCompleted(current);
+        } catch (Exception e) {
+            log.warn("[skipCurrentPatient] Failed to mark duration for skipped patient: {}", e.getMessage());
+        }
+
+        // Move current patient back to WAITING with +5 priority
+        // This ensures they get priority over new walk-ins but after X-ray returns (+10)
+        current.setStatus(QueueStatus.WAITING);
+        int currentPriority = current.getPriorityLevel() != null ? current.getPriorityLevel() : 0;
+        current.setPriorityLevel(currentPriority + 5); // +5 for each skip
+        current.setStartedAt(null); // Clear started time since they're back to waiting
+        checkInQueueRepository.save(current);
+        
+        log.info("[skipCurrentPatient] Moved queue #{} (patient: {}) back to WAITING with priority {} in room {}", 
+                current.getId(), patientName, current.getPriorityLevel(), room.getName());
+
+        // Find next patient in queue (sorted by priority DESC, queueNumber ASC)
+        // EXCLUDING the patient we just skipped to prevent immediate re-call
+        CheckInQueue next = findNextWaitingPatient(room.getId(), current.getId());
+        
+        if (next != null) {
+            String nextPatientName = "";
+            if (next.getAppointment() != null && next.getAppointment().getPatient() != null) {
+                Patient p = next.getAppointment().getPatient();
+                nextPatientName = (p.getLastName() + " " + p.getFirstName()).trim();
+            }
+            
+            // Call next patient to room
+            next.setStatus(QueueStatus.IN_PROGRESS);
+            next.setStartedAt(LocalDateTime.now());
+            durationTracker.markStarted(next);
+            checkInQueueRepository.save(next);
+            
+            log.info("[skipCurrentPatient] Auto-called next patient queue #{} (patient: {}) to room {}", 
+                    next.getId(), nextPatientName, room.getName());
+            
+            // Broadcast queue called event (for TV display and patient app notification)
+            queueEventService.broadcastQueueCalled(room.getId(), next.getQueueNumber(), room.getName());
+            
+            // Send notification to next patient
+            if (next.getAppointment() != null && next.getAppointment().getPatient() != null) {
+                Patient nextPatient = next.getAppointment().getPatient();
+                try {
+                    Notification notif = Notification.builder()
+                            .patient(nextPatient)
+                            .title("Đến lượt khám")
+                            .message("Vui lòng vào " + room.getName() + ". Số thứ tự: " + next.getQueueNumber())
+                            .type("QUEUE_CALLED")
+                            .build();
+                    notificationRepository.save(notif);
+                    fcmService.sendNotification(nextPatient.getFcmToken(), notif.getTitle(), notif.getMessage());
+                } catch (Exception e) {
+                    log.warn("[skipCurrentPatient] Failed to send notification to next patient: {}", e.getMessage());
+                }
+            }
+        } else {
+            log.info("[skipCurrentPatient] No next patient available in queue for room {}", room.getName());
+        }
+
+        // Broadcast queue update to all clients (doctor app, patient apps, TV)
+        broadcastRoom(room);
+        
+        log.info("[skipCurrentPatient] Successfully skipped patient {} and called next patient in room {}", 
+                patientName, room.getName());
+    }
+
+    /**
+     * Find next patient in waiting queue
+     * Priority: RETURNED_PRIORITY (highest priority) > WAITING (by queue number)
+     */
+    private CheckInQueue findNextWaitingPatient(Long roomId) {
+        return findNextWaitingPatient(roomId, null);
+    }
+
+    private CheckInQueue findNextWaitingPatient(Long roomId, Long excludingQueueId) {
+        LocalDate today = LocalDate.now();
+        List<CheckInQueue> waitingList = checkInQueueRepository.findByRoomAndDateRange(
+                roomId,
+                today.atStartOfDay(),
+                today.plusDays(1).atStartOfDay(),
+                List.of(QueueStatus.WAITING, QueueStatus.RETURNED_PRIORITY)
+        );
+
+        if (waitingList.isEmpty()) {
+            return null;
+        }
+
+        // Filter out the excluded queue if provided
+        List<CheckInQueue> filteredWaiting = waitingList;
+        if (excludingQueueId != null) {
+            filteredWaiting = waitingList.stream()
+                    .filter(q -> !q.getId().equals(excludingQueueId))
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
+        if (filteredWaiting.isEmpty()) {
+            return null;
+        }
+
+        // Sort by priority DESC, then queueNumber ASC
+        filteredWaiting.sort((a, b) -> {
+            int priorityA = a.getPriorityLevel() != null ? a.getPriorityLevel() : 0;
+            int priorityB = b.getPriorityLevel() != null ? b.getPriorityLevel() : 0;
+            int priorityCompare = Integer.compare(priorityB, priorityA);
+            if (priorityCompare != 0) {
+                return priorityCompare;
+            }
+            return Integer.compare(a.getQueueNumber(), b.getQueueNumber());
+        });
+
+        return filteredWaiting.get(0);
     }
 
     private void broadcastRoom(ClinicRoom r) {
@@ -421,7 +990,27 @@ public class CheckInQueueService {
         }
     }
 
-    public record QueueItemDto(Long id, Integer queueNumber, String status, Integer priority, String patientName, String patientPhone, String serviceName, String appointmentTime, Long patientId) {}
+    public record QueueItemDto(
+        Long id, 
+        Integer queueNumber, 
+        String status, 
+        Integer priority, 
+        String patientName, 
+        String patientPhone, 
+        String serviceName, 
+        String appointmentTime, 
+        Long patientId,
+        // Queue estimation fields
+        String estimateDisplayType,
+        Integer estimatedMinutes,
+        Integer minMinutes,
+        Integer maxMinutes,
+        String estimateMessage,
+        String estimateConfidence,
+        Boolean showApproximateLabel,
+        String estimateTitle,
+        String estimateSubtitle
+    ) {}
 
     @Transactional
     public CheckInResult processSelfScan(long authenticatedPatientId, String qrData) {
@@ -437,9 +1026,12 @@ public class CheckInQueueService {
             // Static QR at reception desk
             List<Appointment> todayApps = appointmentRepository.findTodayByPatientId(authenticatedPatientId);
             if (todayApps.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bạn không có lịch hẹn nào hôm nay");
+                Patient patient = patientRepository.findById(authenticatedPatientId)
+                        .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy thông tin bệnh nhân"));
+                appointmentId = createWalkInAppointment(patient).getId();
+            } else {
+                appointmentId = todayApps.get(0).getId();
             }
-            appointmentId = todayApps.get(0).getId();
         } else if (qrData.startsWith("CHECKIN:")) {
             String[] parts = qrData.split(":");
             if (parts.length >= 2) {
@@ -501,6 +1093,7 @@ public class CheckInQueueService {
         CheckInQueue queue = CheckInQueue.builder()
                 .appointment(appointment)
                 .clinicRoom(room)
+                .originalRoomId(room.getId())
                 .queueNumber(nextNumber)
                 .checkInTime(LocalDateTime.now())
                 .status(QueueStatus.WAITING)
@@ -546,10 +1139,9 @@ public class CheckInQueueService {
             
             // Find today's appointment for this patient
             List<Appointment> todayAppointments = appointmentRepository.findTodayByPatientId(patient.getId());
-            if (todayAppointments.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bệnh nhân không có lịch hẹn hôm nay");
+            if (!todayAppointments.isEmpty()) {
+                appointment = todayAppointments.get(0);
             }
-            appointment = todayAppointments.get(0);
         }
         // Find patient by phone
         else if (request.getPatientPhone() != null && !request.getPatientPhone().isBlank()) {
@@ -557,25 +1149,39 @@ public class CheckInQueueService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy bệnh nhân với số điện thoại này"));
             
             List<Appointment> todayAppointments = appointmentRepository.findTodayByPatientId(patient.getId());
-            if (todayAppointments.isEmpty()) {
-                throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Bệnh nhân không có lịch hẹn hôm nay");
+            if (!todayAppointments.isEmpty()) {
+                appointment = todayAppointments.get(0);
             }
-            appointment = todayAppointments.get(0);
         } else {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Cần cung cấp appointmentId, patientId hoặc patientPhone");
         }
 
         // Generate QR data
-        String qrData = "CHECKIN:" + appointment.getId();
-        String displayCode = String.valueOf(appointment.getId());
+        String qrData;
+        String displayCode;
+        String expiresAt;
+        Long apptId = null;
+
+        if (appointment != null) {
+            qrData = "CHECKIN:" + appointment.getId();
+            displayCode = String.valueOf(appointment.getId());
+            expiresAt = appointment.getAppointmentDatetime().toLocalDate().plusDays(1).toString();
+            apptId = appointment.getId();
+        } else {
+            // Fallback for new users / walk-in
+            qrData = "patient:" + patient.getId();
+            displayCode = "PATIENT-" + patient.getId();
+            expiresAt = LocalDate.now().plusDays(365).toString(); // Long-lived static QR
+        }
+
         String patientName = (patient.getLastName() + " " + patient.getFirstName()).trim();
 
         return com.hcmute.clinic.dto.GenerateCheckInQRResponse.builder()
                 .qrData(qrData)
                 .displayCode(displayCode)
                 .patientName(patientName)
-                .appointmentId(appointment.getId())
-                .expiresAt(appointment.getAppointmentDatetime().toLocalDate().plusDays(1).toString())
+                .appointmentId(apptId)
+                .expiresAt(expiresAt)
                 .build();
     }
 }

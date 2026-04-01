@@ -37,4 +37,8 @@
     <string name="account">Tài khoản</string>
     <string name="personal_info">Thông tin cá nhân</string>
     <string name="notification">Thông báo</string>
+    <string name="banner_header">DỊCH VỤ CHUYÊN NGHIỆP</string>
+    <string name="banner_main_title">LẤY CAO RĂNG</string>
+    <string name="banner_description">Răng sạch mảng bám, nướu khỏe mạnh</string>
+    <string name="banner_button_text">ĐẶT LỊCH NGAY</string>
 </resources>

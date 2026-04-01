@@ -19,6 +19,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.google.android.material.appbar.MaterialToolbar;
+import com.hcmute.mobile_android.BuildConfig;
 import com.hcmute.mobile_android.R;
 import com.hcmute.mobile_android.network.ApiService;
 import com.hcmute.mobile_android.network.RetrofitClient;
@@ -74,7 +75,10 @@ public class PrescriptionDetailActivity extends AppCompatActivity {
         if (initialDate != null && tvDate != null) tvDate.setText(initialDate);
 
         findViewById(R.id.btnDownloadPDF).setOnClickListener(v -> {
-            Toast.makeText(this, "Đang tải xuống PDF...", Toast.LENGTH_SHORT).show();
+            String url = BuildConfig.API_BASE_URL + "api/prescriptions/" + prescriptionId + "/pdf";
+            android.net.Uri uri = android.net.Uri.parse(url);
+            android.content.Intent intent = new android.content.Intent(android.content.Intent.ACTION_VIEW, uri);
+            startActivity(intent);
         });
 
         if (prescriptionId != -1L) {
@@ -148,7 +152,11 @@ public class PrescriptionDetailActivity extends AppCompatActivity {
             holder.tvName.setText(item.getMedicineName());
             holder.tvDosage.setText(item.getDosage());
             
-            String instr = (item.getFrequency() != null ? item.getFrequency() : "") + " " + (item.getDuration() != null ? item.getDuration() : "");
+            String freq = item.getFrequency() != null ? item.getFrequency() : "";
+            String dur = item.getDuration() != null ? item.getDuration() : "";
+            String unit = item.getUnit() != null ? item.getUnit() : "";
+            
+            String instr = freq + (dur.isEmpty() ? "" : " - " + dur) + (unit.isEmpty() ? "" : " (" + unit + ")");
             holder.tvInstruction.setText(instr.trim());
             holder.swReminder.setChecked(true);
         }

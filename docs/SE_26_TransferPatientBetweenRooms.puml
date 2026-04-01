@@ -1,0 +1,24 @@
+@startuml SE_26_TransferPatientBetweenRooms
+title Sequence Diagram: SE_26 Chuyển bệnh nhân sang phòng thiết bị
+actor "Bác sĩ" as Doctor
+participant "View\n(DoctorWorkflowActivity)" as View
+participant "CheckInController" as Controller
+participant "CheckInQueueService" as Service
+participant "CheckInQueueRepository" as Repo
+database "PostgreSQL" as DB
+
+Doctor -> View: Chuyển sang phòng X-Quang
+activate View
+View -> Controller: transferRoom(patientId, newRoomId)
+activate Controller
+Controller -> Service: transferPatientToRoom(patientId, newRoomId)
+activate Service
+Service -> DB: UPDATE check_in_queue SET status='COMPLETED' WHERE current...
+Service -> Repo: save(new CheckInQueue(Priority.HIGH))
+Repo -> DB: INSERT INTO check_in_queue (room_id=newRoomId, priority=0)
+DB --> Repo: success
+Service --> Controller: success
+Controller --> View: 200 OK
+View --> Doctor: Đã chuyển lịch đi phòng khác
+deactivate View
+@enduml

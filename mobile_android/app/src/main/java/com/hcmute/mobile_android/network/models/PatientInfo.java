@@ -1,6 +1,8 @@
 package com.hcmute.mobile_android.network.models;
 
-public class PatientInfo {
+import java.io.Serializable;
+
+public class PatientInfo implements Serializable {
     private Long id;
     private String firstName;
     private String lastName;
@@ -15,6 +17,17 @@ public class PatientInfo {
     private String appointmentStatus;
     private Long queueId;
     private Long appointmentId;
+    
+    // FIX 1: Thêm fields mới cho TreatmentPlan
+    private Long treatmentPlanId;
+    private Boolean hasTreatmentPlan;
+    private String treatmentPlanStatus;
+    
+    // NEW: Thêm fields cho PatientProfile
+    private String bloodType;
+    private String allergies;
+    private String underlyingConditions;
+    private String notes;
 
     // Constructors
     public PatientInfo() {}
@@ -30,6 +43,29 @@ public class PatientInfo {
 
     public Long getAppointmentId() { return appointmentId; }
     public void setAppointmentId(Long appointmentId) { this.appointmentId = appointmentId; }
+
+    // FIX 1: Getters and Setters cho TreatmentPlan fields
+    public Long getTreatmentPlanId() { return treatmentPlanId; }
+    public void setTreatmentPlanId(Long treatmentPlanId) { this.treatmentPlanId = treatmentPlanId; }
+
+    public Boolean getHasTreatmentPlan() { return hasTreatmentPlan; }
+    public void setHasTreatmentPlan(Boolean hasTreatmentPlan) { this.hasTreatmentPlan = hasTreatmentPlan; }
+
+    public String getTreatmentPlanStatus() { return treatmentPlanStatus; }
+    public void setTreatmentPlanStatus(String treatmentPlanStatus) { this.treatmentPlanStatus = treatmentPlanStatus; }
+    
+    // NEW: Getters and Setters cho PatientProfile fields
+    public String getBloodType() { return bloodType; }
+    public void setBloodType(String bloodType) { this.bloodType = bloodType; }
+    
+    public String getAllergies() { return allergies; }
+    public void setAllergies(String allergies) { this.allergies = allergies; }
+    
+    public String getUnderlyingConditions() { return underlyingConditions; }
+    public void setUnderlyingConditions(String underlyingConditions) { this.underlyingConditions = underlyingConditions; }
+    
+    public String getNotes() { return notes; }
+    public void setNotes(String notes) { this.notes = notes; }
 
     public PatientInfo(Long id, String firstName, String lastName, String email, String phone) {
         this.id = id;
@@ -91,5 +127,26 @@ public class PatientInfo {
             case "OTHER": return "Khác";
             default: return gender;
         }
+    }
+    
+    public String getBloodTypeDisplay() {
+        if (bloodType == null || bloodType.trim().isEmpty()) {
+            return "Chưa xác định";
+        }
+        return bloodType;
+    }
+    
+    public String getAllergiesDisplay() {
+        if (allergies == null || allergies.trim().isEmpty()) {
+            return "Không có";
+        }
+        return allergies;
+    }
+    
+    public String getUnderlyingConditionsDisplay() {
+        if (underlyingConditions == null || underlyingConditions.trim().isEmpty()) {
+            return "Không có";
+        }
+        return underlyingConditions;
     }
 }

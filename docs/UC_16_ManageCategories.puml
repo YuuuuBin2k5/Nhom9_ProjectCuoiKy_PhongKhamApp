@@ -1,0 +1,28 @@
+@startuml UC_16_ManageCategories
+title UC_UC_23: Quản lý danh mục
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor Default
+    BorderColor Navy
+    ArrowColor Navy
+}
+
+actor "Quản trị viên" as A
+
+rectangle "Quản lý Danh mục" {
+    usecase "Xem lại các Danh mục" as UC1
+    usecase "Tạo Danh mục" as UC2
+    usecase "Xóa/Vô hiệu hóa Danh mục" as UC4
+    usecase "Lưu thay đổi" as UCS
+    
+    UC2 ..> UCS : <<include>>
+    UC4 ..> UCS : <<include>>
+}
+
+A --> UC1
+A --> UC2
+A --> UC4
+
+@enduml

@@ -51,12 +51,13 @@ public class UpcomingAppointmentAdapter extends RecyclerView.Adapter<UpcomingApp
 
     static class AppointmentViewHolder extends RecyclerView.ViewHolder {
         private MaterialCardView cardAppointment;
-        private TextView tvDate, tvTime, tvDoctor, tvService, tvStatus;
+        private TextView tvDate, tvMonth, tvTime, tvDoctor, tvService, tvStatus;
 
         public AppointmentViewHolder(@NonNull View itemView) {
             super(itemView);
             cardAppointment = itemView.findViewById(R.id.cardAppointment);
             tvDate = itemView.findViewById(R.id.tvDate);
+            tvMonth = itemView.findViewById(R.id.tvMonth);
             tvTime = itemView.findViewById(R.id.tvTime);
             tvDoctor = itemView.findViewById(R.id.tvDoctor);
             tvService = itemView.findViewById(R.id.tvService);
@@ -66,10 +67,32 @@ public class UpcomingAppointmentAdapter extends RecyclerView.Adapter<UpcomingApp
         public void bind(UpcomingAppointment appointment, OnAppointmentClickListener listener) {
             // Format date and time
             String[] dateTime = formatDateTime(appointment.getAppointmentTime());
-            tvDate.setText(dateTime[0]);
+            // dateTime[0] is dd/MM
+            if (dateTime[0].contains("/")) {
+                String[] split = dateTime[0].split("/");
+                tvDate.setText(split[0]);
+                // Simple month mapping
+                String month = "JAN";
+                switch(split[1]) {
+                    case "02": month = "FEB"; break;
+                    case "03": month = "MAR"; break;
+                    case "04": month = "APR"; break;
+                    case "05": month = "MAY"; break;
+                    case "06": month = "JUN"; break;
+                    case "07": month = "JUL"; break;
+                    case "08": month = "AUG"; break;
+                    case "09": month = "SEP"; break;
+                    case "10": month = "OCT"; break;
+                    case "11": month = "NOV"; break;
+                    case "12": month = "DEC"; break;
+                }
+                tvMonth.setText(month);
+            }
+            
+            // 24h clock — avoids wrong labels like "15:20 AM" (VN clinics commonly use HH:mm)
             tvTime.setText(dateTime[1]);
             
-            tvDoctor.setText("BS. " + appointment.getDoctorName());
+            tvDoctor.setText(appointment.getDoctorName().startsWith("BS.") ? appointment.getDoctorName() : "BS. " + appointment.getDoctorName());
             tvService.setText(appointment.getServiceName());
             tvStatus.setText(getStatusDisplay(appointment.getStatus()));
             
@@ -84,7 +107,7 @@ public class UpcomingAppointmentAdapter extends RecyclerView.Adapter<UpcomingApp
         }
 
         private String[] formatDateTime(String dateTime) {
-            if (dateTime == null || dateTime.isEmpty()) return new String[]{"--/--", "--:--"};
+            if (dateTime == null || dateTime.isEmpty()) return new String[]{"01/01", "09:00"};
             try {
                 String dt = dateTime.replace(" ", "T");
                 // Remove fractional seconds or offset if present
@@ -113,7 +136,7 @@ public class UpcomingAppointmentAdapter extends RecyclerView.Adapter<UpcomingApp
                     return new String[]{dateFormat.format(date), timeFormat.format(date)};
                 }
             } catch (Exception e) {
-                return new String[]{"--/--", "--:--"};
+                return new String[]{"01/01", "09:00"};
             }
         }
 

@@ -38,6 +38,11 @@ public class LoginActivity extends AppCompatActivity {
 
         findViewById(R.id.btnSignIn).setOnClickListener(v -> performLogin());
 
+        findViewById(R.id.tvForgotPassword).setOnClickListener(v -> {
+            Intent intent = new Intent(this, ForgotPasswordActivity.class);
+            startActivity(intent);
+        });
+
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(android.R.id.content), (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
@@ -59,12 +64,26 @@ public class LoginActivity extends AppCompatActivity {
             return;
         }
 
+        android.util.Log.d("LoginActivity", "=== LOGIN ATTEMPT ===");
+        android.util.Log.d("LoginActivity", "Email: " + email);
+        
         ApiService api = RetrofitClient.getApiService(this);
         api.login(new LoginRequest(email, password)).enqueue(new Callback<LoginResponse>() {
             @Override
             public void onResponse(Call<LoginResponse> call, Response<LoginResponse> response) {
+                android.util.Log.d("LoginActivity", "=== LOGIN RESPONSE ===");
+                android.util.Log.d("LoginActivity", "Response code: " + response.code());
+                android.util.Log.d("LoginActivity", "Response successful: " + response.isSuccessful());
+                
                 if (response.isSuccessful() && response.body() != null) {
                     LoginResponse body = response.body();
+                    
+                    android.util.Log.d("LoginActivity", "=== LOGIN RESPONSE BODY ===");
+                    android.util.Log.d("LoginActivity", "Token: " + (body.getToken() != null ? "present" : "null"));
+                    android.util.Log.d("LoginActivity", "Email: " + body.getEmail());
+                    android.util.Log.d("LoginActivity", "Role: " + body.getRole());
+                    android.util.Log.d("LoginActivity", "UserId: " + body.getUserId());
+                    
                     if (body.getToken() != null) {
                         TokenManager tm = new TokenManager(LoginActivity.this);
                         tm.saveToken(body.getToken());
@@ -74,17 +93,26 @@ public class LoginActivity extends AppCompatActivity {
                         
                         // Save user role
                         if (body.getRole() != null) {
+                            android.util.Log.d("LoginActivity", "Saving role: " + body.getRole());
                             tm.saveUserRole(body.getRole());
+                            
+                            // Verify it was saved
+                            String savedRole = tm.getUserRole();
+                            android.util.Log.d("LoginActivity", "Verified saved role: " + savedRole);
                         }
 
-                        // Save email as display name (shown in doctor greeting)
-                        if (body.getEmail() != null) {
-                            String email = body.getEmail();
-                            // Use part before @ as name
-                            String displayName = email.contains("@")
-                                    ? email.substring(0, email.indexOf('@')) : email;
-                            tm.saveUserName(displayName);
+                        // Save display name (shown in doctor greeting)
+                        String displayName = body.getFullName();
+                        if (displayName == null || displayName.isEmpty()) {
+                            if (body.getEmail() != null) {
+                                String emailStr = body.getEmail();
+                                displayName = emailStr.contains("@")
+                                        ? emailStr.substring(0, emailStr.indexOf('@')) : emailStr;
+                            } else {
+                                displayName = "User";
+                            }
                         }
+                        tm.saveUserName(displayName);
                         
                         // Save patient ID if not admin
                         if (body.getUserId() != null && !"ADMIN".equals(body.getRole())) {
@@ -95,8 +123,10 @@ public class LoginActivity extends AppCompatActivity {
                     // Navigate based on user role
                     Intent intent;
                     if ("ADMIN".equals(body.getRole())) {
+                        android.util.Log.d("LoginActivity", "Navigating to AdminMainActivity");
                         intent = new Intent(LoginActivity.this, AdminMainActivity.class);
                     } else {
+                        android.util.Log.d("LoginActivity", "Navigating to MainActivity");
                         intent = new Intent(LoginActivity.this, MainActivity.class);
                     }
                     
@@ -104,12 +134,15 @@ public class LoginActivity extends AppCompatActivity {
                     startActivity(intent);
                     finish();
                 } else {
+                    android.util.Log.e("LoginActivity", "Login failed: " + response.code());
                     Toast.makeText(LoginActivity.this, "Invalid email or password", Toast.LENGTH_SHORT).show();
                 }
             }
 
             @Override
             public void onFailure(Call<LoginResponse> call, Throwable t) {
+                android.util.Log.e("LoginActivity", "=== LOGIN FAILURE ===");
+                android.util.Log.e("LoginActivity", "Error: " + t.getMessage(), t);
                 String msg = t.getMessage() != null ? t.getMessage() : "";
                 Toast.makeText(LoginActivity.this,
                         getString(R.string.login_network_error) + "\n" + msg,

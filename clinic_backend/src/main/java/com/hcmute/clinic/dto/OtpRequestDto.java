@@ -5,6 +5,7 @@ import lombok.Data;
 @Data
 public class OtpRequestDto {
     private String phone;
-    /** "LOGIN" hoặc "REGISTER" */
+    private String email;
+    /** "LOGIN", "REGISTER", hoặc "FORGOT_PASSWORD" */
     private String purpose;
 }

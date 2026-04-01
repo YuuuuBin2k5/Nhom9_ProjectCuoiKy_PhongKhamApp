@@ -14,8 +14,12 @@ import java.util.List;
 public class TreatmentPlanDTO {
     private Long id;
     private Long patientId;
+    private Long appointmentId; // ADDED: To validate prescription belongs to correct appointment
     private String status;
     private boolean isDraft;
+    private Long prescriptionId;
+    private String diagnosis;
+    private String advice;
     private List<StepDTO> steps;
 
     @Data
@@ -27,6 +31,7 @@ public class TreatmentPlanDTO {
         private Long treatmentPlanId;
         private Long serviceId;
         private String serviceName;
+        private String doctorName;
         private String description;
         private Integer stepOrder;
         private String status;
@@ -34,8 +39,15 @@ public class TreatmentPlanDTO {
         private Double estimatedPrice;
         private Double actualPrice;
         private String doctorConclusion;
+        private String completedAt;
         private String uiTemplateType;
         private String roomName;
+        private String medicationDetails;
+        private Long prescriptionId;
+        private String diagnosis;
+        private String advice;
+        private List<PrescriptionDTO.DetailDTO> prescriptionDetails;
+        private List<String> imageUrls;
         private boolean editable;
     }
 }

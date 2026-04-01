@@ -2,11 +2,20 @@ package com.hcmute.mobile_android.network.models;
 
 public class OtpVerifyRequest {
     private final String phone;
+    private final String email;
     private final String code;
     private final String purpose;
 
     public OtpVerifyRequest(String phone, String code, String purpose) {
         this.phone = phone;
+        this.email = null;
+        this.code = code;
+        this.purpose = purpose;
+    }
+
+    public OtpVerifyRequest(String phone, String email, String code, String purpose) {
+        this.phone = phone;
+        this.email = email;
         this.code = code;
         this.purpose = purpose;
     }

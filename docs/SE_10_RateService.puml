@@ -1,0 +1,23 @@
+@startuml SE_10_RateService
+title Sequence Diagram: SE_10 Đánh giá dịch vụ
+actor "Bệnh nhân" as Patient
+participant "View\n(ReviewActivity)" as View
+participant "ServiceController" as Controller
+participant "ReviewService" as Service
+participant "ServiceReviewRepository" as Repo
+database "PostgreSQL" as DB
+
+Patient -> View: Nhập sao & Đánh giá
+activate View
+View -> Controller: submitReview(reviewRequest)
+activate Controller
+Controller -> Service: addReview(req)
+activate Service
+Service -> Repo: save(ServiceReview)
+Repo -> DB: INSERT INTO service_review...
+Repo --> Service: success
+Service --> Controller: ReviewResponse
+Controller --> View: 200 OK
+View --> Patient: Đã gửi đánh giá
+deactivate View
+@enduml

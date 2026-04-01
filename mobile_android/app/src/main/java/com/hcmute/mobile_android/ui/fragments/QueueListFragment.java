@@ -37,6 +37,16 @@ public class QueueListFragment extends Fragment {
         return new QueueListFragment();
     }
 
+    /** Call this immediately after creating the fragment to set the action listener. */
+    public void setListener(QueueAdapter.OnQueueActionListener l) {
+        this.listener = l;
+        if (queueAdapter != null) {
+            // Re-create adapter if already initialized so it gets the listener
+            queueAdapter = new QueueAdapter(queueList, listener);
+            if (rvQueue != null) rvQueue.setAdapter(queueAdapter);
+        }
+    }
+
     @Override
     public void onAttach(@NonNull Context context) {
         super.onAttach(context);

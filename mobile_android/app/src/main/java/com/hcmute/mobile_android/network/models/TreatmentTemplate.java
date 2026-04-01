@@ -42,11 +42,13 @@ public class TreatmentTemplate {
     // Nested class for template steps
     public static class TemplateStep {
         private Long id;
+        private Long serviceId; // ADDED: Service ID for editing
         private String serviceName;
         private String description;
         private Integer stepOrder;
         private Double estimatedPrice;
         private Integer estimatedDurationMinutes;
+        private String medicationDetails;
 
         // Constructors
         public TemplateStep() {}
@@ -55,11 +57,17 @@ public class TreatmentTemplate {
         public Long getId() { return id; }
         public void setId(Long id) { this.id = id; }
 
+        public Long getServiceId() { return serviceId; }
+        public void setServiceId(Long serviceId) { this.serviceId = serviceId; }
+
         public String getServiceName() { return serviceName; }
         public void setServiceName(String serviceName) { this.serviceName = serviceName; }
 
         public String getDescription() { return description; }
         public void setDescription(String description) { this.description = description; }
+
+        public String getMedicationDetails() { return medicationDetails; }
+        public void setMedicationDetails(String medicationDetails) { this.medicationDetails = medicationDetails; }
 
         public Integer getStepOrder() { return stepOrder; }
         public void setStepOrder(Integer stepOrder) { this.stepOrder = stepOrder; }

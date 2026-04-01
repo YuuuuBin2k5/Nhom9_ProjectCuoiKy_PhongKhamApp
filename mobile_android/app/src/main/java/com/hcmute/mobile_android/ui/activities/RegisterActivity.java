@@ -3,7 +3,7 @@ package com.hcmute.mobile_android.ui.activities;
 import android.content.Intent;
 import android.os.Bundle;
 import android.widget.EditText;
-import android.widget.Toast;
+import com.hcmute.mobile_android.util.ToastUtils;
 
 import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
@@ -54,27 +54,27 @@ public class RegisterActivity extends AppCompatActivity {
         String passConfirm = ((EditText) findViewById(R.id.etRegPasswordConfirm)).getText().toString();
 
         if (fName.isEmpty() || lName.isEmpty() || email.isEmpty() || pass.isEmpty()) {
-            Toast.makeText(this, "Please fill all fields", Toast.LENGTH_SHORT).show();
+            ToastUtils.showCenteredToast(this, "Please fill all fields");
             return;
         }
 
         if (!android.util.Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
-            Toast.makeText(this, "Please enter a valid email address", Toast.LENGTH_SHORT).show();
+            ToastUtils.showCenteredToast(this, "Please enter a valid email address");
             return;
         }
         if (pass.length() < 6) {
-            Toast.makeText(this, "Password must be at least 6 characters", Toast.LENGTH_SHORT).show();
+            ToastUtils.showCenteredToast(this, "Password must be at least 6 characters");
             return;
         }
         
         // Password complexity check: letters and numbers
         if (!pass.matches(".*[a-zA-Z].*") || !pass.matches(".*[0-9].*")) {
-            Toast.makeText(this, "Password must contain both letters and numbers", Toast.LENGTH_LONG).show();
+            ToastUtils.showCenteredToastLong(this, "Password must contain both letters and numbers");
             return;
         }
 
         if (!pass.equals(passConfirm)) {
-            Toast.makeText(this, "Passwords do not match", Toast.LENGTH_SHORT).show();
+            ToastUtils.showCenteredToast(this, "Passwords do not match");
             return;
         }
 
@@ -85,7 +85,7 @@ public class RegisterActivity extends AppCompatActivity {
             public void onResponse(Call<RegisterResultResponse> call, Response<RegisterResultResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     RegisterResultResponse body = response.body();
-                    Toast.makeText(RegisterActivity.this, body.getMessage(), Toast.LENGTH_SHORT).show();
+                    ToastUtils.showCenteredToast(RegisterActivity.this, body.getMessage());
                     if (body.getToken() != null) {
                         TokenManager tm = new TokenManager(RegisterActivity.this);
                         tm.saveToken(body.getToken());
@@ -107,13 +107,13 @@ public class RegisterActivity extends AppCompatActivity {
                     } catch (Exception e) {
                         errorMsg = "Error " + response.code();
                     }
-                    Toast.makeText(RegisterActivity.this, errorMsg, Toast.LENGTH_LONG).show();
+                    ToastUtils.showCenteredToastLong(RegisterActivity.this, errorMsg);
                 }
             }
 
             @Override
             public void onFailure(Call<RegisterResultResponse> call, Throwable t) {
-                Toast.makeText(RegisterActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_LONG).show();
+                ToastUtils.showCenteredToastLong(RegisterActivity.this, "Network error: " + t.getMessage());
             }
         });
     }

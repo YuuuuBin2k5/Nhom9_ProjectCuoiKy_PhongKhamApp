@@ -13,14 +13,19 @@ public class UpdatePlanStepsRequest {
     public void setSteps(List<StepItem> steps) { this.steps = steps; }
 
     public static class StepItem {
+        private Long id;
         private Long serviceId;
         private Long clinicRoomId;
         private Integer sequenceOrder;
         private String toothNumber;
         private String doctorConclusion;
+        private List<String> imageUrls;
         private String status;
 
         public StepItem() {}
+
+        public Long getId() { return id; }
+        public void setId(Long id) { this.id = id; }
 
         public String getStatus() { return status; }
         public void setStatus(String status) { this.status = status; }
@@ -39,5 +44,8 @@ public class UpdatePlanStepsRequest {
 
         public String getDoctorConclusion() { return doctorConclusion; }
         public void setDoctorConclusion(String doctorConclusion) { this.doctorConclusion = doctorConclusion; }
+
+        public List<String> getImageUrls() { return imageUrls; }
+        public void setImageUrls(List<String> imageUrls) { this.imageUrls = imageUrls; }
     }
 }

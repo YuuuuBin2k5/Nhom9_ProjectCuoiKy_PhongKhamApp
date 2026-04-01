@@ -24,6 +24,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
         void onCallPatient(QueueItem item);
         void onExaminePatient(QueueItem item);
         void onTransferToXRay(QueueItem item);
+        void onSkipPatient(QueueItem item);
         void onCompletePatient(QueueItem item);
     }
 
@@ -62,6 +63,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
         private MaterialButton btnCall;
         private MaterialButton btnExamine;
         private MaterialButton btnXRay;
+        private MaterialButton btnSkip;
         private MaterialButton btnComplete;
 
         public QueueViewHolder(@NonNull View itemView) {
@@ -76,6 +78,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
             btnCall = itemView.findViewById(R.id.btnCall);
             btnExamine = itemView.findViewById(R.id.btnExamine);
             btnXRay = itemView.findViewById(R.id.btnXRay);
+            btnSkip = itemView.findViewById(R.id.btnSkip);
             btnComplete = itemView.findViewById(R.id.btnComplete);
         }
 
@@ -86,6 +89,45 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
             tvServiceName.setText(item.getServiceName());
             tvAppointmentTime.setText(item.getAppointmentTime());
             tvStatus.setText(item.getStatusDisplayText());
+
+            // Show priority badge for priority > 5
+            View ivPriorityBadge = itemView.findViewById(R.id.ivPriorityBadge);
+            if (item.getPriority() != null && item.getPriority() > 5) {
+                ivPriorityBadge.setVisibility(View.VISIBLE);
+            } else {
+                ivPriorityBadge.setVisibility(View.GONE);
+            }
+
+            // Show wait time (placeholder - should come from backend)
+            TextView tvWaitTime = itemView.findViewById(R.id.tvWaitTime);
+            if ("WAITING".equals(item.getStatus()) || "RETURNED_PRIORITY".equals(item.getStatus())) {
+                // Calculate estimated wait time based on position
+                int estimatedMinutes = getAdapterPosition() * 15; // 15 min per patient
+                tvWaitTime.setText(String.format("~%d phút", estimatedMinutes));
+                tvWaitTime.setVisibility(View.VISIBLE);
+            } else {
+                tvWaitTime.setVisibility(View.GONE);
+            }
+
+            // Color coding based on status
+            int backgroundColor;
+            switch (item.getStatus()) {
+                case "WAITING":
+                    backgroundColor = itemView.getContext().getColor(R.color.status_waiting_bg);
+                    break;
+                case "IN_PROGRESS":
+                    backgroundColor = itemView.getContext().getColor(R.color.status_in_progress_bg);
+                    break;
+                case "RETURNED_PRIORITY":
+                    backgroundColor = itemView.getContext().getColor(R.color.status_priority_bg);
+                    break;
+                case "PAUSED_FOR_TEST":
+                    backgroundColor = itemView.getContext().getColor(R.color.status_paused_bg);
+                    break;
+                default:
+                    backgroundColor = itemView.getContext().getColor(android.R.color.white);
+            }
+            cardQueue.setCardBackgroundColor(backgroundColor);
 
             // Handle card click to examine
             cardQueue.setOnClickListener(v -> {
@@ -133,6 +175,7 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
             btnCall.setVisibility(View.GONE);
             btnExamine.setVisibility(View.GONE);
             btnXRay.setVisibility(View.GONE);
+            btnSkip.setVisibility(View.GONE);
             btnComplete.setVisibility(View.GONE);
 
             switch (item.getStatus()) {
@@ -157,13 +200,15 @@ public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHol
                     break;
 
                 case "IN_PROGRESS":
-                    // Can examine, transfer to X-Ray or complete
+                    // Can examine, transfer to X-Ray, skip, or complete
                     btnExamine.setVisibility(View.VISIBLE);
                     btnXRay.setVisibility(View.VISIBLE);
+                    btnSkip.setVisibility(View.VISIBLE);
                     btnComplete.setVisibility(View.VISIBLE);
                     
                     btnExamine.setOnClickListener(v -> listener.onExaminePatient(item));
                     btnXRay.setOnClickListener(v -> listener.onTransferToXRay(item));
+                    btnSkip.setOnClickListener(v -> listener.onSkipPatient(item));
                     btnComplete.setOnClickListener(v -> listener.onCompletePatient(item));
                     break;
 

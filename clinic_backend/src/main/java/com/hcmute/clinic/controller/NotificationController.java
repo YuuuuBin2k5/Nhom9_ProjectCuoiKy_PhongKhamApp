@@ -23,8 +23,14 @@ public class NotificationController {
         if (auth == null || auth.getName() == null) {
             return ResponseEntity.status(401).build();
         }
-        long patientId = Long.parseLong(auth.getName());
-        List<Notification> list = notificationRepository.findByPatientIdOrderByCreatedAtDesc(patientId, PageRequest.of(0, 50));
+        long patientId;
+        try {
+            patientId = Long.parseLong(auth.getName());
+        } catch (NumberFormatException e) {
+            return ResponseEntity.status(401).build();
+        }
+
+        List<Notification> list = notificationRepository.findByPatientIdOrderByCreatedAtDesc(patientId);
         List<Map<String, Object>> items = list.stream()
                 .map(n -> Map.<String, Object>of(
                         "id", n.getId(),
@@ -52,5 +58,23 @@ public class NotificationController {
                     return ResponseEntity.ok(Map.of("message", "Đã đọc"));
                 })
                 .orElse(ResponseEntity.notFound().build());
+    }
+    
+    @PatchMapping("/read-all")
+    public ResponseEntity<?> markAllAsRead(Authentication auth) {
+        if (auth == null || auth.getName() == null) {
+            return ResponseEntity.status(401).build();
+        }
+        long patientId = Long.parseLong(auth.getName());
+        List<Notification> unreadNotifications = notificationRepository
+            .findByPatientIdAndIsReadOrderByCreatedAtDesc(patientId, false);
+        
+        unreadNotifications.forEach(n -> n.setRead(true));
+        notificationRepository.saveAll(unreadNotifications);
+        
+        return ResponseEntity.ok(Map.of(
+            "message", "Đã đánh dấu tất cả là đã đọc",
+            "count", unreadNotifications.size()
+        ));
     }
 }

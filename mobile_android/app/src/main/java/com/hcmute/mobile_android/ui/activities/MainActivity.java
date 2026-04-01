@@ -4,10 +4,10 @@ import android.os.Bundle;
 
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.hcmute.mobile_android.R;
+import com.hcmute.mobile_android.ui.fragments.DoctorListFragment;
 import com.hcmute.mobile_android.ui.fragments.HomeFragment;
 import com.hcmute.mobile_android.ui.fragments.PatientDashboardFragment;
 import com.hcmute.mobile_android.ui.fragments.NotificationsFragment;
-import com.hcmute.mobile_android.ui.fragments.QrCheckInFragment;
 import com.hcmute.mobile_android.ui.fragments.TreatmentPlanFragment;
 import com.hcmute.mobile_android.util.TokenManager;
 
@@ -27,13 +27,18 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
         setContentView(R.layout.activity_main);
 
         // Determine role at startup
         TokenManager tm = new TokenManager(this);
         String role = tm.getUserRole();
         isDoctor = "DOCTOR".equalsIgnoreCase(role);
+        
+        // DEBUG LOG
+        android.util.Log.d("MainActivity", "=== ROLE DEBUG ===");
+        android.util.Log.d("MainActivity", "Role from TokenManager: " + role);
+        android.util.Log.d("MainActivity", "isDoctor: " + isDoctor);
+        android.util.Log.d("MainActivity", "==================");
 
         bottomNav = findViewById(R.id.bottomNav);
         bottomNav.setOnItemSelectedListener(item -> {
@@ -42,8 +47,7 @@ public class MainActivity extends AppCompatActivity
             if (id == R.id.nav_home) {
                 // Route by role
                 f = isDoctor ? new HomeFragment() : new PatientDashboardFragment();
-            } else if (id == R.id.nav_qr) {
-                f = new QrCheckInFragment();
+
             } else if (id == R.id.nav_plan) {
                 f = new TreatmentPlanFragment();
             } else if (id == R.id.nav_notifications) {
@@ -69,15 +73,36 @@ public class MainActivity extends AppCompatActivity
         }
 
         if (isDoctor) {
-            bottomNav.getMenu().findItem(R.id.nav_plan).setVisible(false);
-            bottomNav.getMenu().findItem(R.id.nav_qr).setVisible(false);
+            bottomNav.getMenu().clear();
+            bottomNav.inflateMenu(R.menu.bottom_nav_menu_doctor);
+            
+            com.google.android.material.bottomappbar.BottomAppBar bar = findViewById(R.id.bottomAppBar);
+            if (bar != null) {
+                bar.setFabCradleMargin(0f);
+                bar.setFabCradleRoundedCornerRadius(0f);
+                bar.setCradleVerticalOffset(0f);
+            }
         }
 
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
-            Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
-            return insets;
-        });
+        com.google.android.material.floatingactionbutton.FloatingActionButton fab = findViewById(R.id.fabGlobalQuickBook);
+        if (fab != null) {
+            if (isDoctor) {
+                fab.hide();
+            } else {
+                fab.setOnClickListener(v -> {
+                    startActivity(new android.content.Intent(MainActivity.this, com.hcmute.mobile_android.ui.activities.BookAppointmentActivity.class));
+                });
+            }
+        }
+
+        // Padding handled by layout margins
+    }
+
+    public void onNavigateToDoctors() {
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.fragmentContainer, new com.hcmute.mobile_android.ui.fragments.DoctorListFragment())
+                .addToBackStack("DoctorList")
+                .commit();
     }
 
     // ─── HomeFragment.HomeCallbacks ─────────────────────────────────────────────
@@ -86,8 +111,6 @@ public class MainActivity extends AppCompatActivity
     @Override
     public void onNavigateToNotifications() {
         bottomNav.setSelectedItemId(R.id.nav_notifications);
-        getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragmentContainer, new NotificationsFragment())
-                .commit();
     }
+
 }

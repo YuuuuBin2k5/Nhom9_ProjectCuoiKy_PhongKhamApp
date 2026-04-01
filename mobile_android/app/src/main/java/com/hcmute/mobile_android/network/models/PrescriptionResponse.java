@@ -8,13 +8,20 @@ public class PrescriptionResponse {
     private Long doctorId;
     private String doctorName;
     private String createdAt;
+    private String diagnosis;
+    private String symptoms;
+    private String advice;
     private List<PrescriptionDetail> details;
 
     public String getDoctorName() { return doctorName; }
     public String getDate() { return createdAt; }
+    public String getDiagnosis() { return diagnosis; }
+    public String getSymptoms() { return symptoms; }
+    public String getAdvice() { return advice; }
 
     public static class PrescriptionDetail {
         private Long id;
+        private Long treatmentPlanStepId;
         private String medicineName;
         private String dosage;
         private String frequency;
@@ -26,6 +33,7 @@ public class PrescriptionResponse {
         public String getFrequency() { return frequency; }
         public String getDuration() { return duration; }
         public String getUnit() { return unit; }
+        public Long getTreatmentPlanStepId() { return treatmentPlanStepId; }
     }
 
     public List<PrescriptionDetail> getDetails() { return details; }

@@ -8,7 +8,8 @@ import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "otp_challenges", indexes = {
-        @Index(name = "idx_otp_phone_purpose", columnList = "phone_e164,purpose")
+        @Index(name = "idx_otp_phone_purpose", columnList = "phone_e164,purpose"),
+        @Index(name = "idx_otp_email_purpose", columnList = "email,purpose")
 })
 @Data
 @NoArgsConstructor
@@ -20,8 +21,11 @@ public class OtpChallenge {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "phone_e164", nullable = false, length = 20)
+    @Column(name = "phone_e164", length = 20)
     private String phoneE164;
+
+    @Column(name = "email", length = 255)
+    private String email;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false, length = 16)

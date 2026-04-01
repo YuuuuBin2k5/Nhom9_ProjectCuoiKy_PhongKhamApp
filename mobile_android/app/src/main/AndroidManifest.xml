@@ -35,6 +35,9 @@
             android:name=".ui.activities.ProfileActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activities.DoctorProfileActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activities.MainActivity"
             android:exported="false" />
         <activity
@@ -49,6 +52,12 @@
             android:windowSoftInputMode="stateAlwaysHidden" />
         <activity
             android:name=".ui.activities.PhoneLoginActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.ForgotPasswordActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.ResetPasswordActivity"
             android:exported="false" />
         <activity
             android:name=".ui.activities.WelcomeActivity"
@@ -68,19 +77,65 @@
             android:name=".ui.activities.ReviewActivity"
             android:exported="false" />
         <activity
+            android:name=".ui.activities.PaymentActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.InvoiceListActivity"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.InvoiceDetailActivity"
+            android:exported="false" />
+        <activity
             android:name=".ui.activities.AdminMainActivity"
+            android:theme="@style/Theme.AdminPanel"
             android:exported="false" />
         <activity
             android:name=".ui.activities.AdminDoctorActivity"
+            android:theme="@style/Theme.AdminPanel"
             android:exported="false" />
         <activity
             android:name=".ui.activities.AdminServiceActivity"
+            android:theme="@style/Theme.AdminPanel"
             android:exported="false" />
         <activity
             android:name=".ui.activities.AdminServiceDetailActivity"
+            android:theme="@style/Theme.AdminPanel"
             android:exported="false" />
         <activity
             android:name=".ui.activities.AdminRoomActivity"
+            android:theme="@style/Theme.AdminPanel"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.AdminCategoryActivity"
+            android:theme="@style/Theme.AdminPanel"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.AdminAuditLogActivity"
+            android:theme="@style/Theme.AdminPanel"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.AdminReceptionistActivity"
+            android:theme="@style/Theme.AdminPanel"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.AdminScheduleActivity"
+            android:theme="@style/Theme.AdminPanel"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.AdminDashboardActivity"
+            android:theme="@style/Theme.AdminPanel"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.AdminTreatmentTemplateActivity"
+            android:theme="@style/Theme.AdminPanel"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.AdminInvoiceListActivity"
+            android:theme="@style/Theme.AdminPanel"
+            android:exported="false" />
+        <activity
+            android:name=".ui.activities.AdminCreateTemplateActivity"
+            android:theme="@style/Theme.AdminPanel"
             android:exported="false" />
         <activity
             android:name=".ui.activities.QRCheckInActivity"
@@ -100,6 +155,10 @@
         <activity
             android:name=".ui.activities.staff.DoctorWorkflowActivity"
             android:exported="true" />
+        
+        <activity
+            android:name=".ui.activities.PatientDetailActivity"
+            android:exported="false" />
             
         <!-- Prescription -->
         <activity
@@ -125,6 +184,8 @@
             android:name=".ui.activities.BookAppointmentActivity"
             android:exported="false"
             android:windowSoftInputMode="stateHidden|adjustResize"/>
+
+
         <activity
             android:name=".ui.activities.DoctorDetailActivity"
             android:exported="false" />
@@ -132,8 +193,13 @@
             android:name=".ui.activities.ChatActivity"
             android:exported="false" />
         <activity
-            android:name=".ui.activities.AdminServiceDetailActivity"
+            android:name=".ui.activities.TreatmentPlanDetailActivity"
             android:exported="false" />
+        <activity
+            android:name=".ui.activities.ImageViewerActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.NoActionBar"
+            android:screenOrientation="unspecified" />
     </application>
 
 </manifest>

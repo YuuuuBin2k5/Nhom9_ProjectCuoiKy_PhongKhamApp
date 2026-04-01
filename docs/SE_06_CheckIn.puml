@@ -1,0 +1,60 @@
+@startuml SE_06_CheckIn
+title Sequence Diagram: SE_06 Check-in phòng khám
+
+actor "Bệnh nhân / Lễ tân" as User
+participant "View\n(QRScannerActivity)" as View
+participant "CheckInController" as Controller
+participant "CheckInQueueService" as Service
+participant "AppointmentRepository" as ApptRepo
+participant "CheckInQueueRepository" as QueueRepo
+database "PostgreSQL" as DB
+
+User -> View: Quét QR hoặc nhập mã check-in
+activate View
+View -> Controller: processCheckIn(checkInRequest)
+activate Controller
+Controller -> Service: processCheckIn(appointmentId/code)
+activate Service
+
+Service -> ApptRepo: findByCode(code)
+activate ApptRepo
+ApptRepo -> DB: SELECT * FROM appointment WHERE code = ?
+activate DB
+DB --> ApptRepo: Appointment data (or null)
+deactivate DB
+ApptRepo --> Service: appointment
+deactivate ApptRepo
+
+alt Nếu mã không hợp lệ
+    Service --> Controller: throw ResourceNotFoundException
+    Controller --> View: Trả về lỗi 400 (Mã không hợp lệ)
+    View --> User: Hiển thị thông báo lỗi
+else Nếu hợp lệ
+    Service -> Service: validateAppointmentTime(appointment)
+    Service -> QueueRepo: findMaxQueueNumber(clinicRoomId)
+    activate QueueRepo
+    QueueRepo -> DB: SELECT MAX(queue_number) FROM check_in_queue WHERE room_id=?
+    activate DB
+    DB --> QueueRepo: currentMax
+    deactivate DB
+    QueueRepo --> Service: currentMax
+    deactivate QueueRepo
+    
+    Service -> QueueRepo: save(CheckInQueue)
+    activate QueueRepo
+    QueueRepo -> DB: INSERT INTO check_in_queue...
+    activate DB
+    DB --> QueueRepo: success
+    deactivate DB
+    QueueRepo --> Service: queueEntity
+    deactivate QueueRepo
+    
+    Service --> Controller: CheckInResponse(success, queueNumber)
+    Controller --> View: 200 OK (CheckInResponse)
+    View --> User: Check-in thành công, hiển thị số thứ tự
+end
+
+deactivate Service
+deactivate Controller
+deactivate View
+@enduml

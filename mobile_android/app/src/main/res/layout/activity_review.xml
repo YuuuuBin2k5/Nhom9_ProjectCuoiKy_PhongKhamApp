@@ -3,119 +3,122 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="@color/background_gray">
-
-    <com.google.android.material.appbar.AppBarLayout
+    android:orientation="vertical">
+    
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
-        
-        <com.google.android.material.appbar.MaterialToolbar
-            android:id="@+id/toolbar"
-            android:layout_width="match_parent"
-            android:layout_height="?attr/actionBarSize"
-            android:background="@color/white"
-            app:title="Đánh giá dịch vụ"
-            app:titleTextColor="@color/text_primary"
-            app:navigationIcon="@drawable/ic_arrow_back" />
-            
-    </com.google.android.material.appbar.AppBarLayout>
-
+        android:layout_height="?attr/actionBarSize"
+        android:background="?attr/colorPrimary"
+        android:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"/>
+    
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:padding="20dp">
+        android:layout_weight="1">
         
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:gravity="center_horizontal">
-
-            <com.google.android.material.imageview.ShapeableImageView
-                android:id="@+id/ivDoctorAvatar"
-                android:layout_width="100dp"
-                android:layout_height="100dp"
-                android:src="@drawable/ic_doctor"
-                android:background="@color/white"
-                android:padding="8dp"
-                app:shapeAppearanceOverlay="@style/CircleAppearance"
-                app:strokeColor="@color/border_gray"
-                app:strokeWidth="1dp"
-                android:layout_marginBottom="16dp" />
-
+            android:padding="16dp">
+            
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardCornerRadius="8dp"
+                app:cardElevation="2dp">
+                
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    
+                    <TextView
+                        android:id="@+id/tvDoctorName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Bác sĩ: Nguyễn Văn A"
+                        android:textSize="16sp"
+                        android:textStyle="bold"/>
+                    
+                    <TextView
+                        android:id="@+id/tvServiceName"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Dịch vụ: Khám tổng quát"/>
+                    
+                    <TextView
+                        android:id="@+id/tvAppointmentDate"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="Ngày: 01/01/2024"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+            
             <TextView
-                android:id="@+id/tvDoctorName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="BS. Trần Văn B"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginBottom="4dp" />
-
-            <TextView
-                android:id="@+id/tvServiceName"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Khám tổng quát"
-                android:textSize="14sp"
-                android:textColor="@color/text_secondary"
-                android:layout_marginBottom="32dp" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Trải nghiệm của bạn thế nào?"
+                android:layout_marginTop="24dp"
+                android:text="Đánh giá của bạn"
                 android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@color/text_primary"
-                android:layout_marginBottom="16dp" />
-
+                android:textStyle="bold"/>
+            
             <RatingBar
                 android:id="@+id/ratingBar"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="16dp"
                 android:numStars="5"
-                android:stepSize="1"
                 android:rating="5"
-                android:progressTint="@color/warning_amber"
-                android:layout_marginBottom="24dp" />
-
-            <com.google.android.material.textfield.TextInputLayout
+                android:stepSize="1"/>
+            
+            <TextView
+                android:id="@+id/tvRatingText"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:layout_marginTop="8dp"
+                android:text="Xuất sắc"
+                android:textSize="18sp"
+                android:textStyle="bold"/>
+            
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Nhận xét"
+                android:textSize="16sp"
+                android:textStyle="bold"/>
+            
+            <EditText
+                android:id="@+id/etComment"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
-                android:hint="Chia sẻ bình luận của bạn (Tùy chọn)">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etComment"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:minLines="4"
-                    android:gravity="top"
-                    android:inputType="textMultiLine" />
-            </com.google.android.material.textfield.TextInputLayout>
-
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_edit_text"
+                android:hint="Chia sẻ trải nghiệm của bạn..."
+                android:minLines="5"
+                android:gravity="top"/>
         </LinearLayout>
     </ScrollView>
-
-    <LinearLayout
+    
+    <Button
+        android:id="@+id/btnSubmit"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:padding="16dp"
-        android:background="@color/white"
-        android:elevation="8dp">
-
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnSubmitReview"
-            android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:text="Gửi đánh giá"
-            app:cornerRadius="16dp"
-            app:backgroundTint="@color/primary_trust_blue" />
-            
-    </LinearLayout>
-
+        android:layout_margin="16dp"
+        android:text="Gửi đánh giá"
+        android:textSize="16sp"/>
+    
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:visibility="gone"/>
 </LinearLayout>

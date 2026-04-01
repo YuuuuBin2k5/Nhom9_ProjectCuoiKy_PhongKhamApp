@@ -30,5 +30,7 @@ public class Patient extends User {
     private String fcmToken;
 
     @OneToOne(mappedBy = "patient", cascade = CascadeType.ALL)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private PatientProfile profile;
 }

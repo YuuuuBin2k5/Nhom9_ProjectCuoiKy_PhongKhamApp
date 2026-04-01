@@ -7,30 +7,38 @@ import com.hcmute.clinic.repository.AppointmentRepository;
 import com.hcmute.clinic.repository.DoctorRepository;
 import com.hcmute.clinic.repository.MedicalRecordRepository;
 import com.hcmute.clinic.repository.PrescriptionRepository;
+import com.hcmute.clinic.repository.TreatmentPlanStepRepository;
+import com.hcmute.clinic.repository.TreatmentPlanRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PrescriptionService {
 
     private final PrescriptionRepository prescriptionRepository;
     private final MedicalRecordRepository medicalRecordRepository;
     private final AppointmentRepository appointmentRepository;
     private final DoctorRepository doctorRepository;
+    private final TreatmentPlanRepository treatmentPlanRepository;
+    private final TreatmentPlanStepRepository treatmentPlanStepRepository;
 
     @Transactional
-    public PrescriptionDTO createPrescription(PrescriptionRequest request, String doctorEmail) {
-        Doctor doctor = doctorRepository.findByEmailIgnoreCase(doctorEmail)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bác sĩ không tồn tại"));
+    public PrescriptionDTO createPrescription(PrescriptionRequest request, String doctorIdentifier) {
+        // Try to parse as ID first, fallback to email for backward compatibility
+        Doctor doctor = findDoctorByIdentifier(doctorIdentifier);
 
         Appointment appointment = appointmentRepository.findById(request.getAppointmentId())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy lịch hẹn"));
@@ -54,10 +62,21 @@ public class PrescriptionService {
         if (request.getDiagnosis() != null) medicalRecord.setDiagnosis(request.getDiagnosis());
         if (request.getSymptoms() != null) medicalRecord.setSymptoms(request.getSymptoms());
         if (request.getAdvice() != null) medicalRecord.setAdvice(request.getAdvice());
+        
+        // Data Freezing: Check if treatment plan is completed
+        java.util.Optional<TreatmentPlan> planOpt = treatmentPlanRepository.findFirstByMedicalRecordId(medicalRecord.getId());
+        if (planOpt.isPresent() && "COMPLETED".equalsIgnoreCase(planOpt.get().getStatus().name())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                "Hồ sơ đã hoàn tất và đóng dữ liệu. Không thể kê thêm đơn thuốc.");
+        }
+
         medicalRecordRepository.save(medicalRecord);
 
         // Check if Prescription already exists for this MedicalRecord
         Prescription prescription = medicalRecord.getPrescription();
+        boolean isStepScoped = request.getTreatmentPlanStepId() != null;
+        Long requestStepId = request.getTreatmentPlanStepId();
+
         if (prescription == null) {
             prescription = Prescription.builder()
                     .medicalRecord(medicalRecord)
@@ -66,15 +85,29 @@ public class PrescriptionService {
                     .details(new ArrayList<>())
                     .build();
         } else {
-            // Clear old details to replace with new ones
-            prescription.getDetails().clear();
+            // Replace details for step only (kê đơn theo từng dịch vụ/step)
+            if (prescription.getDetails() == null) {
+                prescription.setDetails(new ArrayList<>());
+            }
+
+            if (!isStepScoped) {
+                // Legacy behaviour: replace entire prescription
+                prescription.getDetails().clear();
+            } else {
+                // Remove existing details for the same step to avoid duplicating medicines
+                // Also remove legacy rows with null treatmentPlanStepId (previous version)
+                prescription.getDetails().removeIf(d ->
+                        d.getTreatmentPlanStepId() == null
+                                || Objects.equals(d.getTreatmentPlanStepId(), requestStepId));
+            }
         }
 
         // Add details
-        if (request.getDetails() != null) {
+        if (request.getDetails() != null && !request.getDetails().isEmpty()) {
             for (PrescriptionRequest.DetailRequest d : request.getDetails()) {
                 PrescriptionDetail detail = PrescriptionDetail.builder()
                         .prescription(prescription)
+                        .treatmentPlanStepId(requestStepId)
                         .medicineName(d.getMedicineName())
                         .dosage(d.getDosage())
                         .frequency(d.getFrequency())
@@ -88,6 +121,61 @@ public class PrescriptionService {
         prescription = prescriptionRepository.save(prescription);
         medicalRecord.setPrescription(prescription); // Maintain bidirectional setup
         medicalRecordRepository.save(medicalRecord);
+
+        // Update billing price for step (actualPrice) from entered amount
+        if (requestStepId != null) {
+            TreatmentPlanStep step = treatmentPlanStepRepository.findById(requestStepId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy step/dịch vụ trong phác đồ"));
+
+            // Safety: đảm bảo step thuộc đúng appointment đang kê
+            // Check both appointment direct link and via medicalRecord
+            boolean belongsToAppointment = false;
+            
+            if (step.getPlan() != null) {
+                // Check direct appointment link
+                if (step.getPlan().getAppointment() != null 
+                        && step.getPlan().getAppointment().getId() != null
+                        && step.getPlan().getAppointment().getId().equals(appointment.getId())) {
+                    belongsToAppointment = true;
+                }
+                
+                // Check via medicalRecord -> appointment
+                if (!belongsToAppointment 
+                        && step.getPlan().getMedicalRecord() != null
+                        && step.getPlan().getMedicalRecord().getAppointment() != null
+                        && step.getPlan().getMedicalRecord().getAppointment().getId() != null
+                        && step.getPlan().getMedicalRecord().getAppointment().getId().equals(appointment.getId())) {
+                    belongsToAppointment = true;
+                }
+            }
+            
+            if (!belongsToAppointment) {
+                // Log for debugging
+                log.warn("Step {} does not belong to appointment {}. Step's plan: {}, plan's appointment: {}, plan's medicalRecord appointment: {}", 
+                    requestStepId, 
+                    appointment.getId(),
+                    step.getPlan() != null ? step.getPlan().getId() : "null",
+                    step.getPlan() != null && step.getPlan().getAppointment() != null 
+                        ? step.getPlan().getAppointment().getId() 
+                        : "null",
+                    step.getPlan() != null && step.getPlan().getMedicalRecord() != null 
+                        && step.getPlan().getMedicalRecord().getAppointment() != null
+                        ? step.getPlan().getMedicalRecord().getAppointment().getId()
+                        : "null");
+                
+                throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
+                    "Step/dịch vụ không thuộc lịch hẹn này. Vui lòng chọn đúng step hoặc bỏ trống để kê đơn chung.");
+            }
+
+            BigDecimal basePrice = (step.getService() != null && step.getService().getPrice() != null)
+                    ? step.getService().getPrice()
+                    : BigDecimal.ZERO;
+            BigDecimal extra = request.getAmount() != null ? request.getAmount() : BigDecimal.ZERO;
+
+            // "amount" là phần tiền bác sĩ nhập cần cộng thêm vào giá dịch vụ
+            step.setActualPrice(basePrice.add(extra));
+            treatmentPlanStepRepository.save(step);
+        }
 
         return mapToDTO(prescription);
     }
@@ -105,10 +193,23 @@ public class PrescriptionService {
         return mapToDTO(prescription);
     }
 
+    private Doctor findDoctorByIdentifier(String identifier) {
+        try {
+            Long doctorId = Long.parseLong(identifier);
+            return doctorRepository.findById(doctorId)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bác sĩ không tồn tại"));
+        } catch (NumberFormatException e) {
+            // If not a number, treat as email
+            return doctorRepository.findByEmailIgnoreCase(identifier)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Bác sĩ không tồn tại"));
+        }
+    }
+
     private PrescriptionDTO mapToDTO(Prescription prescription) {
         List<PrescriptionDTO.DetailDTO> details = prescription.getDetails().stream()
                 .map(d -> PrescriptionDTO.DetailDTO.builder()
                         .id(d.getId())
+                        .treatmentPlanStepId(d.getTreatmentPlanStepId())
                         .medicineName(d.getMedicineName())
                         .dosage(d.getDosage())
                         .frequency(d.getFrequency())
@@ -122,6 +223,9 @@ public class PrescriptionService {
                 .medicalRecordId(prescription.getMedicalRecord().getId())
                 .doctorId(prescription.getDoctor().getId())
                 .doctorName(prescription.getDoctor().getLastName() + " " + prescription.getDoctor().getFirstName())
+                .diagnosis(prescription.getMedicalRecord() != null ? prescription.getMedicalRecord().getDiagnosis() : null)
+                .symptoms(prescription.getMedicalRecord() != null ? prescription.getMedicalRecord().getSymptoms() : null)
+                .advice(prescription.getMedicalRecord() != null ? prescription.getMedicalRecord().getAdvice() : null)
                 .createdAt(prescription.getCreatedAt())
                 .details(details)
                 .build();

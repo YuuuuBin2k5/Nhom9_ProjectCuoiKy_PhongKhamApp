@@ -1,0 +1,27 @@
+@startuml UC_09_ViewMedicalHistory
+title UC_09: Xem lịch sử khám
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor Default
+    BorderColor Navy
+    ArrowColor Navy
+}
+
+actor "Bệnh nhân" as P
+
+rectangle "Lịch sử y tế" {
+    usecase "Truy cập hồ sơ bệnh án" as UC1
+    usecase "Xem các lần khám cũ" as UC2
+    usecase "Xem thông tin & Chẩn đoán" as UC3
+    usecase "Xem đơn thuốc đính kèm" as UC4
+    
+    UC1 ..> UC2 : <<include>>
+    UC2 ..> UC3 : <<extend>>
+    UC2 ..> UC4 : <<extend>>
+}
+
+P --> UC1
+
+@enduml

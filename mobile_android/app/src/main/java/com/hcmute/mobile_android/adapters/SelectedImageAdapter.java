@@ -9,19 +9,20 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 import com.bumptech.glide.Glide;
 import com.hcmute.mobile_android.R;
+import com.hcmute.mobile_android.models.ImageSource;
 import java.util.List;
 
 public class SelectedImageAdapter extends RecyclerView.Adapter<SelectedImageAdapter.ViewHolder> {
 
-    private final List<Uri> imageUris;
+    private final List<ImageSource> imageSources;
     private final OnImageRemoveListener listener;
 
     public interface OnImageRemoveListener {
         void onRemove(int position);
     }
 
-    public SelectedImageAdapter(List<Uri> imageUris, OnImageRemoveListener listener) {
-        this.imageUris = imageUris;
+    public SelectedImageAdapter(List<ImageSource> imageSources, OnImageRemoveListener listener) {
+        this.imageSources = imageSources;
         this.listener = listener;
     }
 
@@ -34,9 +35,10 @@ public class SelectedImageAdapter extends RecyclerView.Adapter<SelectedImageAdap
 
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-        Uri uri = imageUris.get(position);
+        ImageSource imageSource = imageSources.get(position);
+        
         Glide.with(holder.itemView.getContext())
-                .load(uri)
+                .load(imageSource.getSource())
                 .centerCrop()
                 .placeholder(R.drawable.background)
                 .into(holder.ivSelectedImage);
@@ -50,7 +52,7 @@ public class SelectedImageAdapter extends RecyclerView.Adapter<SelectedImageAdap
 
     @Override
     public int getItemCount() {
-        return imageUris.size();
+        return imageSources.size();
     }
 
     public static class ViewHolder extends RecyclerView.ViewHolder {

@@ -19,6 +19,8 @@ public class PatientProfile {
 
     @OneToOne
     @JoinColumn(name = "patient_id", nullable = false)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
     private Patient patient;
 
     @Column(columnDefinition = "TEXT")

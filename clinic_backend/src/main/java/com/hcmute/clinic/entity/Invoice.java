@@ -52,11 +52,26 @@ public class Invoice {
     @Column(name = "payment_status")
     private InvoiceStatus paymentStatus = InvoiceStatus.UNPAID;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "payment_method")
+    private com.hcmute.clinic.enums.PaymentMethod paymentMethod;
+
+    @Column(name = "paid_at")
+    private LocalDateTime paidAt;
+
+    @Column(name = "paid_by")
+    private String paidBy;
+
     @Column(name = "created_at", updatable = false)
     @CreationTimestamp
     private LocalDateTime createdAt;
 
     @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL)
     private List<Payment> payments;
+    
+    @OneToMany(mappedBy = "invoice", cascade = CascadeType.ALL, orphanRemoval = true)
+    @ToString.Exclude
+    @EqualsAndHashCode.Exclude
+    private List<InvoiceItem> items;
 
 }

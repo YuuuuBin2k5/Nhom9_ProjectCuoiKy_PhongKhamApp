@@ -1,0 +1,25 @@
+@startuml UC_14_RecordTreatmentResult
+title UC_UC_17: Ghi nhận kết quả khám
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor Default
+    BorderColor Navy
+    ArrowColor Navy
+}
+
+actor "Bác sĩ" as D
+
+rectangle "Nghiệp vụ Bác sĩ" {
+    usecase "Ghi nhận" as UC1
+    usecase "Tải lên ảnh Y khoa" as UC2
+    usecase "Kết quả khám" as UC3
+    
+    UC1 ..> UC2 : <<extend>>
+    UC1 ..> UC3 : <<include>>
+}
+
+D --> UC1
+
+@enduml

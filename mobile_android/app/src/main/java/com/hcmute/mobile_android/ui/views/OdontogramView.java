@@ -12,15 +12,24 @@ import android.view.View;
 import androidx.annotation.Nullable;
 
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
+/**
+ * Enhanced Odontogram View with FDI numbering and service color coding
+ * - Displays 32 adult teeth in FDI system
+ * - Color-codes teeth based on services applied
+ * - Allows direct service selection from tooth click
+ */
 public class OdontogramView extends View {
 
-    public interface OnToothSelectedListener {
-        void onToothSelected(int toothNumber);
+    public interface OnToothServiceListener {
+        void onToothSelected(int toothNumber, String serviceName);
+        void onToothClicked(int toothNumber);
     }
 
-    private OnToothSelectedListener listener;
+    private OnToothServiceListener listener;
     
     // FDI tooth numbering system (32 teeth for adults)
     private static final int[][] TOOTH_LAYOUT = {
@@ -30,14 +39,30 @@ public class OdontogramView extends View {
         {31, 32, 33, 34, 35, 36, 37, 38}  // Lower left
     };
     
+    // Service color mapping
+    private static final Map<String, Integer> SERVICE_COLORS = new HashMap<>();
+    static {
+        SERVICE_COLORS.put("Trám", Color.parseColor("#FFC107"));      // Amber for filling
+        SERVICE_COLORS.put("Nhổ thường", Color.parseColor("#F44336")); // Red for extraction
+        SERVICE_COLORS.put("Nhổ khôn", Color.parseColor("#E91E63"));   // Pink for wisdom extraction
+        SERVICE_COLORS.put("Bọc sứ", Color.parseColor("#2196F3"));     // Blue for crown
+        SERVICE_COLORS.put("Khám", Color.parseColor("#4CAF50"));       // Green for exam
+        SERVICE_COLORS.put("X-quang", Color.parseColor("#9C27B0"));    // Purple for X-ray
+        SERVICE_COLORS.put("Lấy cao", Color.parseColor("#FF9800"));    // Orange for scaling
+        SERVICE_COLORS.put("Điều trị tủy", Color.parseColor("#795548")); // Brown for RCT
+        SERVICE_COLORS.put("Tẩy trắng", Color.parseColor("#00BCD4"));  // Cyan for whitening
+        SERVICE_COLORS.put("Niềng", Color.parseColor("#673AB7"));      // Deep purple for ortho
+    }
+    
     private Paint toothPaint;
     private Paint selectedPaint;
     private Paint textPaint;
     private Paint borderPaint;
+    private Paint highlightPaint;
     
     private Map<Integer, RectF> toothBounds = new HashMap<>();
-    private Map<Integer, String> toothStatus = new HashMap<>();
-    private int selectedTooth = -1;
+    private Map<Integer, String> toothServices = new HashMap<>(); // Tooth -> Service name
+    private Set<Integer> selectedTeeth = new HashSet<>();
     
     private float toothSize = 40f;
     private float toothSpacing = 8f;
@@ -64,23 +89,30 @@ public class OdontogramView extends View {
         toothPaint.setStyle(Paint.Style.FILL);
         
         selectedPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
-        selectedPaint.setColor(Color.parseColor("#1A56DB")); // Primary blue
-        selectedPaint.setStyle(Paint.Style.FILL);
+        selectedPaint.setStyle(Paint.Style.STROKE);
+        selectedPaint.setStrokeWidth(4f);
+        selectedPaint.setColor(Color.parseColor("#1A56DB"));
+        
+        highlightPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
+        highlightPaint.setStyle(Paint.Style.STROKE);
+        highlightPaint.setStrokeWidth(3f);
+        highlightPaint.setColor(Color.parseColor("#FFD700"));
         
         textPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         textPaint.setColor(Color.BLACK);
-        textPaint.setTextSize(24f);
+        textPaint.setTextSize(20f);
         textPaint.setTextAlign(Paint.Align.CENTER);
+        textPaint.setFakeBoldText(true);
         
         borderPaint = new Paint(Paint.ANTI_ALIAS_FLAG);
         borderPaint.setColor(Color.parseColor("#64748B"));
         borderPaint.setStyle(Paint.Style.STROKE);
         borderPaint.setStrokeWidth(2f);
         
-        // Initialize tooth status (all healthy by default)
+        // Initialize all teeth with no service
         for (int[] quadrant : TOOTH_LAYOUT) {
             for (int tooth : quadrant) {
-                toothStatus.put(tooth, "healthy");
+                toothServices.put(tooth, null);
             }
         }
     }
@@ -136,18 +168,28 @@ public class OdontogramView extends View {
             int toothNumber = entry.getKey();
             RectF bounds = entry.getValue();
             
-            // Choose paint based on selection and status
-            Paint fillPaint = (toothNumber == selectedTooth) ? selectedPaint : getToothPaint(toothNumber);
+            // Get service for this tooth
+            String service = toothServices.get(toothNumber);
+            
+            // Choose fill color based on service
+            Paint fillPaint = getToothFillPaint(service);
             
             // Draw tooth
             canvas.drawRoundRect(bounds, 8f, 8f, fillPaint);
             canvas.drawRoundRect(bounds, 8f, 8f, borderPaint);
             
-            // Draw tooth number
+            // Draw selection highlight if selected
+            if (selectedTeeth.contains(toothNumber)) {
+                canvas.drawRoundRect(bounds, 8f, 8f, selectedPaint);
+            }
+            
+            // Draw tooth number with appropriate text color
             float textX = bounds.centerX();
             float textY = bounds.centerY() + (textPaint.getTextSize() / 3);
             
-            textPaint.setColor((toothNumber == selectedTooth) ? Color.WHITE : Color.BLACK);
+            // Choose text color based on background brightness
+            int textColor = getTextColorForBackground(fillPaint.getColor());
+            textPaint.setColor(textColor);
             canvas.drawText(String.valueOf(toothNumber), textX, textY, textPaint);
         }
         
@@ -158,31 +200,32 @@ public class OdontogramView extends View {
         canvas.drawText("Hàm trên", centerX, 30f, textPaint);
         canvas.drawText("Hàm dưới", centerX, getHeight() - 10f, textPaint);
         
-        textPaint.setTextSize(24f); // Reset text size
+        textPaint.setTextSize(20f); // Reset text size
     }
 
-    private Paint getToothPaint(int toothNumber) {
-        String status = toothStatus.get(toothNumber);
-        if (status == null) status = "healthy";
-        
+    private Paint getToothFillPaint(String serviceName) {
         Paint paint = new Paint(toothPaint);
         
-        switch (status) {
-            case "caries":
-                paint.setColor(Color.parseColor("#D32F2F")); // Red for caries
-                break;
-            case "filled":
-                paint.setColor(Color.parseColor("#1565C0")); // Blue for filled
-                break;
-            case "requested":
-                paint.setColor(Color.parseColor("#4CAF50")); // Green for patient request
-                break;
-            case "rct":
-                paint.setColor(Color.parseColor("#E65100")); // Orange for root canal
-                break;
-            default:
-                paint.setColor(Color.WHITE); // White for healthy
-                break;
+        if (serviceName != null) {
+            // Try to find matching service color (case-insensitive, substring match)
+            String lowerService = serviceName.toLowerCase().trim();
+            boolean foundMatch = false;
+            
+            for (Map.Entry<String, Integer> entry : SERVICE_COLORS.entrySet()) {
+                if (lowerService.contains(entry.getKey().toLowerCase())) {
+                    paint.setColor(entry.getValue());
+                    foundMatch = true;
+                    break;
+                }
+            }
+            
+            if (!foundMatch) {
+                // Service exists but no color match - use light blue
+                paint.setColor(Color.parseColor("#90CAF9"));
+            }
+        } else {
+            // No service - use light gray
+            paint.setColor(Color.parseColor("#F5F5F5"));
         }
         
         return paint;
@@ -197,11 +240,12 @@ public class OdontogramView extends View {
             // Find which tooth was touched
             for (Map.Entry<Integer, RectF> entry : toothBounds.entrySet()) {
                 if (entry.getValue().contains(x, y)) {
-                    selectedTooth = entry.getKey();
-                    invalidate();
+                    int toothNumber = entry.getKey();
+                    // Let the caller handle toggling selection or logic
+                    // NOT auto-selecting here anymore if we want Activity to control it, or just pass the click
                     
                     if (listener != null) {
-                        listener.onToothSelected(selectedTooth);
+                        listener.onToothClicked(toothNumber);
                     }
                     return true;
                 }
@@ -210,32 +254,125 @@ public class OdontogramView extends View {
         return super.onTouchEvent(event);
     }
 
-    // Public methods for updating tooth status
-    public void setToothStatus(int toothNumber, String status) {
-        toothStatus.put(toothNumber, status);
+    // ===== Data Management Methods =====
+    
+    /**
+     * Add service to a tooth
+     * @param toothNumber FDI tooth number (11-48)
+     * @param serviceName Service name (e.g., "Trám", "Nhổ thường")
+     */
+    public void addServiceToTooth(int toothNumber, String serviceName) {
+        toothServices.put(toothNumber, serviceName);
         invalidate();
     }
 
-    public String getToothStatus(int toothNumber) {
-        return toothStatus.get(toothNumber);
+    /**
+     * Get service applied to a tooth
+     */
+    public String getToothService(int toothNumber) {
+        return toothServices.get(toothNumber);
     }
 
+    /**
+     * Remove service from a tooth
+     */
+    public void removeServiceFromTooth(int toothNumber) {
+        toothServices.put(toothNumber, null);
+        invalidate();
+    }
+
+    /**
+     * Check if tooth has a service
+     */
+    public boolean hasService(int toothNumber) {
+        return toothServices.get(toothNumber) != null;
+    }
+
+    /**
+     * Get all teeth with services
+     */
+    public Map<Integer, String> getTeethWithServices() {
+        Map<Integer, String> result = new HashMap<>();
+        for (Map.Entry<Integer, String> entry : toothServices.entrySet()) {
+            if (entry.getValue() != null) {
+                result.put(entry.getKey(), entry.getValue());
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Clear all services
+     */
+    public void clearAllServices() {
+        for (int tooth : toothServices.keySet()) {
+            toothServices.put(tooth, null);
+        }
+        invalidate();
+    }
+
+    // ===== Selection Methods =====
+    
     public void setSelectedTooth(int toothNumber) {
-        selectedTooth = toothNumber;
+        selectedTeeth.clear();
+        selectedTeeth.add(toothNumber);
+        invalidate();
+    }
+    
+    public void toggleSelection(int toothNumber) {
+        if (selectedTeeth.contains(toothNumber)) {
+            selectedTeeth.remove(toothNumber);
+        } else {
+            selectedTeeth.add(toothNumber);
+        }
+        invalidate();
+    }
+    
+    public void setSelectedTeeth(Set<Integer> teeth) {
+        selectedTeeth.clear();
+        if (teeth != null) {
+            selectedTeeth.addAll(teeth);
+        }
         invalidate();
     }
 
+    public Set<Integer> getSelectedTeeth() {
+        return new HashSet<>(selectedTeeth);
+    }
+    
+    // For backwards compatibility or single mode cases:
     public int getSelectedTooth() {
-        return selectedTooth;
+        if (selectedTeeth.isEmpty()) return -1;
+        return selectedTeeth.iterator().next(); // Return first
     }
 
-    public void setOnToothSelectedListener(OnToothSelectedListener listener) {
+    public void clearSelection() {
+        selectedTeeth.clear();
+        invalidate();
+    }
+
+    // ===== Listener Methods =====
+    
+    public void setOnToothServiceListener(OnToothServiceListener listener) {
         this.listener = listener;
     }
-
-    // Method to clear selection
-    public void clearSelection() {
-        selectedTooth = -1;
-        invalidate();
+    
+    /**
+     * Calculate appropriate text color based on background brightness
+     * Uses luminance formula to determine if background is light or dark
+     */
+    private int getTextColorForBackground(int backgroundColor) {
+        // Extract RGB components
+        int red = Color.red(backgroundColor);
+        int green = Color.green(backgroundColor);
+        int blue = Color.blue(backgroundColor);
+        
+        // Calculate luminance (perceived brightness)
+        // Formula: 0.299*R + 0.587*G + 0.114*B
+        double luminance = (0.299 * red + 0.587 * green + 0.114 * blue) / 255.0;
+        
+        // If background is light (luminance > 0.5), use dark text
+        // If background is dark (luminance <= 0.5), use white text
+        return luminance > 0.5 ? Color.BLACK : Color.WHITE;
     }
 }

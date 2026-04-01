@@ -21,5 +21,6 @@ public class ClinicRoom {
     private String description;
 
     @Builder.Default
-    private boolean isActive = true;
+    @Column(name = "is_active", nullable = false, columnDefinition = "BOOLEAN DEFAULT TRUE")
+    private boolean active = true;
 }

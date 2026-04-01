@@ -51,6 +51,34 @@
                 android:textSize="13sp" />
         </LinearLayout>
         
+        <ImageButton
+            android:id="@+id/btnPatientInfo"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_info"
+            android:contentDescription="Xem thông tin bệnh nhân"
+            android:visibility="gone"
+            app:tint="@android:color/white"
+            android:layout_marginEnd="8dp" />
+        
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSkipPatient"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:text="Lùi 1 người"
+            android:textSize="12sp"
+            android:textColor="@android:color/white"
+            app:strokeColor="@android:color/white"
+            app:strokeWidth="1dp"
+            app:backgroundTint="@android:color/transparent"
+            app:icon="@drawable/ic_skip_next"
+            app:iconTint="@android:color/white"
+            app:iconSize="18dp"
+            android:layout_marginEnd="8dp"
+            android:visibility="gone" />
+        
         <ImageView
             android:layout_width="32dp"
             android:layout_height="32dp"
@@ -59,7 +87,8 @@
 
     </LinearLayout>
 
-    <ScrollView
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/scrollViewMain"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
@@ -149,21 +178,12 @@
                 android:visibility="gone"
                 tools:visibility="visible">
 
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnViewHistory"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Xem Lịch sử Khám bệnh"
-                    android:layout_marginBottom="12dp"
-                    app:iconGravity="textStart"
-                    app:icon="@android:drawable/ic_menu_info_details"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
-
                 <com.google.android.material.button.MaterialButtonToggleGroup
                     android:id="@+id/toggleFormType"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
+                    android:visibility="gone"
                     app:singleSelection="true"
                     app:selectionRequired="true"
                     app:checkedButton="@+id/btnFormGeneral">
@@ -185,20 +205,78 @@
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
                         
                     <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFormCrown"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="Bọc sứ"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+                        
+                    <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnFormOrtho"
                         android:layout_width="0dp"
                         android:layout_weight="1"
                         android:layout_height="wrap_content"
                         android:text="Niềng răng"
                         style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
+                        
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnFormXray"
+                        android:layout_width="0dp"
+                        android:layout_weight="1"
+                        android:layout_height="wrap_content"
+                        android:text="X-Quang"
+                        style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
                 </com.google.android.material.button.MaterialButtonToggleGroup>
 
                 <androidx.fragment.app.FragmentContainerView
                     android:id="@+id/fragmentContainerForm"
-                    android:name="com.hcmute.mobile_android.ui.fragments.FragmentGeneralDental"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp" />
+
+                <!-- Odontogram View (Tooth Selection) - Chỉ hiển thị ở tab Tổng quát -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardOdontogram"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardCornerRadius="12dp"
+                    app:cardElevation="2dp"
+                    app:cardBackgroundColor="@android:color/white">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="16dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Biểu Đồ Răng - Chọn Răng"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textColor="#0D1B2A"
+                            android:layout_marginBottom="12dp" />
+
+                        <com.hcmute.mobile_android.ui.views.OdontogramView
+                            android:id="@+id/odontogramView"
+                            android:layout_width="match_parent"
+                            android:layout_height="200dp"
+                            android:background="@android:color/white" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Nhấp vào các răng để áp dụng dịch vụ này"
+                            android:textSize="12sp"
+                            android:textColor="#78909C"
+                            android:layout_marginTop="8dp"
+                            android:gravity="center" />
+
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
                 <!-- Treatment Plan Card -->
                 <com.google.android.material.card.MaterialCardView
@@ -233,6 +311,20 @@
                                 android:textColor="#0D1B2A" />
                                 
                             <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnAddService"
+                                android:layout_width="wrap_content"
+                                android:layout_height="32dp"
+                                android:text="+ Thêm dịch vụ"
+                                android:textSize="11sp"
+                                android:textAllCaps="false"
+                                app:cornerRadius="16dp"
+                                app:backgroundTint="#E8F5E9"
+                                android:textColor="#2E7D32"
+                                android:insetTop="0dp"
+                                android:insetBottom="0dp"
+                                android:layout_marginEnd="8dp" />
+
+                            <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnSelectTemplate"
                                 android:layout_width="wrap_content"
                                 android:layout_height="32dp"
@@ -261,6 +353,101 @@
                             android:layout_height="wrap_content"
                             android:nestedScrollingEnabled="false" />
 
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvPriceBreakdown"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="12dp"
+                            android:nestedScrollingEnabled="false"
+                            android:visibility="gone" />
+
+                        <LinearLayout
+                            android:id="@+id/layout_result_images"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical"
+                            android:layout_marginTop="16dp"
+                            android:visibility="gone">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Ảnh Kết Quả / X-Quang"
+                                android:textSize="14sp"
+                                android:textStyle="bold"
+                                android:textColor="#0D1B2A"
+                                android:layout_marginBottom="8dp" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="horizontal">
+
+                                <androidx.recyclerview.widget.RecyclerView
+                                    android:id="@+id/rvResultImages"
+                                    android:layout_width="0dp"
+                                    android:layout_height="80dp"
+                                    android:layout_weight="1"
+                                    android:orientation="horizontal" />
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnUploadImage"
+                                    style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+                                    android:layout_width="80dp"
+                                    android:layout_height="80dp"
+                                    android:layout_marginStart="8dp"
+                                    app:icon="@drawable/ic_camera"
+                                    app:iconGravity="textStart"
+                                    app:iconPadding="0dp"
+                                    android:insetTop="0dp"
+                                    android:insetBottom="0dp"
+                                    app:strokeColor="#1565C0"
+                                    app:cornerRadius="8dp" />
+                            </LinearLayout>
+                        </LinearLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/layoutDoctorConclusion"
+                            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="16dp"
+                            android:layout_marginBottom="12dp"
+                            android:hint="Kết luận &amp; Ghi chú của bác sĩ">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etDoctorConclusion"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="top|start"
+                                android:inputType="textMultiLine"
+                                android:minLines="3" />
+                        </com.google.android.material.textfield.TextInputLayout>
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal"
+                            android:layout_marginTop="8dp">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:text="Tổng tạm tính:"
+                                android:textSize="14sp"
+                                android:textColor="#546E7A" />
+
+                            <TextView
+                                android:id="@+id/tvTotalEstimate"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="0 VNĐ"
+                                android:textSize="18sp"
+                                android:textStyle="bold"
+                                android:textColor="#1565C0" />
+                        </LinearLayout>
+
                         <!-- Action Buttons -->
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -281,7 +468,9 @@
                                 app:backgroundTint="#2E7D32"
                                 android:layout_marginEnd="4dp"
                                 android:visibility="gone" />
-
+                                
+                            <!-- REMOVED: Draft save button - plans are now auto-activated -->
+                            <!--
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnSavePlan"
                                 android:layout_width="0dp"
@@ -293,21 +482,9 @@
                                 app:cornerRadius="8dp"
                                 app:backgroundTint="#1565C0"
                                 android:layout_marginEnd="4dp" />
+                            -->
 
-                            <com.google.android.material.button.MaterialButton
-                                android:id="@+id/btnTransferXRay"
-                                android:layout_width="0dp"
-                                android:layout_height="48dp"
-                                android:layout_weight="1"
-                                android:text="Chuyển X-Quang"
-                                android:textSize="11sp"
-                                android:textAllCaps="false"
-                                android:textColor="#E65100"
-                                app:cornerRadius="8dp"
-                                app:backgroundTint="#FFF3E0"
-                                app:strokeColor="#FFB74D"
-                                app:strokeWidth="1dp"
-                                android:layout_marginEnd="4dp" />
+  <!-- Complete/Cancel buttons removed - use list items -->
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnPrescribe"
@@ -324,6 +501,22 @@
                                 app:strokeWidth="1dp" />
                         </LinearLayout>
                         
+
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnCompleteTreatment"
+                            android:layout_width="match_parent"
+                            android:layout_height="54dp"
+                            android:text="Hoàn thành Điều trị &amp; Ký Hóa đơn"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            android:textAllCaps="false"
+                            app:cornerRadius="8dp"
+                            app:backgroundTint="#FF9800"
+                            android:layout_marginTop="16dp"
+                            android:enabled="false"
+                            android:visibility="gone" />
+
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnPrintPlan"
                             android:layout_width="match_parent"
@@ -341,6 +534,6 @@
             </LinearLayout>
 
         </LinearLayout>
-    </ScrollView>
+    </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>

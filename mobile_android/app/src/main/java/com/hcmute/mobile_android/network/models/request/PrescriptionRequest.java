@@ -7,6 +7,8 @@ public class PrescriptionRequest {
     private String diagnosis;
     private String symptoms;
     private String advice;
+    private Long treatmentPlanStepId;
+    private Double amount;
     private List<DetailRequest> details;
 
     public PrescriptionRequest(Long appointmentId, String diagnosis, String symptoms, String advice, List<DetailRequest> details) {
@@ -14,6 +16,24 @@ public class PrescriptionRequest {
         this.diagnosis = diagnosis;
         this.symptoms = symptoms;
         this.advice = advice;
+        this.details = details;
+    }
+
+    public PrescriptionRequest(
+            Long appointmentId,
+            String diagnosis,
+            String symptoms,
+            String advice,
+            Long treatmentPlanStepId,
+            Double amount,
+            List<DetailRequest> details
+    ) {
+        this.appointmentId = appointmentId;
+        this.diagnosis = diagnosis;
+        this.symptoms = symptoms;
+        this.advice = advice;
+        this.treatmentPlanStepId = treatmentPlanStepId;
+        this.amount = amount;
         this.details = details;
     }
 

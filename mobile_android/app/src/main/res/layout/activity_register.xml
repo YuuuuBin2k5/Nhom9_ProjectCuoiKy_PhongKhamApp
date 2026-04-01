@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/toothly_pearl"
+    android:background="@color/white"
     android:fillViewport="true"
     tools:context=".ui.activities.RegisterActivity">
 
@@ -13,9 +13,10 @@
         android:layout_height="wrap_content"
         android:paddingStart="24dp"
         android:paddingEnd="24dp"
-        android:paddingTop="48dp"
-        android:paddingBottom="32dp">
+        android:paddingTop="32dp"
+        android:paddingBottom="40dp">
 
+        <!-- Back Button -->
         <ImageButton
             android:id="@+id/btnBackReg"
             android:layout_width="48dp"
@@ -23,137 +24,257 @@
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="@android:string/cancel"
             android:src="@drawable/ic_back"
+            app:tint="@color/design_dark_blue"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />
 
-        <ImageView
-            android:id="@+id/ivRegLogo"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:contentDescription="@null"
-            android:src="@drawable/ic_logo_toothly"
-            app:layout_constraintEnd_toEndOf="parent"
+        <TextView
+            android:id="@+id/tvRegisterTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:fontFamily="sans-serif-medium"
+            android:text="Đăng ký"
+            android:textColor="@color/design_dark_blue"
+            android:textSize="26sp"
+            android:textStyle="bold"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/btnBackReg" />
 
         <TextView
-            android:id="@+id/tvRegisterTitle"
-            style="@style/ToothlyHeading"
+            android:id="@+id/tvSubtitleReg"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:text="@string/register_title"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/ivRegLogo" />
-
-        <EditText
-            android:id="@+id/etFirstName"
-            android:layout_width="0dp"
-            android:layout_height="52dp"
-            android:layout_marginTop="28dp"
-            android:background="@drawable/input_underline"
-            android:hint="First name"
-            android:inputType="textPersonName"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:textColor="@color/toothly_teal_dark"
-            android:textColorHint="@color/toothly_text_muted"
-            app:layout_constraintEnd_toEndOf="parent"
+            android:layout_marginTop="4dp"
+            android:text="Tạo tài khoản mới của bạn"
+            android:textColor="@color/design_text_gray"
+            android:textSize="14sp"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/tvRegisterTitle" />
 
+        <ImageView
+            android:id="@+id/ivToothLogoReg"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:src="@drawable/ic_logo_toothly"
+            app:tint="@color/design_dark_blue"
+            app:layout_constraintBottom_toBottomOf="@id/tvSubtitleReg"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="@id/tvRegisterTitle" />
+
+        <!-- First Name Input -->
+        <EditText
+            android:id="@+id/etFirstName"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="32dp"
+            android:background="@drawable/bg_input_rounded"
+            android:drawableStart="@drawable/ic_person"
+            android:drawablePadding="12dp"
+            android:hint="Tên"
+            android:inputType="textPersonName"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textColor="@color/design_dark_blue"
+            android:textColorHint="@color/design_text_gray"
+            android:textSize="14sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvSubtitleReg" />
+
+        <!-- Last Name Input -->
         <EditText
             android:id="@+id/etLastName"
             android:layout_width="0dp"
-            android:layout_height="52dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/input_underline"
-            android:hint="Last name"
+            android:layout_height="56dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_input_rounded"
+            android:drawableStart="@drawable/ic_person"
+            android:drawablePadding="12dp"
+            android:hint="Họ"
             android:inputType="textPersonName"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:textColor="@color/toothly_teal_dark"
-            android:textColorHint="@color/toothly_text_muted"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textColor="@color/design_dark_blue"
+            android:textColorHint="@color/design_text_gray"
+            android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/etFirstName" />
 
+        <!-- Email Input -->
         <EditText
             android:id="@+id/etRegEmail"
             android:layout_width="0dp"
-            android:layout_height="52dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/input_underline"
+            android:layout_height="56dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_input_rounded"
+            android:drawableStart="@drawable/ic_email"
+            android:drawablePadding="12dp"
             android:hint="Email"
             android:inputType="textEmailAddress"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:textColor="@color/toothly_teal_dark"
-            android:textColorHint="@color/toothly_text_muted"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textColor="@color/design_dark_blue"
+            android:textColorHint="@color/design_text_gray"
+            android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/etLastName" />
 
+        <!-- Password Input -->
         <EditText
             android:id="@+id/etRegPassword"
             android:layout_width="0dp"
-            android:layout_height="52dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/input_underline"
-            android:hint="Password (min 6 characters)"
+            android:layout_height="56dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_input_rounded"
+            android:drawableStart="@drawable/ic_lock"
+            android:drawableEnd="@drawable/ic_eye"
+            android:drawablePadding="12dp"
+            android:hint="Mật khẩu (ít nhất 6 ký tự)"
             android:inputType="textPassword"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:textColor="@color/toothly_teal_dark"
-            android:textColorHint="@color/toothly_text_muted"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textColor="@color/design_dark_blue"
+            android:textColorHint="@color/design_text_gray"
+            android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/etRegEmail" />
 
+        <!-- Confirm Password Input -->
         <EditText
             android:id="@+id/etRegPasswordConfirm"
             android:layout_width="0dp"
-            android:layout_height="52dp"
-            android:layout_marginTop="20dp"
-            android:background="@drawable/input_underline"
-            android:hint="Confirm password"
+            android:layout_height="56dp"
+            android:layout_marginTop="16dp"
+            android:background="@drawable/bg_input_rounded"
+            android:drawableStart="@drawable/ic_lock"
+            android:drawableEnd="@drawable/ic_eye"
+            android:drawablePadding="12dp"
+            android:hint="Xác nhận mật khẩu"
             android:inputType="textPassword"
-            android:paddingTop="8dp"
-            android:paddingBottom="8dp"
-            android:textColor="@color/toothly_teal_dark"
-            android:textColorHint="@color/toothly_text_muted"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:textColor="@color/design_dark_blue"
+            android:textColorHint="@color/design_text_gray"
+            android:textSize="14sp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/etRegPassword" />
 
+        <!-- Register Button -->
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/btnRegister"
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_marginTop="32dp"
-            android:background="@drawable/btn_teal_pill"
+            android:background="@drawable/btn_dark_blue_pill"
             android:fontFamily="sans-serif-medium"
-            android:text="@string/create_account"
+            android:text="Tạo tài khoản"
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="16sp"
+            android:elevation="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/etRegPasswordConfirm" />
 
-        <TextView
+        <!-- Back to Login Text -->
+        <LinearLayout
             android:id="@+id/tvBackToLogin"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="20dp"
-            android:padding="8dp"
-            android:text="Already have an account? Sign in"
-            android:textColor="@color/toothly_link"
-            android:textSize="14sp"
+            android:gravity="center"
+            android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btnRegister" />
+            app:layout_constraintTop_toBottomOf="@id/btnRegister">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Đã có tài khoản? "
+                android:textColor="@color/design_text_gray"
+                android:textSize="14sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Đăng nhập"
+                android:textColor="@color/design_dark_blue"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+        
+        <!-- Or continue with -->
+        <LinearLayout
+            android:id="@+id/llOrContinueReg"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintTop_toBottomOf="@id/tvBackToLogin">
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="#E2E8F0" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="16dp"
+                android:layout_marginEnd="16dp"
+                android:text="Hoặc tiếp tục với"
+                android:textColor="@color/design_text_gray"
+                android:textSize="12sp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="#E2E8F0" />
+        </LinearLayout>
+
+        <!-- Social Buttons -->
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/llOrContinueReg">
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/bg_social_button"
+                android:padding="12dp"
+                android:src="@drawable/ic_facebook" />
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_marginEnd="16dp"
+                android:background="@drawable/bg_social_button"
+                android:padding="12dp"
+                android:src="@drawable/ic_google" />
+
+            <ImageView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_social_button"
+                android:padding="12dp"
+                android:src="@drawable/ic_apple" />
+        </LinearLayout>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>

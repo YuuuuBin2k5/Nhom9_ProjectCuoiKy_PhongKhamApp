@@ -256,6 +256,10 @@ Phòng khám được mô hình hóa xung quanh **bệnh nhân**, **lịch hẹn
 8. ~~Dynamic QR JWT~~ — Đã có GET `/api/checkin/qr-token`, App Android dùng QR động.
 9. WebSocket/SSE real-time (Phase D5) — chưa triển khai; hiện dùng polling.
 10. Odontogram FDI, Form SURGERY/ORTHO/IMPLANT/PERIO (Phase E2–E6) — chưa triển khai.
+11. ~~Logic "lùi 1 người" không rõ ràng~~ — Đã fix và tách thành 2 chức năng rõ ràng:
+    - `delayPatient()`: Lùi bệnh nhân ĐANG CHỜ (WAITING) xuống 1 vị trí
+    - `skipCurrentPatient()`: Lùi bệnh nhân ĐANG KHÁM (IN_PROGRESS) và tự động gọi người tiếp theo
+    - Xem chi tiết: `clinic_backend/docs/QUEUE_DELAY_VS_SKIP.md`
 
 ---
 

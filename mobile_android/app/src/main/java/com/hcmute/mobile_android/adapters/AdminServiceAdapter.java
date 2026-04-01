@@ -16,7 +16,11 @@ import com.hcmute.mobile_android.network.RetrofitClient;
 import com.hcmute.mobile_android.network.models.MessageResponse;
 import com.hcmute.mobile_android.network.models.ServiceItem;
 
+import android.widget.Filter;
+import android.widget.Filterable;
+
 import java.text.NumberFormat;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 
@@ -24,19 +28,23 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
-public class AdminServiceAdapter extends RecyclerView.Adapter<AdminServiceAdapter.ViewHolder> {
+public class AdminServiceAdapter extends RecyclerView.Adapter<AdminServiceAdapter.ViewHolder> implements Filterable {
+
+    public interface OnServiceActionListener {
+        void onEditService(ServiceItem service);
+        void onDeleteService(ServiceItem service);
+    }
 
     private List<ServiceItem> serviceList;
+    private List<ServiceItem> serviceListFull;
+    private OnServiceActionListener listener;
 
-    public AdminServiceAdapter(List<ServiceItem> serviceList) {
-        this.serviceList = new java.util.ArrayList<>(serviceList);
+    public AdminServiceAdapter(List<ServiceItem> serviceList, OnServiceActionListener listener) {
+        this.serviceList = serviceList;
+        this.serviceListFull = new ArrayList<>(serviceList);
+        this.listener = listener;
     }
 
-    public void updateServices(List<ServiceItem> newServices) {
-        this.serviceList.clear();
-        this.serviceList.addAll(newServices);
-        notifyDataSetChanged();
-    }
 
     @NonNull
     @Override
@@ -49,7 +57,7 @@ public class AdminServiceAdapter extends RecyclerView.Adapter<AdminServiceAdapte
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         ServiceItem service = serviceList.get(position);
-        holder.bind(service);
+        holder.bind(service, listener);
     }
 
     @Override
@@ -59,7 +67,7 @@ public class AdminServiceAdapter extends RecyclerView.Adapter<AdminServiceAdapte
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         private TextView tvName, tvDescription, tvPrice, tvDuration, tvCategory;
-        private android.widget.ImageView ivService;
+        private android.widget.ImageView ivService, ivMenu;
         private androidx.appcompat.widget.SwitchCompat switchActive;
         private ApiService apiService;
 
@@ -72,10 +80,11 @@ public class AdminServiceAdapter extends RecyclerView.Adapter<AdminServiceAdapte
             tvDuration = itemView.findViewById(R.id.tvDuration);
             tvCategory = itemView.findViewById(R.id.tvCategory);
             ivService = itemView.findViewById(R.id.ivService);
+            ivMenu = itemView.findViewById(R.id.ivMenu);
             switchActive = itemView.findViewById(R.id.switchActive);
         }
 
-        public void bind(ServiceItem service) {
+        public void bind(ServiceItem service, OnServiceActionListener listener) {
             tvName.setText(service.getName());
             if (tvDescription != null) tvDescription.setText(service.getDescription());
             
@@ -112,6 +121,11 @@ public class AdminServiceAdapter extends RecyclerView.Adapter<AdminServiceAdapte
             
             setupSwitchListener(service);
 
+            // Setup menu button
+            if (ivMenu != null) {
+                ivMenu.setOnClickListener(v -> showContextMenu(v, service, listener));
+            }
+
             itemView.setOnClickListener(v -> {
                 android.content.Intent intent = new android.content.Intent(v.getContext(), 
                         com.hcmute.mobile_android.ui.activities.AdminServiceDetailActivity.class);
@@ -129,6 +143,25 @@ public class AdminServiceAdapter extends RecyclerView.Adapter<AdminServiceAdapte
                 
                 v.getContext().startActivity(intent);
             });
+        }
+
+        private void showContextMenu(View anchor, ServiceItem service, OnServiceActionListener listener) {
+            androidx.appcompat.widget.PopupMenu popup = new androidx.appcompat.widget.PopupMenu(itemView.getContext(), anchor);
+            popup.getMenuInflater().inflate(R.menu.menu_admin_service, popup.getMenu());
+            
+            popup.setOnMenuItemClickListener(item -> {
+                int id = item.getItemId();
+                if (id == R.id.action_edit) {
+                    if (listener != null) listener.onEditService(service);
+                    return true;
+                } else if (id == R.id.action_delete) {
+                    if (listener != null) listener.onDeleteService(service);
+                    return true;
+                }
+                return false;
+            });
+            
+            popup.show();
         }
 
         private void setupSwitchListener(ServiceItem service) {
@@ -156,5 +189,41 @@ public class AdminServiceAdapter extends RecyclerView.Adapter<AdminServiceAdapte
             switchActive.setChecked(targetState);
             setupSwitchListener(service);
         }
+    }
+
+    public void updateServices(List<ServiceItem> newServices) {
+        this.serviceListFull = new ArrayList<>(newServices);
+        this.serviceList = newServices;
+        notifyDataSetChanged();
+    }
+
+    @Override
+    public Filter getFilter() {
+        return new Filter() {
+            @Override
+            protected FilterResults performFiltering(CharSequence constraint) {
+                List<ServiceItem> filteredList = new ArrayList<>();
+                if (constraint == null || constraint.length() == 0) {
+                    filteredList.addAll(serviceListFull);
+                } else {
+                    String filterPattern = constraint.toString().toLowerCase().trim();
+                    for (ServiceItem item : serviceListFull) {
+                        if (item.getName().toLowerCase().contains(filterPattern) || 
+                            (item.getCategoryName() != null && item.getCategoryName().toLowerCase().contains(filterPattern))) {
+                            filteredList.add(item);
+                        }
+                    }
+                }
+                FilterResults results = new FilterResults();
+                results.values = filteredList;
+                return results;
+            }
+
+            @Override
+            protected void publishResults(CharSequence constraint, FilterResults results) {
+                serviceList = (List<ServiceItem>) results.values;
+                notifyDataSetChanged();
+            }
+        };
     }
 }
