@@ -36,42 +36,48 @@ The **PhongKham App** project is a comprehensive digital transformation solution
 - ✅ **Quét mã QR**: Tiếp đón bệnh nhân nhanh chóng bằng ZXing scanner tích hợp CameraX.
 - ✅ **Quản lý hàng đợi**: Điều phối bệnh nhân, chuyển phòng (X-quang, Tiểu phẫu) với real-time SSE.
 - ✅ **Lập phác đồ điều trị**: Sử dụng các template chuyên nghiệp để thiết kế quy trình điều trị.
-- ✅ **Giao diện Odontogram**: Tương tác trực tiếp trên sơ đồ răng (OdontogramView) để ghi chú tình trạng.
-- ✅ **Kê đơn thuốc**: Tạo và quản lý đơn thuốc điện tử (PrescriptionActivity).
+- ✅ **Giao diện Odontogram**: Tương tác trực tiếp trên sơ đồ răng để ghi chú tình trạng.
+- ✅ **Kê đơn thuốc**: Tạo và quản lý đơn thuốc điện tử với validation chặt chẽ.
 - ✅ **Truy cập bệnh án**: Tra cứu nhanh lịch sử và thông tin lâm sàng của bệnh nhân.
+- ✅ **Chat với bệnh nhân**: Tư vấn và trả lời câu hỏi qua hệ thống chat real-time.
 ### **👨‍💼 Cho Quản trị viên | For Admin**
-- ✅ **Quản trị Dashboard**: Theo dõi số liệu thống kê và hiệu suất hoạt động của phòng khám (AdminMainActivity).
-- ✅ **Quản lý Dịch vụ**: Cập nhật danh mục kỹ thuật, đơn giá và hình ảnh minh họa (AdminServiceActivity).
-- ✅ **Quản lý Đội ngũ**: Thêm mới và kiểm soát trạng thái hoạt động của bác sĩ (AdminDoctorActivity).
-- ✅ **Quản lý Cơ sở**: Theo dõi tình trạng các phòng khám và trang thiết bị (AdminRoomActivity).
-- ✅ **Quản lý Danh mục**: Tổ chức dịch vụ theo categories với dialog thêm/sửa/xóa.h họa.
-- ✅ **Quản lý Đội ngũ**: Thêm mới và kiểm soát trạng thái hoạt động của bác sĩ.
+- ✅ **Quản trị Dashboard**: Theo dõi số liệu thống kê và hiệu suất hoạt động của phòng khám.
+- ✅ **Quản lý Dịch vụ**: Cập nhật danh mục kỹ thuật, đơn giá và hình ảnh minh họa.
+- ✅ **Quản lý Đội ngũ**: Thêm mới và kiểm soát trạng thái hoạt động của bác sĩ, lễ tân.
 - ✅ **Quản lý Cơ sở**: Theo dõi tình trạng các phòng khám và trang thiết bị.
+- ✅ **Quản lý Danh mục**: Tổ chức dịch vụ theo categories với dialog thêm/sửa/xóa.
+- ✅ **Báo cáo Doanh thu**: Thống kê doanh thu theo thời gian và dịch vụ.
+- ✅ **Quản lý Template**: Tạo và quản lý template phác đồ điều trị.
 
 ---
 
 ## 🛠️ **Tech Stack**
 
 ### **📱 Android App**
-- **Language**: Java 11 / Android SDK (API 24+, Target 36)
+- **Language**: Java 11 / Android SDK (Min API 26, Target API 36)
 - **UI Framework**: Material Design 3 + ConstraintLayout
-- **Networking**: Retrofit 2.9.0 + OkHttp 4.9.3 (Logging Interceptor)
+- **Networking**: Retrofit 2.9.0 + OkHttp 4.12.0 (Logging Interceptor)
 - **QR System**: ZXing Core 3.5.2 + ZXing Android Embedded 4.3.0
-- **Image Loading**: Glide
+- **Image Loading**: Glide + PhotoView 2.3.0 (Pinch-to-zoom)
 - **Camera**: CameraX 1.3.1 (Core, Camera2, Lifecycle, View)
 - **Security**: AndroidX Security Crypto 1.1.0-alpha06
 - **Real-time**: Firebase Realtime Database (BOM 32.7.0)
+- **Charts & Analytics**: MPAndroidChart 3.1.0
+- **Animations**: Lottie 6.3.0
+- **Export**: Apache POI 5.2.3 (Excel) + iText7 7.2.5 (PDF)
 - **Architecture**: Activity-based Pattern với Fragment Support
 
 ### **🖥️ Backend API**
 - **Framework**: Spring Boot 3.2.4 (Java 17)
 - **Security**: Spring Security + JWT (JJWT 0.11.5)
 - **Database**: PostgreSQL với Spring Data JPA/Hibernate
-- **Build System**: Maven
+- **Build System**: Maven (với Maven Wrapper)
 - **Validation**: Spring Boot Starter Validation
 - **Utilities**: Lombok (Annotation Processing)
 - **Push Notification**: Firebase Admin SDK 9.2.0
-- **Real-time**: Server-Sent Events (SSE) & Async Processing
+- **Real-time**: Server-Sent Events (SSE) + WebSocket Support
+- **AOP**: AspectJ cho Audit Logging
+- **File Upload**: Multipart Support (Max 10MB)
 
 ---
 
@@ -80,25 +86,32 @@ The **PhongKham App** project is a comprehensive digital transformation solution
 ```text
 Nhom9_ProjectCuoiKy_PhongKhamApp/
 ├── 📱 mobile_android/                    # Android Mobile Application
-│   ├── app/src/main/java/com/hcmute/mobile_android/
-│   │   ├── adapters/                    # RecyclerView Adapters (Queue, Treatment, etc.)
-│   │   ├── network/                     # Retrofit API Service & Models
-│   │   ├── ui/                          # Activities & Fragments
-│   │   │   ├── activities/              # Main Activities (Login, QR Scanner, etc.)
-│   │   │   │   └── staff/               # Staff-specific Activities
-│   │   │   └── fragments/               # UI Fragments (Dashboard, Settings)
-│   │   ├── util/                        # Utilities (TokenManager, QRCodeHelper)
-│   │   └── services/                    # Background Services
-│   ├── app/src/main/res/                # Material UI Resources & Layouts
-│   │   ├── layout/                      # XML Layouts
-│   │   ├── drawable/                    # Icons & Graphics
-│   │   └── values/                      # Strings, Colors, Themes
-│   └── app/build.gradle.kts             # Android Build Configuration (Kotlin DSL)
+│   ├── app/
+│   │   ├── src/main/java/com/hcmute/mobile_android/
+│   │   │   ├── adapters/                # RecyclerView Adapters (Queue, Treatment, etc.)
+│   │   │   ├── network/                 # Retrofit API Service & Models
+│   │   │   ├── ui/                      # Activities & Fragments
+│   │   │   │   ├── activities/          # Main Activities (Login, QR Scanner, etc.)
+│   │   │   │   │   └── staff/           # Staff-specific Activities
+│   │   │   │   └── fragments/           # UI Fragments (Dashboard, Settings)
+│   │   │   ├── util/                    # Utilities (TokenManager, QRCodeHelper)
+│   │   │   └── services/                # Background Services
+│   │   ├── src/main/res/                # Material UI Resources & Layouts
+│   │   │   ├── layout/                  # XML Layouts
+│   │   │   ├── drawable/                # Icons & Graphics
+│   │   │   └── values/                  # Strings, Colors, Themes
+│   │   └── build.gradle.kts             # Android Build Configuration (Kotlin DSL)
+│   ├── gradle/                          # Gradle Wrapper
+│   ├── build.gradle.kts                 # Root Build Configuration
+│   ├── settings.gradle.kts              # Project Settings
+│   └── local.properties                 # Local Configuration (Backend URL)
 │
 ├── 🖥️ clinic_backend/                    # Spring Boot REST API
 │   ├── src/main/java/com/hcmute/clinic/
-│   │   ├── config/                      # Security, CORS, DataSeed Configuration
-│   │   ├── controller/                  # REST Controllers (18 endpoints)
+│   │   ├── annotation/                  # Custom Annotations (@Auditable)
+│   │   ├── aspect/                      # AOP Aspects (AuditAspect)
+│   │   ├── config/                      # Security, CORS, WebSocket, DataSeed
+│   │   ├── controller/                  # REST Controllers (30+ endpoints)
 │   │   ├── dto/                         # Data Transfer Objects
 │   │   ├── entity/                      # JPA Entities (Patient, Doctor, etc.)
 │   │   ├── enums/                       # Enumerations (Status, Roles)
@@ -108,13 +121,24 @@ Nhom9_ProjectCuoiKy_PhongKhamApp/
 │   │   ├── service/                     # Business Logic Services
 │   │   └── util/                        # Utility Classes
 │   ├── src/main/resources/
-│   │   ├── application.yml              # Spring Boot Configuration
-│   │   └── uploads/                     # File Upload Directory
-│   └── pom.xml                          # Maven Build Configuration
+│   │   ├── db/                          # Database Migration Scripts
+│   │   ├── static/                      # Static Resources
+│   │   ├── application.yml              # Main Configuration
+│   │   └── application-local.yml.example # Local Config Template
+│   ├── docs/                            # Technical Documentation
+│   │   ├── AVATAR_IMPLEMENTATION_SUMMARY.md
+│   │   ├── PRESCRIPTION_FIX_COMPLETE.md
+│   │   ├── PRESCRIPTION_FIX_TEST_GUIDE.md
+│   │   └── QUEUE_MANAGEMENT_GUIDE.md
+│   ├── uploads/                         # File Upload Directory
+│   ├── pom.xml                          # Maven Build Configuration
+│   └── mvnw.cmd                         # Maven Wrapper (Windows)
 │
 ├── 📚 prod/                              # Production Documentation
 │   └── USERSTORY.md                     # User Stories & Requirements
 ├── 📄 README.md                          # Project Overview Documentation
+├── 📄 .gitignore                         # Git Ignore Rules
+└── 📄 build.gradle.kts                   # Root Gradle Configuration
 ---
 
 ## 🎯 **Điểm nổi bật kỹ thuật | Technical Highlights**
@@ -154,33 +178,117 @@ Nhom9_ProjectCuoiKy_PhongKhamApp/
 ### **📋 Yêu cầu hệ thống | Prerequisites**
 - **Java 17** (cho Backend)
 - **PostgreSQL 12+** (Database)
-- **Android Studio** (Hedgehog 2023.1.1+)
+- **Android Studio** (Hedgehog 2023.1.1+ hoặc mới hơn)
 - **Maven 3.6+** (hoặc dùng wrapper `./mvnw`)
-- **Android SDK API 24+** (Target API 36)
+- **Android SDK Min API 26+** (Target API 36)
+- **Git** (Version Control)
 
 ### **🖥️ Backend Setup**
-1. **Database**: Khởi tạo PostgreSQL database tên `phongkham`.
-   ```sql
-   CREATE DATABASE phongkham;
-   ```
 
-2. **Configuration**: Cập nhật file `clinic_backend/src/main/resources/application.yml`:
-   ```yaml
-   spring:
-     datasource:
-       url: jdbc:postgresql://localhost:5432/phongkham
-       username: postgres
-       password: your_password  # Thay đổi password của bạn
-   ```
+#### **Bước 1: Cài đặt Database**
+```sql
+-- Tạo database PostgreSQL
+CREATE DATABASE phongkham;
 
-3. **Run Server**:
-   ```bash
-   cd clinic_backend
-   ./mvnw clean spring-boot:run
-   ```
-   *Server sẽ chạy tại `http://0.0.0.0:8081` và tự động khởi tạo dữ liệu mẫu (DataSeed) khi chạy lần đầu.*
+-- Kiểm tra kết nối
+\c phongkham
+```
+
+#### **Bước 2: Cấu hình Backend**
+Tạo file `clinic_backend/src/main/resources/application-local.yml` (hoặc chỉnh sửa `application.yml`):
+
+```yaml
+server:
+  port: 8081
+  address: 0.0.0.0  # Cho phép truy cập từ mạng LAN
+
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/phongkham
+    username: postgres
+    password: your_password  # Thay đổi password của bạn
+  jpa:
+    hibernate:
+      ddl-auto: update  # Tự động tạo/cập nhật schema
+    show-sql: false
+
+app:
+  jwt:
+    secret: "toothly-dev-jwt-secret-min-32-characters-long!!"
+    expiration-ms: 86400000  # 24 giờ
+  upload:
+    dir: uploads  # Thư mục lưu file upload
+```
+
+#### **Bước 3: Chạy Backend Server**
+```bash
+cd clinic_backend
+
+# Sử dụng Maven Wrapper (khuyến nghị)
+./mvnw clean spring-boot:run
+
+# Hoặc nếu đã cài Maven
+mvn clean spring-boot:run
+```
+
+**Kiểm tra server đã chạy:**
+- Mở browser: `http://localhost:8081/api/auth/login`
+- Nếu thấy response JSON → Server đã sẵn sàng ✅
+- Server sẽ tự động khởi tạo dữ liệu mẫu (DataSeed) khi chạy lần đầu
 
 ### **📱 Android App Setup**
+
+#### **Cách 1: Tự động phát hiện IP (Khuyến nghị)**
+
+Android app sẽ tự động phát hiện IP máy tính chạy backend. Chỉ cần:
+
+1. **Đảm bảo cùng mạng WiFi**: Máy tính và điện thoại/emulator phải cùng mạng LAN (192.168.x.x, 10.x.x.x).
+2. **Build & Run**: Mở thư mục `mobile_android` bằng Android Studio và chạy app.
+3. **Kiểm tra Log**: Xem log build để xác nhận API URL:
+   ```
+   [Toothly] API_BASE_URL → http://192.168.1.6:8081/
+   ```
+
+#### **Cách 2: Cấu hình thủ công (Nếu cần)**
+
+Tạo file `mobile_android/local.properties`:
+
+```properties
+# Cho Emulator (Android Studio)
+backend.host=10.0.2.2
+
+# Hoặc chỉ định IP cụ thể cho thiết bị thật
+backend.host=192.168.1.6
+
+# Thay đổi port nếu cần (mặc định 8081)
+backend.port=8081
+```
+
+**Cách tìm IP máy tính:**
+```bash
+# Windows
+ipconfig | findstr IPv4
+
+# macOS/Linux
+ifconfig | grep "inet "
+```
+
+#### **Bước 3: Build & Install**
+```bash
+cd mobile_android
+
+# Build APK
+./gradlew assembleDebug
+
+# Install vào thiết bị đã kết nối
+./gradlew installDebug
+```
+
+#### **Lưu ý quan trọng**
+- ✅ Đảm bảo máy tính và điện thoại/emulator cùng mạng WiFi
+- ✅ Tắt Firewall hoặc cho phép port 8081
+- ✅ Server backend phải chạy trước khi mở app
+- ✅ Với Emulator: Dùng IP `10.0.2.2` thay vì `localhost`
 ---
 
 ## 🔧 **Troubleshooting | Xử lý sự cố**
@@ -221,10 +329,38 @@ spring:
 
 ## 📚 **Tài liệu bổ sung | Additional Documentation**
 
+### **📖 Technical Documentation**
 - **User Stories**: Xem file `prod/USERSTORY.md` để hiểu chi tiết các use case
+- **Queue Management**: Xem `clinic_backend/docs/QUEUE_MANAGEMENT_GUIDE.md` cho hướng dẫn quản lý hàng đợi
 - **Prescription Fix**: Xem `clinic_backend/docs/PRESCRIPTION_FIX_COMPLETE.md` cho lịch sử fix bugs
-- **API Testing**: Sử dụng Postman hoặc curl để test endpoints
+- **Avatar Implementation**: Xem `clinic_backend/docs/AVATAR_IMPLEMENTATION_SUMMARY.md` cho chi tiết avatar system
 - **Database Schema**: Xem các Entity classes trong `clinic_backend/src/main/java/com/hcmute/clinic/entity/`
+
+### **🧪 API Testing**
+```bash
+# Test Login API
+curl -X POST http://localhost:8081/api/auth/login \
+  -H "Content-Type: application/json" \
+  -d '{"email":"admin@gmail.com","password":"123456"}'
+
+# Test với JWT Token
+curl -X GET http://localhost:8081/api/patients/me \
+  -H "Authorization: Bearer YOUR_JWT_TOKEN"
+```
+
+### **📊 Database Schema Overview**
+```sql
+-- Core Entities
+User (id, email, password, role, ...)
+Patient (id, user_id, firstName, lastName, phone, ...)
+Doctor (id, user_id, firstName, lastName, specialization, ...)
+Appointment (id, patient_id, doctor_id, appointmentDate, status, ...)
+Queue (id, appointment_id, queueNumber, status, priority, ...)
+TreatmentPlan (id, patient_id, appointment_id, status, ...)
+Prescription (id, appointment_id, doctor_id, medications, ...)
+Service (id, name, price, category, ...)
+ClinicRoom (id, name, type, status, ...)
+```
 
 ---
 
@@ -272,7 +408,7 @@ backend.port=8081
 
 ## 🔧 **API Documentation (Summary)**
 
-Backend cung cấp RESTful API với 18+ controllers, bao gồm:
+Backend cung cấp RESTful API với 30+ controllers, bao gồm:
 
 ### **🔐 Authentication & Authorization**
 | Method | Endpoint | Description |
@@ -298,12 +434,15 @@ Backend cung cấp RESTful API với 18+ controllers, bao gồm:
 | **POST** | `/api/checkin/scan` | Quét mã QR tiếp đón (Staff) |
 | **GET** | `/api/checkin/my-status` | Kiểm tra trạng thái hàng đợi |
 | **GET** | `/api/queue/current` | Xem hàng đợi hiện tại (Staff) |
+| **POST** | `/api/queue/{id}/skip` | Lùi 1 người (Doctor) |
+| **POST** | `/api/queue/{id}/delay` | Nhường lượt (Receptionist) |
 | **PATCH** | `/api/queue/{id}/status` | Cập nhật trạng thái bệnh nhân |
 
 ### **💊 Treatment & Prescription**
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | **GET** | `/api/treatment-plans/my` | Xem phác đồ điều trị của tôi |
+| **GET** | `/api/treatment-plans/by-appointment/{id}` | Lấy phác đồ theo lịch hẹn |
 | **POST** | `/api/treatment-plans` | Tạo phác đồ điều trị (Doctor) |
 | **GET** | `/api/treatment-plans/templates` | Lấy danh sách template |
 | **POST** | `/api/prescriptions` | Kê đơn thuốc (Doctor) |
@@ -318,12 +457,21 @@ Backend cung cấp RESTful API với 18+ controllers, bao gồm:
 | **GET** | `/api/admin/services` | Quản lý dịch vụ |
 | **POST** | `/api/admin/services` | Thêm dịch vụ mới |
 | **GET** | `/api/admin/rooms` | Quản lý phòng khám |
+| **GET** | `/api/admin/revenue` | Báo cáo doanh thu |
+| **GET** | `/api/admin/reports` | Báo cáo thống kê |
 
 ### **📊 Real-time Features**
 | Method | Endpoint | Description |
 | :--- | :--- | :--- |
 | **GET** | `/api/queue/sse` | Server-Sent Events cho hàng đợi |
 | **GET** | `/api/notifications/sse` | SSE cho thông báo real-time |
+
+### **📁 File Upload**
+| Method | Endpoint | Description |
+| :--- | :--- | :--- |
+| **POST** | `/api/upload/avatar` | Upload avatar (Max 10MB) |
+| **POST** | `/api/upload/document` | Upload tài liệu y tế |
+| **GET** | `/uploads/{filename}` | Truy cập file đã upload |
 
 *Tất cả API (trừ `/api/auth/*`) yêu cầu JWT Token trong header: `Authorization: Bearer <token>`*
 
@@ -353,14 +501,12 @@ Backend cung cấp RESTful API với 18+ controllers, bao gồm:
 
 ## 🤝 **Thành viên phát triển | Team Members - Nhóm 9**
 
-Chúng tôi tự hào giới thiệu đội ngũ phát triển đằng sau dự án PhongKham App:
-
-| Thành viên | Vai trò | GitHub |
-| :--- | :--- | :--- |
-| **Đào Nguyễn Nhật Anh** | Frontend & Backend | [@YuuuuBin2k5](https://github.com/YuuuuBin2k5) |
-| **Nguyễn Đoàn Trường Vĩ** | Team leader & Backend & QA Tester | [@truongvi-ute](https://github.com/truongvi-ute) |
-| **Trần Hoàng Phúc Quân** | Frontend & UI/UX Designer & QA Tester | [@PhucQuan](https://github.com/PhucQuan) |
-| **Nguyễn Hồng Phúc** | UI/UX Designer & QA Tester | [@NHP39](https://github.com/NHP39) |
+| Thành viên | Vai trò | GitHub | Đóng góp chính |
+| :--- | :--- | :--- | :--- |
+| **Đào Nguyễn Nhật Anh** | Frontend & Backend Developer | [@YuuuuBin2k5](https://github.com/YuuuuBin2k5) | Android UI, Spring Boot API |
+| **Nguyễn Đoàn Trường Vĩ** | Team Leader & Backend & QA | [@truongvi-ute](https://github.com/truongvi-ute) | Architecture, Database, Testing |
+| **Trần Hoàng Phúc Quân** | Frontend & UI/UX & QA | [@PhucQuan](https://github.com/PhucQuan) | Mobile UI/UX, Testing |
+| **Nguyễn Hồng Phúc** | UI/UX Designer & QA Tester | [@NHP39](https://github.com/NHP39) | Design System, QA |
 
 ---
 
@@ -376,21 +522,33 @@ Chúng tôi tự hào giới thiệu đội ngũ phát triển đằng sau dự 
 
 ## 🗺️ **Roadmap | Kế hoạch phát triển**
 
-### **Version 2.0 (Planned)**
-- [ ] Tích hợp thanh toán online (VNPay, MoMo)
-- [ ] Báo cáo thống kê và dashboard analytics
-- [ ] Export PDF cho đơn thuốc và hóa đơn
-- [ ] Video call tư vấn từ xa (Telemedicine)
-- [ ] Multi-language support (English, Vietnamese)
-- [ ] Dark mode cho mobile app
+### **Version 2.0 (Planned - Q3 2026)**
+- [ ] 💳 Tích hợp thanh toán online (VNPay, MoMo, ZaloPay)
+- [ ] 📊 Báo cáo thống kê và dashboard analytics nâng cao
+- [ ] 📄 Export PDF cho đơn thuốc, hóa đơn và bệnh án
+- [ ] 🎥 Video call tư vấn từ xa (Telemedicine với WebRTC)
+- [ ] 🌐 Multi-language support (English, Vietnamese)
+- [ ] 🌙 Dark mode cho mobile app
+- [ ] 🔔 Push notification với Firebase Cloud Messaging
 
-### **Version 1.5 (In Progress)**
-- [x] QR Code check-in system
-- [x] Real-time queue management với SSE
-- [x] Odontogram interactive view
-- [x] Treatment plan templates
-- [ ] Push notification với Firebase Cloud Messaging
-- [ ] Offline mode với local database
+### **Version 1.5 (In Progress - Q2 2026)**
+- [x] ✅ QR Code check-in system
+- [x] ✅ Real-time queue management với SSE
+- [x] ✅ Odontogram interactive view
+- [x] ✅ Treatment plan templates
+- [x] ✅ Prescription validation system
+- [ ] 📴 Offline mode với local database (SQLite)
+- [ ] 📈 Advanced analytics với MPAndroidChart
+- [ ] 🎨 Lottie animations cho UX improvement
+
+### **Version 1.0 (Released - Q1 2026)**
+- [x] ✅ JWT Authentication & Authorization
+- [x] ✅ Patient & Doctor management
+- [x] ✅ Appointment booking system
+- [x] ✅ Medical record management
+- [x] ✅ Basic queue management
+- [x] ✅ Service & Room management
+- [x] ✅ Admin dashboard
 
 ---
 
@@ -416,9 +574,11 @@ Chúng tôi hoan nghênh mọi đóng góp! Nếu bạn muốn contribute:
 
 Nếu có câu hỏi hoặc góp ý, vui lòng liên hệ:
 
-- **Team Lead**: Đào Nguyễn Nhật Anh - [@YuuuuBin2k5](https://github.com/YuuuuBin2k5)
+- **Team Leader**: Nguyễn Đoàn Trường Vĩ - [@truongvi-ute](https://github.com/truongvi-ute)
+- **Technical Lead**: Đào Nguyễn Nhật Anh - [@YuuuuBin2k5](https://github.com/YuuuuBin2k5)
 - **Project Repository**: [Nhom9_ProjectCuoiKy_PhongKhamApp](https://github.com/YuuuuBin2k5/Nhom9_ProjectCuoiKy_PhongKhamApp)
-- **Issues**: [GitHub Issues](https://github.com/YuuuuBin2k5/Nhom9_ProjectCuoiKy_PhongKhamApp/issues)
+- **Issues & Bug Reports**: [GitHub Issues](https://github.com/YuuuuBin2k5/Nhom9_ProjectCuoiKy_PhongKhamApp/issues)
+- **Documentation**: [Wiki](https://github.com/YuuuuBin2k5/Nhom9_ProjectCuoiKy_PhongKhamApp/wiki)
 
 ---
 
