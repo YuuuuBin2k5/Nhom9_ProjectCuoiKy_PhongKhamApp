@@ -295,6 +295,10 @@ public class TreatmentPlanService {
         return planRepository.findByPatientIdOrderByCreatedAtDesc(patientId);
     }
 
+    public List<TreatmentPlan> findByAppointmentId(Long appointmentId) {
+        return planRepository.findByAppointmentIdOrderByCreatedAtDesc(appointmentId);
+    }
+
     @Transactional
     public void updateStepStatus(Long stepId, String status) {
         TreatmentPlanStep step = stepRepository.findById(stepId)

@@ -251,6 +251,9 @@ public interface ApiService {
     @GET("api/treatment-plans/{id}/for-room")
     Call<TreatmentPlan> getTreatmentPlanForRoom(@Path("id") Long planId);
 
+    @GET("api/treatment-plans/by-appointment/{appointmentId}")
+    Call<TreatmentPlan> getTreatmentPlanByAppointment(@Path("appointmentId") Long appointmentId);
+
     @PUT("api/treatment-plans/{id}")
     Call<Void> updateTreatmentPlanSteps(@Path("id") Long planId, @Body com.hcmute.mobile_android.network.models.request.UpdatePlanStepsRequest request);
 

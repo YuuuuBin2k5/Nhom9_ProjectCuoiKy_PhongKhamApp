@@ -70,11 +70,7 @@ public class PrescriptionActivity extends AppCompatActivity {
             finish();
             return;
         }
-        if (treatmentPlanId == -1) {
-            Toast.makeText(this, "Không tìm thấy phác đồ điều trị", Toast.LENGTH_SHORT).show();
-            finish();
-            return;
-        }
+        // treatmentPlanId is now optional - we load by appointmentId instead
 
         apiService = RetrofitClient.getApiService(this);
 
@@ -157,10 +153,33 @@ public class PrescriptionActivity extends AppCompatActivity {
     }
 
     private void loadTreatmentPlanSteps() {
-        apiService.getTreatmentPlanForRoom(treatmentPlanId).enqueue(new Callback<TreatmentPlan>() {
+        // CRITICAL FIX: Load treatment plan by appointmentId instead of treatmentPlanId
+        // This ensures we always get the correct treatment plan for the current appointment
+        apiService.getTreatmentPlanByAppointment(appointmentId).enqueue(new Callback<TreatmentPlan>() {
             @Override
             public void onResponse(Call<TreatmentPlan> call, Response<TreatmentPlan> response) {
-                if (!response.isSuccessful() || response.body() == null) {
+                // FALLBACK: If no treatment plan exists for this appointment, allow general prescription
+                if (!response.isSuccessful()) {
+                    if (response.code() == 404) {
+                        // No treatment plan found - allow general prescription without steps
+                        Log.w("PrescriptionActivity", "No treatment plan found for appointment " + appointmentId + ". Allowing general prescription.");
+                        treatmentPlanId = null;
+                        treatmentSteps = new ArrayList<>();
+                        populateStepSpinner();
+                        // Disable step selection since there are no steps
+                        swStepSpecific.setEnabled(false);
+                        swStepSpecific.setChecked(false);
+                        Toast.makeText(PrescriptionActivity.this, 
+                            "Chưa có phác đồ điều trị. Bạn có thể kê đơn chung.", 
+                            Toast.LENGTH_LONG).show();
+                        return;
+                    }
+                    Toast.makeText(PrescriptionActivity.this, "Không tải được phác đồ điều trị", Toast.LENGTH_SHORT).show();
+                    finish();
+                    return;
+                }
+
+                if (response.body() == null) {
                     Toast.makeText(PrescriptionActivity.this, "Không tải được phác đồ điều trị", Toast.LENGTH_SHORT).show();
                     finish();
                     return;
@@ -168,7 +187,7 @@ public class PrescriptionActivity extends AppCompatActivity {
 
                 TreatmentPlan plan = response.body();
                 
-                // CRITICAL FIX: Validate that treatment plan belongs to current appointment
+                // Validate that treatment plan belongs to current appointment (should always be true now)
                 if (plan.getAppointmentId() != null && !plan.getAppointmentId().equals(appointmentId)) {
                     Toast.makeText(PrescriptionActivity.this, 
                         "Phác đồ không thuộc lịch hẹn này. Vui lòng kiểm tra lại.", 
@@ -177,9 +196,15 @@ public class PrescriptionActivity extends AppCompatActivity {
                     return;
                 }
                 
+                // Extract treatmentPlanId from response
+                treatmentPlanId = plan.getId();
+                
                 treatmentSteps = plan.getSteps() != null ? plan.getSteps() : new ArrayList<>();
                 if (treatmentSteps.isEmpty()) {
-                    Toast.makeText(PrescriptionActivity.this, "Phác đồ không có dịch vụ", Toast.LENGTH_SHORT).show();
+                    Log.w("PrescriptionActivity", "Treatment plan exists but has no steps. Allowing general prescription.");
+                    swStepSpecific.setEnabled(false);
+                    swStepSpecific.setChecked(false);
+                    Toast.makeText(PrescriptionActivity.this, "Phác đồ chưa có dịch vụ. Bạn có thể kê đơn chung.", Toast.LENGTH_SHORT).show();
                     finish();
                     return;
                 }

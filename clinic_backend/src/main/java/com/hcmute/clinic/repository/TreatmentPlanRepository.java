@@ -30,4 +30,7 @@ public interface TreatmentPlanRepository extends JpaRepository<TreatmentPlan, Lo
 
     @Query("SELECT p FROM TreatmentPlan p WHERE p.appointment.id = :appointmentId ORDER BY p.createdAt DESC")
     java.util.Optional<TreatmentPlan> findFirstByAppointmentIdOrderByCreatedAtDesc(@Param("appointmentId") Long appointmentId);
+
+    @Query("SELECT p FROM TreatmentPlan p LEFT JOIN FETCH p.steps s LEFT JOIN FETCH s.service LEFT JOIN FETCH s.clinicRoom LEFT JOIN FETCH s.images WHERE p.appointment.id = :appointmentId ORDER BY p.createdAt DESC")
+    List<TreatmentPlan> findByAppointmentIdOrderByCreatedAtDesc(@Param("appointmentId") Long appointmentId);
 }

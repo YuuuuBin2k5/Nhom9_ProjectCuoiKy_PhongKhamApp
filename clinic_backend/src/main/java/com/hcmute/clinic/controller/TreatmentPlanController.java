@@ -199,6 +199,22 @@ public class TreatmentPlanController {
         }
     }
 
+    @GetMapping("/by-appointment/{appointmentId}")
+    @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
+    public ResponseEntity<?> getByAppointmentId(@PathVariable Long appointmentId) {
+        try {
+            List<TreatmentPlan> plans = treatmentPlanService.findByAppointmentId(appointmentId);
+            if (plans.isEmpty()) {
+                return ResponseEntity.notFound().build();
+            }
+            // Return the most recent plan for this appointment (first element, already sorted DESC)
+            TreatmentPlan plan = plans.get(0);
+            return ResponseEntity.ok(toDTO(plan));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<?> updateSteps(@PathVariable Long id, @RequestBody UpdatePlanStepsRequest request) {

@@ -128,17 +128,39 @@ public class PrescriptionService {
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Không tìm thấy step/dịch vụ trong phác đồ"));
 
             // Safety: đảm bảo step thuộc đúng appointment đang kê
-            if (step.getPlan() == null
-                    || step.getPlan().getAppointment() == null
-                    || step.getPlan().getAppointment().getId() == null
-                    || !step.getPlan().getAppointment().getId().equals(appointment.getId())) {
+            // Check both appointment direct link and via medicalRecord
+            boolean belongsToAppointment = false;
+            
+            if (step.getPlan() != null) {
+                // Check direct appointment link
+                if (step.getPlan().getAppointment() != null 
+                        && step.getPlan().getAppointment().getId() != null
+                        && step.getPlan().getAppointment().getId().equals(appointment.getId())) {
+                    belongsToAppointment = true;
+                }
                 
+                // Check via medicalRecord -> appointment
+                if (!belongsToAppointment 
+                        && step.getPlan().getMedicalRecord() != null
+                        && step.getPlan().getMedicalRecord().getAppointment() != null
+                        && step.getPlan().getMedicalRecord().getAppointment().getId() != null
+                        && step.getPlan().getMedicalRecord().getAppointment().getId().equals(appointment.getId())) {
+                    belongsToAppointment = true;
+                }
+            }
+            
+            if (!belongsToAppointment) {
                 // Log for debugging
-                log.warn("Step {} does not belong to appointment {}. Step's appointment: {}", 
+                log.warn("Step {} does not belong to appointment {}. Step's plan: {}, plan's appointment: {}, plan's medicalRecord appointment: {}", 
                     requestStepId, 
                     appointment.getId(),
+                    step.getPlan() != null ? step.getPlan().getId() : "null",
                     step.getPlan() != null && step.getPlan().getAppointment() != null 
                         ? step.getPlan().getAppointment().getId() 
+                        : "null",
+                    step.getPlan() != null && step.getPlan().getMedicalRecord() != null 
+                        && step.getPlan().getMedicalRecord().getAppointment() != null
+                        ? step.getPlan().getMedicalRecord().getAppointment().getId()
                         : "null");
                 
                 throw new ResponseStatusException(HttpStatus.FORBIDDEN, 
