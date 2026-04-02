@@ -506,7 +506,7 @@ Backend cung cấp RESTful API với 30+ controllers, bao gồm:
 | **Đào Nguyễn Nhật Anh** | Frontend & Backend Developer | [@YuuuuBin2k5](https://github.com/YuuuuBin2k5) | Android UI, Spring Boot API |
 | **Nguyễn Đoàn Trường Vĩ** | Team Leader & Backend & QA | [@truongvi-ute](https://github.com/truongvi-ute) | Architecture, Database, Testing |
 | **Trần Hoàng Phúc Quân** | Frontend & UI/UX & QA | [@PhucQuan](https://github.com/PhucQuan) | Mobile UI/UX, Testing |
-| **Nguyễn Hồng Phúc** | UI/UX Designer & QA Tester | [@NHP39](https://github.com/NHP39) | Design System, QA |
+| **Nguyễn Hoàng Phúc** | UI/UX Designer & QA Tester | [@NHP39](https://github.com/NHP39) | Design System, QA |
 
 ---
 
