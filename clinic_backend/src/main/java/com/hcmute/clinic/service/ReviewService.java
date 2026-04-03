@@ -11,6 +11,10 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Lớp Dịch vụ ReviewService (Dịch vụ Đánh giá) - Quản lý phản hồi của bệnh nhân.
+ * Hỗ trợ tạo mới và truy vấn các đánh giá về chất lượng phục vụ của bác sĩ và phòng khám.
+ */
 @Service
 @RequiredArgsConstructor
 public class ReviewService {

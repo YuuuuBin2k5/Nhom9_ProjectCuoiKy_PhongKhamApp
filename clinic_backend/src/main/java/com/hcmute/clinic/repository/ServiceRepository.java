@@ -10,10 +10,24 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Repository quản lý danh mục các dịch vụ nha khoa (Service).
+ */
 @Repository
 public interface ServiceRepository extends JpaRepository<Service, Long> {
+    /**
+     * Lấy danh sách các dịch vụ đang hoạt động, sắp xếp theo tên tăng dần.
+     */
     List<Service> findByActiveTrueOrderByNameAsc();
+
+    /**
+     * Lấy tất cả dịch vụ, sắp xếp theo tên tăng dần.
+     */
     List<Service> findAllByOrderByNameAsc();
+
+    /**
+     * Tìm kiếm dịch vụ theo tên.
+     */
     Optional<Service> findByName(String name);
     
     // Optimized: Fetch service with category and images in one query

@@ -8,8 +8,8 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Request DTO for adding a service to multiple teeth at once
- * Used for services like crown, extraction that can be applied to multiple teeth
+ * DTO Yêu cầu thêm một dịch vụ cho nhiều răng cùng lúc.
+ * Thường dùng cho: Nhổ nhiều răng, Bọc sứ nhiều răng, v.v.
  */
 @Data
 @NoArgsConstructor

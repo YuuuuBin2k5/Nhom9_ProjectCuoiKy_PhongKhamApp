@@ -1,5 +1,8 @@
 package com.hcmute.mobile_android.network.models;
 
+/**
+ * DTO chứa thông tin hồ sơ đầy đủ của bác sĩ.
+ */
 public class DoctorProfileResponse {
     private Long id;
     private String firstName;

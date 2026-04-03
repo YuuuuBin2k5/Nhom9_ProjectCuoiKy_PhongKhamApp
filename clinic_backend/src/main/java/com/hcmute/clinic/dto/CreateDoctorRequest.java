@@ -2,6 +2,9 @@ package com.hcmute.clinic.dto;
 
 import lombok.Data;
 
+/**
+ * DTO chứa thông tin yêu cầu tạo mới tài khoản Bác sĩ.
+ */
 @Data
 public class CreateDoctorRequest {
     private String email;

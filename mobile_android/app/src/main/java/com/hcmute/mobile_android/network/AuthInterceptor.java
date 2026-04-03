@@ -10,6 +10,10 @@ import okhttp3.Interceptor;
 import okhttp3.Request;
 import okhttp3.Response;
 
+/**
+ * Interceptor tự động thêm mã xác thực và tiêu đề Authorization vào các yêu cầu HTTP.
+ * Hỗ trợ cơ chế tự động làm mới mã thông báo (Token Refresh) khi nhận lỗi 401.
+ */
 public class AuthInterceptor implements Interceptor {
 
     private final Context context;

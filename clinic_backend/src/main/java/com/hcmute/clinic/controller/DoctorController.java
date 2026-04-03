@@ -29,6 +29,10 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * Lớp Điều khiển DoctorController - Trung tâm điều phối nghiệp vụ dành cho Bác sĩ.
+ * Bao gồm các tính năng quản lý hàng đợi, xem hồ sơ bệnh nhân qua QR và cập nhật thông tin cá nhân.
+ */
 @RestController
 @RequestMapping("/api/doctor")
 @RequiredArgsConstructor
@@ -94,6 +98,9 @@ public class DoctorController {
         return ResponseEntity.ok(Map.of("message", "Đã cập nhật hồ sơ bác sĩ"));
     }
 
+    /**
+     * API Lấy danh sách hàng đợi (Queue) tại phòng khám bác sĩ đang phụ trách.
+     */
     @GetMapping("/me/queue")
     public ResponseEntity<?> getMyQueue(org.springframework.security.core.Authentication auth) {
         if (auth == null || auth.getName() == null) {
@@ -138,6 +145,11 @@ public class DoctorController {
         return ResponseEntity.ok(items);
     }
 
+    /**
+     * API Truy vấn thông tin bệnh nhân qua mã QR (UC_06: Check-in).
+     * Hỗ trợ nhiều định dạng mã (JWT, CHECKIN_ID, hoặc ID đơn thuần).
+     * @param qr Dữ liệu quét từ mã QR.
+     */
     @GetMapping("/patient")
     public ResponseEntity<?> getPatientByQr(@RequestParam String qr) {
         if (qr == null || qr.isBlank()) {

@@ -9,6 +9,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repository quản lý các mẫu phác đồ điều trị định sẵn (TreatmentPlanTemplate).
+ */
 @Repository
 public interface TreatmentPlanTemplateRepository extends JpaRepository<TreatmentPlanTemplate, Long> {
 

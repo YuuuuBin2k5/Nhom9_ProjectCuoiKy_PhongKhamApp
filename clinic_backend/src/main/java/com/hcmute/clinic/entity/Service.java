@@ -6,6 +6,10 @@ import lombok.*;
 
 import java.math.BigDecimal;
 
+/**
+ * Lớp Thực thể Service (Dịch vụ) - Danh mục các dịch vụ nha khoa (ví dụ: Trám răng, Nhổ răng).
+ * Chứa thông tin về tên, mô tả và giá cơ bản của dịch vụ.
+ */
 @Entity
 @Table(name = "services")
 @Data
@@ -13,10 +17,16 @@ import java.math.BigDecimal;
 @AllArgsConstructor
 @Builder
 public class Service {
+    /**
+     * Định danh duy nhất của dịch vụ.
+     */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    /**
+     * Danh mục mà dịch vụ thuộc về.
+     */
     @ManyToOne
     @JoinColumn(name = "category_id", nullable = false)
     private ServiceCategory category;

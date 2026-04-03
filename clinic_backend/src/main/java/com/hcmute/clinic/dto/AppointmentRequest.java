@@ -8,6 +8,10 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
+/**
+ * DTO (Data Transfer Object) cho yêu cầu Đặt lịch hẹn.
+ * Chứa các thông tin cần thiết từ phía Client để thiết lập một cuộc hẹn mới.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

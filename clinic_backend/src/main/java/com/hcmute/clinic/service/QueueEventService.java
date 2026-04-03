@@ -8,6 +8,10 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Lớp Dịch vụ QueueEventService (Dịch vụ Sự kiện Hàng đợi) - Quản lý các kết nối thời gian thực qua SSE.
+ * Tự động phát tin (Broadcast) khi có thay đổi trong hàng đợi để cập nhật giao diện phòng khám và bệnh nhân.
+ */
 @Service
 @Slf4j
 public class QueueEventService {

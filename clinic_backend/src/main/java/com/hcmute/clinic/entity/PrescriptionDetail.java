@@ -3,6 +3,10 @@ package com.hcmute.clinic.entity;
 import jakarta.persistence.*;
 import lombok.*;
 
+/**
+ * Lớp Thực thể PrescriptionDetail (Chi tiết đơn thuốc) - Chứa thông tin về một loại thuốc cụ thể.
+ * Liên kết với Prescription và tùy chọn liên kết với một bước điều trị trong phác đồ.
+ */
 @Entity
 @Table(name = "prescription_details")
 @Data
@@ -10,6 +14,7 @@ import lombok.*;
 @AllArgsConstructor
 @Builder
 public class PrescriptionDetail {
+    // Thuộc tính private để bảo đảm tính đóng gói (Encapsulation).
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

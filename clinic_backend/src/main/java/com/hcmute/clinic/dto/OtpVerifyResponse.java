@@ -5,6 +5,9 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * DTO phản hồi kết quả sau khi xác thực mã OTP.
+ */
 @Data
 @Builder
 @NoArgsConstructor

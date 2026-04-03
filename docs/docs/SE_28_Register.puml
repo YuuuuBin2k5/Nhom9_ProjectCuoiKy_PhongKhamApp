@@ -1,0 +1,98 @@
+@startuml SE_28_Register
+title Sequence Diagram: SE_28 Đăng ký tài khoản
+
+actor "Bệnh nhân" as User
+participant "View\n(RegisterActivity)" as View
+participant "AuthController" as Controller
+participant "PatientRepository" as Repo
+participant "PasswordEncoder" as Encoder
+participant "JwtService" as Jwt
+database "PostgreSQL" as DB
+
+User -> View: Nhập thông tin & Submit
+activate View
+View -> Controller: POST /api/auth/register\n(RegisterRequest)
+activate Controller
+
+Controller -> Controller: Kiểm tra trường bắt buộc\n(email, password, firstName, lastName)
+alt Thiếu thông tin bắt buộc
+    Controller --> View: 400 Bad Request\n"Email/Password/Name is required"
+    View --> User: Hiển thị lỗi
+    deactivate Controller
+    deactivate View
+    stop
+end
+
+Controller -> Controller: Kiểm tra định dạng Email
+
+alt Email sai định dạng
+    Controller --> View: 400 Bad Request\n"Invalid email format"
+    View --> User: Hiển thị lỗi
+    deactivate Controller
+    deactivate View
+    stop
+end
+
+Controller -> Controller: Kiểm tra độ mạnh mật khẩu\n(>= 6 ký tự, có chữ & số)
+
+alt Mật khẩu không đủ mạnh
+    Controller --> View: 400 Bad Request\n"Password must contain both letters and numbers"
+    View --> User: Hiển thị lỗi
+    deactivate Controller
+    deactivate View
+    stop
+end
+
+Controller -> Repo: findByEmailIgnoreCase(email)
+activate Repo
+Repo -> DB: SELECT * FROM patients WHERE email = ?
+activate DB
+DB --> Repo: result
+deactivate DB
+Repo --> Controller: Optional<Patient>
+deactivate Repo
+
+alt Email đã tồn tại
+    Controller --> View: 400 Bad Request\n"Email already registered"
+    View --> User: Hiển thị lỗi
+else Email chưa tồn tại
+    Controller -> Encoder: encode(password)
+    activate Encoder
+    Encoder --> Controller: hashedPassword
+    deactivate Encoder
+
+    Controller -> Repo: save(newPatient)
+    activate Repo
+    Repo -> DB: INSERT INTO patients (...)
+    activate DB
+    DB --> Repo: savedPatient (id generated)
+    deactivate DB
+    Repo --> Controller: savedPatient
+    deactivate Repo
+
+    Controller -> Repo: save(patient with QrCodeData)
+    activate Repo
+    Repo -> DB: UPDATE patients SET qr_code_data = 'patient:<id>'
+    activate DB
+    DB --> Repo: ok
+    deactivate DB
+    Repo --> Controller: ok
+    deactivate Repo
+
+    Controller -> Jwt: generateToken(patientId, "PATIENT")
+    activate Jwt
+    Jwt --> Controller: accessToken
+    deactivate Jwt
+
+    Controller -> Jwt: generateRefreshToken(patientId, "PATIENT")
+    activate Jwt
+    Jwt --> Controller: refreshToken
+    deactivate Jwt
+
+    Controller --> View: 200 OK\n{message, token, refreshToken, email, role}
+    View --> User: Đăng nhập tự động & chuyển hướng Trang chủ
+end
+
+deactivate Controller
+deactivate View
+@enduml

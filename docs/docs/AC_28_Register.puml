@@ -1,0 +1,41 @@
+@startuml AC_28_Register
+title Activity Diagram: AC_28 Đăng ký tài khoản
+
+start
+:Bệnh nhân chọn "Đăng ký";
+:Nhập Họ, Tên, Email, Số điện thoại, Mật khẩu;
+:Ấn nút "Đăng ký";
+
+if (Các trường bắt buộc đã điền đủ?) then (Không)
+    :Hiển thị lỗi "Vui lòng điền đầy đủ thông tin";
+    stop
+else (Có)
+endif
+
+if (Định dạng Email hợp lệ?) then (Không)
+    :Hiển thị lỗi "Invalid email format";
+    stop
+else (Có)
+endif
+
+if (Mật khẩu >= 6 ký tự & có cả chữ và số?) then (Không)
+    :Hiển thị lỗi yêu cầu mật khẩu mạnh hơn;
+    stop
+else (Có)
+endif
+
+if (Email đã tồn tại trong hệ thống?) then (Có)
+    :Hiển thị lỗi "Email already registered";
+    stop
+else (Không)
+endif
+
+:Hệ thống tạo tài khoản Patient mới;
+:Mã hóa mật khẩu (BCrypt);
+:Lưu tài khoản vào CSDL (active = true);
+:Sinh mã QR Code cho bệnh nhân;
+:Sinh JWT Token & Refresh Token;
+:Trả về thông báo đăng ký thành công kèm Token;
+:Bệnh nhân được đăng nhập và chuyển hướng đến Trang chủ;
+stop
+@enduml

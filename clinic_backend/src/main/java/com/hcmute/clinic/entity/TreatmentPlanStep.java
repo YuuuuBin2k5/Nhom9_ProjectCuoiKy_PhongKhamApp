@@ -9,6 +9,10 @@ import lombok.Builder;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * Lớp Thực thể TreatmentPlanStep (Bước điều trị) - Đơn vị thực thi trong flow SE_14 (Ghi nhận kết quả).
+ * Đại diện cho một công đoạn cụ thể (ví dụ: lấy tủy, trám răng) trong phác đồ tổng quát.
+ */
 @Entity
 @Table(name = "treatment_plan_steps")
 @Data
@@ -16,10 +20,12 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class TreatmentPlanStep {
+    // Encapsulation: Bảo đảm tính đóng gói với phạm vi private.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Quan hệ N-1: Bước này thuộc về một phác đồ điều trị cha (TreatmentPlan).
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "plan_id", nullable = false)
     @JsonIgnore
@@ -27,6 +33,7 @@ public class TreatmentPlanStep {
     @EqualsAndHashCode.Exclude
     private TreatmentPlan plan;
 
+    // Quan hệ N-1: Mỗi bước thực hiện một loại dịch vụ nhất định (trám, nhổ, ...).
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "service_id", nullable = false)
     private Service service;

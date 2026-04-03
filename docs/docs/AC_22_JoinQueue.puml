@@ -1,0 +1,42 @@
+@startuml AC_22_JoinQueue_v2
+title Activity Diagram: AC-22 Tham gia hàng đợi (Join Queue) - Thật tế Code
+
+start
+:Đến phòng khám;
+:Check-in (QR / nhập mã);
+
+:Giải mã mã QR & Tìm hồ sơ bệnh nhân;
+
+if (Đã check-in hôm nay?) then (Có)
+    :Lấy thông tin hàng đợi hiện tại;
+else (Chưa)
+    :Tìm lịch hẹn bộ phận (Appointment);
+    
+    if (Có lịch hẹn hôm nay?) then (Có)
+        :Lấy thông tin lịch hẹn;
+    else (Không)
+        :Tạo lịch hẹn vãng lai (Walk-in);
+    endif
+    
+    :Xác định phòng khám (ClinicRoom);
+    note right: Lấy từ Doctor của Appointment\nhoặc phòng mặc định
+    
+    :Lấy số thứ tự tiếp theo (MAX + 1);
+    
+    :Tạo bản ghi CheckInQueue;
+    partition "Thiết lập thuộc tính" {
+        :Trạng thái = WAITING;
+        :Độ ưu tiên = 0;
+    }
+    
+    :Lưu vào Cơ sở dữ liệu;
+    :Gửi thông báo (FCM/WebSocket);
+endif
+
+:Tính vị trí trong hàng đợi;
+:Tính thời gian chờ dự kiến;
+
+:Hiển thị Số thứ tự & Thời gian chờ cho bệnh nhân;
+
+stop
+@enduml

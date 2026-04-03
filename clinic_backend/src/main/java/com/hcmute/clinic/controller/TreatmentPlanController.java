@@ -16,6 +16,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * TreatmentPlanController - API Controller quản lý Phác đồ điều trị.
+ * Cung cấp các endpoint cho flow SE_13, SE_14, SE_15:
+ * - Lập phác đồ, cập nhật bước điều trị, ghi nhận kết quả và thanh toán.
+ */
 @RestController
 @RequestMapping("/api/treatment-plans")
 @RequiredArgsConstructor
@@ -29,6 +34,9 @@ public class TreatmentPlanController {
     private final com.hcmute.clinic.repository.StepImageRepository stepImageRepository;
     private final com.hcmute.clinic.service.InvoiceService invoiceService;
 
+    /**
+     * Endpoint SE_13: Lập phác đồ điều trị từ mẫu có sẵn.
+     */
     @PostMapping("/from-template")
     @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")
     public ResponseEntity<?> createFromTemplate(@RequestBody Map<String, Long> body, Authentication auth) {
@@ -363,6 +371,9 @@ public class TreatmentPlanController {
 
     /**
      * SE_14: Ghi nhận kết quả điều trị
+     */
+    /**
+     * Endpoint SE_14: Ghi nhận kết quả điều trị của một bước.
      */
     @PostMapping("/steps/{stepId}/result")
     @PreAuthorize("hasRole('DOCTOR') or hasRole('ADMIN')")

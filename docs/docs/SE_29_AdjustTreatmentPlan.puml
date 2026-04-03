@@ -1,0 +1,65 @@
+@startuml SE_29_AdjustTreatmentPlan
+title Sequence Diagram: SE_29 Điều chỉnh phác đồ điều trị
+
+actor "Bác sĩ" as D
+participant "View\n(AdjustmentActivity)" as View
+participant "TreatmentPlanController" as Controller
+participant "TreatmentPlanService" as Service
+participant "TreatmentPlanStepRepository" as StepRepo
+participant "TreatmentPlanRepository" as PlanRepo
+database "PostgreSQL" as DB
+
+D -> View: Nhấn nút chỉnh sửa phác đồ
+activate View
+View -> Controller: GET /api/treatment-plans/{planId}
+activate Controller
+Controller -> Service: getFullPlan(planId)
+activate Service
+Service -> PlanRepo: findById(planId)
+activate PlanRepo
+PlanRepo -> DB: SELECT ...
+DB --> PlanRepo: treatmentPlan
+deactivate PlanRepo
+Service --> Controller: treatmentPlan (with steps)
+deactivate Service
+Controller --> View: 200 OK
+deactivate Controller
+View --> D: Hiển thị Timeline có khả năng chỉnh sửa
+
+D -> View: Thực hiện Thêm / Sửa / Xóa bước và nhấn "Commit"
+View -> Controller: PUT /api/treatment-plans/{planId}/steps
+activate Controller
+Controller -> Service: updateSteps(planId, List<StepUpdateDto>)
+activate Service
+
+alt Kiểm tra dữ liệu
+    Service -> Service: validateSteps(steps)
+    note right: Không được sửa bước\nđã COMPLETED
+end
+
+Service -> StepRepo: saveAll(modifiedSteps)
+activate StepRepo
+StepRepo -> DB: INSERT/UPDATE ...
+DB --> StepRepo: success
+deactivate StepRepo
+
+Service -> StepRepo: deleteAll(removedSteps)
+activate StepRepo
+StepRepo -> DB: DELETE FROM steps ...
+DB --> StepRepo: success
+deactivate StepRepo
+
+Service -> PlanRepo: updateLastModifiedDate(planId)
+activate PlanRepo
+PlanRepo -> DB: UPDATE treatment_plans ...
+DB --> PlanRepo: success
+deactivate PlanRepo
+
+Service --> Controller: updatedPlan
+deactivate Service
+Controller --> View: 200 OK
+deactivate Controller
+
+View --> D: Hiển thị thông báo thành công
+deactivate View
+@enduml

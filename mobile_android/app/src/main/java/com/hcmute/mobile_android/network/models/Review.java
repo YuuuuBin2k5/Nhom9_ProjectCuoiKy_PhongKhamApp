@@ -3,13 +3,19 @@ package com.hcmute.mobile_android.network.models;
 import com.google.gson.annotations.SerializedName;
 import java.util.Date;
 
+/**
+ * DTO chứa thông tin đánh giá dịch vụ từ bệnh nhân.
+ */
 public class Review {
+    /** ID của đánh giá */
     @SerializedName("id")
     private Long id;
     
+    /** ID của bệnh nhân */
     @SerializedName("patientId")
     private Long patientId;
     
+    /** Tên của bệnh nhân */
     @SerializedName("patientName")
     private String patientName;
     

@@ -1,0 +1,29 @@
+@startuml UC_29_AdjustTreatmentPlan
+title UC_29: Điều chỉnh phác đồ điều trị
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor Default
+    BorderColor Navy
+    ArrowColor Navy
+}
+
+actor "Bác sĩ" as D
+
+rectangle "Quản lý phác đồ" {
+    usecase "Điều chỉnh phác đồ" as UC29
+    usecase "Thêm bước điều trị" as UC29a
+    usecase "Sửa bước hiện tại" as UC29b
+    usecase "Xóa bước điều trị" as UC29c
+    usecase "Lưu thay đổi" as UC29d
+
+    UC29 ..> UC29a : <<extend>>
+    UC29 ..> UC29b : <<extend>>
+    UC29 ..> UC29c : <<extend>>
+    UC29 ..> UC29d : <<include>>
+}
+
+D --> UC29
+
+@enduml

@@ -8,6 +8,10 @@ import lombok.Builder;
 
 import java.time.LocalDateTime;
 
+/**
+ * Lớp Thực thể Appointment (Lịch hẹn) - Quản lý thông tin đặt lịch giữa Bệnh nhân và Bác sĩ.
+ * Lưu trữ thời gian, loại dịch vụ và trạng thái của cuộc hẹn.
+ */
 @Entity
 @Table(name = "appointments")
 @Data
@@ -29,6 +33,7 @@ public class Appointment {
 
     @ManyToOne
     @JoinColumn(name = "service_id", nullable = false)
+    /** Dịch vụ được yêu cầu trong lịch hẹn */
     private Service service;
 
     @Column(name = "plan_step_id")

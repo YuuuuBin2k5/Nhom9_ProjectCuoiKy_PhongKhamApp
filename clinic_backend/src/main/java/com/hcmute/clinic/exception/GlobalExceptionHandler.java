@@ -12,10 +12,17 @@ import org.springframework.web.server.ResponseStatusException;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Trình xử lý ngoại lệ tập trung cho toàn bộ ứng dụng.
+ * Chuyển đổi các ngoại lệ thành phản hồi JSON có cấu trúc để Client dễ dàng xử lý.
+ */
 @RestControllerAdvice
 @Slf4j
 public class GlobalExceptionHandler {
 
+    /**
+     * Xử lý các ngoại lệ ResponseStatusException.
+     */
     @ExceptionHandler(ResponseStatusException.class)
     public ResponseEntity<Map<String, Object>> handleResponseStatus(ResponseStatusException e) {
         String message = e.getReason() != null ? e.getReason() : (e.getStatusCode() instanceof HttpStatus ? ((HttpStatus) e.getStatusCode()).getReasonPhrase() : "Lỗi");

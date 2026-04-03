@@ -16,6 +16,10 @@ import java.util.Map;
  * REST Controller for managing tooth-specific and general services in treatment plans
  * Handles adding, removing, and calculating costs for services
  */
+/**
+ * Controller quản lý các dịch vụ điều trị áp dụng cho từng răng cụ thể (Sơ đồ răng).
+ * Hỗ trợ bác sĩ lập phác đồ chi tiết theo từng chỉ định lâm sàng.
+ */
 @RestController
 @RequestMapping("/api/treatment-plans/{planId}/services")
 @RequiredArgsConstructor

@@ -8,6 +8,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
+/**
+ * Repository quản lý dữ liệu thực thể Hồ sơ bệnh án (MedicalRecord).
+ * Lưu trữ lịch sử chẩn đoán và điều trị của bệnh nhân (UC_07).
+ */
 @Repository
 public interface MedicalRecordRepository extends JpaRepository<MedicalRecord, Long> {
     

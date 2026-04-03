@@ -10,12 +10,22 @@ import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Lớp Dịch vụ AppointmentService (Dịch vụ Lịch hẹn) - Cung cấp logic nghiệp vụ liên quan đến quản lý cuộc hẹn.
+ * Tập trung vào việc kiểm tra sự sẵn sàng của bác sĩ và các khung giờ trống (Time Slots).
+ */
 @Service
 @RequiredArgsConstructor
 public class AppointmentService {
     
     private final AppointmentRepository appointmentRepository;
     
+    /**
+     * Lấy danh sách các khung giờ (Time Slots) còn trống của bác sĩ trong một ngày.
+     * @param doctorId ID của bác sĩ cần kiểm tra.
+     * @param date Ngày cần lấy lịch.
+     * @return Danh sách các khung giờ kèm trạng thái (trống/bận).
+     */
     public List<TimeSlotDto> getAvailableSlots(Long doctorId, LocalDate date) {
         List<TimeSlotDto> slots = new ArrayList<>();
         

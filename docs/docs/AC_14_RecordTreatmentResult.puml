@@ -1,0 +1,33 @@
+@startuml AC_14_RecordTreatmentResult_v2
+title Activity Diagram: AC_14 Ghi nhận kết quả điều trị (Trong liệu trình)
+
+|Bác sĩ|
+start
+:Thực hiện khám theo bước điều trị;
+:Nhập chẩn đoán và kết luận vào bệnh án;
+
+if (Có hình ảnh kèm theo?) then (Có)
+    :Tải lên ảnh;
+else (Không)
+endif
+
+if (Cần kê thuốc?) then (Có)
+    :Chọn thuốc và nhập liều dùng;
+else (Không)
+endif
+:Nhấn "Hoàn thành" bước hiện tại;
+
+if (Phát sinh dịch vụ/bước mới?) then (Có)
+    :Thêm bước phát sinh;
+else (Không)
+endif
+
+if (Có bước tiếp theo?) then (Có)
+    :Chuyển sang bước điều trị tiếp theo (UC_15);
+else (Không)
+    :Kết thúc liệu trình điều trị;
+    :Bệnh nhân ra quầy thanh toán;
+endif
+
+stop
+@enduml

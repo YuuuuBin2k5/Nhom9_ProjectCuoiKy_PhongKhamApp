@@ -6,6 +6,9 @@ import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
+/**
+ * Repository quản lý dữ liệu thực thể Quản trị viên (Admin).
+ */
 @Repository
 public interface AdminRepository extends JpaRepository<Admin, Long> {
     Optional<Admin> findByEmailIgnoreCase(String email);

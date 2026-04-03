@@ -9,6 +9,10 @@ import org.springframework.stereotype.Repository;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Repository quản lý lịch sử thời gian thực hiện dịch vụ (ServiceDurationHistory).
+ * Dùng để thống kê và tối ưu hóa thời gian khám chữa bệnh.
+ */
 @Repository
 public interface ServiceDurationHistoryRepository extends JpaRepository<ServiceDurationHistory, Long> {
 

@@ -2,6 +2,9 @@ package com.hcmute.clinic.dto;
 
 import lombok.Data;
 
+/**
+ * DTO chứa thông tin yêu cầu cập nhật hồ sơ bệnh nhân.
+ */
 @Data
 public class UpdatePatientRequest {
     private String firstName;

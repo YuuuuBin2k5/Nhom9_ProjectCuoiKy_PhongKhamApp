@@ -3,6 +3,9 @@ package com.hcmute.clinic.dto;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * DTO đại diện cho nội dung một tin nhắn trong hệ thống Chat.
+ */
 @Data
 @Builder
 public class ChatMessageDto {

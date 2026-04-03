@@ -1,5 +1,8 @@
 package com.hcmute.clinic.util;
 
+/**
+ * Tiện ích xử lý và chuẩn hóa số điện thoại theo định dạng chuẩn quốc tế.
+ */
 public final class PhoneUtils {
 
     private PhoneUtils() {

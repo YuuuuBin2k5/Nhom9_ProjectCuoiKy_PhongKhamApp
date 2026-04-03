@@ -10,6 +10,10 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
+/**
+ * Controller cung cấp các báo cáo thống kê dành cho Quản trị viên.
+ * Bao gồm báo cáo doanh thu, hiệu suất làm việc của bác sĩ và mức độ sử dụng dịch vụ.
+ */
 @RestController
 @RequestMapping("/api/admin/reports")
 @RequiredArgsConstructor
@@ -19,8 +23,8 @@ public class AdminReportController {
     private final AdminReportService adminReportService;
     
     /**
-     * Get revenue report - supports both date range and year/month parameters
-     * Priority: date range > year/month > current month
+     * Lấy báo cáo doanh thu - hỗ trợ cả khoảng thời gian và tham số năm/tháng
+     * Ưu tiên: khoảng thời gian > năm/tháng > tháng hiện tại
      */
     @GetMapping("/revenue")
     public ResponseEntity<RevenueReportDto> getRevenueReport(

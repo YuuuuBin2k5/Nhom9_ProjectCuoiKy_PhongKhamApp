@@ -1,0 +1,24 @@
+@startuml SE_08_MakePayment
+title Sequence Diagram: SE_08 Thanh toán
+actor "Khách hàng" as User
+participant "View\n(PaymentActivity)" as View
+participant "CheckInController" as Controller
+participant "PaymentService" as Service
+participant "InvoiceRepository" as Repo
+database "PostgreSQL" as DB
+
+User -> View: Chọn hóa đơn & Xác nhận thanh toán
+activate View
+View -> Controller: processPayment(invoiceId, paymentReq)
+activate Controller
+Controller -> Service: process(invoiceId, amount)
+activate Service
+Service -> Repo: findById(invoiceId)
+Repo -> DB: SELECT * FROM invoice...
+Service -> DB: INSERT INTO payment...
+Service -> DB: UPDATE invoice SET status='PAID'
+Service --> Controller: PaymentResponse
+Controller --> View: 200 OK
+View --> User: Báo thanh toán thành công
+deactivate View
+@enduml

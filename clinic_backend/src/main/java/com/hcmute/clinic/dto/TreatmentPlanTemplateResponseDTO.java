@@ -7,6 +7,9 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/**
+ * DTO phản hồi chứa thông tin chi tiết về mẫu phác đồ điều trị.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

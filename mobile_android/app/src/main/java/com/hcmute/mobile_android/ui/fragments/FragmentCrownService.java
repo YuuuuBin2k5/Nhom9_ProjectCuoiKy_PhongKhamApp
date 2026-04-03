@@ -28,8 +28,8 @@ import java.util.List;
 import java.util.Set;
 
 /**
- * Fragment for Crown (Bọc răng sứ) service
- * Allows selecting crown type and multiple teeth
+ * Fragment xử lý quy trình nghiệp vụ cho dịch vụ bọc răng sứ.
+ * Hỗ trợ chọn răng cụ thể và ghi nhận trạng thái điều trị sứ.
  */
 public class FragmentCrownService extends Fragment {
 

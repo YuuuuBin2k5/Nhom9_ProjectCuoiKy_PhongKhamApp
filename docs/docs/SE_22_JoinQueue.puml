@@ -1,0 +1,92 @@
+@startuml SE_22_JoinQueue
+title Sequence Diagram: SE_22 Quét mã QR - Tham gia hàng đợi (Join Queue)
+
+actor "Bệnh nhân" as Patient
+participant "Mobile App / Kiosk" as View
+participant "CheckInController" as Controller
+participant "CheckInQueueService" as Service
+participant "AppointmentRepository" as ApptRepo
+participant "CheckInQueueRepository" as QueueRepo
+participant "NotificationService" as NotifService
+database "PostgreSQL" as DB
+
+Patient -> View: Quét mã QR tại quầy
+activate View
+
+View -> Controller: scan(qrData)
+activate Controller
+
+Controller -> Service: processScan(qrData)
+activate Service
+
+Service -> Service: resolvePatientId(qrData)
+note right: Giải mã JWT hoặc parse CHECKIN:id
+
+Service -> QueueRepo: findTodayForPatient(patientId)
+activate QueueRepo
+QueueRepo -> DB: SELECT * FROM check_in_queue WHERE ...
+activate DB
+DB --> QueueRepo: list
+deactivate DB
+QueueRepo --> Service: existingQueues
+deactivate QueueRepo
+
+alt Đã có trong hàng đợi (Already checked-in)
+    Service -> Service: calculateEstimatedWaitTime(activeQueue)
+    Service --> Controller: CheckInResult.alreadyCheckedIn(...)
+else Chưa có trong hàng đợi
+    Service -> ApptRepo: findTodayByPatientId(patientId)
+    activate ApptRepo
+    ApptRepo -> DB: SELECT * FROM appointments WHERE ...
+    activate DB
+    DB --> ApptRepo: appointments
+    deactivate DB
+    ApptRepo --> Service: todayAppointments
+    deactivate ApptRepo
+
+    alt Không có lịch hẹn
+        Service -> Service: createWalkInAppointment(patient)
+        Service -> ApptRepo: save(walkInAppt)
+    end
+
+    Service -> Service: Xác định phòng khám (ClinicRoom)
+    note right: Lấy từ Doctor của Appointment hoặc mặc định
+
+    Service -> QueueRepo: findMaxQueueNumber(roomId)
+    activate QueueRepo
+    QueueRepo -> DB: SELECT MAX(queue_number) ...
+    activate DB
+    DB --> QueueRepo: currentMax
+    deactivate DB
+    QueueRepo --> Service: currentMax
+    deactivate QueueRepo
+
+    Service -> Service: create CheckInQueue (priorityLevel = 0, status = WAITING)
+    
+    Service -> QueueRepo: save(queueEntry)
+    activate QueueRepo
+    QueueRepo -> DB: INSERT INTO check_in_queue ...
+    activate DB
+    DB --> QueueRepo: success
+    deactivate DB
+    QueueRepo --> Service: savedQueueEntry
+    deactivate QueueRepo
+
+    Service -> NotifService: gửi thông báo (FCM)
+    Service -> Service: broadcastQueueUpdated(roomId) <<WebSocket>>
+    
+    Service -> Service: calculateEstimatedWaitTime(queue)
+    Service -> Service: calculateQueuePosition(queue)
+    
+    Service --> Controller: CheckInResult.success(...)
+end
+
+deactivate Service
+
+Controller --> View: 200 OK (CheckInResult)
+deactivate Controller
+
+View --> Patient: Hiển thị STT, số người phía trước & thời gian chờ
+deactivate View
+
+@enduml

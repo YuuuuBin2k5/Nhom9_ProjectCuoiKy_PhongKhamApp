@@ -20,6 +20,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Lớp Dịch vụ InvoiceService (Dịch vụ Hóa đơn) - Thành phần chính xử lý logic thanh toán và quyết toán.
+ * Chịu trách nhiệm tạo hóa đơn từ phác đồ, xử lý thanh toán và cập nhật trạng thái hệ thống sau khi thu phí.
+ */
 @Service
 @RequiredArgsConstructor
 public class InvoiceService {
@@ -62,6 +66,14 @@ public class InvoiceService {
         return toDto(invoice);
     }
     
+    /**
+     * Xử lý nghiệp vụ thanh toán hóa đơn. 
+     * Sau khi thanh toán thành công, sẽ tự động cập nhật trạng thái lịch hẹn và hàng đợi tương ứng.
+     * @param invoiceId ID của hóa đơn.
+     * @param request Thông tin thanh toán (phương thức, số tiền).
+     * @param auth Đối tượng xác thực người dùng.
+     * @return Phản hồi kết quả thanh toán.
+     */
     @Transactional
     public PaymentResponse processPayment(Long invoiceId, PaymentRequest request, Authentication auth) {
         Invoice invoice = invoiceRepository.findById(invoiceId)
@@ -156,6 +168,12 @@ public class InvoiceService {
     /**
      * Tạo Invoice từ Treatment Plan đã hoàn tất
      * Tổng hợp tất cả steps COMPLETED và tạo hóa đơn
+     */
+    /**
+     * Nghiệp vụ tạo hóa đơn từ phác đồ điều trị. 
+     * Tổng hợp tất cả các bước điều trị đã hoàn tất để tính toán tổng chi phí.
+     * @param treatmentPlanId ID của phác đồ điều trị.
+     * @return Đối tượng Invoice đã được lưu.
      */
     @Transactional
     public Invoice createInvoiceFromTreatmentPlan(Long treatmentPlanId) {

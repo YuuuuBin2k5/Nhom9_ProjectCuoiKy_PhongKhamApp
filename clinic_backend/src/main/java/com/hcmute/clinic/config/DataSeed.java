@@ -18,6 +18,10 @@ import java.sql.Connection;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Lớp Cấu hình DataSeed - Chịu trách nhiệm khởi tạo dữ liệu ban đầu cho hệ thống.
+ * Cung cấp dữ liệu mẫu về Danh mục, Dịch vụ, Bác sĩ, Phòng khám và Bệnh nhân để phục vụ kiểm thử OOSE.
+ */
 @Component
 @Order(10)
 @RequiredArgsConstructor
@@ -37,7 +41,6 @@ public class DataSeed implements ApplicationRunner {
     private final PrescriptionRepository prescriptionRepository;
     private final NotificationRepository notificationRepository;
     private final OtpChallengeRepository otpChallengeRepository;
-    private final ScanLogRepository scanLogRepository;
     private final TreatmentPlanRepository treatmentPlanRepository;
     private final TreatmentPlanStepRepository treatmentPlanStepRepository;
     private final TreatmentPlanTemplateRepository treatmentPlanTemplateRepository;
@@ -66,7 +69,6 @@ public class DataSeed implements ApplicationRunner {
             "treatment_plan_template_steps, " +
             "treatment_plan_templates, " +
             "otp_challenges, " +
-            "scan_logs, " +
             "notifications, " +
             "service_images, " +
             "services, " +

@@ -47,6 +47,10 @@ import retrofit2.Callback;
 import retrofit2.Response;
 import com.bumptech.glide.Glide;
 
+/**
+ * Activity xử lý quy trình đặt lịch hẹn cho bệnh nhân.
+ * Bao gồm các bước: Chọn dịch vụ, chọn bác sĩ, chọn ngày và khung giờ.
+ */
 public class BookAppointmentActivity extends AppCompatActivity {
 
     public static final String EXTRA_CATEGORY = "categoryName";

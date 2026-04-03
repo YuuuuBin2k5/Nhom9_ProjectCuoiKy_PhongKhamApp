@@ -10,6 +10,9 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repository quản lý chi tiết các bước trong phác đồ điều trị (TreatmentPlanStep).
+ */
 @Repository
 public interface TreatmentPlanStepRepository extends JpaRepository<TreatmentPlanStep, Long> {
     

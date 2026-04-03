@@ -12,6 +12,10 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+/**
+ * Controller cung cấp thông tin dự báo thời gian chờ đợi trong hàng đợi.
+ * Giúp bệnh nhân chủ động sắp xếp thời gian khi đến phòng khám.
+ */
 @RestController
 @RequestMapping("/api/queue/estimate")
 @RequiredArgsConstructor

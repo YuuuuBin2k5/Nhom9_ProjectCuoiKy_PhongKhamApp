@@ -10,6 +10,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repository quản lý dữ liệu thực thể Bệnh nhân (Patient).
+ * Cung cấp chức năng tìm kiếm bệnh nhân nâng cao theo thông tin cá nhân.
+ */
 @Repository
 public interface PatientRepository extends JpaRepository<Patient, Long> {
     Optional<Patient> findByEmail(String email);

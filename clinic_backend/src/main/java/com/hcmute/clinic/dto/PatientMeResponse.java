@@ -3,6 +3,9 @@ package com.hcmute.clinic.dto;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * DTO phản hồi thông tin hồ sơ của bệnh nhân đang đăng nhập.
+ */
 @Data
 @Builder
 public class PatientMeResponse {

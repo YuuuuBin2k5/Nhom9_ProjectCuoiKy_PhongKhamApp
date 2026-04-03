@@ -3,6 +3,9 @@ package com.hcmute.clinic.dto;
 import lombok.*;
 import java.time.LocalDateTime;
 
+/**
+ * DTO đại diện cho một đánh giá dịch vụ từ bệnh nhân.
+ */
 @Data
 @Builder
 @NoArgsConstructor

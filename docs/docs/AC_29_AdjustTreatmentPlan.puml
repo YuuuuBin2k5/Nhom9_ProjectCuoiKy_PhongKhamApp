@@ -1,0 +1,50 @@
+@startuml AC_29_AdjustTreatmentPlan
+title Activity Diagram: AC_29 Điều chỉnh phác đồ điều trị
+
+|Bác sĩ|
+start
+:Mở hồ sơ bệnh án;
+:Chọn phác đồ đang kích hoạt;
+:Nhấn nút "Điều chỉnh phác đồ";
+
+partition "Chỉnh sửa bước" {
+
+    while (Tiếp tục thay đổi?) is (Có)
+
+        if (Chọn thao tác?) then (Thêm bước)
+            :Thêm bước mới;
+            :Nhập nội dung/dịch vụ;
+
+        elseif (Chỉnh sửa bước)
+            :Chọn bước hiện có;
+            if (Trạng thái == PENDING?) then (Có)
+                :Chỉnh sửa thông tin;
+            else (Không)
+                :Báo lỗi "Không thể sửa bước đã xong";
+            endif
+
+        else (Xóa bước)
+            :Chọn bước muốn xóa;
+            if (Chưa thực hiện?) then (Có)
+                :Xác nhận xóa;
+            else (Không)
+                :Báo lỗi "Không thể xóa bước đã xong";
+            endif
+        endif
+
+    endwhile (Không)
+}
+
+:Nhấn "Ghi nhận thay đổi";
+
+|Hệ thống|
+:Kiểm tra tính hợp lệ dữ liệu;
+:Khi hợp lệ -> Cập nhật các bước trong DB;
+:Ghi log lịch sử thay đổi;
+:Đồng bộ trạng thái Timeline lên Mobile App;
+
+|Bác sĩ|
+:Hiển thị thông báo thành công;
+
+stop
+@enduml

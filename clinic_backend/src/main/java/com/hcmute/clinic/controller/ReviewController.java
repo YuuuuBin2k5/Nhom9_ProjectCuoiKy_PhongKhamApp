@@ -9,6 +9,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+/**
+ * Controller quản lý các đánh giá và phản hồi từ bệnh nhân về dịch vụ của phòng khám.
+ */
 @RestController
 @RequestMapping("/api/reviews")
 @RequiredArgsConstructor
@@ -16,6 +19,12 @@ public class ReviewController {
     
     private final ReviewService reviewService;
     
+    /**
+     * Tạo một đánh giá mới cho dịch vụ.
+     * @param request Thông tin đánh giá.
+     * @param auth Thông tin xác thực của bệnh nhân.
+     * @return ResponseEntity chứa thông tin đánh giá đã tạo.
+     */
     @PostMapping
     @PreAuthorize("hasRole('PATIENT')")
     public ResponseEntity<ReviewDto> createReview(

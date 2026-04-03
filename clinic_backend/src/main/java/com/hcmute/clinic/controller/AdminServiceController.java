@@ -15,6 +15,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Controller quản lý danh mục dịch vụ và nhóm dịch vụ (Admin).
+ * Cho phép thiết lập thông tin giá, thời gian thực hiện và hình ảnh minh họa cho dịch vụ.
+ */
 @RestController
 @RequestMapping("/api/admin/services")
 @RequiredArgsConstructor

@@ -1,0 +1,20 @@
+@startuml
+title Activity Diagram: AC_12 Bác sĩ xem bệnh án lịch sử của bệnh nhân
+
+|Bác sĩ|
+start
+:Nhận bệnh nhân vào khám;
+:Mở hồ sơ điện tử của bệnh nhân;
+
+if (Đã từng khám tại phòng khám?) then (Có)
+    :Hệ thống hiển thị danh sách các lần khám cũ;
+    :Chọn một phiên khám cụ thể;
+    :Xem chi tiết: Răng hàm mặt (nếu có), đơn thuốc, \nkết quả xét nghiệm/X-quang;
+else (Không)
+    :Hệ thống thông báo "Không có lịch sử";
+    :Trao đổi với bệnh nhân để nắm thông tin bệnh lý nền;
+    :Khởi tạo thông tin hồ sơ mới;
+endif
+
+stop
+@enduml

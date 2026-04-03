@@ -14,6 +14,9 @@ import com.hcmute.mobile_android.network.models.Review;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Adapter hiển thị danh sách các đánh giá từ bệnh nhân dành cho bác sĩ.
+ */
 public class DoctorReviewAdapter extends RecyclerView.Adapter<DoctorReviewAdapter.Holder> {
 
     private final List<Review> items = new ArrayList<>();

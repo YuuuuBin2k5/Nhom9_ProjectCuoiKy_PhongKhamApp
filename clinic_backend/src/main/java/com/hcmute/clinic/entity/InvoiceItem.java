@@ -4,6 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 
+/**
+ * Lớp Thực thể InvoiceItem (Chi tiết hóa đơn) - Đại diện cho một dòng (line item) trong hóa đơn.
+ * Mỗi item thường tương ứng với một dịch vụ hoặc thuốc đã được sử dụng.
+ */
 @Entity
 @Table(name = "invoice_items")
 @Data
@@ -12,10 +16,12 @@ import java.math.BigDecimal;
 @Builder
 public class InvoiceItem {
     
+    // Thuộc tính private (Encapsulation).
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
     
+    // Hóa đơn cha chứa mục này.
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "invoice_id", nullable = false)
     @ToString.Exclude

@@ -7,6 +7,10 @@ import org.hibernate.annotations.CreationTimestamp;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Lớp Thực thể MedicalRecord (Hồ sơ bệnh án) - Lưu trữ kết quả của flow SE_14 (Ghi nhận kết quả khám).
+ * Là nơi tổng hợp chẩn đoán, triệu chứng và các tư vấn chuyên môn từ bác sĩ.
+ */
 @Entity
 @Table(name = "medical_records")
 @Data
@@ -14,10 +18,12 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class MedicalRecord {
+    // Encapsulation: Đảm bảo các thuộc tính ở trạng thái private.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Quan hệ 1-1: Mỗi hồ sơ bệnh án thuộc về một lịch hẹn cụ thể.
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "appointment_id", nullable = false)
     private Appointment appointment;

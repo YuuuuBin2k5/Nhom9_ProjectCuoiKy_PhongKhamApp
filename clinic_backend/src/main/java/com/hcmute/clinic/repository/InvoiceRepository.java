@@ -8,6 +8,10 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import java.util.List;
 
+/**
+ * Repository quản lý dữ liệu thực thể Hóa đơn (Invoice).
+ * Quản lý quy trình thanh toán và đối soát tài chính (UC_08).
+ */
 @Repository
 public interface InvoiceRepository extends JpaRepository<Invoice, Long> {
     List<Invoice> findByPatientIdOrderByCreatedAtDesc(Long patientId);

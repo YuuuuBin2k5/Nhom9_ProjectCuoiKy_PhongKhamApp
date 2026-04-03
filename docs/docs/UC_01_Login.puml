@@ -1,0 +1,25 @@
+@startuml UC_01_Login
+title UC_01: Đăng nhập
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor Default
+    BorderColor Navy
+    ArrowColor Navy
+}
+
+actor "Bệnh nhân" as P
+
+rectangle "Xác thực" {
+    usecase "Đăng nhập" as UC1
+    usecase "Gửi thông tin đăng nhập" as UC2
+    usecase "Xác thực Phiên đăng nhập" as UC3
+    
+    UC1 ..> UC2 : <<include>>
+    UC2 ..> UC3 : <<include>>
+}
+
+P --> UC1
+
+@enduml

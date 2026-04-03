@@ -12,11 +12,20 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.converter.scalars.ScalarsConverterFactory;
 
+/**
+ * Lớp khởi tạo và quản lý đối tượng Retrofit duy nhất (Singleton) cho toàn bộ ứng dụng.
+ */
 public class RetrofitClient {
 
     private static volatile Retrofit retrofit = null;
     private static String lastBaseUrl = null;
 
+    /**
+     * Trả về đối tượng ApiService để thực hiện các yêu cầu mạng.
+     *
+     * @param context Context của ứng dụng.
+     * @return Đối tượng ApiService đã được cấu hình.
+     */
     public static ApiService getApiService(Context context) {
         String baseUrl = BuildConfig.API_BASE_URL;
         if (!baseUrl.endsWith("/")) {

@@ -6,6 +6,9 @@ import lombok.Data;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 
+/**
+ * DTO chứa thông tin yêu cầu đăng ký tài khoản bệnh nhân mới.
+ */
 @Data
 public class RegisterRequest {
     @NotBlank

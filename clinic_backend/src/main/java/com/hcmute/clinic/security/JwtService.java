@@ -12,6 +12,10 @@ import java.nio.charset.StandardCharsets;
 import java.util.Date;
 import java.util.UUID;
 
+/**
+ * Dịch vụ xử lý JSON Web Token (JWT).
+ * Cung cấp các phương thức tạo mã thông báo cho đăng nhập và mã QR Check-in.
+ */
 @Service
 public class JwtService {
 

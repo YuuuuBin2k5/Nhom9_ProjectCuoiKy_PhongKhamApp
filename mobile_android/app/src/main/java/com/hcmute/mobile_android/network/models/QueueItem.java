@@ -1,12 +1,22 @@
 package com.hcmute.mobile_android.network.models;
 
+/**
+ * DTO đại diện cho một bệnh nhân trong danh sách hàng đợi của phòng khám.
+ */
 public class QueueItem {
+    /** ID của mục trong hàng đợi */
     private Long id;
+    /** Tên bệnh nhân */
     private String patientName;
+    /** Số điện thoại bệnh nhân */
     private String patientPhone;
+    /** Số thứ tự trong hàng đợi */
     private Integer queueNumber;
-    private String status; // WAITING, IN_PROGRESS, PAUSED_FOR_TEST, RETURNED_PRIORITY, COMPLETED
+    /** Trạng thái hiện tại: WAITING, IN_PROGRESS, PAUSED_FOR_TEST, RETURNED_PRIORITY, COMPLETED */
+    private String status;
+    /** Tên dịch vụ khám */
     private String serviceName;
+    /** Thời gian hẹn */
     private String appointmentTime;
     private Integer priority; // 0 = normal, 1 = priority (after X-Ray)
     private String roomName;

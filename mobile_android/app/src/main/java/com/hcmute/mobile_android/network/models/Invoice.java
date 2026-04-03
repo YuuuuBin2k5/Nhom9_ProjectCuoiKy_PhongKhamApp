@@ -5,13 +5,19 @@ import java.math.BigDecimal;
 import java.util.Date;
 import java.util.List;
 
+/**
+ * DTO đại diện cho thông tin hóa đơn thanh toán của bệnh nhân.
+ */
 public class Invoice {
+    /** ID của hóa đơn */
     @SerializedName("id")
     private Long id;
     
+    /** ID của bệnh nhân */
     @SerializedName("patientId")
     private Long patientId;
     
+    /** Tên của bệnh nhân */
     @SerializedName("patientName")
     private String patientName;
     

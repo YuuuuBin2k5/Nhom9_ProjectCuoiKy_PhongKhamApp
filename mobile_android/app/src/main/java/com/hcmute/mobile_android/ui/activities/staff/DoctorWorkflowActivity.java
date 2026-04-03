@@ -59,6 +59,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+/**
+ * Activity trung tâm xử lý quy trình làm việc của Bác sĩ.
+ * Các chức năng chính: Tra cứu hồ sơ, Chẩn đoán răng, Lập phác đồ, Chụp ảnh cận lâm sàng và Hoàn tất điều trị.
+ */
 public class DoctorWorkflowActivity extends AppCompatActivity implements 
         TreatmentTemplateAdapter.OnTemplateSelectedListener,
         TreatmentStepAdapter.OnStepActionListener {
@@ -93,6 +97,11 @@ public class DoctorWorkflowActivity extends AppCompatActivity implements
     private List<TreatmentPlan.Step> treatmentSteps = new ArrayList<>();
     private PatientInfo currentPatient;
     private Long currentTreatmentPlanId;
+    /**
+     * Activity quản lý hàng đợi tại các phòng khám dành cho điều phối viên.
+     * Hỗ trợ theo dõi trạng thái, gọi số thứ tự và chuyển tiếp bệnh nhân.
+     */
+    public class QueueManagementActivity extends BaseAdminActivity implements QueueAdapter.OnQueueActionListener, QueueListFragment.OnRefreshRequestedListener {
     // Current room context – passed from QueueManagementActivity to detect X-Ray room
     private String currentRoomName = "";
     private com.hcmute.mobile_android.network.models.ServiceItem pendingServiceToAdd;

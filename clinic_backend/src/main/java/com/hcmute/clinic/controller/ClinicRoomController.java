@@ -13,6 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Controller truy xuất thông tin các phòng chức năng trong hệ thống.
+ */
 @RestController
 @RequestMapping("/api/clinic-rooms")
 @RequiredArgsConstructor

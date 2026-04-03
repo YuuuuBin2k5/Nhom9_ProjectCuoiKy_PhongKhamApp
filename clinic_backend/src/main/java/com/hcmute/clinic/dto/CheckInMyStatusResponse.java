@@ -3,6 +3,10 @@ package com.hcmute.clinic.dto;
 import lombok.Builder;
 import lombok.Value;
 
+/**
+ * DTO cung cấp trạng thái hàng đợi thời gian thực cho bệnh nhân sau khi Check-in.
+ * Giúp bệnh nhân theo dõi số thứ tự và thời gian chờ đợi dự kiến.
+ */
 @Value
 @Builder
 public class CheckInMyStatusResponse {

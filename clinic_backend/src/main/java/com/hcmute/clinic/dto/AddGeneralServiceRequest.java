@@ -5,8 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Request DTO for adding a general service (not specific to a tooth)
- * Used for services like consultation, X-ray, teeth cleaning, etc.
+ * DTO Yêu cầu thêm dịch vụ nha khoa tổng quát (không chỉ định răng).
+ * Thường dùng cho: Khám tư vấn, Chụp X-quang, Lấy cao răng, v.v.
  */
 @Data
 @NoArgsConstructor

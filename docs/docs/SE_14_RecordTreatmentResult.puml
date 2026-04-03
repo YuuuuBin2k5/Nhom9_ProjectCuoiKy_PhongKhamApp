@@ -1,0 +1,109 @@
+@startuml SE_14_RecordTreatmentResult
+title Sequence Diagram: SE_14 Ghi nhận kết quả khám
+
+actor "Bác sĩ" as Doctor
+participant "View\n(RecordResultActivity)" as View
+participant "TreatmentController" as Controller
+participant "TreatmentService" as Service
+participant "TreatmentPlanStepRepository" as StepRepo
+participant "MedicalRecordRepository" as RecordRepo
+participant "PrescriptionRepository" as PrescRepo
+participant "InvoiceService" as InvoiceService
+database "PostgreSQL" as DB
+
+Doctor -> View: Nhập chẩn đoán, kết luận
+activate View
+
+opt Có hình ảnh y khoa
+    Doctor -> View: Tải lên hình ảnh
+end
+
+opt Có kê đơn thuốc
+    Doctor -> View: Chọn thuốc và liều dùng
+end
+
+Doctor -> View: Nhấn "Hoàn thành"
+View -> Controller: completeStep(stepId, data)
+activate Controller
+
+Controller -> Service: processCompleteStep(stepId, data)
+activate Service
+
+== Lưu kết quả khám ==
+
+Service -> StepRepo: findById(stepId)
+activate StepRepo
+StepRepo -> DB: SELECT * FROM steps WHERE id = ?
+activate DB
+DB --> StepRepo: step
+deactivate DB
+StepRepo --> Service: step
+deactivate StepRepo
+
+Service -> Service: updateStep(status='COMPLETED', result=data.result)
+
+opt Lưu hình ảnh
+    Service -> DB: INSERT INTO step_images (...)
+end
+
+opt Lưu đơn thuốc
+    Service -> PrescRepo: save(prescription)
+    activate PrescRepo
+    PrescRepo -> DB: INSERT INTO prescriptions (...)
+    activate DB
+    DB --> PrescRepo: success
+    deactivate DB
+    PrescRepo --> Service: success
+    deactivate PrescRepo
+end
+
+Service -> RecordRepo: updateMedicalRecord(patientId, clinicalNote)
+activate RecordRepo
+RecordRepo -> DB: UPDATE medical_records ...
+activate DB
+DB --> RecordRepo: success
+deactivate DB
+RecordRepo --> Service: success
+deactivate RecordRepo
+
+== Xử lý Logic Phác đồ (AC_14) ==
+
+alt Có dịch vụ phát sinh (UC_29)
+    Service -> Service: triggerAdjustPlan(planId, unplannedServices)
+    note right: Tự động thêm các bước mới\nvào phác đồ hiện tại
+end
+
+alt Có bước tiếp theo?
+    Service -> Service: triggerMoveToNextStep(stepId) <<UC_15>>
+    note right: Cập nhật bước tiếp theo thành PENDING\nvà thông báo cho bệnh nhân
+else Không còn bước nào
+    Service -> Service: finalizeTreatmentPlan(planId)
+    Service -> InvoiceService: generateInvoice(patientId, visitId)
+    activate InvoiceService
+    InvoiceService -> DB: INSERT INTO invoices ...
+    activate DB
+    DB --> InvoiceService: invoice
+    deactivate DB
+    InvoiceService --> Service: invoice
+    deactivate InvoiceService
+end
+
+Service -> StepRepo: save(step)
+activate StepRepo
+StepRepo -> DB: UPDATE steps ...
+activate DB
+DB --> StepRepo: success
+deactivate DB
+StepRepo --> Service: success
+deactivate StepRepo
+
+Service --> Controller: SuccessResponse
+deactivate Service
+
+Controller --> View: 200 OK
+deactivate Controller
+
+View --> Doctor: Hiển thị thông báo hoàn thành & hóa đơn đã tạo
+deactivate View
+
+@enduml

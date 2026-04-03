@@ -8,6 +8,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Controller điều phối hàng đợi khám bệnh (UC_06).
+ * Hỗ trợ bác sĩ gọi bệnh nhân, chuyển tuyến và quản lý trạng thái chờ.
+ */
 @RestController
 @RequestMapping("/api/queue")
 @RequiredArgsConstructor
@@ -16,6 +20,11 @@ public class QueueController {
 
     private final CheckInQueueService checkInQueueService;
 
+    /**
+     * Lấy danh sách hàng đợi của một phòng khám cụ thể.
+     * @param roomId ID của phòng khám.
+     * @return Danh sách bệnh nhân đang chờ tại phòng.
+     */
     @GetMapping("/room/{roomId}")
     public ResponseEntity<?> getRoomQueue(@PathVariable Long roomId) {
         return ResponseEntity.ok(checkInQueueService.getRoomQueue(roomId));

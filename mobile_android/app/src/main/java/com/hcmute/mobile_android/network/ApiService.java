@@ -50,6 +50,10 @@ import retrofit2.http.PUT;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 
+/**
+ * Giao diện định nghĩa các yêu cầu API (Retrofit) để giao tiếp với Backend.
+ * Bao gồm các phân hệ: Xác thực, Bệnh nhân, Bác sĩ, Lịch hẹn, Hàng đợi và Phác đồ điều trị.
+ */
 public interface ApiService {
 
     @GET("api/patients/me")

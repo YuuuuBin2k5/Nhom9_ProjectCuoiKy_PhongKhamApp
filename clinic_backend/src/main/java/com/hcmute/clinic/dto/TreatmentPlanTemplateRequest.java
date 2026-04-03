@@ -3,6 +3,9 @@ package com.hcmute.clinic.dto;
 import lombok.Data;
 import java.util.List;
 
+/**
+ * DTO yêu cầu tạo hoặc cập nhật mẫu phác đồ điều trị (UC_13).
+ */
 @Data
 public class TreatmentPlanTemplateRequest {
     private String name;

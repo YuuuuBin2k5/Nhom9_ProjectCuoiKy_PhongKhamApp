@@ -1,0 +1,20 @@
+@startuml UC_27_RemovePatientFromQueue
+title UC_UC_29: Loại bệnh nhân khỏi hàng đợi
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor Default
+    BorderColor Navy
+    ArrowColor Navy
+}
+
+actor "Quản trị viên" as A
+
+rectangle "Quản lý hàng đợi" {
+    usecase "Hủy/Ép bệnh nhân\nkhỏi Hàng đợi" as UC1
+}
+
+A --> UC1
+
+@enduml

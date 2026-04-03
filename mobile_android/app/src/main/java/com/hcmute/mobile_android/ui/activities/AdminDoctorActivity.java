@@ -31,6 +31,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+/**
+ * Activity quản lý danh sách bác sĩ dành cho quản trị viên.
+ * Hỗ trợ các chức năng: Xem danh sách, Thêm, Sửa và Xóa bác sĩ.
+ */
 public class AdminDoctorActivity extends BaseAdminActivity implements AdminDoctorAdapter.OnDoctorActionListener {
 
     private RecyclerView rvDoctors;

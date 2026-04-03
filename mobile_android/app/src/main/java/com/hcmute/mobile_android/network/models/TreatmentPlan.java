@@ -2,20 +2,37 @@ package com.hcmute.mobile_android.network.models;
 
 import java.util.List;
 
+/**
+ * DTO đại diện cho phác đồ điều trị của bệnh nhân.
+ */
 public class TreatmentPlan {
+    /** ID của phác đồ điều trị */
     private Long id;
+    /** ID của bệnh nhân */
     private Long patientId;
-    private Long appointmentId; // ADDED: To validate prescription belongs to correct appointment
+    /** ID của cuộc hẹn (để xác thực đơn thuốc thuộc về đúng cuộc hẹn) */
+    private Long appointmentId;
+    /** Tên bệnh nhân */
     private String patientName;
-    private String status; // DRAFT, ACTIVE, COMPLETED, CANCELLED
+    /** Trạng thái phác đồ (DRAFT, ACTIVE, COMPLETED, CANCELLED) */
+    private String status;
+    /** Ngày tạo */
     private String createdAt;
+    /** Ngày cập nhật */
     private String updatedAt;
+    /** Tổng chi phí dự kiến */
     private Double totalEstimatedCost;
+    /** Tổng chi phí thực tế */
     private Double totalActualCost;
+    /** Trạng thái bản nháp */
     private boolean isDraft;
+    /** ID đơn thuốc */
     private Long prescriptionId;
+    /** Chẩn đoán */
     private String diagnosis;
+    /** Lời khuyên */
     private String advice;
+    /** Danh sách các bước điều trị */
     private List<Step> steps;
 
     // Constructors
@@ -83,13 +100,23 @@ public class TreatmentPlan {
     }
 
     // Nested class for treatment plan steps
+    /**
+     * Lớp lồng đại diện cho một bước trong phác đồ điều trị.
+     */
     public static class Step {
+        /** ID của bước */
         private Long id;
+        /** ID của phác đồ điều trị */
         private Long treatmentPlanId;
+        /** ID của dịch vụ */
         private Long serviceId;
+        /** Tên dịch vụ */
         private String serviceName;
+        /** Tên bác sĩ */
         private String doctorName;
+        /** Mô tả bước */
         private String description;
+        /** Thứ tự bước */
         private Integer stepOrder;
         private String status; // PENDING, IN_PROGRESS, COMPLETED, CANCELLED
         private String toothNumber;

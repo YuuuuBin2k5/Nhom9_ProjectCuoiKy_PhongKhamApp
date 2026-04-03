@@ -9,6 +9,10 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+/**
+ * Repository quản lý dữ liệu thực thể Phác đồ điều trị (TreatmentPlan).
+ * Hỗ trợ theo dõi tiến trình điều trị dài hạn của bệnh nhân (UC_13, UC_14).
+ */
 @Repository
 public interface TreatmentPlanRepository extends JpaRepository<TreatmentPlan, Long> {
 

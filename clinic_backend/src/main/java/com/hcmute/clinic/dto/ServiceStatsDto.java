@@ -3,6 +3,9 @@ package com.hcmute.clinic.dto;
 import lombok.*;
 import java.math.BigDecimal;
 
+/**
+ * DTO Thống kê hiệu suất kinh doanh của từng dịch vụ.
+ */
 @Data
 @Builder
 @NoArgsConstructor

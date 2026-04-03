@@ -17,6 +17,10 @@ import org.springframework.web.filter.OncePerRequestFilter;
 import java.io.IOException;
 import java.util.List;
 
+/**
+ * Bộ lọc xác thực dựa trên mã thông báo JWT.
+ * Kiểm tra tiêu đề 'Authorization' của mọi yêu cầu để xác thực người dùng.
+ */
 @Component
 @RequiredArgsConstructor
 public class JwtAuthenticationFilter extends OncePerRequestFilter {

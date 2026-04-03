@@ -28,6 +28,9 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+/**
+ * Fragment hiển thị mã QR check-in cá nhân của bệnh nhân.
+ */
 public class QrCheckInFragment extends Fragment {
 
     private TextView tvStatus;

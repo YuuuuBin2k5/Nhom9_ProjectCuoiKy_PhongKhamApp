@@ -6,8 +6,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 /**
- * Response DTO when a service is added to a tooth
- * Contains information about the added service and updated plan cost
+ * DTO Phản hồi khi thêm một dịch vụ cho một răng cụ thể thành công.
  */
 @Data
 @NoArgsConstructor

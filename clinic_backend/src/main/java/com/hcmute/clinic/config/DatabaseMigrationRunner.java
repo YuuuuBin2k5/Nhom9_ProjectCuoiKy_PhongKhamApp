@@ -6,6 +6,9 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
 
+/**
+ * Runner thực hiện các điều chỉnh và di chuyển sơ đồ cơ sở dữ liệu khi ứng dụng bắt đầu.
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j

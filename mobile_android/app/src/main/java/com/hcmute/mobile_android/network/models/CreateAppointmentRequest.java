@@ -2,13 +2,25 @@ package com.hcmute.mobile_android.network.models;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * DTO chứa thông tin để tạo mới một lịch hẹn.
+ */
 public class CreateAppointmentRequest {
+    /**
+     * ID của dịch vụ y tế.
+     */
     @SerializedName("service_id")
     private Long serviceId;
 
+    /**
+     * ID của bác sĩ.
+     */
     @SerializedName("doctor_id")
     private Long doctorId;
 
+    /**
+     * ID của bệnh nhân.
+     */
     @SerializedName("patient_id")
     private Long patientId;
 

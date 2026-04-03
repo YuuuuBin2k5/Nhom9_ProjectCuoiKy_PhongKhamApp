@@ -5,8 +5,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 /**
- * Request DTO for adding a service to a specific tooth
- * Used when doctor clicks on a tooth and selects a service
+ * DTO Yêu cầu thêm dịch vụ cho một răng cụ thể.
+ * Bác sĩ chọn vị trí răng trên sơ đồ và chỉ định dịch vụ tương ứng.
  */
 @Data
 @NoArgsConstructor

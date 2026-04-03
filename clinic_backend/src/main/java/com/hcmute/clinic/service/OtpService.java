@@ -14,6 +14,10 @@ import org.springframework.transaction.annotation.Transactional;
 import java.security.SecureRandom;
 import java.time.LocalDateTime;
 
+/**
+ * Lớp Dịch vụ OtpService (Dịch vụ Mã xác thực) - Quản lý vòng đời của mã OTP.
+ * Chịu trách nhiệm tạo mã ngẫu nhiên, mã hóa bảo mật, gửi mã và đối soát xác thực.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j

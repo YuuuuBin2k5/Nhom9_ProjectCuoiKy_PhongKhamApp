@@ -9,6 +9,9 @@ import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Controller cung cấp các API tìm kiếm tổng hợp: Bệnh nhân, Dịch vụ và Lịch hẹn.
+ */
 @RestController
 @RequestMapping("/api/search")
 @RequiredArgsConstructor
@@ -18,6 +21,9 @@ public class SearchController {
     private final ServiceRepository serviceRepository;
     private final AppointmentRepository appointmentRepository;
     
+    /**
+     * Tìm kiếm bệnh nhân theo từ khóa (tên, email hoặc số điện thoại).
+     */
     @GetMapping("/patients")
     public ResponseEntity<?> searchPatients(@RequestParam String keyword) {
         List<Patient> patients = patientRepository.searchPatients(keyword);

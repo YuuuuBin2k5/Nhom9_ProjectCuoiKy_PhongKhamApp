@@ -20,6 +20,10 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
 import java.util.List;
 
+/**
+ * Lớp cấu hình bảo mật chính của ứng dụng.
+ * Định nghĩa các quy tắc phân quyền, cấu hình CORS, vô hiệu hóa CSRF và thiết lập bộ lọc JWT.
+ */
 @Configuration
 @EnableWebSecurity
 @EnableMethodSecurity

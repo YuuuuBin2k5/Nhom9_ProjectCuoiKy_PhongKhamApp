@@ -4,7 +4,6 @@ import com.hcmute.clinic.dto.CheckInScanRequest;
 import com.hcmute.clinic.repository.PatientRepository;
 import com.hcmute.clinic.security.JwtService;
 import com.hcmute.clinic.service.CheckInQueueService;
-import com.hcmute.clinic.service.ScanLogService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -12,16 +11,22 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * CheckInController - API Controller xử lý Check-in.
+ * Cung cấp endpoint cho flow SE_06: Quét mã QR để ghi nhận bệnh nhân vào hàng đợi.
+ */
 @RestController
 @RequestMapping("/api/checkin")
 @RequiredArgsConstructor
 public class CheckInController {
 
     private final CheckInQueueService checkInQueueService;
-    private final ScanLogService scanLogService;
     private final JwtService jwtService;
     private final PatientRepository patientRepository;
 
+    /**
+     * Endpoint SE_06: Quét mã QR từ máy quét tại quầy lễ tân.
+     */
     @PostMapping("/scan")
     public ResponseEntity<?> scan(@RequestBody CheckInScanRequest request) {
         try {
@@ -37,13 +42,6 @@ public class CheckInController {
                 "estimatedWaitTime", result.estimatedWaitTime()
             ));
         } catch (org.springframework.web.server.ResponseStatusException e) {
-            try {
-                scanLogService.logFailedScan(
-                        request != null ? request.getQrData() : null,
-                        e.getStatusCode(),
-                        e.getReason() != null ? e.getReason() : "Lỗi"
-                );
-            } catch (Exception ex) { /* ignore logging errors */ }
             return ResponseEntity.status(e.getStatusCode())
                     .body(Map.of("success", false, "message", e.getReason() != null ? e.getReason() : "Lỗi"));
         }

@@ -5,6 +5,9 @@ import java.sql.DriverManager;
 import java.sql.ResultSet;
 import java.sql.Statement;
 
+/**
+ * Công cụ hỗ trợ tìm nhanh hóa đơn chưa thanh toán trong DB (Phục vụ debug).
+ */
 public class FindUnpaidInvoice {
     public static void main(String[] args) {
         String url = "jdbc:postgresql://localhost:5432/phongkham";

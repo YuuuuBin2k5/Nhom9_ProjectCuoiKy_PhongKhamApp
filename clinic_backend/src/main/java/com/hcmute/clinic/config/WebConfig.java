@@ -8,6 +8,9 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+/**
+ * Cấu hình các tài nguyên Web, cụ thể là ánh xạ thư mục tải lên hình ảnh.
+ */
 @Configuration
 public class WebConfig implements WebMvcConfigurer {
 

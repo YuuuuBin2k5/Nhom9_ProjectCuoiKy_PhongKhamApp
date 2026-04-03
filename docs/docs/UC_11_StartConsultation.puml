@@ -1,0 +1,27 @@
+@startuml UC_11_StartConsultation
+title UC_UC_14: Bắt đầu khám bệnh
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor Default
+    BorderColor Navy
+    ArrowColor Navy
+}
+
+actor "Bác sĩ" as D
+
+rectangle "Nghiệp vụ Bác sĩ" {
+    usecase "Chọn Bệnh nhân đang chờ" as UC1
+    usecase "Lấy bệnh nhân ở đầu hàng đợi" as UC2
+    usecase "Bắt đầu ca khám" as UC3
+    usecase "Khởi tạo Bệnh án trống" as UC4
+    
+    UC1 ..> UC2 : <<include>>
+    UC1 ..> UC3 : <<include>>
+    UC3 ..> UC4 : <<include>>
+}
+
+D --> UC1
+
+@enduml

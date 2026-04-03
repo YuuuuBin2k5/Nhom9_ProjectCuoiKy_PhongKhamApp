@@ -2,6 +2,9 @@ package com.hcmute.mobile_android.network.models;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * DTO chứa thông tin cơ bản của bác sĩ để hiển thị trong danh sách.
+ */
 public class DoctorItem {
     @SerializedName("id")
     private Long id;

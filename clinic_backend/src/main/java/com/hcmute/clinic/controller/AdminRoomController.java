@@ -19,6 +19,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Controller quản lý các phòng khám và hàng đợi tại phòng (Admin).
+ * Hỗ trợ điều phối bệnh nhân và quản lý trạng thái hoạt động của các phòng chức năng (UC_27).
+ */
 @RestController
 @RequestMapping("/api/admin/rooms")
 @RequiredArgsConstructor

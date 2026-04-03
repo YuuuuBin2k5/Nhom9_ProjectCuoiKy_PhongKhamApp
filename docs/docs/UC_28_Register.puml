@@ -1,0 +1,29 @@
+@startuml UC_28_Register
+title UC_28: Đăng ký tài khoản
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor Default
+    BorderColor Navy
+    ArrowColor Navy
+}
+
+actor "Bệnh nhân" as P
+
+rectangle "Xác thực" {
+    usecase "Đăng ký tài khoản" as UC28
+    usecase "Nhập thông tin đăng ký" as UC28a
+    usecase "Xác thực dữ liệu đầu vào" as UC28b
+    usecase "Tạo tài khoản & QR Code" as UC28c
+    usecase "Sinh JWT Token" as UC28d
+
+    UC28 ..> UC28a : <<include>>
+    UC28 ..> UC28b : <<include>>
+    UC28b ..> UC28c : <<include>>
+    UC28c ..> UC28d : <<include>>
+}
+
+P --> UC28
+
+@enduml

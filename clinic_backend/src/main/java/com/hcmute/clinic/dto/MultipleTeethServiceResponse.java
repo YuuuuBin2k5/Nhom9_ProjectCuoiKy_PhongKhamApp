@@ -9,7 +9,7 @@ import java.math.BigDecimal;
 import java.util.List;
 
 /**
- * Response DTO for bulk adding services to multiple teeth
+ * DTO Phản hồi khi thêm dịch vụ cho nhiều răng cùng lúc.
  */
 @Data
 @NoArgsConstructor

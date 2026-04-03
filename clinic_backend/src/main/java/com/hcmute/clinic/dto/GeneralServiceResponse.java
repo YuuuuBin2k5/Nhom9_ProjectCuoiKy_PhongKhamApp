@@ -6,8 +6,8 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 /**
- * Response DTO when a general service is added
- * Contains information about the added service and updated plan cost
+ * DTO Phản hồi khi thêm một dịch vụ nha khoa tổng quát vào phác đồ.
+ * Chứa thông tin về bước điều trị vừa tạo và tổng chi phí cập nhật.
  */
 @Data
 @NoArgsConstructor

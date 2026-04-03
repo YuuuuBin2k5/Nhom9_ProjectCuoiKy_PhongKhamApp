@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controller quản lý các thông báo dành cho bệnh nhân.
+ * Bao gồm: Xem danh sách thông báo và đánh dấu đã đọc.
+ */
 @RestController
 @RequestMapping("/api/notifications")
 @RequiredArgsConstructor
@@ -18,6 +22,11 @@ public class NotificationController {
 
     private final NotificationRepository notificationRepository;
 
+    /**
+     * Lấy danh sách thông báo của người dùng hiện tại.
+     * @param auth Thông tin xác thực của người dùng.
+     * @return Danh sách các thông báo đã được định dạng.
+     */
     @GetMapping("/me")
     public ResponseEntity<?> myNotifications(Authentication auth) {
         if (auth == null || auth.getName() == null) {

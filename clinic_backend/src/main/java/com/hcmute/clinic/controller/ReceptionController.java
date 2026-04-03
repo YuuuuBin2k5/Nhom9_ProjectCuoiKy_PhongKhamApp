@@ -13,6 +13,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.Map;
 
+/**
+ * Controller dành cho nhân viên Lễ tân.
+ * Phụ trách các nghiệp vụ Check-in bệnh nhân (UC_06) và hỗ trợ thanh toán tại quầy (UC_08).
+ */
 @RestController
 @RequestMapping("/api/reception")
 @RequiredArgsConstructor

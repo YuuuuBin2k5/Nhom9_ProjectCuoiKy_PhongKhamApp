@@ -32,6 +32,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+/**
+ * Adapter hiển thị danh sách bác sĩ trong giao diện quản trị.
+ * Hỗ trợ các tính năng: Tìm kiếm, Chỉnh sửa, Xóa và Bật/Tắt trạng thái hoạt động của bác sĩ.
+ */
 public class AdminDoctorAdapter extends RecyclerView.Adapter<AdminDoctorAdapter.ViewHolder> implements Filterable {
 
     public interface OnDoctorActionListener {

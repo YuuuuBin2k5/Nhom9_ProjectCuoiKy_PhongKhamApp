@@ -7,6 +7,10 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * Lớp Thực thể Notification (Thông báo) - Lưu trữ các thông báo hệ thống gửi cho bệnh nhân.
+ * Hỗ trợ các loại thông báo về Lịch hẹn (UC_02), Hóa đơn (UC_08) và nhắc nhở tái khám.
+ */
 @Entity
 @Table(name = "notifications")
 @Data

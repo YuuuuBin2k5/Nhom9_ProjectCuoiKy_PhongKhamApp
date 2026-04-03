@@ -7,6 +7,10 @@ import lombok.NoArgsConstructor;
 
 import java.util.List;
 
+/**
+ * DTO mô tả toàn bộ phác đồ điều trị của bệnh nhân.
+ * Chứa danh sách các bước điều trị (UC_13/14) và trạng thái hoàn thành.
+ */
 @Data
 @Builder
 @NoArgsConstructor

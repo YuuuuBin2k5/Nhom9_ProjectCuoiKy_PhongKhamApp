@@ -6,6 +6,10 @@ import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
+/**
+ * Lớp Thực thể Review (Đánh giá) - Lưu trữ phản hồi của bệnh nhân sau khi sử dụng dịch vụ.
+ * Bao gồm số sao đánh giá và nội dung bình luận chi tiết.
+ */
 @Entity
 @Table(name = "reviews")
 @Data
@@ -34,7 +38,8 @@ public class Review {
     private Appointment appointment;
 
     @Column(nullable = false)
-    private Integer rating; // 1-5 stars
+    /** Số sao đánh giá (1-5) */
+    private Integer rating;
 
     @Column(columnDefinition = "TEXT")
     private String comment;

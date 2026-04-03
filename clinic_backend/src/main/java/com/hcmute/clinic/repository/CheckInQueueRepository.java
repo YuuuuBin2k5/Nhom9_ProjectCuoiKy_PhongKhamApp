@@ -11,6 +11,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repository quản lý hàng đợi Check-in (CheckInQueue).
+ * Hỗ trợ điều phối thứ tự khám của bệnh nhân tại các phòng chức năng (UC_06).
+ */
 @Repository
 public interface CheckInQueueRepository extends JpaRepository<CheckInQueue, Long> {
 

@@ -2,12 +2,21 @@ package com.hcmute.mobile_android.network.models;
 
 import java.util.List;
 
+/**
+ * DTO chứa thông tin mẫu phác đồ điều trị định sẵn.
+ */
 public class TreatmentTemplate {
+    /** ID của mẫu phác đồ */
     private Long id;
+    /** Tên mẫu phác đồ */
     private String name;
+    /** Mô tả chi tiết về mẫu phác đồ */
     private String description;
-    private String uiTemplateType; // GENERAL, SURGERY, ORTHO, IMPLANT, PERIO
+    /** Loại giao diện mẫu (GENERAL, SURGERY, ORTHO, IMPLANT, PERIO) */
+    private String uiTemplateType;
+    /** Trạng thái hoạt động của mẫu */
     private Boolean isActive;
+    /** Danh sách các bước trong phác đồ */
     private List<TemplateStep> steps;
 
     // Constructors

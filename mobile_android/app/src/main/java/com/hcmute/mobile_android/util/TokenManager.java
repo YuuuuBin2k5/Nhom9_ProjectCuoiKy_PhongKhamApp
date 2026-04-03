@@ -9,6 +9,10 @@ import androidx.security.crypto.MasterKey;
 import java.io.IOException;
 import java.security.GeneralSecurityException;
 
+/**
+ * Lớp quản lý lưu trữ bảo mật các thông tin xác thực và hồ sơ người dùng.
+ * Sử dụng EncryptedSharedPreferences để đảm bảo an toàn dữ liệu.
+ */
 public class TokenManager {
     private static final String PREF_NAME = "secure_prefs";
     private static final String KEY_TOKEN = "jwt_token";

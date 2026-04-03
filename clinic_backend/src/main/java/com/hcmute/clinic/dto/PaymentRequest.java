@@ -3,6 +3,9 @@ package com.hcmute.clinic.dto;
 import lombok.*;
 import java.math.BigDecimal;
 
+/**
+ * DTO chứa thông tin yêu cầu thanh toán hóa đơn.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

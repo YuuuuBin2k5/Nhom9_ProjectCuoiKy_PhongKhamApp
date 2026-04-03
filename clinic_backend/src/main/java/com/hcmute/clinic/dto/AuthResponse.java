@@ -5,6 +5,10 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * DTO trả về kết quả xác thực người dùng.
+ * Bao gồm Token truy cập (JWT) và thông tin định danh cơ bản.
+ */
 @Data
 @Builder
 @NoArgsConstructor

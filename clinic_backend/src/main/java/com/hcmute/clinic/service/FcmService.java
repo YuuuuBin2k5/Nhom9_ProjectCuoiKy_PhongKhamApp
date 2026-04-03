@@ -13,6 +13,10 @@ import org.springframework.stereotype.Service;
 
 import java.io.InputStream;
 
+/**
+ * Lớp Dịch vụ FcmService (Dịch vụ Thông báo Đẩy) - Tích hợp với Google Firebase Cloud Messaging.
+ * Chịu trách nhiệm gửi thông báo thời gian thực đến ứng dụng Android của bệnh nhân.
+ */
 @Service
 @Slf4j
 public class FcmService {

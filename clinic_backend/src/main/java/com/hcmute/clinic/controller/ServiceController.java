@@ -13,6 +13,10 @@ import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * Lớp Điều khiển ServiceController - Cung cấp danh mục các dịch vụ nha khoa của phòng khám.
+ * Hỗ trợ tra cứu dịch vụ theo nhóm hoặc danh sách tổng quát.
+ */
 @RestController
 @RequestMapping("/api/services")
 @RequiredArgsConstructor

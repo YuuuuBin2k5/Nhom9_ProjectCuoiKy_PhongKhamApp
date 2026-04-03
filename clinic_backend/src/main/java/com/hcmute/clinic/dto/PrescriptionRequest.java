@@ -8,6 +8,9 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 import java.util.List;
 
+/**
+ * DTO yêu cầu tạo mới một đơn thuốc từ phía bác sĩ.
+ */
 @Data
 @Builder
 @NoArgsConstructor

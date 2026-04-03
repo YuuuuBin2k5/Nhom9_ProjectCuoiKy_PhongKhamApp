@@ -1,0 +1,49 @@
+@startuml UC_22_JoinQueue
+title UC_22: Tham gia hàng đợi
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor Default
+    BorderColor Navy
+    ArrowColor Navy
+}
+
+actor "Bệnh nhân" as P
+
+rectangle "Quản lý hàng đợi" {
+
+    ' --- Use case cha ---
+    usecase "Tham gia\nhàng đợi" as UC22
+
+    ' --- 2 use case con (generalization) ---
+    usecase "Check-in khám\n& chẩn đoán" as UC22_A
+    usecase "Chuyển bước\nliệu trình" as UC22_B
+
+    ' --- Use case liên quan ---
+    usecase "Xem trạng thái\nhàng đợi (UC_23)" as UC23
+
+    ' --- Quan hệ kế thừa ---
+    UC22_A --|> UC22
+    UC22_B --|> UC22
+
+    ' --- Include hợp lý (user-visible) ---
+    UC22 ..> UC23 : <<include>>
+}
+
+P --> UC22_A
+P --> UC22_B
+
+note right of UC22_A
+  Áp dụng cho bệnh nhân mới (check-in)
+  → vào hàng đợi phòng khám ban đầu
+  → có tính độ ưu tiên theo lịch hẹn
+end note
+
+note right of UC22_B
+  Áp dụng cho bệnh nhân đang có liệu trình
+  → chuyển sang phòng tiếp theo
+  → ưu tiên cao nếu quay lại phòng cũ
+end note
+
+@enduml

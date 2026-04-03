@@ -19,6 +19,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Lớp Điều khiển AuthController - Chịu trách nhiệm quản lý xác thực và phân quyền người dùng.
+ * Cung cấp các endpoint cho Login, Logout, Đăng ký (Register) và xác thực OTP.
+ */
 @RestController
 @RequestMapping("/api/auth")
 @RequiredArgsConstructor
@@ -31,6 +35,10 @@ public class AuthController {
     private final JwtService jwtService;
     private final PasswordEncoder passwordEncoder;
 
+    /**
+     * API Đăng nhập hệ thống. 
+     * Hỗ trợ đa vai trò (Bệnh nhân, Bác sĩ, Admin) dựa trên Email và Mật khẩu.
+     */
     @PostMapping("/login")
     public ResponseEntity<?> login(@RequestBody LoginRequest request) {
         if (request.getEmail() == null || request.getEmail().isBlank()
@@ -171,6 +179,10 @@ public class AuthController {
                         .build()));
     }
 
+    /**
+     * API Đăng ký tài khoản Bệnh nhân mới.
+     * Kiểm tra định dạng Email, độ phức tạp mật khẩu và tính duy nhất của tài khoản.
+     */
     @PostMapping("/register")
     public ResponseEntity<?> register(@RequestBody RegisterRequest request) {
         String email = request.getEmail() != null ? request.getEmail().trim().toLowerCase() : "";

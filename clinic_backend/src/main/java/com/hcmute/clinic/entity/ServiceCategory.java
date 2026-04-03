@@ -6,6 +6,10 @@ import lombok.*;
 
 import java.util.List;
 
+/**
+ * Lớp Thực thể ServiceCategory (Danh mục Dịch vụ) - Phân loại các dịch vụ nha khoa.
+ * Ví dụ: Nha khoa tổng quát, Thẩm mỹ, Chỉnh nha.
+ */
 @Entity
 @Table(name = "service_categories")
 @Data

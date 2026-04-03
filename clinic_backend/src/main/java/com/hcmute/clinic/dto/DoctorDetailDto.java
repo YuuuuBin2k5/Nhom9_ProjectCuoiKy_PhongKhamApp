@@ -3,6 +3,10 @@ package com.hcmute.clinic.dto;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * DTO mô tả thông tin chi tiết của Bác sĩ.
+ * Thường dùng để hiển thị hồ sơ bác sĩ cho bệnh nhân hoặc quản trị viên.
+ */
 @Data
 @Builder
 public class DoctorDetailDto {

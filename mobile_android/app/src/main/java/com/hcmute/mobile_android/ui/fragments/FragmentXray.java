@@ -26,6 +26,10 @@ import com.hcmute.mobile_android.ui.activities.ImageViewerActivity;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Fragment quản lý nghiệp vụ chụp X-Quang cận lâm sàng.
+ * Hỗ trợ bác sĩ xem và tải lên hình ảnh kết quả X-Quang.
+ */
 public class FragmentXray extends Fragment {
 
     private RadioGroup rgImageType;

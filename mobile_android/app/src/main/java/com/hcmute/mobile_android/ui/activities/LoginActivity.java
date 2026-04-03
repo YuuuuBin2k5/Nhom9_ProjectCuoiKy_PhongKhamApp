@@ -22,6 +22,10 @@ import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
 
+/**
+ * Activity xử lý màn hình đăng nhập của ứng dụng.
+ * Cho phép người dùng đăng nhập, chuyển sang màn hình đăng ký hoặc khôi phục mật khẩu.
+ */
 public class LoginActivity extends AppCompatActivity {
 
     @Override

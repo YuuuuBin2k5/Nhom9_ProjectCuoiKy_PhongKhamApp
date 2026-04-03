@@ -10,6 +10,9 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * Controller quản lý danh sách các mẫu phác đồ điều trị định sẵn.
+ */
 @RestController
 @RequestMapping("/api/treatment-templates")
 @RequiredArgsConstructor
@@ -17,6 +20,11 @@ public class TreatmentPlanTemplateController {
 
     private final TreatmentPlanService treatmentPlanService;
 
+    /**
+     * Lấy danh sách các mẫu phác đồ điều trị đang hoạt động.
+     *
+     * @return ResponseEntity chứa danh sách các mẫu phác đồ điều trị.
+     */
     @GetMapping
     public ResponseEntity<List<TreatmentPlanTemplateResponseDTO>> listActive() {
         return ResponseEntity.ok(treatmentPlanService.listActiveTemplates());

@@ -22,6 +22,10 @@ import java.util.Set;
  * - Color-codes teeth based on services applied
  * - Allows direct service selection from tooth click
  */
+/**
+ * Custom View hiển thị sơ đồ răng tương tác.
+ * Cho phép bác sĩ chọn răng và gán các dịch vụ điều trị cụ thể cho từng răng.
+ */
 public class OdontogramView extends View {
 
     public interface OnToothServiceListener {

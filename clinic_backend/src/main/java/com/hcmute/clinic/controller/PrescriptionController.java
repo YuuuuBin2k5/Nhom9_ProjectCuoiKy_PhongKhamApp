@@ -19,6 +19,10 @@ import org.springframework.web.bind.annotation.*;
 import java.nio.charset.StandardCharsets;
 import java.time.format.DateTimeFormatter;
 
+/**
+ * Controller quản lý đơn thuốc.
+ * Hỗ trợ bác sĩ kê đơn và bệnh nhân tải xuống bản sao đơn thuốc.
+ */
 @RestController
 @RequestMapping("/api/prescriptions")
 @RequiredArgsConstructor
@@ -27,6 +31,13 @@ public class PrescriptionController {
     private final PrescriptionService prescriptionService;
     private final PrescriptionRepository prescriptionRepository;
 
+    /**
+     * Tạo hoặc cập nhật đơn thuốc cho một cuộc hẹn.
+     * 
+     * @param request Dữ liệu đơn thuốc cần tạo/cập nhật.
+     * @param authentication Thông tin xác thực của bác sĩ.
+     * @return DTO của đơn thuốc đã được tạo hoặc cập nhật.
+     */
     @PostMapping
     @PreAuthorize("hasRole('DOCTOR')")
     public ResponseEntity<PrescriptionDTO> createOrUpdatePrescription(

@@ -8,6 +8,10 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * DTO đại diện cho thông tin một đơn thuốc.
+ * Liệt kê danh sách các thuốc, liều dùng và hướng dẫn của bác sĩ.
+ */
 @Data
 @Builder
 @NoArgsConstructor

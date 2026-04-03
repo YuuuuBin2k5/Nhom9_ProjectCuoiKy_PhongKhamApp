@@ -1,0 +1,28 @@
+@startuml UC_19_ManageRooms
+title UC_UC_26: Quản lý phòng khám
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor Default
+    BorderColor Navy
+    ArrowColor Navy
+}
+
+actor "Quản trị viên" as A
+
+rectangle "Quản lý Phòng ban" {
+    usecase "Xem các Phòng ban" as UC1
+    usecase "Tạo Phòng" as UC2
+    usecase "Chuyển đổi trạng thái Phòng" as UC3
+    usecase "Lưu trạng thái" as UCS
+    
+    UC2 ..> UCS : <<include>>
+    UC3 ..> UCS : <<include>>
+}
+
+A --> UC1
+A --> UC2
+A --> UC3
+
+@enduml

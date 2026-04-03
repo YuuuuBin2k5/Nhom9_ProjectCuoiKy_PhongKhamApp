@@ -3,6 +3,9 @@ package com.hcmute.mobile_android.network.models;
 import com.google.gson.annotations.SerializedName;
 import java.util.Date;
 
+/**
+ * DTO chứa thông tin nhật ký hệ thống để hiển thị phía Admin.
+ */
 public class AuditLog {
     private Long id;
     private String action;

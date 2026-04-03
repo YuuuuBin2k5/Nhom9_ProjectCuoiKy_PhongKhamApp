@@ -9,6 +9,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
+/**
+ * Lớp Điều khiển InvoiceController - Quản lý các yêu cầu liên quan đến Hóa đơn và Thanh toán.
+ * Cung cấp API cho bệnh nhân xem hóa đơn và thực hiện thanh toán (UC_08).
+ */
 @RestController
 @RequestMapping("/api/invoices")
 @RequiredArgsConstructor
@@ -29,6 +33,10 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceService.getInvoiceDetail(id, auth));
     }
     
+    /**
+     * API thực hiện thanh toán hóa đơn (UC_08).
+     * Chuyển trạng thái hóa đơn sang Đã thanh toán và kích hoạt các logic nghiệp vụ đi kèm.
+     */
     @PostMapping("/{id}/pay")
     @PreAuthorize("hasRole('PATIENT') or hasRole('RECEPTIONIST')")
     public ResponseEntity<PaymentResponse> processPayment(

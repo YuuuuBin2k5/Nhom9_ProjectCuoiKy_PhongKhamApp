@@ -2,6 +2,9 @@ package com.hcmute.mobile_android.network.models;
 
 import java.io.Serializable;
 
+/**
+ * DTO đại diện cho thông tin chi tiết và hồ sơ bệnh nhân.
+ */
 public class PatientInfo implements Serializable {
     private Long id;
     private String firstName;

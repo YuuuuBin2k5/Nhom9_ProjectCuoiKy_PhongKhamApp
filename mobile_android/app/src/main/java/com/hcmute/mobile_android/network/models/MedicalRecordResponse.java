@@ -3,14 +3,25 @@ package com.hcmute.mobile_android.network.models;
 import com.google.gson.annotations.SerializedName;
 import java.util.List;
 
+/**
+ * DTO chứa thông tin phản hồi về hồ sơ bệnh án của bệnh nhân.
+ */
 public class MedicalRecordResponse {
+    /** ID của hồ sơ bệnh án */
     private Long id;
+    /** ID của cuộc hẹn liên quan */
     private Long appointmentId;
+    /** Ngày khám */
     private String date;
+    /** Chẩn đoán của bác sĩ */
     private String diagnosis;
+    /** Tên bác sĩ thực hiện */
     private String doctorName;
+    /** Chuyên khoa của bác sĩ */
     private String doctorSpecialty;
+    /** Triệu chứng của bệnh nhân */
     private String symptoms;
+    /** Lời khuyên của bác sĩ */
     private String advice;
     
     // Support both String and Object for prescription

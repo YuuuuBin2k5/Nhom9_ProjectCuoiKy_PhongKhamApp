@@ -4,6 +4,9 @@ import lombok.Data;
 
 import java.util.List;
 
+/**
+ * DTO yêu cầu cập nhật hàng loạt các bước trong phác đồ điều trị.
+ */
 @Data
 public class UpdatePlanStepsRequest {
     private List<StepItem> steps;

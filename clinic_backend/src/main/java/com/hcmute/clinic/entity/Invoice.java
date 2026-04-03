@@ -10,6 +10,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * Lớp Thực thể Invoice (Hóa đơn) - Kết quả cuối cùng của flow SE_15 (Thanh toán).
+ * Lưu trữ thông tin tài chính, tổng tiền, trạng thái thanh toán và liên kết với bệnh nhân, bác sĩ.
+ */
 @Entity
 @Table(name = "invoices")
 @Data
@@ -17,6 +21,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Invoice {
+    // Encapsulation: Đảm bảo tính đóng gói với phạm vi truy cập private.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

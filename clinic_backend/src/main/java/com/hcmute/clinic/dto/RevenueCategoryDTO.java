@@ -5,6 +5,9 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
+/**
+ * DTO chứa thông tin doanh thu theo từng danh mục dịch vụ.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

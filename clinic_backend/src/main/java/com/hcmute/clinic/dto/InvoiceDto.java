@@ -5,6 +5,10 @@ import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * DTO chứa thông tin hóa đơn thanh toán của bệnh nhân.
+ * Bao gồm chi tiết các dịch vụ sử dụng và tổng chi phí (UC_08).
+ */
 @Data
 @Builder
 @NoArgsConstructor

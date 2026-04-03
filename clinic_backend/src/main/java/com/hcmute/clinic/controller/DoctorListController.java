@@ -18,6 +18,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+/**
+ * Controller hiển thị danh sách bác sĩ dành cho bệnh nhân.
+ * Hỗ trợ liệt kê bác sĩ theo chuyên khoa và xem hồ sơ chi tiết bác sĩ.
+ */
 @RestController
 @RequestMapping("/api/doctors")
 @RequiredArgsConstructor

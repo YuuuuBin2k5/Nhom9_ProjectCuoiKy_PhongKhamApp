@@ -1,0 +1,27 @@
+@startuml UC_05_BookAppointment
+title UC_05: Đặt lịch khám
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor Default
+    BorderColor Navy
+    ArrowColor Navy
+}
+
+actor "Bệnh nhân" as P
+
+rectangle "Đặt lịch hẹn" {
+    usecase "Chọn dịch vụ" as UC1
+    usecase "Chọn khung giờ" as UC2
+    usecase "Chọn bác sĩ" as UC3
+    usecase "Lưu lịch hẹn" as UC5
+    
+    UC1 ..> UC2 : <<include>>
+    UC2 ..> UC3 : <<extend>>
+    UC3 ..> UC5 : <<include>>
+}
+
+P --> UC1
+
+@enduml

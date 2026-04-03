@@ -6,6 +6,10 @@ import lombok.*;
 
 import java.time.LocalDateTime;
 
+/**
+ * Lớp Thực thể OtpChallenge (Yêu cầu xác thực OTP) - Lưu trữ các thử thách OTP đã phát hành.
+ * Dùng để kiểm soát thời gian hết hạn và số lần thử sai của mã xác thực.
+ */
 @Entity
 @Table(name = "otp_challenges", indexes = {
         @Index(name = "idx_otp_phone_purpose", columnList = "phone_e164,purpose"),

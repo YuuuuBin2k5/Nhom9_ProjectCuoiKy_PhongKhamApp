@@ -1,5 +1,8 @@
 package com.hcmute.mobile_android.network.models;
 
+/**
+ * DTO chứa thông tin trạng thái chờ và số thứ tự của bệnh nhân đã Check-in.
+ */
 public class CheckInMyStatusResponse {
     private boolean checkedIn;
     private Integer queueNumber;

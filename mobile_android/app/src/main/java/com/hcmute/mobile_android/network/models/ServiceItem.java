@@ -2,13 +2,20 @@ package com.hcmute.mobile_android.network.models;
 
 import com.google.gson.annotations.SerializedName;
 
+/**
+ * DTO chứa thông tin chi tiết về một dịch vụ nha khoa.
+ */
 public class ServiceItem {
+    /** ID của dịch vụ */
     @SerializedName("id")
     private Long id;
+    /** Tên dịch vụ */
     @SerializedName("name")
     private String name;
+    /** Mô tả chi tiết về dịch vụ */
     @SerializedName("description")
     private String description;
+    /** Giá của dịch vụ */
     @SerializedName("price")
     private double price;
     @SerializedName("durationMinutes")

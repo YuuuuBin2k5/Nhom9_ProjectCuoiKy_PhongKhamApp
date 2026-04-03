@@ -7,6 +7,10 @@ import lombok.Builder;
 
 import java.time.LocalDateTime;
 
+/**
+ * Lớp Thực thể CheckInQueue (Hàng chờ check-in) - Thành phần chính của flow SE_06 (Xếp hàng khám).
+ * Quản lý thứ tự bệnh nhân đang chờ tại phòng khám, hỗ trợ điều phối luồng làm việc.
+ */
 @Entity
 @Table(name = "check_in_queue")
 @Data
@@ -14,6 +18,7 @@ import java.time.LocalDateTime;
 @AllArgsConstructor
 @Builder
 public class CheckInQueue {
+    // Encapsulation: Chế độ truy cập private cho tất cả các trường.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;

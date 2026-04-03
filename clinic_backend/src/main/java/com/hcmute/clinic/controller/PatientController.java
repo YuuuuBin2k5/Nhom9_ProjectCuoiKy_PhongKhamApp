@@ -34,6 +34,10 @@ import java.util.stream.Collectors;
 
 import static java.util.Map.entry;
 
+/**
+ * Lớp Điều khiển PatientController - Quản lý hồ sơ và các yêu cầu cá nhân của Bệnh nhân.
+ * Hỗ trợ các chức năng tra cứu bệnh án (Medical Records), lịch hẹn sắp tới và trạng thái hàng đợi.
+ */
 @RestController
 @RequestMapping("/api/patients")
 @RequiredArgsConstructor
@@ -46,6 +50,9 @@ public class PatientController {
     private final PrescriptionRepository prescriptionRepository;
     private final InvoiceRepository invoiceRepository;
 
+    /**
+     * API Lấy thông tin chi tiết của Bệnh nhân đang đăng nhập.
+     */
     @GetMapping("/me")
     public ResponseEntity<PatientMeResponse> me(Authentication auth) {
         if (auth == null || auth.getPrincipal() == null) {
@@ -203,6 +210,10 @@ public class PatientController {
         return ResponseEntity.ok(items);
     }
 
+    /**
+     * API Xem lịch sử hồ sơ bệnh án (Medical Records) của bệnh nhân.
+     * Dữ liệu trả về bao gồm chẩn đoán, đơn thuốc và các bước điều trị chi tiết.
+     */
     @GetMapping("/me/medical-records")
     public ResponseEntity<?> myMedicalRecords(
             Authentication auth,

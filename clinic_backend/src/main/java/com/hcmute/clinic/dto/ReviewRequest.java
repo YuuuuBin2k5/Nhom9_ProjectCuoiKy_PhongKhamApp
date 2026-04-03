@@ -2,6 +2,9 @@ package com.hcmute.clinic.dto;
 
 import lombok.*;
 
+/**
+ * DTO chứa thông tin yêu cầu tạo mới đánh giá dịch vụ.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

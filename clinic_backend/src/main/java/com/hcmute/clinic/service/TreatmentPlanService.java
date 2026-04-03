@@ -19,6 +19,13 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * TreatmentPlanService - Dịch vụ lõi quản lý Phác đồ điều trị.
+ * Chịu trách nhiệm thực thi các flow:
+ * - SE_13: Lập phác đồ điều trị.
+ * - SE_14: Ghi nhận kết quả điều trị.
+ * - SE_15: Thanh toán và hoàn tất phác đồ.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -88,6 +95,10 @@ public class TreatmentPlanService {
         return createFromTemplate(templateId, appointment.getPatient().getId(), medicalRecord.getId());
     }
 
+    /**
+     * SE_13: Lập phác đồ điều trị từ mẫu (Template).
+     * Khởi tạo các bước điều trị mặc định dựa trên dịch vụ đã chọn.
+     */
     @Transactional
     public TreatmentPlan createFromTemplate(Long templateId, Long patientId, Long medicalRecordId) {
         TreatmentPlanTemplate template = null;
@@ -157,6 +168,10 @@ public class TreatmentPlanService {
         return plan;
     }
 
+    /**
+     * Cập nhật danh sách các bước trong phác đồ.
+     * Cho phép thêm mới, chỉnh sửa hoặc xóa các bước ở trạng thái PENDING.
+     */
     @Transactional
     public TreatmentPlan updateSteps(Long planId, UpdatePlanStepsRequest request) {
         TreatmentPlan plan = planRepository.findById(planId)
@@ -536,6 +551,10 @@ public class TreatmentPlanService {
     /**
      * SE_14: Ghi nhận kết quả điều trị
      * Cập nhật kết luận, hình ảnh và đánh dấu hoàn thành bước này.
+     */
+    /**
+     * SE_14: Ghi nhận kết quả điều trị (Treatment Result Recording).
+     * Cập nhật kết luận bác sĩ, hình ảnh minh chứng và đánh dấu hoàn thành bước.
      */
     @Transactional
     public void updateStepResult(Long stepId, String conclusion, List<String> imageUrls, Long doctorRoomId) {

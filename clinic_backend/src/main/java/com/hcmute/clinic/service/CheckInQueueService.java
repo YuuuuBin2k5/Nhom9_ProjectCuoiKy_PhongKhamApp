@@ -35,6 +35,12 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * CheckInQueueService - Dịch vụ quản lý Hàng đợi (Queue Management).
+ * Chịu trách nhiệm thực thi các flow:
+ * - SE_06: Xếp hàng khám (Check-in và phân phối vào phòng).
+ * - Quản lý trạng thái bệnh nhân trong hàng chờ (Đang chờ, Đang khám, Chuyển phòng).
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -94,6 +100,10 @@ public class CheckInQueueService {
         }
     }
 
+    /**
+     * SE_06: Xử lý quét mã QR để Check-in.
+     * Xác thực bệnh nhân, kiểm tra lịch hẹn và xếp vào hàng đợi của phòng khám tương ứng.
+     */
     @Transactional
     public CheckInResult processScan(String qrData) {
         if (qrData == null || qrData.isBlank()) {
@@ -625,6 +635,10 @@ public class CheckInQueueService {
         broadcastRoom(q.getClinicRoom());
     }
 
+    /**
+     * Gọi bệnh nhân vào phòng khám (Mời vào).
+     * Chuyển trạng thái từ WAITING sang IN_PROGRESS.
+     */
     @Transactional
     public void callToRoom(Long queueId) {
         CheckInQueue q = checkInQueueRepository.findById(queueId)

@@ -8,6 +8,10 @@ import lombok.NoArgsConstructor;
 import java.time.LocalDateTime;
 import java.util.List;
 
+/**
+ * DTO phản hồi thông tin hồ sơ bệnh án chi tiết.
+ * Tổng hợp dữ liệu từ chẩn đoán, dịch vụ thực hiện đến đơn thuốc (UC_07).
+ */
 @Data
 @Builder
 @NoArgsConstructor

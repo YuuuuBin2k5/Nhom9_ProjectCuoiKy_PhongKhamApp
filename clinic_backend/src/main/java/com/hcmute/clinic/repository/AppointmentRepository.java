@@ -12,6 +12,10 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * Repository quản lý dữ liệu thực thể Lịch hẹn (Appointment).
+ * Cung cấp các phương thức truy vấn lịch khám theo bác sĩ, bệnh nhân và thời gian (UC_02, UC_05).
+ */
 @Repository
 public interface AppointmentRepository extends JpaRepository<Appointment, Long> {
     List<Appointment> findByPatientIdAndStatus(Long patientId, AppointmentStatus status);

@@ -6,8 +6,7 @@ import lombok.NoArgsConstructor;
 import java.math.BigDecimal;
 
 /**
- * Request DTO for updating the price of a treatment plan step
- * Used when doctor needs to adjust the price of a service
+ * DTO yêu cầu cập nhật giá tiền cho một bước điều trị cụ thể.
  */
 @Data
 @NoArgsConstructor

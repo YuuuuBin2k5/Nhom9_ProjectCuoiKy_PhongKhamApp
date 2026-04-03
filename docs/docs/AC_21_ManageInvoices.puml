@@ -1,0 +1,25 @@
+@startuml
+title Activity Diagram: AC_21 Quản lý Hóa đơn
+
+start
+:Vào giao diện Quản lý Hóa đơn;
+:Hệ thống hiển thị danh sách các hóa đơn gần nhất;
+
+if (Tìm kiếm hóa đơn?) then (Có)
+    :Nhập mã hóa đơn, tên bệnh nhân hoặc chọn ngày;
+    :Hiển thị danh sách kết quả lọc;
+else (Không)
+endif
+
+:Chọn một hóa đơn từ danh sách;
+:Hệ thống hiển thị chi tiết hóa đơn;
+note right
+    Thông tin bao gồm:
+    * Danh sách dịch vụ/thuốc
+    * Đơn giá và Tổng tiền
+    * Trạng thái (Đã thanh toán/Chờ)
+    * Ngày giờ xuất hóa đơn
+end note
+
+stop
+@enduml

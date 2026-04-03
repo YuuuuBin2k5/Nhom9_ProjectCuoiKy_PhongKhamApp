@@ -2,6 +2,9 @@ package com.hcmute.clinic.dto;
 
 import lombok.*;
 
+/**
+ * DTO đại diện cho một khung giờ đặt lịch khả dụng.
+ */
 @Data
 @Builder
 @NoArgsConstructor

@@ -10,6 +10,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Controller dành cho Quản trị viên (Admin) để quản lý nhân viên lễ tân.
+ * Hỗ trợ các thao tác CRUD và quản lý trạng thái tài khoản lễ tân.
+ */
 @RestController
 @RequestMapping("/api/admin/receptionists")
 @RequiredArgsConstructor
@@ -18,6 +22,10 @@ public class AdminReceptionistController {
 
     private final AdminReceptionistService adminReceptionistService;
 
+    /**
+     * Lấy danh sách tất cả nhân viên lễ tân.
+     * @return ResponseEntity chứa danh sách Receptionist.
+     */
     @GetMapping
     public ResponseEntity<List<Receptionist>> getAll() {
         return ResponseEntity.ok(adminReceptionistService.getAllReceptionists());

@@ -15,6 +15,10 @@ import com.hcmute.mobile_android.network.models.QueueItem;
 
 import java.util.List;
 
+/**
+ * Adapter quản lý danh sách hàng đợi bệnh nhân tại phòng khám.
+ * Hỗ trợ các thao tác: Gọi bệnh nhân, Khám bệnh, Chuyển chụp X-Quang, Bỏ qua và Hoàn thành.
+ */
 public class QueueAdapter extends RecyclerView.Adapter<QueueAdapter.QueueViewHolder> {
 
     private List<QueueItem> queueList;

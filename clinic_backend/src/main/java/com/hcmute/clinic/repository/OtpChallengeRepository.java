@@ -9,6 +9,10 @@ import org.springframework.data.repository.query.Param;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+/**
+ * Repository quản lý mã xác thực OTP (OtpChallenge).
+ * Phục vụ các quy trình bảo mật và xác minh danh tính.
+ */
 public interface OtpChallengeRepository extends JpaRepository<OtpChallenge, Long> {
 
     Optional<OtpChallenge> findFirstByPhoneE164AndPurposeAndConsumedFalseOrderByIdDesc(

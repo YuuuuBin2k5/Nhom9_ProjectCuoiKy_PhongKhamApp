@@ -22,6 +22,10 @@ import java.time.format.DateTimeFormatter;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Lớp Điều khiển AppointmentController - Tiếp nhận và xử lý các yêu cầu API liên quan đến Lịch hẹn.
+ * Triển khai các luồng nghiệp vụ như Đặt lịch (UC_02), Hủy lịch và Đổi lịch.
+ */
 @RestController
 @RequestMapping("/api/appointments")
 @RequiredArgsConstructor
@@ -34,6 +38,12 @@ public class AppointmentController {
     private final ServiceRepository serviceRepository;
     private final com.hcmute.clinic.service.AppointmentService appointmentService;
 
+    /**
+     * API Tạo lịch hẹn mới (UC_02).
+     * @param request Thông tin lịch hẹn từ Client.
+     * @param auth Đối tượng xác thực.
+     * @return Thông tin lịch hẹn đã tạo thành công.
+     */
     @PostMapping
     public ResponseEntity<?> createAppointment(@RequestBody AppointmentRequest request, Authentication auth) {
         try {

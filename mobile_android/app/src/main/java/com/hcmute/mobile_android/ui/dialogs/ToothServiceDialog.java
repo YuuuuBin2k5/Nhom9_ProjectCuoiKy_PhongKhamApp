@@ -29,8 +29,8 @@ import retrofit2.Callback;
 import retrofit2.Response;
 
 /**
- * Dialog for selecting a service for a specific tooth
- * Shows 4 tooth-specific services and allows doctor to select one
+ * Dialog hiển thị danh sách các dịch vụ nha khoa có thể áp dụng cho một răng cụ thể.
+ * Giúp bác sĩ nhanh chóng gán dịch vụ trong quá trình khám.
  */
 public class ToothServiceDialog extends DialogFragment {
     

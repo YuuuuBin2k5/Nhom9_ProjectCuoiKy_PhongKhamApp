@@ -1,0 +1,26 @@
+@startuml UC_04_ViewServices
+title UC_04: Xem dịch vụ
+
+left to right direction
+skinparam packageStyle rectangle
+skinparam usecase {
+    BackgroundColor Default
+    BorderColor Navy
+    ArrowColor Navy
+}
+
+actor "Bệnh nhân" as P
+
+rectangle "Danh mục dịch vụ" {
+    usecase "Duyệt danh mục" as UC1
+    usecase "Xem danh sách dịch vụ" as UC2
+    usecase "Xem chi tiết dịch vụ\n(và đánh giá)" as UC3
+    
+    UC1 ..> UC2 : <<extend>>
+    UC2 ..> UC3 : <<extend>>
+}
+
+P --> UC1
+P --> UC2
+
+@enduml

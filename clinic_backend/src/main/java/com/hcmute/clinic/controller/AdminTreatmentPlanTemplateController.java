@@ -11,6 +11,10 @@ import org.springframework.web.bind.annotation.*;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Controller quản lý các mẫu phác đồ điều trị định sẵn (Admin).
+ * Phục vụ việc chuẩn hóa các quy trình điều trị phổ biến trong nha khoa.
+ */
 @RestController
 @RequestMapping("/api/admin/treatment-templates")
 @RequiredArgsConstructor

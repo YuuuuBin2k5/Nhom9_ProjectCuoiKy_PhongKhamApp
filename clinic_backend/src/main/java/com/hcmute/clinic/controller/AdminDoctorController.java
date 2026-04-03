@@ -10,6 +10,10 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
 
+/**
+ * Controller dành cho Quản trị viên (Admin) để quản lý thông tin bác sĩ.
+ * Bao gồm các chức năng: Xem danh sách, tạo mới, cập nhật và thay đổi trạng thái hoạt động.
+ */
 @RestController
 @RequestMapping("/api/admin/doctors")
 @RequiredArgsConstructor
@@ -19,6 +23,14 @@ public class AdminDoctorController {
     private final AdminDoctorService adminDoctorService;
     private final com.hcmute.clinic.repository.DoctorRepository doctorRepository;
 
+    /**
+     * Lấy danh sách tất cả bác sĩ với phân trang.
+     * 
+     * @param page Số trang hiện tại
+     * @param size Số lượng phần tử mỗi trang
+     * @param sort Trường dùng để sắp xếp
+     * @return ResponseEntity chứa danh sách bác sĩ và thông tin phân trang
+     */
     @GetMapping
     public ResponseEntity<?> getAllDoctors(
             @RequestParam(defaultValue = "0") int page,

@@ -42,6 +42,10 @@ import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 import com.github.mikephil.charting.animation.Easing;
 
+/**
+ * Fragment hiển thị bảng điều khiển dành cho quản trị viên.
+ * Bao gồm các thống kê tổng quan và truy cập nhanh vào các chức năng quản lý.
+ */
 public class AdminDashboardFragment extends Fragment {
     
     private Button btnStartDate, btnEndDate, btnLoadReport;
